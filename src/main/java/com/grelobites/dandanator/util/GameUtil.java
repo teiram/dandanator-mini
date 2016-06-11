@@ -33,7 +33,10 @@ public class GameUtil {
 	
 	public static String getGameName(File file) {
 		String fileName = file.getName();
-		fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+        int extensionIndex;
+		if ((extensionIndex = fileName.lastIndexOf('.')) > 0) {
+			fileName = fileName.substring(0, extensionIndex);
+		}
 		if (fileName.length() > Constants.GAMENAME_SIZE) {
 			fileName = fileName.substring(0, Constants.GAMENAME_SIZE);
 		}
