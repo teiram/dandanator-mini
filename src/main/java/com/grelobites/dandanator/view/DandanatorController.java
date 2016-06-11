@@ -155,14 +155,13 @@ public class DandanatorController {
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (db.hasFiles()) {
-                	for (File file: db.getFiles()) {
-                		GameUtil.createGameFromFile(file).map(game -> {
-                			return gameList.add(game);
-                		});
-                	}
-                    success = true;
+                    db.getFiles().stream()
+                            .map(GameUtil::createGameFromFile)
+                            .forEach(gameOptional -> {
+                                gameOptional.map(gameList::add);
+                            });
                 }
-                /* let the source know whether the string was successfully 
+                /* let the source know whether the files were successfully
                  * transferred and used */
                 event.setDropCompleted(success);
                 event.consume();
