@@ -41,15 +41,15 @@
       </GridPane>
       <ToolBar prefHeight="39.0" prefWidth="522.0">
         <items>
-          <Button mnemonicParsing="false" prefHeight="27.0" prefWidth="115.0" text="Create ROM" />
+          <Button disable="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="115.0" text="Create ROM" />
             <HBox prefHeight="27.0" prefWidth="86.0">
                <children>
-                  <ToggleButton alignment="CENTER_LEFT" contentDisplay="TOP" mnemonicParsing="false" prefHeight="27.0" prefWidth="44.0" text="256" textAlignment="CENTER" textOverrun="CLIP">
+                  <ToggleButton fx:id="romSize256" alignment="CENTER_LEFT" contentDisplay="TOP" mnemonicParsing="false" prefHeight="27.0" prefWidth="44.0" text="256" textAlignment="CENTER" textOverrun="CLIP">
                      <toggleGroup>
                         <ToggleGroup fx:id="romsize" />
                      </toggleGroup>
                   </ToggleButton>
-                  <ToggleButton alignment="CENTER_RIGHT" contentDisplay="TOP" mnemonicParsing="false" prefHeight="27.0" prefWidth="41.0" text="512" textAlignment="CENTER" textOverrun="CLIP" toggleGroup="$romsize" />
+                  <ToggleButton fx:id="romSize512" alignment="CENTER_RIGHT" contentDisplay="TOP" mnemonicParsing="false" prefHeight="27.0" prefWidth="41.0" selected="true" text="512" textAlignment="CENTER" textOverrun="CLIP" toggleGroup="$romsize" />
                </children>
             </HBox>
             <Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" prefHeight="27.0" prefWidth="36.0" />

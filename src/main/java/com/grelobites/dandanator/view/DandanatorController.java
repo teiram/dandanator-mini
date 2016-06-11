@@ -3,6 +3,9 @@ package com.grelobites.dandanator.view;
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.util.GameUtil;
@@ -16,6 +19,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -23,7 +28,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 
 public class DandanatorController {
-
+	private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorController.class);
 	private WritableImage spectrum48kImage;
 	private ZxScreen dandanatorPreviewImage;
 	
@@ -47,9 +52,17 @@ public class DandanatorController {
     @FXML
     private TableColumn<Game, Boolean> romColumn;
     
+    @FXML
+    private ToggleButton romSize256;
+    
+    @FXML
+    private ToggleButton romSize512;
+    
+    @FXML
+    private ToggleGroup romsize;
+    
     private int getMaxSlotCount() {
-    	//TODO: Control with the 256/512 buttons
-    	return 10;
+    	return romSize256.isSelected() ? 5 : 10;
     }
     
     private void initializeImages() throws IOException {
@@ -83,18 +96,23 @@ public class DandanatorController {
     				line++, 0);
     		index++;
     	}
-    	while (index <= getMaxSlotCount()) {
+    	while (index <= maxSlots) {
     		dandanatorPreviewImage.deleteLine(line);
     		dandanatorPreviewImage.setPen(ZxColor.WHITE);
     		dandanatorPreviewImage.printLine(String
     				.format("%d.", index % Constants.MAX_SLOTS), line++, 0);
     		index++;
     	}
+    	while (index++ <= Constants.MAX_SLOTS) {
+    		dandanatorPreviewImage.deleteLine(line++);
+    	}
     	dandanatorPreviewImage.setPen(ZxColor.BRIGHTBLUE);
     	dandanatorPreviewImage.printLine("T. Toggle Pokes", 21, 0);
     	if (maxSlots == Constants.MAX_SLOTS) {
     		dandanatorPreviewImage.setPen(ZxColor.BRIGHTRED);
     		dandanatorPreviewImage.printLine("R. Test ROM", 23, 0);
+    	} else {
+    		dandanatorPreviewImage.deleteLine(23);
     	}
     }
     
@@ -166,6 +184,10 @@ public class DandanatorController {
                 event.setDropCompleted(success);
                 event.consume();
             });    
+        
+        romsize.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+        	recreatePreviewImage();
+        });
 	}
 	
 	private void showGameDetails(Game game) {
