@@ -4,7 +4,7 @@
 	<groupId>com.grelobites</groupId>
 	<artifactId>dandanator-mini</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Dandanator Mini Clone</name>
+	<name>Dandanator Mini ROM Generator</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -13,13 +13,18 @@
 
 	<build>
 		<resources>
+		<!--  A bit ugly, but the SceneBuilder likes to have the fxml and 
+			  the controllers in the same directory. Still...  -->
 			<resource>
-				<directory>src/main/java/view</directory>
+				<directory>src/main/java</directory>
 				<includes>
-					<include>dandanator.fxml</include>
-					<include>theme.css</include>
+					<include>com/grelobites/dandanator/view/dandanator.fxml</include>
+					<include>com/grelobites/dandanator/view/theme.css</include>
 				</includes>
 			</resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
 		</resources>
 		<plugins>
 			<plugin>
