@@ -3,6 +3,8 @@ package com.grelobites.dandanator.view;
 import java.io.File;
 import java.io.IOException;
 
+import javafx.beans.Observable;
+import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +34,7 @@ public class DandanatorController {
 	private WritableImage spectrum48kImage;
 	private ZxScreen dandanatorPreviewImage;
 	
-	private ObservableList<Game> gameList = FXCollections.observableArrayList();
+	private ObservableList<Game> gameList;
 	
 	@FXML
 	private ImageView previewImage;
@@ -81,6 +83,7 @@ public class DandanatorController {
     }
     
     private void recreatePreviewImage() {
+        LOGGER.info("recreatePreviewImage");
     	int line = 10;
     	int index = 1;
     	int maxSlots = getMaxSlotCount();
@@ -118,7 +121,14 @@ public class DandanatorController {
     
 	@FXML
 	private void initialize() throws IOException {
-	
+
+        gameList = FXCollections.observableArrayList(new Callback<Game, Observable[]>() {
+            @Override
+            public Observable[] call(Game game) {
+                return new Observable[] {game.romProperty(), game.screenProperty()};
+            }
+        });
+
 		gameTable.setItems(gameList);
 		
         nameColumn.setCellValueFactory(
@@ -143,7 +153,7 @@ public class DandanatorController {
 		gameList.addListener((ListChangeListener.Change<? extends Game> cl) -> {
 			recreatePreviewImage();
 		});
-		
+
         gameTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> showGameDetails(newValue));
         
