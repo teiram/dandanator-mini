@@ -41,7 +41,7 @@
       </GridPane>
       <ToolBar prefHeight="39.0" prefWidth="522.0">
         <items>
-          <Button disable="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="115.0" text="Create ROM" />
+          <Button fx:id="createRomButton" disable="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="115.0" text="Create ROM" />
             <HBox prefHeight="27.0" prefWidth="86.0">
                <children>
                   <ToggleButton fx:id="romSize256" alignment="CENTER_LEFT" contentDisplay="TOP" mnemonicParsing="false" prefHeight="27.0" prefWidth="44.0" text="256" textAlignment="CENTER" textOverrun="CLIP">

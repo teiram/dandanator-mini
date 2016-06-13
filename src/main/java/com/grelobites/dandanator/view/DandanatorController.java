@@ -18,6 +18,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
@@ -54,6 +55,9 @@ public class DandanatorController {
     private TableColumn<Game, Boolean> romColumn;
     
     @FXML
+    private Button createRomButton;
+    
+    @FXML
     private ToggleButton romSize256;
     
     @FXML
@@ -86,9 +90,9 @@ public class DandanatorController {
     }
     
     private void onGameListChange() {
-    	if (gameList.size() == getMaxSlotCount()) {
-    		//TODO: Enable Create ROM Button
-    	}
+    	createRomButton.setDisable(
+    			gameList.size() == getMaxSlotCount() ? 
+    					false : true);    	
     	recreatePreviewImage();
     }
     
@@ -212,7 +216,7 @@ public class DandanatorController {
         	while (gameList.size() > maxAllowedSlots) {
         		gameList.remove(gameList.size() - 1);
         	}
-        	recreatePreviewImage();
+        	onGameListChange();
         });
 	}
 	
