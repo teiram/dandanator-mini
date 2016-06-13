@@ -1,6 +1,5 @@
 package com.grelobites.dandanator.view;
 
-import java.io.File;
 import java.io.IOException;
 
 import javafx.beans.Observable;
@@ -82,6 +81,17 @@ public class DandanatorController {
 				.getResourceAsStream("sinclair-1982.scr"));	
     }
     
+    private boolean emptySlotsAvailable() {
+    	return gameList.size() < getMaxSlotCount();
+    }
+    
+    private void onGameListChange() {
+    	if (gameList.size() == getMaxSlotCount()) {
+    		//TODO: Enable Create ROM Button
+    	}
+    	recreatePreviewImage();
+    }
+    
     private void recreatePreviewImage() {
         LOGGER.info("recreatePreviewImage");
     	int line = 10;
@@ -151,7 +161,7 @@ public class DandanatorController {
 		currentScreenshot.setImage(spectrum48kImage);
 	
 		gameList.addListener((ListChangeListener.Change<? extends Game> cl) -> {
-			recreatePreviewImage();
+			onGameListChange();
 		});
 
         gameTable.getSelectionModel().selectedItemProperty().addListener(
@@ -167,7 +177,8 @@ public class DandanatorController {
 
         gameTable.setOnDragEntered(event -> {
         	if (event.getGestureSource() != gameTable &&
-        			event.getDragboard().hasFiles()) {
+        			event.getDragboard().hasFiles() &&
+        			emptySlotsAvailable()) {
         		//TODO: Give feedback
         	}
         	event.consume();
@@ -182,12 +193,13 @@ public class DandanatorController {
                 System.out.println("onDragDropped");
                 Dragboard db = event.getDragboard();
                 boolean success = false;
-                if (db.hasFiles()) {
+                if (db.hasFiles() && emptySlotsAvailable()) {
                     db.getFiles().stream()
                             .map(GameUtil::createGameFromFile)
                             .forEach(gameOptional -> {
                                 gameOptional.map(gameList::add);
                             });
+                    success = true;
                 }
                 /* let the source know whether the files were successfully
                  * transferred and used */
@@ -196,6 +208,10 @@ public class DandanatorController {
             });    
         
         romsize.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+        	int maxAllowedSlots = getMaxSlotCount();
+        	while (gameList.size() > maxAllowedSlots) {
+        		gameList.remove(gameList.size() - 1);
+        	}
         	recreatePreviewImage();
         });
 	}
