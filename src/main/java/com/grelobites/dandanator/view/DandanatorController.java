@@ -20,17 +20,22 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 
 public class DandanatorController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorController.class);
+    private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
+
 	private WritableImage spectrum48kImage;
 	private ZxScreen dandanatorPreviewImage;
 	
@@ -148,6 +153,60 @@ public class DandanatorController {
         });
 
 		gameTable.setItems(gameList);
+		
+		
+		gameTable.setRowFactory(rf -> {
+			TableRow<Game> row = new TableRow<Game>();
+	           row.setOnDragDetected(event -> {
+	                if (!row.isEmpty()) {
+	                    Integer index = row.getIndex();
+	                    LOGGER.info("Dragging content of row " + index);
+	                    Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
+	                    db.setDragView(row.snapshot(null, null));
+	                    ClipboardContent cc = new ClipboardContent();
+	                    cc.put(SERIALIZED_MIME_TYPE, index);
+	                    db.setContent(cc);
+	                    event.consume();
+	                }
+	            });
+
+	            row.setOnDragOver(event -> {
+	                Dragboard db = event.getDragboard();
+	                LOGGER.info("onDragOver: " + db);
+	                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
+	                    if (row.getIndex() != ((Integer)db.getContent(SERIALIZED_MIME_TYPE)).intValue()) {
+	                        event.acceptTransferModes(TransferMode.MOVE);
+	                        event.consume();
+	                    }
+	                }
+	            });
+
+	            row.setOnDragDropped(event -> {
+	                Dragboard db = event.getDragboard();
+	            	LOGGER.info("row.setOnDragDropped: " + db);
+	                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
+	                    int draggedIndex = (Integer) db.getContent(SERIALIZED_MIME_TYPE);
+	                    Game draggedGame = gameTable.getItems().remove(draggedIndex);
+
+	                    int dropIndex ; 
+
+	                    if (row.isEmpty()) {
+	                        dropIndex = gameTable.getItems().size();
+	                    } else {
+	                        dropIndex = row.getIndex();
+	                    }
+
+	                    gameTable.getItems().add(dropIndex, draggedGame);
+
+	                    event.setDropCompleted(true);
+	                    gameTable.getSelectionModel().select(dropIndex);
+	                    event.consume();
+	                } else {
+	                	LOGGER.info("Dragboard content is not of the required type");
+	                }
+	            });
+			return row;
+		});
 		
         nameColumn.setCellValueFactory(
                 cellData -> cellData.getValue().nameProperty());
