@@ -52,7 +52,7 @@
                   <ToggleButton fx:id="romSize512" alignment="CENTER_RIGHT" contentDisplay="TOP" mnemonicParsing="false" prefHeight="27.0" prefWidth="41.0" selected="true" text="512" textAlignment="CENTER" textOverrun="CLIP" toggleGroup="$romsize" />
                </children>
             </HBox>
-            <Button contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" prefHeight="27.0" prefWidth="36.0" />
+            <Button fx:id="removeButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" prefHeight="27.0" prefWidth="36.0" />
             <ProgressBar prefHeight="20.0" prefWidth="238.0" progress="0.0" />
         </items>
       </ToolBar>

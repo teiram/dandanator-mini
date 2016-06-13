@@ -66,8 +66,12 @@ public class DandanatorController {
     @FXML
     private ToggleGroup romsize;
     
-    private int getMaxSlotCount() {
-    	return romSize256.isSelected() ? 5 : 10;
+    @FXML
+    private Button removeButton;
+    
+    private int getAvailableSlotCount() {
+    	return romSize256.isSelected() ? Constants.SLOTS_256K_ROM : 
+    		Constants.SLOTS_512K_ROM;
     }
     
     private void initializeImages() throws IOException {
@@ -85,13 +89,13 @@ public class DandanatorController {
 				.getResourceAsStream("sinclair-1982.scr"));	
     }
     
-    private boolean emptySlotsAvailable() {
-    	return gameList.size() < getMaxSlotCount();
+    private boolean isEmptySlotAvailable() {
+    	return gameList.size() < getAvailableSlotCount();
     }
     
     private void onGameListChange() {
     	createRomButton.setDisable(
-    			gameList.size() == getMaxSlotCount() ? 
+    			gameList.size() == getAvailableSlotCount() ? 
     					false : true);    	
     	recreatePreviewImage();
     }
@@ -100,7 +104,7 @@ public class DandanatorController {
         LOGGER.info("recreatePreviewImage");
     	int line = 10;
     	int index = 1;
-    	int maxSlots = getMaxSlotCount();
+    	int maxSlots = getAvailableSlotCount();
     	dandanatorPreviewImage.setInk(ZxColor.BLACK);
     	for (Game game : gameList) {
     		dandanatorPreviewImage.setPen(
@@ -182,7 +186,7 @@ public class DandanatorController {
         gameTable.setOnDragEntered(event -> {
         	if (event.getGestureSource() != gameTable &&
         			event.getDragboard().hasFiles() &&
-        			emptySlotsAvailable()) {
+        			isEmptySlotAvailable()) {
         		//TODO: Give feedback
         	}
         	event.consume();
@@ -197,7 +201,7 @@ public class DandanatorController {
                 System.out.println("onDragDropped");
                 Dragboard db = event.getDragboard();
                 boolean success = false;
-                if (db.hasFiles() && emptySlotsAvailable()) {
+                if (db.hasFiles() && isEmptySlotAvailable()) {
                     db.getFiles().stream()
                             .map(GameUtil::createGameFromFile)
                             .forEach(gameOptional -> {
@@ -212,11 +216,17 @@ public class DandanatorController {
             });    
         
         romsize.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
-        	int maxAllowedSlots = getMaxSlotCount();
+        	int maxAllowedSlots = getAvailableSlotCount();
         	while (gameList.size() > maxAllowedSlots) {
         		gameList.remove(gameList.size() - 1);
         	}
         	onGameListChange();
+        });
+        
+        removeButton.setOnAction(c -> {
+        	for (Integer index : gameTable.getSelectionModel().getSelectedIndices()) {
+        		gameList.remove(index.intValue());
+        	}
         });
 	}
 	
