@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.effect.Blend?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fillWidth="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="423.0" prefWidth="512.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.dandanator.view.DandanatorController">
+<VBox fillWidth="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="470.0" prefWidth="550.0" stylesheets="@theme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.dandanator.view.DandanatorController">
    <children>
-      <GridPane maxHeight="384.0" maxWidth="512.0" minHeight="384.0" minWidth="512.0" prefHeight="384.0" prefWidth="512.0">
+      <GridPane hgap="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="425.0" prefWidth="550.0" vgap="10.0">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -27,19 +31,49 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <ImageView fx:id="previewImage" fitHeight="192.0" fitWidth="256.0" pickOnBounds="true" preserveRatio="true" />
-            <ImageView fx:id="currentScreenshot" fitHeight="192.0" fitWidth="256.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" />
+            <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="201.0" prefWidth="265.0" style="-fx-background-radius: 5; -fx-background-color: #a0a0a0;">
+               <children>
+                  <ImageView fx:id="previewImage" fitHeight="192.0" fitWidth="256.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
+                     <effect>
+                        <Blend />
+                     </effect>
+                  </ImageView>
+               </children>
+               <GridPane.margin>
+                  <Insets left="5.0" top="5.0" />
+               </GridPane.margin>
+            </AnchorPane>
+            <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="201.0" prefWidth="265.0" style="-fx-background-radius: 5; -fx-background-color: #a0a0a0;" GridPane.columnIndex="1">
+               <children>
+                  <ImageView fx:id="currentScreenshot" fitHeight="192.0" fitWidth="256.0" pickOnBounds="true" preserveRatio="true" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
+               </children>
+               <GridPane.margin>
+                  <Insets right="5.0" top="5.0" />
+               </GridPane.margin>
+            </AnchorPane>
             <TableView fx:id="gameTable" editable="true" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
               <columns>
-                <TableColumn fx:id="nameColumn" prefWidth="184.0" text="Game Name" />
-                <TableColumn fx:id="screenColumn" prefWidth="34.0" text="Scr" />
-                  <TableColumn fx:id="romColumn" prefWidth="37.0" text="Rom" />
+                <TableColumn fx:id="nameColumn" prefWidth="-1.0" text="Game Name" />
+                <TableColumn fx:id="screenColumn" maxWidth="40.0" minWidth="40.0" prefWidth="-1.0" text="Scr" />
+                  <TableColumn fx:id="romColumn" maxWidth="40.0" minWidth="40.0" prefWidth="-1.0" text="Rom" />
               </columns>
+               <GridPane.margin>
+                  <Insets bottom="5.0" left="5.0" top="5.0" />
+               </GridPane.margin>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
             </TableView>
-            <ListView prefHeight="166.0" prefWidth="256.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <TreeView fx:id="pokeView" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <GridPane.margin>
+                  <Insets bottom="5.0" right="5.0" top="5.0" />
+               </GridPane.margin></TreeView>
          </children>
+         <VBox.margin>
+            <Insets top="5.0" />
+         </VBox.margin>
       </GridPane>
-      <ToolBar prefHeight="39.0" prefWidth="522.0">
+      <ToolBar prefHeight="39.0" prefWidth="536.0">
         <items>
           <Button fx:id="createRomButton" disable="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="115.0" text="Create ROM" />
             <HBox prefHeight="27.0" prefWidth="86.0">
@@ -52,8 +86,9 @@
                   <ToggleButton fx:id="romSize512" alignment="CENTER_RIGHT" contentDisplay="TOP" mnemonicParsing="false" prefHeight="27.0" prefWidth="41.0" selected="true" text="512" textAlignment="CENTER" textOverrun="CLIP" toggleGroup="$romsize" />
                </children>
             </HBox>
-            <Button fx:id="removeButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" prefHeight="27.0" prefWidth="36.0" />
-            <ProgressBar prefHeight="20.0" prefWidth="238.0" progress="0.0" />
+            <Button fx:id="removeButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" prefHeight="27.0" prefWidth="36.0" style="-fx-background-image: url(&quot;trash-icon.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center; -fx-background-color: transparent;" />
+            <Separator orientation="VERTICAL" prefHeight="27.0" prefWidth="29.0" />
+            <ProgressBar prefHeight="20.0" prefWidth="230.0" progress="0.0" />
         </items>
       </ToolBar>
    </children>

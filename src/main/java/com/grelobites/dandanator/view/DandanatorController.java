@@ -3,12 +3,14 @@ package com.grelobites.dandanator.view;
 import java.io.IOException;
 
 import javafx.beans.Observable;
+import javafx.scene.control.*;
 import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.model.Game;
+import com.grelobites.dandanator.model.Poke;
 import com.grelobites.dandanator.util.GameUtil;
 import com.grelobites.dandanator.util.ImageUtil;
 import com.grelobites.dandanator.util.ZxColor;
@@ -18,12 +20,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -58,7 +54,7 @@ public class DandanatorController {
     
     @FXML
     private TableColumn<Game, Boolean> romColumn;
-    
+   
     @FXML
     private Button createRomButton;
     
@@ -73,6 +69,9 @@ public class DandanatorController {
     
     @FXML
     private Button removeButton;
+   
+    @FXML
+    private TreeView<Poke> pokeView;
     
     private int getAvailableSlotCount() {
     	return romSize256.isSelected() ? Constants.SLOTS_256K_ROM : 
@@ -85,7 +84,7 @@ public class DandanatorController {
     			new ZxScreen(),
 				DandanatorController.class.getClassLoader()
 				.getResourceAsStream("dandanator.scr"));
-    	//Decorate the image once
+    	//Decorate the preview for the first time
     	recreatePreviewImage();
     	
     	spectrum48kImage = ImageUtil.scrLoader(
@@ -153,8 +152,7 @@ public class DandanatorController {
         });
 
 		gameTable.setItems(gameList);
-		
-		
+		gameTable.setPlaceholder(new Label("Drop games here!"));
 		gameTable.setRowFactory(rf -> {
 			TableRow<Game> row = new TableRow<Game>();
 	           row.setOnDragDetected(event -> {
