@@ -3,11 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ProgressBar?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.effect.Blend?>
@@ -15,7 +12,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
@@ -76,20 +72,15 @@
       <ToolBar prefHeight="39.0" prefWidth="536.0">
         <items>
           <Button fx:id="createRomButton" disable="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="115.0" text="Create ROM" />
-            <HBox prefHeight="27.0" prefWidth="86.0">
+            <AnchorPane prefHeight="27.0" prefWidth="262.0">
                <children>
-                  <ToggleButton fx:id="romSize256" alignment="CENTER_LEFT" contentDisplay="TOP" mnemonicParsing="false" prefHeight="27.0" prefWidth="44.0" text="256" textAlignment="CENTER" textOverrun="CLIP">
-                     <toggleGroup>
-                        <ToggleGroup fx:id="romsize" />
-                     </toggleGroup>
-                  </ToggleButton>
-                  <ToggleButton fx:id="romSize512" alignment="CENTER_RIGHT" contentDisplay="TOP" mnemonicParsing="false" prefHeight="27.0" prefWidth="41.0" selected="true" text="512" textAlignment="CENTER" textOverrun="CLIP" toggleGroup="$romsize" />
+                  <ProgressBar layoutX="19.0" layoutY="4.0" prefHeight="20.0" prefWidth="230.0" progress="0.0" AnchorPane.rightAnchor="10.0" />
                </children>
-            </HBox>
-            <Button fx:id="removeButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false" prefHeight="27.0" prefWidth="36.0" style="-fx-background-image: url(&quot;trash-icon.png&quot;); -fx-background-repeat: no-repeat; -fx-background-position: center; -fx-background-color: transparent;" />
-            <Separator orientation="VERTICAL" prefHeight="27.0" prefWidth="29.0" />
-            <ProgressBar prefHeight="20.0" prefWidth="230.0" progress="0.0" />
+            </AnchorPane>
         </items>
+         <VBox.margin>
+            <Insets left="150.0" />
+         </VBox.margin>
       </ToolBar>
    </children>
 </VBox>

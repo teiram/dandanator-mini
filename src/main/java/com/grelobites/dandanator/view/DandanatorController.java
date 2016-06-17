@@ -57,25 +57,12 @@ public class DandanatorController {
    
     @FXML
     private Button createRomButton;
-    
-    @FXML
-    private ToggleButton romSize256;
-    
-    @FXML
-    private ToggleButton romSize512;
-    
-    @FXML
-    private ToggleGroup romsize;
-    
-    @FXML
-    private Button removeButton;
-   
+
     @FXML
     private TreeView<Poke> pokeView;
     
     private int getAvailableSlotCount() {
-    	return romSize256.isSelected() ? Constants.SLOTS_256K_ROM : 
-    		Constants.SLOTS_512K_ROM;
+    	return Constants.SLOTS_512K_ROM;
     }
     
     private void initializeImages() throws IOException {
@@ -270,21 +257,8 @@ public class DandanatorController {
                  * transferred and used */
                 event.setDropCompleted(success);
                 event.consume();
-            });    
-        
-        romsize.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
-        	int maxAllowedSlots = getAvailableSlotCount();
-        	while (gameList.size() > maxAllowedSlots) {
-        		gameList.remove(gameList.size() - 1);
-        	}
-        	onGameListChange();
-        });
-        
-        removeButton.setOnAction(c -> {
-        	for (Integer index : gameTable.getSelectionModel().getSelectedIndices()) {
-        		gameList.remove(index.intValue());
-        	}
-        });
+            });
+
 	}
 	
 	private void showGameDetails(Game game) {
