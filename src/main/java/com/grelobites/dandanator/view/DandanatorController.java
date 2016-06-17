@@ -1,9 +1,11 @@
 package com.grelobites.dandanator.view;
 
+import java.io.File;
 import java.io.IOException;
 
 import javafx.beans.Observable;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +94,7 @@ public class DandanatorController {
     }
     
     private void recreatePreviewImage() {
-        LOGGER.info("recreatePreviewImage");
+        LOGGER.debug("recreatePreviewImage");
     	int line = 10;
     	int index = 1;
     	int maxSlots = getAvailableSlotCount();
@@ -145,7 +147,7 @@ public class DandanatorController {
 	           row.setOnDragDetected(event -> {
 	                if (!row.isEmpty()) {
 	                    Integer index = row.getIndex();
-	                    LOGGER.info("Dragging content of row " + index);
+	                    LOGGER.debug("Dragging content of row " + index);
 	                    Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
 	                    db.setDragView(row.snapshot(null, null));
 	                    ClipboardContent cc = new ClipboardContent();
@@ -157,7 +159,7 @@ public class DandanatorController {
 
 	            row.setOnDragOver(event -> {
 	                Dragboard db = event.getDragboard();
-	                LOGGER.info("onDragOver: " + db);
+	                LOGGER.debug("onDragOver: " + db);
 	                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
 	                    if (row.getIndex() != ((Integer)db.getContent(SERIALIZED_MIME_TYPE)).intValue()) {
 	                        event.acceptTransferModes(TransferMode.MOVE);
@@ -168,7 +170,7 @@ public class DandanatorController {
 
 	            row.setOnDragDropped(event -> {
 	                Dragboard db = event.getDragboard();
-	            	LOGGER.info("row.setOnDragDropped: " + db);
+	            	LOGGER.debug("row.setOnDragDropped: " + db);
 	                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
 	                    int draggedIndex = (Integer) db.getContent(SERIALIZED_MIME_TYPE);
 	                    Game draggedGame = gameTable.getItems().remove(draggedIndex);
@@ -187,9 +189,10 @@ public class DandanatorController {
 	                    gameTable.getSelectionModel().select(dropIndex);
 	                    event.consume();
 	                } else {
-	                	LOGGER.info("Dragboard content is not of the required type");
+	                	LOGGER.debug("Dragboard content is not of the required type");
 	                }
 	            });
+			row.setContextMenu(MenuItemFactory.getGameContextMenu(gameTable, gameList));
 			return row;
 		});
 		
@@ -258,6 +261,17 @@ public class DandanatorController {
                 event.setDropCompleted(success);
                 event.consume();
             });
+
+        createRomButton.setOnAction(c -> {
+            FileChooser chooser = new FileChooser();
+            chooser.setTitle("Save ROM Set");
+            final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
+            try {
+                GameUtil.createRomSet(saveFile, gameList);
+            } catch (IOException e) {
+                LOGGER.error("Creating ROM Set", e);
+            }
+        });
 
 	}
 	

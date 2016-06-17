@@ -1,9 +1,12 @@
 package com.grelobites.dandanator.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Optional;
 
+import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,5 +44,13 @@ public class GameUtil {
 			fileName = fileName.substring(0, Constants.GAMENAME_SIZE);
 		}
 		return fileName;
+	}
+
+	public static void createRomSet(File romSetFile, ObservableList<Game> gameList) throws IOException {
+		LOGGER.debug("Creating ROM from " + gameList + " on " + romSetFile);
+        byte[] romSetBytes = RomSetBuilder.newInstance()
+                .withGames(gameList)
+                .build();
+        Files.write(romSetFile.toPath(), romSetBytes);
 	}
 }

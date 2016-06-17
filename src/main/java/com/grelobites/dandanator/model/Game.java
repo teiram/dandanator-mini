@@ -2,6 +2,9 @@ package com.grelobites.dandanator.model;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +24,9 @@ public class Game {
 	private StringProperty name;
 	private BooleanProperty rom;
 	private BooleanProperty screen;
-	Image screenshot;
+	private Image screenshot;
 	private byte[] data;
+	private List<Poke> pokes;
 	
 	public Game() {
 		name = new SimpleStringProperty();
@@ -96,5 +100,23 @@ public class Game {
 	public InputStream getDataStream() {
 		return new ByteArrayInputStream(data);
 	}
-	
+
+	public List<Poke> getPokes() {
+        if (pokes == null) {
+            return Collections.EMPTY_LIST;
+        } else {
+            return pokes;
+        }
+	}
+
+	public void setPokes(List<Poke> pokes) {
+		this.pokes = pokes;
+	}
+
+	public void addPoke(Poke poke) {
+		if (this.pokes == null) {
+			this.pokes = new ArrayList<Poke>();
+		}
+		this.pokes.add(poke);
+	}
 }
