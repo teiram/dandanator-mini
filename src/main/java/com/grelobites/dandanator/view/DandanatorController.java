@@ -2,6 +2,7 @@ package com.grelobites.dandanator.view;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javafx.beans.Observable;
 import javafx.scene.control.*;
@@ -61,8 +62,36 @@ public class DandanatorController {
     private Button createRomButton;
 
     @FXML
+    private Button addRomButton;
+
+    @FXML
+    private Button removeSelectedRomButton;
+
+    @FXML
+    private Button clearRomsetButton;
+
+    @FXML
+    private Button exportGameButton;
+
+    @FXML
+    private Label pokesViewLabel;
+
+    @FXML
     private TreeView<Poke> pokeView;
-    
+
+    @FXML
+    private Button addPokeButton;
+
+    @FXML
+    private Button removeSelectedPokeButton;
+
+    @FXML
+    private Button removeAllGamePokesButton;
+
+    @FXML
+    private ProgressBar pokesCurrentSizeBar;
+
+
     private int getAvailableSlotCount() {
     	return Constants.SLOTS_512K_ROM;
     }
@@ -89,7 +118,12 @@ public class DandanatorController {
     private void onGameListChange() {
     	createRomButton.setDisable(
     			gameList.size() == getAvailableSlotCount() ? 
-    					false : true);    	
+    					false : true);
+        addRomButton.setDisable(
+                gameList.size() == getAvailableSlotCount() ? true: false);
+        clearRomsetButton.setDisable(
+                gameList.size() == 0 ? true : false);
+
     	recreatePreviewImage();
     }
     
@@ -129,7 +163,18 @@ public class DandanatorController {
     		dandanatorPreviewImage.deleteLine(23);
     	}
     }
-    
+
+    private void addSnapshotFiles(List<File> files) {
+        files.stream()
+                .filter(f -> {
+                    return isEmptySlotAvailable();
+                })
+                .map(GameUtil::createGameFromFile)
+                .forEach(gameOptional -> {
+                    gameOptional.map(gameList::add);
+                });
+    }
+
 	@FXML
 	private void initialize() throws IOException {
 
@@ -220,7 +265,7 @@ public class DandanatorController {
 		});
 
         gameTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> showGameDetails(newValue));
+                (observable, oldValue, newValue) -> onGameSelection(newValue));
         
         gameTable.setOnDragOver(event -> {
         	if (event.getGestureSource() != gameTable &&
@@ -249,11 +294,7 @@ public class DandanatorController {
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (db.hasFiles() && isEmptySlotAvailable()) {
-                    db.getFiles().stream()
-                            .map(GameUtil::createGameFromFile)
-                            .forEach(gameOptional -> {
-                                gameOptional.map(gameList::add);
-                            });
+                    addSnapshotFiles(db.getFiles());
                     success = true;
                 }
                 /* let the source know whether the files were successfully
@@ -273,13 +314,35 @@ public class DandanatorController {
             }
         });
 
+        addRomButton.setOnAction(c -> {
+           FileChooser chooser = new FileChooser();
+            chooser.setTitle("Open snapshots");
+            final List<File> snapshotFiles = chooser.showOpenMultipleDialog(addRomButton.getScene().getWindow());
+            try {
+                addSnapshotFiles(snapshotFiles);
+            } catch (Exception e) {
+                LOGGER.error("Opening snapshots from files " +  snapshotFiles, e);
+            }
+        });
+
 	}
 	
-	private void showGameDetails(Game game) {
+	private void onGameSelection(Game game) {
 		if (game == null) {
 			currentScreenshot.setImage(spectrum48kImage);
+            removeSelectedRomButton.setDisable(true);
+            addPokeButton.setDisable(true);
+            removeAllGamePokesButton.setDisable(true);
+            removeSelectedPokeButton.setDisable(true);
+            pokesViewLabel.setText("No game selected");
+            //TODO: Poke view management
+
 		} else {
 			currentScreenshot.setImage(game.getScreenshot());
+            removeSelectedRomButton.setDisable(false);
+            addPokeButton.setDisable(false);
+            pokesViewLabel.setText(String.format("Trainers / Pokes for %s", game.getName()));
+            //TODO: Poke view management
 		}
 	}
 

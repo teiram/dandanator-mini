@@ -1,4 +1,4 @@
-.root{
+.root {
     -fx-background-color: #000000;
 }
 
@@ -110,9 +110,27 @@
 
 .progress-bar {
 	-fx-background-color: black;
-	-fx-max-height: 20px;
 }
 
 .button {
 	-fx-background-color: white;
+}
+
+.pokesBox {
+    -fx-background-color: #202020;
+    -fx-border-color: white;
+}
+
+.pokesBox .tree-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+}
+
+.pokesTitle {
+    -fx-background-color: #e0e0e0;
+    -fx-border-color: black;
+    -fx-text-fill: black;
+    -fx-font-size: 11px;
+    -fx-font-weight: normal;
+    -fx-alignment: center-left;
 }
