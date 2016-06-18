@@ -117,12 +117,11 @@
 }
 
 .pokesBox {
-    -fx-background-color: #202020;
     -fx-border-color: white;
 }
 
 .pokesBox .tree-cell {
-    -fx-background-color: transparent;
+    -fx-background-color: #2a2a2a;
     -fx-text-fill: white;
 }
 
