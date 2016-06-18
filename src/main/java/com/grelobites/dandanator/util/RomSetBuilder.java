@@ -28,7 +28,7 @@ public class RomSetBuilder {
     private static final String DEFAULT_TOGGLEPOKESKEY_MESSAGE = "Toggle Pokes";
     private static final String DEFAULT_LAUNCHGAME_MESSAGE = "Launch Game";
     private static final String DEFAULT_SELECTPOKE_MESSAGE = "Select Pokes";
-    private static final String DEFAULT_VERSION = "3.1";
+    private static final String DEFAULT_VERSION = "v3.1";
     private static final int SAVEDGAMECHUNK_SIZE = 256;
     private static final int POKE_SPACE_SIZE = 3200;
     private byte[] baseRom;
@@ -143,7 +143,7 @@ public class RomSetBuilder {
     }
 
     private static void dumpGameName(OutputStream os, Game game, int index) throws IOException {
-        String gameName = String.format("%d%c %s", index % Constants.MAX_SLOTS,
+        String gameName = String.format("%d%c %s", (index + 1) % Constants.MAX_SLOTS,
                 game.getRom() ? 'r' : '.',
                 game.getName());
         os.write(asNullTerminatedByteArray(gameName, 33));
@@ -160,15 +160,14 @@ public class RomSetBuilder {
         byte interruptMode;
         if ((interruptMode = game.getData()[SNA.INTERRUPT_MODE]) != 1) {
             launchCode.write(Z80.IMH);
-            launchCodeSize++;
             if (interruptMode == 0) {
                 launchCode.write(Z80.IM0);
-                launchCodeSize++;
             } else {
                 launchCode.write(Z80.IM2);
-                launchCodeSize++;
             }
+            launchCodeSize += 2;
         }
+        LOGGER.debug("Interrupt mode is " + interruptMode);
         if ((game.getData()[SNA.INTERRUPT_ENABLE] & 0x04) == 0) {
             launchCode.write(Z80.DI);
             launchCodeSize++;
@@ -177,6 +176,7 @@ public class RomSetBuilder {
         for (int i = launchCodeSize; i < 5; i++) {
             launchCode.write(Z80.NOP);
         }
+        LOGGER.debug("LaunchCodeSize: " + launchCodeSize);
         os.write((byte) launchCodeSize);
         os.write(launchCode.toByteArray());
         return launchCodeSize;
@@ -185,7 +185,7 @@ public class RomSetBuilder {
     private void dumpScreenTexts(OutputStream os) throws IOException {
         os.write(asNullTerminatedByteArray(String.format("R. %s", testRomKeyMessage), 33));
         os.write(asNullTerminatedByteArray(String.format("P. %s", togglePokesKeyMessage), 33));
-        os.write(asNullTerminatedByteArray(String.format("O. %s", launchGameMessage), 33));
+        os.write(asNullTerminatedByteArray(String.format("0. %s", launchGameMessage), 33));
         os.write(asNullTerminatedByteArray(selectPokeMessage, 33));
     }
 
@@ -283,7 +283,8 @@ public class RomSetBuilder {
         LOGGER.debug("Dumped charset. Offset: " + os.size());
 
         os.write(Arrays.copyOfRange(getScreen(), 0, 2048));
-        os.write(Arrays.copyOfRange(getScreen(), 6145, 6145 + 256));
+        os.write(Arrays.copyOfRange(getScreen(), Constants.SPECTRUM_SCREEN_SIZE,
+                Constants.SPECTRUM_SCREEN_SIZE + 256));
         LOGGER.debug("Dumped screen. Offset: " + os.size());
 
         dumpScreenTexts(os);
