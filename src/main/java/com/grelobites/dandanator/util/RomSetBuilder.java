@@ -13,6 +13,8 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 
+
+
 /**
  * Created by mteira on 17/6/16.
  */
@@ -20,7 +22,6 @@ public class RomSetBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(RomSetBuilder.class);
 
     private static final int DANDANATOR_ROMSET_SIZE = 512 * 1024;
-    private static final int SLOT_SIZE = 0x4000;
     private static final int GAME_SIZE = 0xc000;
     private static final int VERSION_SIZE = 32;
     private static final String DEFAULT_TESTROMKEY_MESSAGE = "Test Rom";
@@ -29,7 +30,7 @@ public class RomSetBuilder {
     private static final String DEFAULT_SELECTPOKE_MESSAGE = "Select Pokes";
     private static final String DEFAULT_VERSION = "3.1";
     private static final int SAVEDGAMECHUNK_SIZE = 256;
-
+    private static final int POKE_SPACE_SIZE = 3200;
     private byte[] baseRom;
     private byte[] charSet;
     private byte[] screen;
@@ -62,7 +63,7 @@ public class RomSetBuilder {
     }
 
     public RomSetBuilder withCustomRom(byte[] customRom) {
-        if (customRom.length != SLOT_SIZE) {
+        if (customRom.length != Constants.SLOT_SIZE) {
             throw new IllegalArgumentException("Unexpected Custom ROM size: " + customRom.length);
         }
         this.customRom = customRom;
@@ -262,6 +263,12 @@ public class RomSetBuilder {
         }
     }
 
+    private void fillWithValue(OutputStream os, byte value, int size) throws IOException {
+        for (int i = 0; i < size; i++) {
+            os.write(value);
+        }
+    }
+
     private void dumpVersionInfo(OutputStream os) throws IOException {
         os.write(asNullTerminatedByteArray(version, VERSION_SIZE));
     }
@@ -291,8 +298,9 @@ public class RomSetBuilder {
         }
         LOGGER.debug("Dumped game table. Offset: " + os.size());
 
+        int pokeStartMark = os.size(); //Mark position before start of poke zone
         for (Game game : games) {
-            byte pokeCount = (byte) ((game.getPokes() != null) ? game.getPokes().size() : 0);
+            byte pokeCount = (byte) game.getPokes().size();
             os.write(pokeCount);
         }
         LOGGER.debug("Dumped poke main header. Offset: " + os.size());
@@ -306,19 +314,18 @@ public class RomSetBuilder {
         for (Game game : games) {
             dumpGamePokeData(os, game);
         }
-
+        fillWithValue(os, (byte) 0, POKE_SPACE_SIZE - (os.size() - pokeStartMark));
         LOGGER.debug("Dumped poke data. Offset: " + os.size());
 
-        for (index = os.size(); index < SLOT_SIZE - 32; index++) {
-            os.write((byte) 0);
-        }
+        fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size() - VERSION_SIZE);
         LOGGER.debug("Dumped padding zone. Offset: " + os.size());
 
         dumpVersionInfo(os);
         LOGGER.debug("Dumped version info. Offset: " + os.size());
 
         for (Game game : games) {
-            os.write(Arrays.copyOfRange(game.getData(), Constants.SNA_HEADER_SIZE, GAME_SIZE));
+            os.write(Arrays.copyOfRange(game.getData(), Constants.SNA_HEADER_SIZE,
+                    Constants.SNA_HEADER_SIZE + GAME_SIZE));
             LOGGER.debug("Dumped game. Offset: " + os.size());
         }
 

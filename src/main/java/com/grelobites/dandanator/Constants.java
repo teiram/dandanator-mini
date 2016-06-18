@@ -20,8 +20,8 @@ public class Constants {
 	public static final int SPECTRUM_FULLSCREEN_SIZE = SPECTRUM_SCREEN_SIZE +
 			SPECTRUM_COLORINFO_SIZE;
 	public static final int GAMENAME_SIZE = 33;
-	public static final int SLOTS_256K_ROM = 5;
 	public static final int SLOTS_512K_ROM = 10;
+    public static final int SLOT_SIZE = 0x4000;
 	public static final int MAX_SLOTS = SLOTS_512K_ROM;
 
 	public static final int BASEROM_SIZE = 2048;
@@ -87,7 +87,7 @@ public class Constants {
             TEST_ROM = fromInputStream(
                     Constants.class.getClassLoader()
                             .getResourceAsStream(TEST_ROM_RESOURCE),
-                    16384);
+                    SLOT_SIZE);
         }
         return TEST_ROM;
     }
