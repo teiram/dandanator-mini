@@ -123,7 +123,29 @@
 .pokesBox .tree-cell {
     -fx-background-color: #2a2a2a;
     -fx-text-fill: white;
+    -fx-cell-size: 18px;
+    -fx-font-size: 12px;
 }
+
+/*
+.pokesBox .tree-cell:hover {
+  -fx-background-color: #e0e0e0;
+}
+*/
+
+.pokesBox .tree-cell:selected {
+  -fx-background-color: #e0e0e0;
+  -fx-text-fill: black;
+}
+
+.pokesBox .tree-cell .tree-disclosure-node .arrow {
+  -fx-background-color: white;
+}
+
+.pokesBox .tree-cell:selected .tree-disclosure-node .arrow {
+  -fx-background-color: black;
+}
+
 
 .pokesTitle {
     -fx-background-color: #e0e0e0;

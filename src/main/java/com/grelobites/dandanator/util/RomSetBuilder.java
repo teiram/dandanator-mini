@@ -1,9 +1,7 @@
 package com.grelobites.dandanator.util;
 
 import com.grelobites.dandanator.Constants;
-import com.grelobites.dandanator.model.AddressValue;
-import com.grelobites.dandanator.model.Game;
-import com.grelobites.dandanator.model.Poke;
+import com.grelobites.dandanator.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -247,18 +245,19 @@ public class RomSetBuilder {
     private int pokeRequiredSize(Game game) {
         int headerSize = 25; //Fixed size required per poke
         //Sum of all the addressValues * 3 (address + value)
-        int size = game.getPokes().stream()
-                .map(p -> p.getAddressValues().size() * 3).reduce(0, (a, b) -> a + b);
-        return size + headerSize * game.getPokes().size();
+        int size = game.getPokes().getChildren().stream()
+                .map(p -> p.getChildren().size() * 3).reduce(0, (a, b) -> a + b);
+        return size + headerSize * game.getPokes().getChildren().size();
     }
 
     private void dumpGamePokeData(OutputStream os, Game game) throws IOException {
-        for (Poke poke: game.getPokes()) {
-            os.write((byte) poke.getAddressValues().size());
-            os.write(asNullTerminatedByteArray(String.format(". %s", poke.getName()), 23));
-            for (AddressValue av : poke.getAddressValues()) {
-                os.write(av.address());
-                os.write(av.value());
+        for (PokeEntity poke: game.getPokes().getChildren()) {
+            os.write((byte) poke.getChildren().size());
+            os.write(asNullTerminatedByteArray(String.format(". %s", poke.getViewRepresentation()), 23));
+            for (PokeEntity node : poke.getChildren()) {
+                AddressValueNode av = (AddressValueNode) node;
+                os.write(av.addressBytes());
+                os.write(av.valueBytes());
             }
         }
     }
@@ -301,7 +300,7 @@ public class RomSetBuilder {
 
         int pokeStartMark = os.size(); //Mark position before start of poke zone
         for (Game game : games) {
-            byte pokeCount = (byte) game.getPokes().size();
+            byte pokeCount = (byte) game.getPokes().getChildren().size();
             os.write(pokeCount);
         }
         LOGGER.debug("Dumped poke main header. Offset: " + os.size());

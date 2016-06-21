@@ -3,11 +3,17 @@ package com.grelobites.dandanator.view;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
+import com.grelobites.dandanator.model.PokeEntity;
+import com.grelobites.dandanator.view.util.PokeEntityTreeCell;
+import com.grelobites.dandanator.view.util.RecursiveTreeItem;
 import javafx.beans.Observable;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
+import javafx.util.converter.DefaultStringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +83,7 @@ public class DandanatorController {
     private Label pokesViewLabel;
 
     @FXML
-    private TreeView<Poke> pokeView;
+    private TreeView<PokeEntity> pokeView;
 
     @FXML
     private Button addPokeButton;
@@ -164,15 +170,17 @@ public class DandanatorController {
     	}
     }
 
+
     private void addSnapshotFiles(List<File> files) {
         files.stream()
-                .filter(f -> {
-                    return isEmptySlotAvailable();
-                })
+                .filter(f -> isEmptySlotAvailable())
                 .map(GameUtil::createGameFromFile)
-                .forEach(gameOptional -> {
-                    gameOptional.map(gameList::add);
-                });
+                .forEach(gameOptional -> gameOptional.map(g -> {
+                    g.getPokes().getChildren().addListener((ListChangeListener.Change<?> c) -> {
+                        LOGGER.debug("Pokes on game " + g + " changed");
+                    });
+                    return gameList.add(g);
+                }));
     }
 
 	@FXML
@@ -255,11 +263,32 @@ public class DandanatorController {
         		.forTableColumn(romColumn));
         
         initializeImages();
-        
+
+
+        pokeView.setEditable(true);
+        pokeView.setCellFactory(p -> {
+            TreeCell<PokeEntity> cell = new PokeEntityTreeCell();
+            cell.setOnMouseClicked(e -> {
+                if (cell.isEmpty()) {
+                    pokeView.getSelectionModel().clearSelection();
+                }
+            });
+            return cell;
+        });
+
+        pokeView.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    if (newValue != null) {
+                        removeSelectedPokeButton.setDisable(false);
+                    } else {
+                        removeSelectedPokeButton.setDisable(true);
+                    }
+                });
+
 		previewImage.setImage(dandanatorPreviewImage);
 	
 		currentScreenshot.setImage(spectrum48kImage);
-	
+
 		gameList.addListener((ListChangeListener.Change<? extends Game> cl) -> {
 			onGameListChange();
 		});
@@ -325,6 +354,36 @@ public class DandanatorController {
             }
         });
 
+        removeSelectedRomButton.setOnAction(c -> {
+            Optional<Integer> selectedIndex = Optional.of(gameTable.getSelectionModel().getSelectedIndex());
+            selectedIndex.ifPresent(index -> gameList.remove(index.intValue()));
+        });
+
+        addPokeButton.setOnAction(c -> {
+            if (pokeView.getSelectionModel().getSelectedItem() != null) {
+                pokeView.getSelectionModel().getSelectedItem().getValue()
+                        .addNewChild();
+            } else {
+                pokeView.getRoot().getValue().addNewChild();
+            }
+        });
+
+        removeSelectedPokeButton.setOnAction(c -> {
+           if (pokeView.getSelectionModel().getSelectedItem() != null) {
+               TreeItem<PokeEntity> selected = pokeView.getSelectionModel().getSelectedItem();
+               if (selected != null) {
+                   pokeView.getSelectionModel().select(pokeView.getRoot());
+                   selected.getValue().getParent().removeChild(selected.getValue());
+               }
+           }
+        });
+
+        removeAllGamePokesButton.setOnAction(c -> {
+            Game game = gameTable.getSelectionModel().getSelectedItem();
+            if (game != null) {
+                game.getPokes().getChildren().clear();
+            }
+        });
 	}
 	
 	private void onGameSelection(Game game) {
@@ -335,15 +394,31 @@ public class DandanatorController {
             removeAllGamePokesButton.setDisable(true);
             removeSelectedPokeButton.setDisable(true);
             pokesViewLabel.setText("No game selected");
-            //TODO: Poke view management
+            pokeView.setDisable(true);
+            pokeView.setRoot(null);
 
 		} else {
 			currentScreenshot.setImage(game.getScreenshot());
             removeSelectedRomButton.setDisable(false);
             addPokeButton.setDisable(false);
             pokesViewLabel.setText(String.format("Trainers / Pokes for %s", game.getName()));
-            //TODO: Poke view management
+            pokeView.setRoot(new RecursiveTreeItem<>(game.getPokes(), PokeEntity::getChildren,
+                    this::computePokeChange));
+            pokeView.setDisable(false);
+            if (game.getPokes().getChildren().size() > 0) {
+                removeAllGamePokesButton.setDisable(false);
+            } else {
+                removeAllGamePokesButton.setDisable(true);
+            }
 		}
 	}
+
+    private void computePokeChange(PokeEntity f) {
+        LOGGER.debug("New poke ocupation is " + GameUtil.getOverallPokeUsage(gameList));
+        pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(gameList));
+        if (gameTable.getSelectionModel().getSelectedItem() == f.getOwnerGame()) {
+            removeAllGamePokesButton.setDisable(f.getOwnerGame().hasPokes() ? false : true);
+        }
+    }
 
 }

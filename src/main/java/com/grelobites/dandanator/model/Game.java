@@ -26,7 +26,7 @@ public class Game {
 	private BooleanProperty screen;
 	private Image screenshot;
 	private byte[] data;
-	private List<Poke> pokes;
+	private PokeEntity pokes;
 	
 	public Game() {
 		name = new SimpleStringProperty();
@@ -101,22 +101,22 @@ public class Game {
 		return new ByteArrayInputStream(data);
 	}
 
-	public List<Poke> getPokes() {
+	public PokeEntity getPokes() {
         if (pokes == null) {
-            return Collections.EMPTY_LIST;
-        } else {
-            return pokes;
+            pokes = new PokeEntity(this);
         }
-	}
+        return pokes;
+    }
 
-	public void setPokes(List<Poke> pokes) {
+	public void setPokes(PokeEntity pokes) {
 		this.pokes = pokes;
 	}
 
-	public void addPoke(Poke poke) {
-		if (this.pokes == null) {
-			this.pokes = new ArrayList<Poke>();
-		}
-		this.pokes.add(poke);
+	public void addPoke(String pokeName) {
+		getPokes().addPokeNode(pokeName);
 	}
+
+    public boolean hasPokes() {
+        return pokes.getChildren().size() > 0;
+    }
 }

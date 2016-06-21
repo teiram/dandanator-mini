@@ -68,7 +68,7 @@
                </GridPane.margin>
                <children>
                   <Label fx:id="pokesViewLabel" minHeight="-Infinity" prefHeight="17.0" prefWidth="265.0" styleClass="pokesTitle" text="No game selected" />
-                  <TreeView fx:id="pokeView" prefHeight="200.0" prefWidth="200.0" />
+                  <TreeView fx:id="pokeView" editable="true" prefHeight="200.0" prefWidth="200.0" showRoot="false" />
                </children>
             </VBox>
          </children>

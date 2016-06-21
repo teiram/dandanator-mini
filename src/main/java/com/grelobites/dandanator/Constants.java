@@ -19,10 +19,15 @@ public class Constants {
 	public static final int SPECTRUM_COLORINFO_SIZE = 768;
 	public static final int SPECTRUM_FULLSCREEN_SIZE = SPECTRUM_SCREEN_SIZE +
 			SPECTRUM_COLORINFO_SIZE;
-	public static final int GAMENAME_SIZE = 33;
-	public static final int SLOTS_512K_ROM = 10;
+
+    public static final int SLOTS_512K_ROM = 10;
+    public static final int MAX_SLOTS = SLOTS_512K_ROM;
+    public static final int GAMENAME_SIZE = 33;
+    public static final int POKE_ENTRY_SIZE = 3;
+    public static final int POKE_ZONE_SIZE = 3200;
+    public static final int POKE_HEADER_SIZE = 3 * MAX_SLOTS;
+
     public static final int SLOT_SIZE = 0x4000;
-	public static final int MAX_SLOTS = SLOTS_512K_ROM;
 
 	public static final int BASEROM_SIZE = 2048;
 	public static final int CHARSET_SIZE = 768;
