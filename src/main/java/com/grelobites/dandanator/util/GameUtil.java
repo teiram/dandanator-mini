@@ -2,10 +2,10 @@ package com.grelobites.dandanator.util;
 
 import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.model.Game;
-import com.grelobites.dandanator.model.PokeNode;
-import com.grelobites.dandanator.model.poke.pok.PokPoke;
-import com.grelobites.dandanator.model.poke.pok.PokTrainer;
-import com.grelobites.dandanator.model.poke.pok.PokValue;
+import com.grelobites.dandanator.util.gameloader.GameImageLoader;
+import com.grelobites.dandanator.util.gameloader.GameImageLoaderFactory;
+import com.grelobites.dandanator.util.pokeimporter.PokeImporter;
+import com.grelobites.dandanator.util.pokeimporter.PokeImporterFactory;
 import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +75,7 @@ public class GameUtil {
     }
 
     public static int getGamePokeSizeUsage(Game game) {
-        return game.getPokes().getChildren().stream()
+        return game.getTrainerList().getChildren().stream()
                 .flatMapToInt(g -> IntStream.builder()
                         .add(Constants.GAMENAME_SIZE)
                         .add(g.getChildren().size() * Constants.POKE_ENTRY_SIZE)
@@ -90,15 +90,10 @@ public class GameUtil {
     }
 
     public static void importPokesFromFile(Game game, File pokeFile) throws IOException {
-        PokPoke poke = PokPoke.fromInputStream(new FileInputStream(pokeFile));
-        for (PokTrainer trainer: poke.getTrainers()) {
-            PokeNode node = game.getPokes().addPokeNode(trainer.getName());
-            trainer.getPokeValues().stream()
-                    .filter(PokValue::isCompatibleSpectrum48K)
-                    .filter(pokeValue -> !pokeValue.isInteractive())
-                    .forEach(pokeValue -> node.addAddressValue(pokeValue.getAddress(),
-                            pokeValue.getValue()));
-        }
+        PokeImporter importer = getFileExtension(pokeFile.getName())
+                .map(PokeImporterFactory::getLoader)
+                .orElseGet(PokeImporterFactory::getDefaultLoader);
 
+        importer.importPokes(game.getTrainerList(), new FileInputStream(pokeFile));
     }
 }

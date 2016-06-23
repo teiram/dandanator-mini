@@ -1,31 +1,29 @@
 package com.grelobites.dandanator.util;
 
+import com.grelobites.dandanator.Configuration;
 import com.grelobites.dandanator.Constants;
-import com.grelobites.dandanator.model.*;
+import com.grelobites.dandanator.model.Game;
+import com.grelobites.dandanator.model.Poke;
+import com.grelobites.dandanator.model.PokeViewable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 
 
 
-/**
- * Created by mteira on 17/6/16.
- */
 public class RomSetBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(RomSetBuilder.class);
 
     private static final int DANDANATOR_ROMSET_SIZE = 512 * 1024;
     private static final int GAME_SIZE = 0xc000;
     private static final int VERSION_SIZE = 32;
-    private static final String DEFAULT_TESTROMKEY_MESSAGE = "Test Rom";
-    private static final String DEFAULT_TOGGLEPOKESKEY_MESSAGE = "Toggle Pokes";
-    private static final String DEFAULT_LAUNCHGAME_MESSAGE = "Launch Game";
-    private static final String DEFAULT_SELECTPOKE_MESSAGE = "Select Pokes";
+
     private static final String DEFAULT_VERSION = "v3.1";
     private static final int SAVEDGAMECHUNK_SIZE = 256;
     private static final int POKE_SPACE_SIZE = 3200;
@@ -34,10 +32,10 @@ public class RomSetBuilder {
     private byte[] screen;
     private byte[] customRom;
     private Collection<Game> games;
-    private String testRomKeyMessage = DEFAULT_TESTROMKEY_MESSAGE;
-    private String togglePokesKeyMessage = DEFAULT_TOGGLEPOKESKEY_MESSAGE;
-    private String launchGameMessage = DEFAULT_LAUNCHGAME_MESSAGE;
-    private String selectPokeMessage = DEFAULT_SELECTPOKE_MESSAGE;
+    private String testRomKeyMessage;
+    private String togglePokesKeyMessage;
+    private String launchGameMessage;
+    private String selectPokeMessage;
     private String version = DEFAULT_VERSION;
 
     private RomSetBuilder() {}
@@ -112,22 +110,42 @@ public class RomSetBuilder {
 
     private byte[] getBaseRom() throws IOException {
         return baseRom == null ?
-            Constants.getDandanatorRom() : baseRom;
+                Configuration.getInstance().getDandanatorRom() : baseRom;
     }
 
     private byte[] getCharSet() throws IOException {
         return charSet == null ?
-            Constants.getDefaultCharset() : charSet;
+                Configuration.getInstance().getCharSet() : charSet;
     }
 
     private byte[] getScreen() throws IOException {
         return screen == null ?
-            Constants.getDefaultDandanatorScreen() : screen;
+                Configuration.getInstance().getBackgroundImage() : screen;
     }
 
     private byte[] getCustomRom() throws IOException {
         return customRom == null ?
-                Constants.getTestRom() : customRom;
+                Configuration.getInstance().getTestRom() : customRom;
+    }
+
+    private String getTestRomKeyMessage() {
+        return  testRomKeyMessage == null ?
+                Configuration.getInstance().getTestRomMessage() : testRomKeyMessage;
+    }
+
+    private String getTogglePokesKeyMessage() {
+        return togglePokesKeyMessage == null ?
+                Configuration.getInstance().getTogglePokesMessage() : togglePokesKeyMessage;
+    }
+
+    private String getLaunchGameMessage() {
+        return launchGameMessage == null ?
+                Configuration.getInstance().getLaunchGameMessage() : launchGameMessage;
+    }
+
+    private String getSelectPokeMessage() {
+        return selectPokeMessage == null ?
+                Configuration.getInstance().getSelectPokesMessage() : selectPokeMessage;
     }
 
     private static byte[] asNullTerminatedByteArray(String name, int arrayLength) {
@@ -181,11 +199,12 @@ public class RomSetBuilder {
     }
 
     private void dumpScreenTexts(OutputStream os) throws IOException {
-        os.write(asNullTerminatedByteArray(String.format("R. %s", testRomKeyMessage), 33));
-        os.write(asNullTerminatedByteArray(String.format("P. %s", togglePokesKeyMessage), 33));
-        os.write(asNullTerminatedByteArray(String.format("0. %s", launchGameMessage), 33));
-        os.write(asNullTerminatedByteArray(selectPokeMessage, 33));
+        os.write(asNullTerminatedByteArray(String.format("R. %s", getTestRomKeyMessage()), 33));
+        os.write(asNullTerminatedByteArray(String.format("P. %s", getTogglePokesKeyMessage()), 33));
+        os.write(asNullTerminatedByteArray(String.format("0. %s", getLaunchGameMessage()), 33));
+        os.write(asNullTerminatedByteArray(getSelectPokeMessage(), 33));
     }
+
 
     private static byte[] asLittleEndianWord(int value) {
         return new byte[] {
@@ -245,19 +264,19 @@ public class RomSetBuilder {
     private int pokeRequiredSize(Game game) {
         int headerSize = 25; //Fixed size required per poke
         //Sum of all the addressValues * 3 (address + value)
-        int size = game.getPokes().getChildren().stream()
+        int size = game.getTrainerList().getChildren().stream()
                 .map(p -> p.getChildren().size() * 3).reduce(0, (a, b) -> a + b);
-        return size + headerSize * game.getPokes().getChildren().size();
+        return size + headerSize * game.getTrainerList().getChildren().size();
     }
 
     private void dumpGamePokeData(OutputStream os, Game game) throws IOException {
-        for (PokeEntity poke: game.getPokes().getChildren()) {
-            os.write((byte) poke.getChildren().size());
-            os.write(asNullTerminatedByteArray(String.format(". %s", poke.getViewRepresentation()), 23));
-            for (PokeEntity node : poke.getChildren()) {
-                AddressValueNode av = (AddressValueNode) node;
-                os.write(av.addressBytes());
-                os.write(av.valueBytes());
+        for (PokeViewable trainer: game.getTrainerList().getChildren()) {
+            os.write((byte) trainer.getChildren().size());
+            os.write(asNullTerminatedByteArray(String.format(". %s", trainer.getViewRepresentation()), 23));
+            for (PokeViewable viewable : trainer.getChildren()) {
+                Poke poke = (Poke) viewable;
+                os.write(poke.addressBytes());
+                os.write(poke.valueBytes());
             }
         }
     }
@@ -300,7 +319,7 @@ public class RomSetBuilder {
 
         int pokeStartMark = os.size(); //Mark position before start of poke zone
         for (Game game : games) {
-            byte pokeCount = (byte) game.getPokes().getChildren().size();
+            byte pokeCount = (byte) game.getTrainerList().getChildren().size();
             os.write(pokeCount);
         }
         LOGGER.debug("Dumped poke main header. Offset: " + os.size());
@@ -336,5 +355,9 @@ public class RomSetBuilder {
         LOGGER.debug("All parts dumped and flushed. Offset: " + os.size());
 
         return os.toByteArray();
+    }
+
+    public static void importFromStream(Collection<Game> gameList, InputStream is) throws IOException {
+
     }
 }

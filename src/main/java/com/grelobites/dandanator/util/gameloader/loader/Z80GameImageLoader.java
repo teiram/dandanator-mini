@@ -1,7 +1,7 @@
-package com.grelobites.dandanator.util.gameloader;
+package com.grelobites.dandanator.util.gameloader.loader;
 
 import com.grelobites.dandanator.Constants;
-import com.grelobites.dandanator.util.GameImageLoader;
+import com.grelobites.dandanator.util.gameloader.GameImageLoader;
 import com.grelobites.dandanator.util.SNAHeader;
 import com.grelobites.dandanator.util.Z80CompressedInputStream;
 import org.slf4j.Logger;

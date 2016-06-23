@@ -1,7 +1,7 @@
-package com.grelobites.dandanator.util;
+package com.grelobites.dandanator.util.gameloader;
 
-import com.grelobites.dandanator.util.gameloader.SNAGameImageLoader;
-import com.grelobites.dandanator.util.gameloader.Z80GameImageLoader;
+import com.grelobites.dandanator.util.gameloader.loader.SNAGameImageLoader;
+import com.grelobites.dandanator.util.gameloader.loader.Z80GameImageLoader;
 
 public enum GameImageType {
     SNA(SNAGameImageLoader.class),

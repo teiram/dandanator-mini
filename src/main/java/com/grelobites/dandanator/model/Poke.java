@@ -1,57 +1,120 @@
 package com.grelobites.dandanator.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class Poke {
+public class Poke implements PokeViewable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Poke.class);
 
-    private String name;
-    private List<AddressValue> addressValues;
+    private final IntegerProperty addressProperty;
+    private final IntegerProperty valueProperty;
 
-    public String getName() {
-        return name;
-    }
+    private static final ObservableList<PokeViewable> children = FXCollections.emptyObservableList();
+    private final PokeViewable parent;
+    private final Game owner;
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<AddressValue> getAddressValues() {
-        if (addressValues == null) {
-            return Collections.EMPTY_LIST;
-        } else {
-            return addressValues;
+    private static void checkInRange(int value, int minValue, int maxValue) {
+        if ((value < minValue ) || (value > maxValue)) {
+            throw new IllegalArgumentException("Value out of range [" + minValue + ", " + maxValue);
         }
     }
 
-    public void setAddressValues(List<AddressValue> addressValues) {
-        this.addressValues = addressValues;
-    }
-
-    public void addAddressValue(AddressValue addressValue) {
-        if (this.addressValues == null) {
-            this.addressValues = new ArrayList<AddressValue>();
+    @Override
+    public void update(String value) {
+        String[] pair = value.split(",");
+        if (pair.length == 2) {
+            try {
+                this.addressProperty.set(Integer.parseUnsignedInt(pair[0].trim(), 10));
+                this.addressProperty.set(Integer.parseUnsignedInt(pair[1].trim(), 10));
+            } catch (Exception e) {
+                LOGGER.warn("Updating AddressValueNode with user entry " + value);
+            }
         }
-        this.addressValues.add(addressValue);
+        this.addressProperty.set(Integer.parseInt(pair[0]));
+        this.valueProperty.set(Integer.parseInt(pair[1]));
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Poke poke = (Poke) o;
-
-        if (name != null ? !name.equals(poke.name) : poke.name != null) return false;
-        return addressValues != null ? addressValues.equals(poke.addressValues) : poke.addressValues == null;
-
+    public String getViewRepresentation() {
+        return String.format("%d,%d", getAddress(), getValue());
     }
 
     @Override
-    public int hashCode() {
-        int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (addressValues != null ? addressValues.hashCode() : 0);
-        return result;
+    public ObservableList<PokeViewable> getChildren() {
+        return children;
+    }
+
+    @Override
+    public void removeChild(PokeViewable entity) {
+        throw new IllegalArgumentException("Unable to remove child from leaf node");
+    }
+
+    @Override
+    public void addNewChild() {
+        throw new IllegalArgumentException("Unable to add new child to leaf node");
+    }
+
+    @Override
+    public PokeViewable getParent() {
+        return parent;
+    }
+
+    @Override
+    public Game getOwner() {
+        return owner;
+    }
+
+    public Poke(Integer address, Integer value, Trainer parent, Game owner) {
+        this.owner = owner;
+        this.parent = parent;
+        this.addressProperty = new SimpleIntegerProperty(address);
+        this.valueProperty = new SimpleIntegerProperty(value);
+    }
+
+    public IntegerProperty addressProperty() {
+        return this.addressProperty;
+    }
+
+    public IntegerProperty valueProperty() {
+        return this.valueProperty;
+    }
+
+    public Integer getAddress() {
+        return addressProperty.get();
+    }
+
+    public void setAddress(Integer address) {
+        addressProperty.set(address);
+    }
+
+    public Integer getValue() {
+        return valueProperty.get();
+    }
+
+    public void setValue(Integer value) {
+        this.valueProperty.set(value);
+    }
+
+    public byte[] addressBytes() {
+        byte[] address = new byte[2];
+        address[0] = (byte) (getAddress() & 0xff);
+        address[1] = (byte) ((getAddress() >> 8) & 0xff);
+        return address;
+    }
+
+    public byte valueBytes() {
+        return (byte) (getValue() & 0xff);
+    }
+
+    @Override
+    public String toString() {
+        return "Poke{" +
+                "addressProperty=" + addressProperty +
+                ", valueProperty=" + valueProperty +
+                '}';
     }
 }

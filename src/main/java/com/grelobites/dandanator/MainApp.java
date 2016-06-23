@@ -31,6 +31,7 @@ public class MainApp extends Application {
 			loader.setLocation(MainApp.class.getResource("view/dandanator.fxml"));
 			rootLayout = loader.load();
 			Scene scene = new Scene(rootLayout);
+
 			primaryStage.setScene(scene);
 			primaryStage.setResizable(false);
 			primaryStage.show();

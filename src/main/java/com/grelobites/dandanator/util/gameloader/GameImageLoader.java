@@ -1,4 +1,4 @@
-package com.grelobites.dandanator.util;
+package com.grelobites.dandanator.util.gameloader;
 
 import com.grelobites.dandanator.Constants;
 

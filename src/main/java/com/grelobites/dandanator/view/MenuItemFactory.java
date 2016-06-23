@@ -1,14 +1,12 @@
 package com.grelobites.dandanator.view;
 
 import com.grelobites.dandanator.model.Game;
-import com.grelobites.dandanator.model.PokeEntity;
 import com.grelobites.dandanator.util.GameUtil;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * Created by mteira on 17/6/16.

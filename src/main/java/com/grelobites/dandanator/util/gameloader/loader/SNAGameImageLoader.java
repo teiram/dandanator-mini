@@ -1,6 +1,6 @@
-package com.grelobites.dandanator.util.gameloader;
+package com.grelobites.dandanator.util.gameloader.loader;
 
-import com.grelobites.dandanator.util.GameImageLoader;
+import com.grelobites.dandanator.util.gameloader.GameImageLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

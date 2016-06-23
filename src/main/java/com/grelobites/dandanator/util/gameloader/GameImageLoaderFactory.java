@@ -1,7 +1,5 @@
-package com.grelobites.dandanator.util;
+package com.grelobites.dandanator.util.gameloader;
 
-
-import java.io.InputStream;
 
 public class GameImageLoaderFactory {
 

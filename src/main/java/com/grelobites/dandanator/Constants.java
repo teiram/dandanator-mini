@@ -34,6 +34,13 @@ public class Constants {
 	public static final byte B_01 = 1;
 	public static final byte B_00 = 0;
 	public static final byte B_10 = 0x10;
+    public static final int MAX_POKES_PER_TRAINER = 6;
+    public static final int MAX_TRAINERS_PER_GAME = 8;
+
+    public static final String DEFAULT_TESTROMKEY_MESSAGE = "Test Rom";
+    public static final String DEFAULT_TOGGLEPOKESKEY_MESSAGE = "Toggle Pokes";
+    public static final String DEFAULT_LAUNCHGAME_MESSAGE = "Launch Game";
+    public static final String DEFAULT_SELECTPOKE_MESSAGE = "Select Pokes";
 
     private static byte[] DEFAULT_DANDANATOR_SCREEN;
     private static byte[] SINCLAIR_SCREEN;

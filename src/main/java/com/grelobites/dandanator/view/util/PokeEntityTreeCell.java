@@ -1,16 +1,13 @@
 package com.grelobites.dandanator.view.util;
 
-import com.grelobites.dandanator.model.PokeEntity;
+import com.grelobites.dandanator.model.PokeViewable;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;
 import javafx.scene.input.KeyCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by mteira on 20/6/16.
- */
-public class PokeEntityTreeCell extends TreeCell<PokeEntity> {
+public class PokeEntityTreeCell extends TreeCell<PokeViewable> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PokeEntityTreeCell.class);
     private TextField textField;
 
@@ -48,7 +45,7 @@ public class PokeEntityTreeCell extends TreeCell<PokeEntity> {
     }
 
     @Override
-    protected void updateItem(PokeEntity item, boolean empty) {
+    protected void updateItem(PokeViewable item, boolean empty) {
         super.updateItem(item, empty);
         if (empty) {
             setText(null);
