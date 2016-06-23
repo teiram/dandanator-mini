@@ -1,11 +1,14 @@
 package com.grelobites.dandanator.view;
 
 import com.grelobites.dandanator.model.Game;
+import com.grelobites.dandanator.model.PokeEntity;
+import com.grelobites.dandanator.util.GameUtil;
 import javafx.collections.ObservableList;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
+import javafx.stage.FileChooser;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Created by mteira on 17/6/16.
@@ -33,4 +36,26 @@ public class MenuItemFactory {
         menuItem.setOnAction(event -> gameList.clear());
         return menu;
     }
+
+    public static ContextMenu getPokeContextMenu(final TableView<Game> gameTable) {
+
+        return new ContextMenu(importPokes(gameTable));
+    }
+
+    public static MenuItem importPokes(final TableView<Game> gameTable) {
+        MenuItem menuItem = new MenuItem("Import Pokes from file");
+        menuItem.setOnAction(event -> {
+            FileChooser chooser = new FileChooser();
+            chooser.setTitle("Import Poke file");
+            final File pokeFile = chooser.showOpenDialog(gameTable.getScene().getWindow());
+            try {
+                Game game = gameTable.getSelectionModel().getSelectedItem();
+                GameUtil.importPokesFromFile(game, pokeFile);
+            } catch (Exception e) {
+                //TODO: Give error feedback (alert)
+            }
+        });
+        return menuItem;
+    }
+
 }

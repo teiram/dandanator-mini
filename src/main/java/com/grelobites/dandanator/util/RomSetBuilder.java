@@ -156,7 +156,7 @@ public class RomSetBuilder {
         int launchCodeSize = 2; //Minimum possible size (HALT + RET)
         launchCode.write(Z80.HALT);
         byte interruptMode;
-        if ((interruptMode = game.getData()[SNA.INTERRUPT_MODE]) != 1) {
+        if ((interruptMode = game.getData()[SNAHeader.INTERRUPT_MODE]) != 1) {
             launchCode.write(Z80.IMH);
             if (interruptMode == 0) {
                 launchCode.write(Z80.IM0);
@@ -166,7 +166,7 @@ public class RomSetBuilder {
             launchCodeSize += 2;
         }
         LOGGER.debug("Interrupt mode is " + interruptMode);
-        if ((game.getData()[SNA.INTERRUPT_ENABLE] & 0x04) == 0) {
+        if ((game.getData()[SNAHeader.INTERRUPT_ENABLE] & 0x04) == 0) {
             launchCode.write(Z80.DI);
             launchCodeSize++;
         }

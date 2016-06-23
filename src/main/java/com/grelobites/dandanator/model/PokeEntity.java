@@ -45,8 +45,10 @@ public class PokeEntity {
         return EMPTY_STRING;
     }
 
-    public void addPokeNode(String name) {
-        children.add(new PokeNode(name, this, ownerGame));
+    public PokeNode addPokeNode(String name) {
+        PokeNode pokeNode = new PokeNode(name, this, ownerGame);
+        children.add(pokeNode);
+        return pokeNode;
     }
 
 

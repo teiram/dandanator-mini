@@ -1,7 +1,11 @@
 package com.grelobites.dandanator.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Arrays;
+
 /**
- * Created by mteira on 17/6/16.
+ *
  0        1      byte   I
  1        8      word   HL',DE',BC',AF'
  9        10     word   HL,DE,BC,IY,IX
@@ -12,7 +16,7 @@ package com.grelobites.dandanator.util;
  26       1      byte   BorderColor (0..7, not used by Spectrum 1.7)
  27       49152  bytes  RAM dump 16384..65535
  */
-public class SNA {
+public class SNAHeader {
     public static final byte REG_I = 0;
     public static final byte REG_HL_alt = 1;
     public static final byte REG_DE_alt = 3;
@@ -31,4 +35,47 @@ public class SNA {
     public static final byte BORDER_COLOR = (byte) 26;
     public static final byte RAM_DUMP = (byte) 27;
 
+    private byte[] data = new byte[27];
+
+
+    public static SNAHeader fromByteArray(ByteArrayInputStream is) throws IOException {
+        SNAHeader snaHeader = new SNAHeader();
+        is.read(snaHeader.data);
+        return snaHeader;
+    }
+
+    public byte[] asByteArray() {
+        return data;
+    }
+
+    public byte[] getWord(int offset) {
+        return Arrays.copyOfRange(data, offset, 2);
+    }
+
+    public int getRegisterValue(int offset) {
+        return data[offset] + (data[offset + 1] << 256);
+    }
+
+    public void setWord(int offset, byte[] value) {
+        data[offset] = value[0];
+        data[offset + 1] = value[1];
+    }
+
+    public void setWordSwapped(int offset, byte high, byte low) {
+        data[offset] = low;
+        data[offset + 1] = high;
+    }
+
+    public void setWord(int offset, byte low, byte high) {
+        data[offset] = low;
+        data[offset + 1] = high;
+    }
+
+    public void setByte(int offset, byte value) {
+        data[offset] = value;
+    }
+
+    public byte getByte(int offset) {
+        return data[offset];
+    }
 }

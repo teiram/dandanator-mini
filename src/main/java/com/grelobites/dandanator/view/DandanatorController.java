@@ -1,34 +1,28 @@
 package com.grelobites.dandanator.view;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-
-import com.grelobites.dandanator.model.PokeEntity;
-import com.grelobites.dandanator.view.util.PokeEntityTreeCell;
-import com.grelobites.dandanator.view.util.RecursiveTreeItem;
-import javafx.beans.Observable;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTreeCell;
-import javafx.stage.FileChooser;
-import javafx.util.Callback;
-import javafx.util.converter.DefaultStringConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.model.Game;
-import com.grelobites.dandanator.model.Poke;
+import com.grelobites.dandanator.model.PokeEntity;
 import com.grelobites.dandanator.util.GameUtil;
 import com.grelobites.dandanator.util.ImageUtil;
 import com.grelobites.dandanator.util.ZxColor;
 import com.grelobites.dandanator.util.ZxScreen;
-
+import com.grelobites.dandanator.view.util.PokeEntityTreeCell;
+import com.grelobites.dandanator.view.util.RecursiveTreeItem;
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -36,6 +30,15 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.stage.FileChooser;
+import javafx.util.Callback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 public class DandanatorController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorController.class);
@@ -284,6 +287,8 @@ public class DandanatorController {
                         removeSelectedPokeButton.setDisable(true);
                     }
                 });
+
+        pokeView.setContextMenu(MenuItemFactory.getPokeContextMenu(gameTable));
 
 		previewImage.setImage(dandanatorPreviewImage);
 	

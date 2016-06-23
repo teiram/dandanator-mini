@@ -92,7 +92,7 @@
                   <Button fx:id="addPokeButton" disable="true" maxHeight="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="+" />
                   <Button fx:id="removeSelectedPokeButton" disable="true" maxHeight="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="-" />
                   <Button fx:id="removeAllGamePokesButton" disable="true" maxHeight="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="x" />
-                  <ProgressBar fx:id="pokesCurrentSizeBar" maxHeight="26.0" prefHeight="26.0" prefWidth="139.0" progress="0.2">
+                  <ProgressBar fx:id="pokesCurrentSizeBar" maxHeight="26.0" prefHeight="26.0" prefWidth="139.0" progress="0.0">
                      <HBox.margin>
                         <Insets left="10.0" />
                      </HBox.margin>
