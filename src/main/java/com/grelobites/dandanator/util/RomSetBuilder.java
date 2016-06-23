@@ -27,6 +27,7 @@ public class RomSetBuilder {
     private static final String DEFAULT_VERSION = "v3.1";
     private static final int SAVEDGAMECHUNK_SIZE = 256;
     private static final int POKE_SPACE_SIZE = 3200;
+    private static final int RESERVED_GAMETABLE_SIZE = 64;
     private byte[] baseRom;
     private byte[] charSet;
     private byte[] screen;
@@ -258,6 +259,7 @@ public class RomSetBuilder {
         os.write(game.getRom() ? Constants.B_10 : Constants.B_00);
         int codeSize = dumpGameLaunchCode(os, game);
         dumpGameRamCodeLocation(os, game, codeSize);
+        fillWithValue(os, (byte) 0, RESERVED_GAMETABLE_SIZE);
         dumpGameSavedChunk(os, game);
     }
 

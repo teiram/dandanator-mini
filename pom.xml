@@ -42,7 +42,9 @@
 					<archive>
 						<manifest>
 							<mainClass>${mainClass}</mainClass>
-						</manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
 					</archive>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>

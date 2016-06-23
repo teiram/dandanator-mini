@@ -140,10 +140,13 @@ public class DandanatorController {
     
     private void recreatePreviewImage() {
         LOGGER.debug("recreatePreviewImage");
-    	int line = 10;
+        dandanatorPreviewImage.setInk(ZxColor.BLACK);
+        dandanatorPreviewImage.setPen(ZxColor.BRIGHTMAGENTA);
+        dandanatorPreviewImage.printLine(Constants.currentVersion(), 8, 0);
+
+        int line = 10;
     	int index = 1;
     	int maxSlots = getAvailableSlotCount();
-    	dandanatorPreviewImage.setInk(ZxColor.BLACK);
     	for (Game game : gameList) {
     		dandanatorPreviewImage.setPen(
     				game.getScreen() ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);

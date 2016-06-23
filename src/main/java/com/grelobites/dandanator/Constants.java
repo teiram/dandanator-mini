@@ -29,7 +29,7 @@ public class Constants {
 
     public static final int SLOT_SIZE = 0x4000;
 
-	public static final int BASEROM_SIZE = 2048;
+	public static final int BASEROM_SIZE = 4096;
 	public static final int CHARSET_SIZE = 768;
 	public static final byte B_01 = 1;
 	public static final byte B_00 = 0;
@@ -84,7 +84,7 @@ public class Constants {
         return DEFAULT_CHARSET;
     }
 
-    public static final byte[] getDandanatorRom() throws IOException {
+    public static byte[] getDandanatorRom() throws IOException {
         if (DANDANATOR_ROM == null) {
             DANDANATOR_ROM = fromInputStream(
                     Constants.class.getClassLoader()
@@ -94,7 +94,7 @@ public class Constants {
         return DANDANATOR_ROM;
     }
 
-    public static final byte[] getTestRom() throws IOException {
+    public static byte[] getTestRom() throws IOException {
         if (TEST_ROM == null) {
             TEST_ROM = fromInputStream(
                     Constants.class.getClassLoader()
@@ -102,6 +102,15 @@ public class Constants {
                     SLOT_SIZE);
         }
         return TEST_ROM;
+    }
+
+    public static String currentVersion() {
+        String version = Constants.class.getPackage()
+                .getImplementationVersion();
+        if (version == null) {
+            version = "Developing";
+        }
+        return version;
     }
 
 }
