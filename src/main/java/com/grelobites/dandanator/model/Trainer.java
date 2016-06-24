@@ -12,7 +12,6 @@ public class Trainer implements PokeViewable {
 
     private final SimpleStringProperty nameProperty;
     private final TrainerList parent;
-    private Game owner;
     private final ObservableList<PokeViewable> pokeList = FXCollections.observableArrayList();
 
     @Override
@@ -32,7 +31,7 @@ public class Trainer implements PokeViewable {
     @Override
     public void addNewChild() {
         if (pokeList.size() < MAX_POKES_PER_TRAINER) {
-            pokeList.add(new Poke(Poke.LOWEST_ADDRESS, Poke.LOWEST_VALUE, this, getOwner()));
+            pokeList.add(new Poke(Poke.LOWEST_ADDRESS, Poke.LOWEST_VALUE, this));
         } else {
             LOGGER.info("No more pokes allowed");
         }
@@ -40,7 +39,7 @@ public class Trainer implements PokeViewable {
 
     @Override
     public Game getOwner() {
-        return owner;
+        return parent.getOwner();
     }
 
     @Override
@@ -53,8 +52,7 @@ public class Trainer implements PokeViewable {
         return getName();
     }
 
-    public Trainer(String name, TrainerList parent, Game owner) {
-        this.owner = owner;
+    public Trainer(String name, TrainerList parent) {
         this.parent = parent;
         this.nameProperty = new SimpleStringProperty(name);
     }
@@ -74,7 +72,7 @@ public class Trainer implements PokeViewable {
 
     public void addPoke(Integer address, Integer value) {
         if (pokeList.size() < MAX_POKES_PER_TRAINER) {
-            pokeList.add(new Poke(address, value, this, getOwner()));
+            pokeList.add(new Poke(address, value, this));
         } else {
             LOGGER.info("No more pokes allowed");
         }

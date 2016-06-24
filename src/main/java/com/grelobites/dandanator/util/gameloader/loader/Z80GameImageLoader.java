@@ -1,6 +1,7 @@
 package com.grelobites.dandanator.util.gameloader.loader;
 
 import com.grelobites.dandanator.Constants;
+import com.grelobites.dandanator.util.Util;
 import com.grelobites.dandanator.util.gameloader.GameImageLoader;
 import com.grelobites.dandanator.util.SNAHeader;
 import com.grelobites.dandanator.util.Z80CompressedInputStream;
@@ -36,7 +37,7 @@ public class Z80GameImageLoader implements GameImageLoader {
         int pagesRead = 0;
         boolean eof = false;
         while (pagesRead < 3 && !eof) {
-            int compressedBlockLen = registerValue(is);
+            int compressedBlockLen = Util.asLittleEndian(is);
             int pageNumber = is.read();
             LOGGER.debug("Reading page number " + pageNumber +
                     " of compressed size " + compressedBlockLen +
@@ -59,7 +60,8 @@ public class Z80GameImageLoader implements GameImageLoader {
                     LOGGER.warn("Found EOF while reading pages");
                     eof = true;
                 default:
-                    is.skip(compressedBlockLen);
+                    long skipped = is.skip(compressedBlockLen);
+                    LOGGER.info("Skipped " + skipped + " bytes");
             }
         }
         return gameData;
@@ -69,18 +71,14 @@ public class Z80GameImageLoader implements GameImageLoader {
         return version1 ? getGameImageV1(is, compressed) : getGameImageV23(is);
     }
 
-    private static int registerValue(InputStream is) throws IOException {
-        return is.read() + (is.read() << 8);
-    }
-
     @Override
     public byte[] load(InputStream is) throws IOException {
         SNAHeader header = new SNAHeader();
         header.setWordSwapped(SNAHeader.REG_AF, (byte) is.read(), (byte) is.read());
         header.setWord(SNAHeader.REG_BC, (byte) is.read(), (byte) is.read());
         header.setWord(SNAHeader.REG_HL, (byte) is.read(), (byte) is.read());
-        int pc = registerValue(is);
-        int sp = registerValue(is) - 2;
+        int pc = Util.asLittleEndian(is);
+        int sp = Util.asLittleEndian(is) - 2;
         header.setWord(SNAHeader.REG_SP, (byte)(sp & 0xff), (byte) ((sp >> 8) & 0xff));
         header.setByte(SNAHeader.REG_I, (byte) is.read());
         LOGGER.debug(String.format("PC: %04x, SP: %04x", pc, sp));
@@ -110,8 +108,8 @@ public class Z80GameImageLoader implements GameImageLoader {
 
         if (!version1) {
             //Version 2 or 3
-            int headerLength = registerValue(is);
-            pc = registerValue(is);
+            int headerLength = Util.asLittleEndian(is);
+            pc = Util.asLittleEndian(is);
             is.skip(headerLength - 2);
         }
         byte [] data = getGameImage(is, compressed, version1);

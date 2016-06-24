@@ -102,7 +102,7 @@ public class DandanatorController {
 
 
     private int getAvailableSlotCount() {
-    	return Constants.SLOTS_512K_ROM;
+    	return Constants.SLOT_COUNT;
     }
     
     private void initializeImages() throws IOException {
@@ -146,7 +146,7 @@ public class DandanatorController {
     				game.getScreen() ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
     		dandanatorPreviewImage.deleteLine(line);
     		dandanatorPreviewImage.printLine(
-    				String.format("%d%c %s", index % Constants.MAX_SLOTS, 
+    				String.format("%d%c %s", index % Constants.SLOT_COUNT,
     						game.getRom() ? 'r' : '.',
     						game.getName()), 
     				line++, 0);
@@ -156,15 +156,15 @@ public class DandanatorController {
     		dandanatorPreviewImage.deleteLine(line);
     		dandanatorPreviewImage.setPen(ZxColor.WHITE);
     		dandanatorPreviewImage.printLine(String
-    				.format("%d.", index % Constants.MAX_SLOTS), line++, 0);
+    				.format("%d.", index % Constants.SLOT_COUNT), line++, 0);
     		index++;
     	}
-    	while (index++ <= Constants.MAX_SLOTS) {
+    	while (index++ <= Constants.SLOT_COUNT) {
     		dandanatorPreviewImage.deleteLine(line++);
     	}
     	dandanatorPreviewImage.setPen(ZxColor.BRIGHTBLUE);
     	dandanatorPreviewImage.printLine("T. Toggle Pokes", 21, 0);
-    	if (maxSlots == Constants.MAX_SLOTS) {
+    	if (maxSlots == Constants.SLOT_COUNT) {
     		dandanatorPreviewImage.setPen(ZxColor.BRIGHTRED);
     		dandanatorPreviewImage.printLine("R. Test ROM", 23, 0);
     	} else {

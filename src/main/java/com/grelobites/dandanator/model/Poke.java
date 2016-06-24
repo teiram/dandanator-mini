@@ -21,7 +21,6 @@ public class Poke implements PokeViewable {
 
     private static final ObservableList<PokeViewable> children = FXCollections.emptyObservableList();
     private final PokeViewable parent;
-    private final Game owner;
 
     private static void checkInRange(int value, int minValue, int maxValue) {
         if ((value < minValue ) || (value > maxValue)) {
@@ -39,7 +38,7 @@ public class Poke implements PokeViewable {
                 Integer newValue = Integer.parseUnsignedInt(pair[1].trim(), 10);
                 checkValueRange(newValue);
                 this.addressProperty.set(newAddress);
-                this.addressProperty.set(newValue);
+                this.valueProperty.set(newValue);
             } catch (Exception e) {
                 LOGGER.warn("Error updating AddressValueNode with user entry " + value);
             }
@@ -73,7 +72,7 @@ public class Poke implements PokeViewable {
 
     @Override
     public Game getOwner() {
-        return owner;
+        return parent.getOwner();
     }
 
     private static void checkAddressRange(Integer address) {
@@ -84,8 +83,7 @@ public class Poke implements PokeViewable {
         checkInRange(value, LOWEST_VALUE, HIGHEST_VALUE);
     }
 
-    public Poke(Integer address, Integer value, Trainer parent, Game owner) {
-        this.owner = owner;
+    public Poke(Integer address, Integer value, Trainer parent) {
         this.parent = parent;
         checkAddressRange(address);
         checkValueRange(value);

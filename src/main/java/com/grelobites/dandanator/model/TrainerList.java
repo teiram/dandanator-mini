@@ -40,7 +40,7 @@ public class TrainerList implements PokeViewable {
     @Override
     public void addNewChild() {
         if (children.size() < MAX_TRAINERS_PER_GAME) {
-            children.add(new Trainer(NEW_TRAINER_NAME, this, getOwner()));
+            children.add(new Trainer(NEW_TRAINER_NAME, this));
         } else {
             LOGGER.info("No more trainers allowed");
         }
@@ -60,9 +60,13 @@ public class TrainerList implements PokeViewable {
         this.owner = owner;
     }
 
+    public void setOwner(Game owner) {
+        this.owner = owner;
+    }
+
     public Optional<Trainer> addTrainerNode(String name) {
         if (children.size() < MAX_TRAINERS_PER_GAME) {
-            Trainer trainer = new Trainer(name, this, owner);
+            Trainer trainer = new Trainer(name, this);
             children.add(trainer);
             return Optional.of(trainer);
         } else {
@@ -71,7 +75,7 @@ public class TrainerList implements PokeViewable {
         }
     }
 
-    @Override
+   @Override
     public String toString() {
         return "TrainerList{" +
                 "children=" + children +
