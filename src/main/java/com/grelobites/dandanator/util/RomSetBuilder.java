@@ -24,7 +24,6 @@ public class RomSetBuilder {
     private static final int GAME_SIZE = 0xc000;
     private static final int VERSION_SIZE = 32;
 
-    private static final String DEFAULT_VERSION = "v3.1";
     private static final int SAVEDGAMECHUNK_SIZE = 256;
     private static final int POKE_SPACE_SIZE = 3200;
     private static final int RESERVED_GAMETABLE_SIZE = 64;
@@ -37,7 +36,7 @@ public class RomSetBuilder {
     private String togglePokesKeyMessage;
     private String launchGameMessage;
     private String selectPokeMessage;
-    private String version = DEFAULT_VERSION;
+    private String version;
 
     private RomSetBuilder() {}
 
@@ -149,6 +148,11 @@ public class RomSetBuilder {
                 Configuration.getInstance().getSelectPokesMessage() : selectPokeMessage;
     }
 
+    private String getVersion() {
+        return version == null ?
+                Constants.currentVersion() : version;
+    }
+
     private static byte[] asNullTerminatedByteArray(String name, int arrayLength) {
         String trimmedName =
             name.length() < arrayLength ?
@@ -171,32 +175,14 @@ public class RomSetBuilder {
     }
 
     private static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
-        ByteArrayOutputStream launchCode = new ByteArrayOutputStream(5);
-        int launchCodeSize = 2; //Minimum possible size (HALT + RET)
-        launchCode.write(Z80.HALT);
-        byte interruptMode;
-        if ((interruptMode = game.getData()[SNAHeader.INTERRUPT_MODE]) != 1) {
-            launchCode.write(Z80.IMH);
-            if (interruptMode == 0) {
-                launchCode.write(Z80.IM0);
-            } else {
-                launchCode.write(Z80.IM2);
-            }
-            launchCodeSize += 2;
-        }
-        LOGGER.debug("Interrupt mode is " + interruptMode);
-        if ((game.getData()[SNAHeader.INTERRUPT_ENABLE] & 0x04) == 0) {
-            launchCode.write(Z80.DI);
-            launchCodeSize++;
-        }
-        launchCode.write(Z80.RET);
-        for (int i = launchCodeSize; i < 5; i++) {
-            launchCode.write(Z80.NOP);
-        }
-        LOGGER.debug("LaunchCodeSize: " + launchCodeSize);
-        os.write((byte) launchCodeSize);
-        os.write(launchCode.toByteArray());
-        return launchCodeSize;
+        os.write(Z80.PUSH_HL);
+        os.write(Z80.POP_HL);
+        os.write(Z80.PUSH_HL);
+        os.write(Z80.POP_HL);
+        os.write((game.getData()[SNAHeader.INTERRUPT_ENABLE] & 0x04) == 0 ?
+                Z80.DI : Z80.EI);
+        os.write(Z80.RET);
+        return 6;
     }
 
     private void dumpScreenTexts(OutputStream os) throws IOException {
@@ -272,9 +258,11 @@ public class RomSetBuilder {
     }
 
     private void dumpGamePokeData(OutputStream os, Game game) throws IOException {
+        int index = 1;
         for (PokeViewable trainer: game.getTrainerList().getChildren()) {
             os.write((byte) trainer.getChildren().size());
-            os.write(asNullTerminatedByteArray(String.format(". %s", trainer.getViewRepresentation()), 23));
+            os.write(asNullTerminatedByteArray(String.format("%d. %s",
+                    index++, trainer.getViewRepresentation()), 24));
             for (PokeViewable viewable : trainer.getChildren()) {
                 Poke poke = (Poke) viewable;
                 os.write(poke.addressBytes());
@@ -290,7 +278,7 @@ public class RomSetBuilder {
     }
 
     private void dumpVersionInfo(OutputStream os) throws IOException {
-        os.write(asNullTerminatedByteArray(version, VERSION_SIZE));
+        os.write(asNullTerminatedByteArray(getVersion(), VERSION_SIZE));
     }
 
     public byte[] build() throws IOException {
