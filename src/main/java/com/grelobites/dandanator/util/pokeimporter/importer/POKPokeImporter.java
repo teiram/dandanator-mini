@@ -2,7 +2,6 @@ package com.grelobites.dandanator.util.pokeimporter.importer;
 
 
 import com.grelobites.dandanator.Constants;
-import com.grelobites.dandanator.model.Trainer;
 import com.grelobites.dandanator.model.TrainerList;
 import com.grelobites.dandanator.model.poke.pok.PokPoke;
 import com.grelobites.dandanator.model.poke.pok.PokTrainer;
@@ -20,13 +19,15 @@ public class POKPokeImporter implements PokeImporter {
             if (trainerList.getChildren().size() >= Constants.MAX_TRAINERS_PER_GAME) {
                 break;
             }
-            Trainer trainer = trainerList.addTrainerNode(pokTrainer.getName());
-            pokTrainer.getPokeValues().stream()
-                    .filter(PokValue::isCompatibleSpectrum48K)
-                    .filter(pokeValue -> !pokeValue.isInteractive())
-                    .filter(pokeValue -> trainer.getChildren().size() < Constants.MAX_POKES_PER_TRAINER)
-                    .forEach(pokeValue -> trainer.addPoke(pokeValue.getAddress(),
-                            pokeValue.getValue()));
+            trainerList.addTrainerNode(pokTrainer.getName()).map(trainer -> {
+                pokTrainer.getPokeValues().stream()
+                        .filter(PokValue::isCompatibleSpectrum48K)
+                        .filter(pokeValue -> !pokeValue.isInteractive())
+                        .filter(pokeValue -> trainer.getChildren().size() < Constants.MAX_POKES_PER_TRAINER)
+                        .forEach(pokeValue -> trainer.addPoke(pokeValue.getAddress(),
+                                pokeValue.getValue()));
+                return true;
+            });
         }
 
     }

@@ -10,6 +10,12 @@ import org.slf4j.LoggerFactory;
 public class Poke implements PokeViewable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Poke.class);
 
+    static final int LOWEST_ADDRESS = 0x4000;
+    static final int HIGHEST_ADDRESS = 0xFFFF;
+
+    static final int LOWEST_VALUE = 0;
+    static final int HIGHEST_VALUE = 0xFF;
+
     private final IntegerProperty addressProperty;
     private final IntegerProperty valueProperty;
 
@@ -28,14 +34,16 @@ public class Poke implements PokeViewable {
         String[] pair = value.split(",");
         if (pair.length == 2) {
             try {
-                this.addressProperty.set(Integer.parseUnsignedInt(pair[0].trim(), 10));
-                this.addressProperty.set(Integer.parseUnsignedInt(pair[1].trim(), 10));
+                Integer newAddress = Integer.parseUnsignedInt(pair[0].trim(), 10);
+                checkAddressRange(newAddress);
+                Integer newValue = Integer.parseUnsignedInt(pair[1].trim(), 10);
+                checkValueRange(newValue);
+                this.addressProperty.set(newAddress);
+                this.addressProperty.set(newValue);
             } catch (Exception e) {
-                LOGGER.warn("Updating AddressValueNode with user entry " + value);
+                LOGGER.warn("Error updating AddressValueNode with user entry " + value);
             }
         }
-        this.addressProperty.set(Integer.parseInt(pair[0]));
-        this.valueProperty.set(Integer.parseInt(pair[1]));
     }
 
     @Override
@@ -68,9 +76,19 @@ public class Poke implements PokeViewable {
         return owner;
     }
 
+    private static void checkAddressRange(Integer address) {
+        checkInRange(address, LOWEST_ADDRESS, HIGHEST_ADDRESS);
+    }
+
+    private static void checkValueRange(Integer value) {
+        checkInRange(value, LOWEST_VALUE, HIGHEST_VALUE);
+    }
+
     public Poke(Integer address, Integer value, Trainer parent, Game owner) {
         this.owner = owner;
         this.parent = parent;
+        checkAddressRange(address);
+        checkValueRange(value);
         this.addressProperty = new SimpleIntegerProperty(address);
         this.valueProperty = new SimpleIntegerProperty(value);
     }

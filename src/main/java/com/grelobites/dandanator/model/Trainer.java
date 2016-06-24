@@ -3,11 +3,12 @@ package com.grelobites.dandanator.model;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Created by mteira on 20/6/16.
- */
 public class Trainer implements PokeViewable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Trainer.class);
+    private static final int MAX_POKES_PER_TRAINER = 6;
 
     private final SimpleStringProperty nameProperty;
     private final TrainerList parent;
@@ -30,7 +31,11 @@ public class Trainer implements PokeViewable {
 
     @Override
     public void addNewChild() {
-        pokeList.add(new Poke(0, 0, this, getOwner()));
+        if (pokeList.size() < MAX_POKES_PER_TRAINER) {
+            pokeList.add(new Poke(Poke.LOWEST_ADDRESS, Poke.LOWEST_VALUE, this, getOwner()));
+        } else {
+            LOGGER.info("No more pokes allowed");
+        }
     }
 
     @Override
@@ -68,7 +73,11 @@ public class Trainer implements PokeViewable {
 
 
     public void addPoke(Integer address, Integer value) {
-        pokeList.add(new Poke(address, value, this, getOwner()));
+        if (pokeList.size() < MAX_POKES_PER_TRAINER) {
+            pokeList.add(new Poke(address, value, this, getOwner()));
+        } else {
+            LOGGER.info("No more pokes allowed");
+        }
     }
 
     @Override
