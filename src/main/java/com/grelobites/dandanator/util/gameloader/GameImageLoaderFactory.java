@@ -1,10 +1,19 @@
 package com.grelobites.dandanator.util.gameloader;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class GameImageLoaderFactory {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GameImageLoaderFactory.class);
 
     public static GameImageLoader getLoader(String type) {
-        return getLoader(GameImageType.valueOf(type.toUpperCase()));
+        try {
+            return getLoader(GameImageType.valueOf(type.toUpperCase()));
+        } catch (Exception e) {
+            LOGGER.debug("Defaulting to default loader on error", e);
+            return getDefaultLoader();
+        }
     }
 
     public static GameImageLoader getLoader(GameImageType type) {
