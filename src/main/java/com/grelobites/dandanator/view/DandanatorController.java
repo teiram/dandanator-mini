@@ -14,6 +14,7 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -124,13 +125,9 @@ public class DandanatorController {
     }
     
     private void onGameListChange() {
-    	createRomButton.setDisable(
-    			gameList.size() == getAvailableSlotCount() ? 
-    					false : true);
-        addRomButton.setDisable(
-                gameList.size() == getAvailableSlotCount() ? true: false);
-        clearRomsetButton.setDisable(
-                gameList.size() == 0 ? true : false);
+    	createRomButton.setDisable(gameList.size() != getAvailableSlotCount());
+        addRomButton.setDisable(gameList.size() == getAvailableSlotCount());
+        clearRomsetButton.setDisable(gameList.isEmpty());
 
     	recreatePreviewImage();
     }
@@ -196,7 +193,7 @@ public class DandanatorController {
 		gameTable.setItems(gameList);
 		gameTable.setPlaceholder(new Label("Drop games here!"));
 		gameTable.setRowFactory(rf -> {
-			TableRow<Game> row = new TableRow<Game>();
+			TableRow<Game> row = new TableRow<>();
 	           row.setOnDragDetected(event -> {
 	                if (!row.isEmpty()) {
 	                    Integer index = row.getIndex();
@@ -214,7 +211,7 @@ public class DandanatorController {
 	                Dragboard db = event.getDragboard();
 	                LOGGER.debug("onDragOver: " + db);
 	                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
-	                    if (row.getIndex() != ((Integer)db.getContent(SERIALIZED_MIME_TYPE)).intValue()) {
+	                    if (row.getIndex() != (Integer) db.getContent(SERIALIZED_MIME_TYPE)) {
 	                        event.acceptTransferModes(TransferMode.MOVE);
 	                        event.consume();
 	                    }
@@ -358,9 +355,7 @@ public class DandanatorController {
             selectedIndex.ifPresent(index -> gameList.remove(index.intValue()));
         });
 
-        clearRomsetButton.setOnAction(c -> {
-            gameList.clear();
-        });
+        clearRomsetButton.setOnAction(c -> gameList.clear());
 
         addPokeButton.setOnAction(c -> {
             if (pokeView.getSelectionModel().getSelectedItem() != null) {
@@ -407,10 +402,7 @@ public class DandanatorController {
             event.consume();
         });
 
-        pokeView.setOnDragExited(event -> {
-            //TODO: Remove feedback
-            event.consume();
-        });
+        pokeView.setOnDragExited(Event::consume);
 
         pokeView.setOnDragDropped(event -> {
             LOGGER.debug("onDragDropped");
@@ -420,6 +412,7 @@ public class DandanatorController {
                 try {
                     Game game = gameTable.getSelectionModel().getSelectedItem();
                     GameUtil.importPokesFromFile(game, db.getFiles().get(0));
+                    success = true;
                 } catch (IOException ioe) {
                     LOGGER.warn("Adding poke files", ioe);
                 }
@@ -463,7 +456,7 @@ public class DandanatorController {
         LOGGER.debug("New poke ocupation is " + GameUtil.getOverallPokeUsage(gameList));
         pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(gameList));
         if (gameTable.getSelectionModel().getSelectedItem() == f.getOwner()) {
-            removeAllGamePokesButton.setDisable(f.getOwner().hasPokes() ? false : true);
+            removeAllGamePokesButton.setDisable(!f.getOwner().hasPokes());
         }
     }
 
