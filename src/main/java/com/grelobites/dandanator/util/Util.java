@@ -9,16 +9,21 @@ public class Util {
     }
 
     public static String getNullTerminatedString(InputStream is, int maxLength) throws IOException {
+        return getNullTerminatedString(is, 0, maxLength);
+    }
+
+    public static String getNullTerminatedString(InputStream is, int skip, int maxLength) throws IOException {
         byte[] buffer = new byte[maxLength];
-        byte nextByte;
+        int nextByte;
         int index = 0;
-        while ((nextByte = (byte) is.read()) != -1 &&  index < maxLength) {
+        while ((nextByte = is.read()) != -1 &&  index < maxLength) {
             if (nextByte != 0) {
-                buffer[index++] = nextByte;
+                buffer[index++] = (byte) nextByte;
             } else {
                 break;
             }
         }
-        return new String(buffer);
+        is.skip(maxLength - index - 1);
+        return new String(buffer, skip, index - skip);
     }
 }

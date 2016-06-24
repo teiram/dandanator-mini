@@ -350,16 +350,20 @@ public class RomSetBuilder {
         return os.toByteArray();
     }
 
-    public static void importFromStream(Collection<Game> gameList, InputStream is) throws IOException {
+    public static void importFromStream(Collection<Game> gameList, InputStream romsetStream) throws IOException {
+        TrackeableInputStream is = new TrackeableInputStream(romsetStream);
         is.skip(Constants.BASEROM_SIZE);
         is.skip(Constants.CHARSET_SIZE);
         is.skip(2048);  //Screen third
         is.skip(256);   //Attributes
         is.skip(132);   //Text data
         is.skip(1);     //Game count
+        LOGGER.debug("Skipped head. Position is " + is.position());
+
         ArrayList<GameDataHolder> recoveredGames = new ArrayList<>();
         //SNA Headers and flags
         for (int i = 0; i < Constants.SLOT_COUNT; i++) {
+            LOGGER.debug("Reading data from game " + i + " from position " + is.position());
             GameDataHolder gameData = new GameDataHolder();
             gameData.readName(is);
             gameData.readHeader(is);
@@ -370,6 +374,7 @@ public class RomSetBuilder {
         }
         //Poke area
         for (int i = 0; i < Constants.SLOT_COUNT; i++) {
+            LOGGER.debug("Reading poke data for game " + i + " from position " + is.position());
             GameDataHolder holder = recoveredGames.get(i);
             holder.setTrainerCount(is.read());
         }
@@ -379,38 +384,52 @@ public class RomSetBuilder {
             GameDataHolder holder = recoveredGames.get(i);
             int trainerCount = holder.getTrainerCount();
             if (trainerCount > 0) {
-                int pokeCount = is.read();
-                if (pokeCount > 0) {
-                    String trainerName = Util.getNullTerminatedString(is, 24);
-                    Optional<Trainer> trainer = holder.getTrainerList().addTrainerNode(trainerName);
-                    if (trainer.isPresent()) {
-                        for (int j = 0; j < pokeCount; j++) {
-                            int address = Util.asLittleEndian(is);
-                            int value = is.read();
-                            trainer.map(t -> {
-                                t.addPoke(address, value);
-                                return true;
-                            });
+                LOGGER.debug("Importing " + trainerCount + " trainers");
+                for (int j = 0; j < trainerCount; j++) {
+                    int pokeCount = is.read();
+                    if (pokeCount > 0) {
+                        LOGGER.debug("Importing " + pokeCount + "pokes");
+                        String trainerName = Util.getNullTerminatedString(is, 3, 24);
+                        Optional<Trainer> trainer = holder.getTrainerList().addTrainerNode(trainerName);
+                        if (trainer.isPresent()) {
+                            for (int k = 0; k < pokeCount; k++) {
+                                int address = Util.asLittleEndian(is);
+                                int value = is.read();
+                                trainer.map(t -> {
+                                    t.addPoke(address, value);
+                                    return true;
+                                });
+                            }
                         }
                     }
                 }
             }
         }
 
+        is.skip(Constants.SLOT_SIZE - is.position());
+
+        LOGGER.debug("After version. Position " + is.position());
+
+        for (int i = 0; i < Constants.SLOT_COUNT; i++) {
+            LOGGER.debug("Reading game " + i + " data from " + is.position());
+            GameDataHolder holder = recoveredGames.get(i);
+            holder.readGameData(is);
+        }
         //If we reached this far, we have all the data and it's safe to replace the game list
+        LOGGER.debug("Clearing game list with recovered games count " + recoveredGames.size());
         gameList.clear();
         recoveredGames.stream()
-                .map(holder -> {
-                    Game game = new Game();
+                .forEach(holder -> {
+                    final Game game = new Game();
                     game.setName(holder.name);
                     game.setScreen(holder.holdScreen);
                     game.setRom(holder.activeRom);
                     game.setData(holder.getData());
                     holder.exportTrainers(game);
                     gameList.add(game);
-                    return true;
                 });
 
+        LOGGER.debug("Added " + gameList.size() + " to the list of games");
     }
 
     private static class GameDataHolder {
@@ -441,7 +460,8 @@ public class RomSetBuilder {
         }
 
         void readName(InputStream is) throws IOException {
-            name = Util.getNullTerminatedString(is, 33);
+            name = Util.getNullTerminatedString(is, 3, 33);
+            LOGGER.debug("Name read as " + name);
         }
 
         TrainerList getTrainerList() {
@@ -459,8 +479,8 @@ public class RomSetBuilder {
         public byte[] getData() {
             if (snaHeader != null && gameData != null) {
                 byte[] data = new byte[Constants.SNA_HEADER_SIZE + GAME_SIZE];
-                Arrays.copyOfRange(snaHeader, 0, Constants.SNA_HEADER_SIZE);
-                Arrays.copyOfRange(gameData, 0, GAME_SIZE + Constants.SNA_HEADER_SIZE);
+                System.arraycopy(snaHeader, 0, data, 0, Constants.SNA_HEADER_SIZE);
+                System.arraycopy(gameData, 0, data, Constants.SNA_HEADER_SIZE, GAME_SIZE);
                 return data;
             } else {
                 throw new IllegalStateException("Either SNA Header or Game Image not set");

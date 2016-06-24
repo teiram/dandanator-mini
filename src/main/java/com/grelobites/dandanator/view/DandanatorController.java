@@ -4,10 +4,7 @@ import com.grelobites.dandanator.Configuration;
 import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.model.PokeViewable;
-import com.grelobites.dandanator.util.GameUtil;
-import com.grelobites.dandanator.util.ImageUtil;
-import com.grelobites.dandanator.util.ZxColor;
-import com.grelobites.dandanator.util.ZxScreen;
+import com.grelobites.dandanator.util.*;
 import com.grelobites.dandanator.view.util.PokeEntityTreeCell;
 import com.grelobites.dandanator.view.util.RecursiveTreeItem;
 import javafx.beans.Observable;
@@ -37,9 +34,7 @@ import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -458,6 +453,11 @@ public class DandanatorController {
         if (gameTable.getSelectionModel().getSelectedItem() == f.getOwner()) {
             removeAllGamePokesButton.setDisable(!f.getOwner().hasPokes());
         }
+    }
+
+    public void importRomSet(File romSetFile) throws IOException {
+        InputStream is = new FileInputStream(romSetFile);
+        RomSetBuilder.importFromStream(gameList, is);
     }
 
 }
