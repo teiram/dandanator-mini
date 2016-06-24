@@ -64,40 +64,10 @@
 
 .check-box-table-cell > .check-box {
     -fx-font-size: 9px;
-/*    -fx-opacity: 1;
-    -fx-padding: 0 0 1 0; */
 }
 
-/*
-.check-box-table-cell > .check-box > .box {
-    -fx-background-color: -fx-outer-border, -fx-background;
-    -fx-background-insets: 0,1;
-}
-
-
-
-.table-view .filler {
-	-fx-background-color: -fx-table-cell-border-color, #616161;
-}
-.table-view > .virtual-flow > .scroll-bar:vertical,
-.table-view > .virtual-flow > .scroll-bar:vertical > .track,
-.table-view > .virtual-flow > .scroll-bar:vertical > .track-background, 
-.table-view > .virtual-flow > .scroll-bar:horizontal,
-.table-view > .virtual-flow > .scroll-bar:horizontal > .track,
-.table-view > .virtual-flow > .scroll-bar:horizontal > .track-background {
-    -fx-background-color: transparent;
-}
-
-
-
-.table-view > .virtual-flow > .scroll-bar > .increment-button, 
-.table-view > .virtual-flow > .scroll-bar > .decrement-button {
-    -fx-opacity: 0;
-}
-*/
-
-.separator {
-    -fx-background-color: transparent;
+.separator .line {
+    -fx-border-color: transparent transparent transparent transparent;
 }
 
 .tool-bar {

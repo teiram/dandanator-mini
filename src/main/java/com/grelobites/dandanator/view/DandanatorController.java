@@ -82,9 +82,6 @@ public class DandanatorController {
     private Button clearRomsetButton;
 
     @FXML
-    private Button exportGameButton;
-
-    @FXML
     private Label pokesViewLabel;
 
     @FXML

@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.ToolBar?>
@@ -78,16 +79,16 @@
       </GridPane>
       <ToolBar prefHeight="39.0" prefWidth="536.0">
         <items>
-            <HBox prefHeight="27.0" prefWidth="267.0" spacing="5.0">
+            <HBox prefHeight="27.0" prefWidth="260.0" spacing="10.0">
                <children>
                   <Button fx:id="addRomButton" mnemonicParsing="false" text="+" />
                   <Button fx:id="removeSelectedRomButton" disable="true" mnemonicParsing="false" text="-" />
                   <Button fx:id="clearRomsetButton" disable="true" mnemonicParsing="false" text="x" />
-                  <Button fx:id="exportGameButton" disable="true" mnemonicParsing="false" text="v" />
-                <Button fx:id="createRomButton" disable="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="115.0" text="Create ROM" />
+                  <Separator orientation="VERTICAL" prefHeight="27.0" prefWidth="47.0" />
+                <Button fx:id="createRomButton" disable="true" mnemonicParsing="false" prefHeight="27.0" prefWidth="125.0" text="Create ROM" />
                </children>
             </HBox>
-            <HBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="27.0" prefWidth="241.0" spacing="5.0">
+            <HBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="27.0" prefWidth="252.0" spacing="10.0">
                <children>
                   <Button fx:id="addPokeButton" disable="true" maxHeight="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="+" />
                   <Button fx:id="removeSelectedPokeButton" disable="true" maxHeight="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="-" />
@@ -98,6 +99,9 @@
                      </HBox.margin>
                   </ProgressBar>
                </children>
+               <padding>
+                  <Insets left="10.0" />
+               </padding>
             </HBox>
         </items>
          <VBox.margin>
