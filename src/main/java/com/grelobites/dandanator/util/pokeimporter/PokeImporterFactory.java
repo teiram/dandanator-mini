@@ -1,13 +1,23 @@
 package com.grelobites.dandanator.util.pokeimporter;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class PokeImporterFactory {
 
-    public static PokeImporter getLoader(String type) {
-        return getLoader(PokeType.valueOf(type.toUpperCase()));
+    private static final Logger LOGGER = LoggerFactory.getLogger(PokeImporterFactory.class);
+
+    public static PokeImporter getImporter(String type) {
+        try {
+            return getImporter(PokeType.valueOf(type.toUpperCase()));
+        } catch (Exception e) {
+            LOGGER.debug("Using default importer on error", e);
+            return getDefaultImporter();
+        }
     }
 
-    public static PokeImporter getLoader(PokeType type) {
+    public static PokeImporter getImporter(PokeType type) {
         try {
             return type.generator()
                     .newInstance();
@@ -16,7 +26,7 @@ public class PokeImporterFactory {
         }
     }
 
-    public static PokeImporter getDefaultLoader() {
-        return getLoader(PokeType.POK);
+    public static PokeImporter getDefaultImporter() {
+        return getImporter(PokeType.POK);
     }
 }

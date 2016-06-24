@@ -91,8 +91,8 @@ public class GameUtil {
 
     public static void importPokesFromFile(Game game, File pokeFile) throws IOException {
         PokeImporter importer = getFileExtension(pokeFile.getName())
-                .map(PokeImporterFactory::getLoader)
-                .orElseGet(PokeImporterFactory::getDefaultLoader);
+                .map(PokeImporterFactory::getImporter)
+                .orElseGet(PokeImporterFactory::getDefaultImporter);
 
         importer.importPokes(game.getTrainerList(), new FileInputStream(pokeFile));
     }
