@@ -2,7 +2,6 @@ package com.grelobites.dandanator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import com.grelobites.dandanator.view.DandanatorController;
 import javafx.application.Application;

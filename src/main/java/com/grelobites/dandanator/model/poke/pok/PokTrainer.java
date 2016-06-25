@@ -3,10 +3,7 @@ package com.grelobites.dandanator.model.poke.pok;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * Created by mteira on 21/6/16.
- */
+
 public class PokTrainer {
 
     private String name;

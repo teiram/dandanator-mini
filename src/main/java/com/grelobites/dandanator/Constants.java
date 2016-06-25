@@ -1,9 +1,14 @@
 package com.grelobites.dandanator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 public class Constants {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Constants.class);
 
     private static final String DEFAULT_DANDANATOR_SCREEN_RESOURCE = "dandanator.scr";
     private static final String SINCLAIR_SCREEN_RESOURCE = "sinclair-1982.scr";
@@ -49,11 +54,15 @@ public class Constants {
 
     private static byte[] fromInputStream(InputStream is, int size) throws IOException {
         byte[] result = new byte[size];
-        is.read(result, 0, size);
+        int len = is.read(result, 0, size);
+        if (len != size) {
+            LOGGER.warn("Unexpected number of bytes read from stream. Read: " + len
+            + ", expected: " + size);
+        }
         return result;
     }
 
-    public static final byte[] getDefaultDandanatorScreen() throws IOException {
+    public static byte[] getDefaultDandanatorScreen() throws IOException {
         if (DEFAULT_DANDANATOR_SCREEN == null) {
             DEFAULT_DANDANATOR_SCREEN = fromInputStream(
                     Constants.class.getClassLoader()
@@ -63,7 +72,7 @@ public class Constants {
         return DEFAULT_DANDANATOR_SCREEN;
     }
 
-    public static final byte[] getSinclairScreen() throws IOException {
+    public static byte[] getSinclairScreen() throws IOException {
         if (SINCLAIR_SCREEN == null) {
             SINCLAIR_SCREEN = fromInputStream(
                     Constants.class.getClassLoader()
@@ -73,7 +82,7 @@ public class Constants {
         return SINCLAIR_SCREEN;
     }
 
-    public static final byte[] getDefaultCharset() throws IOException {
+    public static byte[] getDefaultCharset() throws IOException {
         if (DEFAULT_CHARSET == null) {
             DEFAULT_CHARSET = fromInputStream(
                     Constants.class.getClassLoader()

@@ -27,7 +27,7 @@ public enum ZxColor {
 	
 	private final int argb;
 	
-	private ZxColor(int argb) {
+	ZxColor(int argb) {
 		this.argb = argb;
 	}
 	

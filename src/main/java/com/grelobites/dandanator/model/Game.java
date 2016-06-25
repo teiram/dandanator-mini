@@ -114,6 +114,6 @@ public class Game {
 	}
 
     public boolean hasPokes() {
-        return trainerList != null ? trainerList.getChildren().size() > 0 : false;
+        return trainerList != null && trainerList.getChildren().size() > 0;
     }
 }

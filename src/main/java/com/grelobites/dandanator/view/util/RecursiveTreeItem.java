@@ -1,6 +1,5 @@
 package com.grelobites.dandanator.view.util;
 
-import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -14,9 +13,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-/**
- * Created by mteira on 20/6/16.
- */
 public class RecursiveTreeItem<T> extends TreeItem<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RecursiveTreeItem.class);

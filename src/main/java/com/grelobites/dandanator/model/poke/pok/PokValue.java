@@ -1,8 +1,5 @@
 package com.grelobites.dandanator.model.poke.pok;
 
-/**
- * Created by mteira on 21/6/16.
- */
 public class PokValue {
     private static final int MIN_ADDR_VALUE = 16384;
     private static final int MAX_ADDR_VALUE = 65535;

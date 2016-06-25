@@ -1,5 +1,9 @@
 package com.grelobites.dandanator.util;
 
+import com.grelobites.dandanator.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -17,6 +21,9 @@ import java.util.Arrays;
  27       49152  bytes  RAM dump 16384..65535
  */
 public class SNAHeader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SNAHeader.class);
+
+
     public static final byte REG_I = 0;
     public static final byte REG_HL_alt = 1;
     public static final byte REG_DE_alt = 3;
@@ -35,12 +42,16 @@ public class SNAHeader {
     public static final byte BORDER_COLOR = (byte) 26;
     public static final byte RAM_DUMP = (byte) 27;
 
-    private byte[] data = new byte[27];
+    private byte[] data = new byte[Constants.SNA_HEADER_SIZE];
 
 
     public static SNAHeader fromByteArray(ByteArrayInputStream is) throws IOException {
         SNAHeader snaHeader = new SNAHeader();
-        is.read(snaHeader.data);
+        int read = is.read(snaHeader.data);
+        if (read != Constants.SNA_HEADER_SIZE) {
+            LOGGER.error("Unexpected size read from SNA Header. Was: " + read + ", expected: " + Constants.SNA_HEADER_SIZE);
+            throw new IllegalArgumentException("Exhausted stream");
+        }
         return snaHeader;
     }
 
@@ -53,7 +64,7 @@ public class SNAHeader {
     }
 
     public int getRegisterValue(int offset) {
-        return data[offset] + (data[offset + 1] << 256);
+        return data[offset] & 0xFF |  (data[offset + 1] << 8);
     }
 
     public void setWord(int offset, byte[] value) {

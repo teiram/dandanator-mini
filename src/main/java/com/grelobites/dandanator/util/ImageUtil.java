@@ -49,8 +49,8 @@ public class ImageUtil {
 	
 	public static byte[] streamToByteArray(InputStream stream) throws IOException {
 		byte[] buffer = new byte[1024];
-		try (ByteArrayOutputStream os = new ByteArrayOutputStream();) {
-			int length = 0;
+		try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+			int length;
 			while ((length = stream.read(buffer)) != -1) {
 				os.write(buffer, 0, length);
 			}
