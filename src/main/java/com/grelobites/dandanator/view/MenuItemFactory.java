@@ -3,14 +3,14 @@ package com.grelobites.dandanator.view;
 import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.util.GameUtil;
 import javafx.collections.ObservableList;
-import javafx.scene.control.*;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TableView;
 import javafx.stage.FileChooser;
 
 import java.io.File;
 
-/**
- * Created by mteira on 17/6/16.
- */
 public class MenuItemFactory {
     private MenuItemFactory() {}
 
