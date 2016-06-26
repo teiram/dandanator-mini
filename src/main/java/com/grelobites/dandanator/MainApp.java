@@ -2,14 +2,18 @@ package com.grelobites.dandanator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 import com.grelobites.dandanator.view.DandanatorController;
+import de.codecentric.centerdevice.MenuToolkit;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -34,10 +38,27 @@ public class MainApp extends Application {
 		
 	}
 
-    private static MenuBar getMenuBar(Scene scene, DandanatorController controller) {
-        MenuBar menuBar = new MenuBar();
+    public Menu createDefaultApplicationMenu(String appName) {
+        MenuToolkit tk = MenuToolkit.toolkit(Locale.getDefault());
+        return new Menu(appName, null,
+                tk.createAboutMenuItem(appName),
+                new SeparatorMenuItem(),
+                new MenuItem("Preferences"),
+                new SeparatorMenuItem(),
+                tk.createHideMenuItem(appName),
+                tk.createHideOthersMenuItem(),
+                tk.createUnhideAllMenuItem(),
+                new SeparatorMenuItem(),
+                tk.createQuitMenuItem(appName));
+    }
+
+    private static void populateMenuBar(MenuBar menuBar, Scene scene, DandanatorController controller) {
         Menu fileMenu = new Menu("File");
         MenuItem importRomSet = new MenuItem("Import ROM Set...");
+        importRomSet.setAccelerator(
+                KeyCombination.keyCombination("SHORTCUT+I")
+        );
+
         importRomSet.setOnAction(f -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Import ROM Set");
@@ -51,7 +72,6 @@ public class MainApp extends Application {
         fileMenu.getItems().add(importRomSet);
         menuBar.setUseSystemMenuBar(true);
         menuBar.getMenus().add(fileMenu);
-        return menuBar;
     }
 
 	private void initRootLayout() {
@@ -61,11 +81,22 @@ public class MainApp extends Application {
 			rootLayout = loader.load();
             Scene scene = new Scene(rootLayout);
 
-            rootLayout.getChildren().add(getMenuBar(scene, loader.getController()));
+			// Create a new menu bar
+            MenuBar bar = new MenuBar();
+			MenuToolkit tk = MenuToolkit.toolkit(Locale.getDefault());
+
+            Menu applicationMenu = createDefaultApplicationMenu("Dandanator Mini");
+
+			bar.getMenus().add(applicationMenu);
+            populateMenuBar(bar, scene, loader.getController());
+
+			tk.setGlobalMenuBar(bar);
 
 			primaryStage.setScene(scene);
 			primaryStage.setResizable(false);
-			primaryStage.show();
+            tk.setMenuBar(primaryStage, bar);
+
+            primaryStage.show();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
