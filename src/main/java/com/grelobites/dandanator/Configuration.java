@@ -1,5 +1,6 @@
 package com.grelobites.dandanator;
 
+import com.grelobites.dandanator.util.romset.RomSetType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
-
 
 public class Configuration {
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
@@ -25,6 +25,7 @@ public class Configuration {
     private static final String LAUNCHGAMEMESSAGE_PROPERTY = "launchGameMessage";
     private static final String SELECTPOKESMESSAGE_PROPERTY = "selectPokesMessage";
 
+    private static final String DEFAULT_MODE = RomSetType.DANDANATOR_MINI.name();
 
     private String dandanatorRomPath;
     private String backgroundImagePath;
@@ -34,6 +35,7 @@ public class Configuration {
     private String testRomMessage;
     private String launchGameMessage;
     private String selectPokesMessage;
+    private String mode;
 
     private static Configuration INSTANCE;
 
@@ -46,7 +48,7 @@ public class Configuration {
 
     public static Configuration getInstance() {
         if (INSTANCE == null) {
-            INSTANCE =  instantiate();
+            INSTANCE =  newInstance();
         }
         return INSTANCE;
     }
@@ -208,6 +210,17 @@ public class Configuration {
         return selectPokesMessage;
     }
 
+    public String getMode() {
+        if (mode == null) {
+            mode = DEFAULT_MODE;
+        }
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
     public void setSelectPokesMessage(String selectPokesMessage) {
         this.selectPokesMessage = selectPokesMessage;
     }
@@ -261,7 +274,7 @@ public class Configuration {
         return Optional.ofNullable(properties);
     }
 
-    synchronized private static Configuration instantiate() {
+    synchronized private static Configuration newInstance() {
         final Configuration configuration = new Configuration();
         loadConfigurationFile().map(p -> setFromProperties(p, configuration));
         return configuration;

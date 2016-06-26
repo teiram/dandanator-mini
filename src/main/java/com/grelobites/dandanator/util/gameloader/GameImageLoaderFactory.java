@@ -9,7 +9,7 @@ public class GameImageLoaderFactory {
 
     public static GameImageLoader getLoader(String type) {
         try {
-            return getLoader(GameImageType.valueOf(type.toUpperCase()));
+            return getLoader(GameImageType.fromString(type));
         } catch (Exception e) {
             LOGGER.debug("Defaulting to default loader on error", e);
             return getDefaultLoader();

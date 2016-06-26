@@ -10,7 +10,7 @@ public class PokeImporterFactory {
 
     public static PokeImporter getImporter(String type) {
         try {
-            return getImporter(PokeType.valueOf(type.toUpperCase()));
+            return getImporter(PokeType.fromString(type));
         } catch (Exception e) {
             LOGGER.debug("Using default importer on error", e);
             return getDefaultImporter();

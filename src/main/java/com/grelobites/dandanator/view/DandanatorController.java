@@ -2,6 +2,7 @@ package com.grelobites.dandanator.view;
 
 import com.grelobites.dandanator.Configuration;
 import com.grelobites.dandanator.Constants;
+import com.grelobites.dandanator.Context;
 import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.model.PokeViewable;
 import com.grelobites.dandanator.util.*;
@@ -10,7 +11,6 @@ import com.grelobites.dandanator.view.util.RecursiveTreeItem;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -30,7 +30,6 @@ import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.stage.FileChooser;
-import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +44,7 @@ public class DandanatorController {
 	private WritableImage spectrum48kImage;
 	private ZxScreen dandanatorPreviewImage;
 	
-	private ObservableList<Game> gameList;
+	private Context context;
 	
 	@FXML
 	private ImageView previewImage;
@@ -103,7 +102,7 @@ public class DandanatorController {
     private void initializeImages() throws IOException {
         dandanatorPreviewImage = ImageUtil.scrLoader(
                 new ZxScreen(),
-                new ByteArrayInputStream(Configuration.getInstance()
+                new ByteArrayInputStream(context.getConfiguration()
                     .getBackgroundImage()));
 
     	//Decorate the preview for the first time
@@ -116,55 +115,21 @@ public class DandanatorController {
     }
     
     private boolean isEmptySlotAvailable() {
-    	return gameList.size() < getAvailableSlotCount();
+    	return context.getGameList().size() < getAvailableSlotCount();
     }
     
     private void onGameListChange() {
-    	createRomButton.setDisable(gameList.size() != getAvailableSlotCount());
-        addRomButton.setDisable(gameList.size() == getAvailableSlotCount());
-        clearRomsetButton.setDisable(gameList.isEmpty());
+    	createRomButton.setDisable(context.getGameList().size() != getAvailableSlotCount());
+        addRomButton.setDisable(context.getGameList().size() == getAvailableSlotCount());
+        clearRomsetButton.setDisable(context.getGameList().isEmpty());
 
     	recreatePreviewImage();
     }
     
     private void recreatePreviewImage() {
         LOGGER.debug("recreatePreviewImage");
-        dandanatorPreviewImage.setInk(ZxColor.BLACK);
-        dandanatorPreviewImage.setPen(ZxColor.BRIGHTMAGENTA);
-        dandanatorPreviewImage.printLine(Constants.currentVersion(), 8, 0);
-
-        int line = 10;
-    	int index = 1;
-    	int maxSlots = getAvailableSlotCount();
-    	for (Game game : gameList) {
-    		dandanatorPreviewImage.setPen(
-    				game.getScreen() ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
-    		dandanatorPreviewImage.deleteLine(line);
-    		dandanatorPreviewImage.printLine(
-    				String.format("%d%c %s", index % Constants.SLOT_COUNT,
-    						game.getRom() ? 'r' : '.',
-    						game.getName()), 
-    				line++, 0);
-    		index++;
-    	}
-    	while (index <= maxSlots) {
-    		dandanatorPreviewImage.deleteLine(line);
-    		dandanatorPreviewImage.setPen(ZxColor.WHITE);
-    		dandanatorPreviewImage.printLine(String
-    				.format("%d.", index % Constants.SLOT_COUNT), line++, 0);
-    		index++;
-    	}
-    	while (index++ <= Constants.SLOT_COUNT) {
-    		dandanatorPreviewImage.deleteLine(line++);
-    	}
-    	dandanatorPreviewImage.setPen(ZxColor.BRIGHTBLUE);
-    	dandanatorPreviewImage.printLine("T. Toggle Pokes", 21, 0);
-    	if (maxSlots == Constants.SLOT_COUNT) {
-    		dandanatorPreviewImage.setPen(ZxColor.BRIGHTRED);
-    		dandanatorPreviewImage.printLine("R. Test ROM", 23, 0);
-    	} else {
-    		dandanatorPreviewImage.deleteLine(23);
-    	}
+        context.getRomSetHandler()
+                .updateScreen(context, dandanatorPreviewImage);
     }
 
 
@@ -172,20 +137,22 @@ public class DandanatorController {
         files.stream()
                 .filter(f -> isEmptySlotAvailable())
                 .map(GameUtil::createGameFromFile)
-                .forEach(gameOptional -> gameOptional.map(g -> gameList.add(g)));
+                .forEach(gameOptional -> gameOptional.map(g -> context.getGameList().add(g)));
     }
 
+    private void setupContext() {
+        context = new Context();
+        context.setConfiguration(Configuration.getInstance());
+        context.setGameList(FXCollections.observableArrayList(game -> {
+            return new Observable[] {game.romProperty(), game.screenProperty()};
+        }));
+    }
 	@FXML
 	private void initialize() throws IOException {
 
-        gameList = FXCollections.observableArrayList(new Callback<Game, Observable[]>() {
-            @Override
-            public Observable[] call(Game game) {
-                return new Observable[] {game.romProperty(), game.screenProperty()};
-            }
-        });
+        setupContext();
 
-		gameTable.setItems(gameList);
+		gameTable.setItems(context.getGameList());
 		gameTable.setPlaceholder(new Label("Drop games here!"));
 		gameTable.setRowFactory(rf -> {
 			TableRow<Game> row = new TableRow<>();
@@ -280,7 +247,7 @@ public class DandanatorController {
 	
 		currentScreenshot.setImage(spectrum48kImage);
 
-		gameList.addListener((ListChangeListener.Change<? extends Game> cl) -> {
+		context.getGameList().addListener((ListChangeListener.Change<? extends Game> cl) -> {
 			onGameListChange();
 		});
 
@@ -328,7 +295,7 @@ public class DandanatorController {
             chooser.setTitle("Save ROM Set");
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
             try {
-                GameUtil.createRomSet(saveFile, gameList);
+                GameUtil.createRomSet(saveFile, context.getGameList());
             } catch (IOException e) {
                 LOGGER.error("Creating ROM Set", e);
             }
@@ -347,10 +314,10 @@ public class DandanatorController {
 
         removeSelectedRomButton.setOnAction(c -> {
             Optional<Integer> selectedIndex = Optional.of(gameTable.getSelectionModel().getSelectedIndex());
-            selectedIndex.ifPresent(index -> gameList.remove(index.intValue()));
+            selectedIndex.ifPresent(index -> context.getGameList().remove(index.intValue()));
         });
 
-        clearRomsetButton.setOnAction(c -> gameList.clear());
+        clearRomsetButton.setOnAction(c -> context.getGameList().clear());
 
         addPokeButton.setOnAction(c -> {
             if (pokeView.getSelectionModel().getSelectedItem() != null) {
@@ -448,8 +415,8 @@ public class DandanatorController {
 	}
 
     private void computePokeChange(PokeViewable f) {
-        LOGGER.debug("New poke ocupation is " + GameUtil.getOverallPokeUsage(gameList));
-        pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(gameList));
+        LOGGER.debug("New poke ocupation is " + GameUtil.getOverallPokeUsage(context.getGameList()));
+        pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(context.getGameList()));
         if (gameTable.getSelectionModel().getSelectedItem() == f.getOwner()) {
             removeAllGamePokesButton.setDisable(!f.getOwner().hasPokes());
         }
@@ -457,7 +424,7 @@ public class DandanatorController {
 
     public void importRomSet(File romSetFile) throws IOException {
         InputStream is = new FileInputStream(romSetFile);
-        RomSetBuilder.importFromStream(gameList, is);
+        RomSetBuilder.importFromStream(context.getGameList(), is);
     }
 
 }
