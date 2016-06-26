@@ -1,6 +1,6 @@
 package com.grelobites.dandanator.util;
 
-public class Z80 {
+public class Z80Opcode {
 
     public static final byte DI = (byte) 0xF3;          // DI
     public static final byte EI = (byte) 0xFB;          // EI

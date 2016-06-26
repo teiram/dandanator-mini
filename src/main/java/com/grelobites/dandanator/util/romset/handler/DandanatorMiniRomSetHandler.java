@@ -11,7 +11,7 @@ import com.grelobites.dandanator.model.TrainerList;
 import com.grelobites.dandanator.util.SNAHeader;
 import com.grelobites.dandanator.util.TrackeableInputStream;
 import com.grelobites.dandanator.util.Util;
-import com.grelobites.dandanator.util.Z80;
+import com.grelobites.dandanator.util.Z80Opcode;
 import com.grelobites.dandanator.util.ZxColor;
 import com.grelobites.dandanator.util.ZxScreen;
 import com.grelobites.dandanator.util.romset.RomSetHandler;
@@ -60,13 +60,13 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     private static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
-        os.write(Z80.PUSH_HL);
-        os.write(Z80.POP_HL);
-        os.write(Z80.PUSH_HL);
-        os.write(Z80.POP_HL);
+        os.write(Z80Opcode.PUSH_HL);
+        os.write(Z80Opcode.POP_HL);
+        os.write(Z80Opcode.PUSH_HL);
+        os.write(Z80Opcode.POP_HL);
         os.write((game.getData()[SNAHeader.INTERRUPT_ENABLE] & 0x04) == 0 ?
-                Z80.DI : Z80.EI);
-        os.write(Z80.RET);
+                Z80Opcode.DI : Z80Opcode.EI);
+        os.write(Z80Opcode.RET);
         return 6;
     }
 

@@ -295,7 +295,9 @@ public class DandanatorController {
             chooser.setTitle("Save ROM Set");
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
             try {
-                GameUtil.createRomSet(saveFile, context.getGameList());
+                //GameUtil.createRomSet(saveFile, context.getGameList());
+                context.getRomSetHandler()
+                        .createRomSet(context, new FileOutputStream(saveFile));
             } catch (IOException e) {
                 LOGGER.error("Creating ROM Set", e);
             }
@@ -424,7 +426,9 @@ public class DandanatorController {
 
     public void importRomSet(File romSetFile) throws IOException {
         InputStream is = new FileInputStream(romSetFile);
-        RomSetBuilder.importFromStream(context.getGameList(), is);
+        context.getRomSetHandler()
+                .importRomSet(context, is);
+        //RomSetBuilder.importFromStream(context.getGameList(), is);
     }
 
 }

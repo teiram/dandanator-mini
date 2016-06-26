@@ -66,14 +66,6 @@ public class GameUtil {
         return fileName;
     }
 
-    public static void createRomSet(File romSetFile, ObservableList<Game> gameList) throws IOException {
-        LOGGER.debug("Creating ROM from " + gameList + " on " + romSetFile);
-        byte[] romSetBytes = RomSetBuilder.newInstance()
-                .withGames(gameList)
-                .build();
-        Files.write(romSetFile.toPath(), romSetBytes);
-    }
-
     public static int getGamePokeSizeUsage(Game game) {
         return game.getTrainerList().getChildren().stream()
                 .flatMapToInt(g -> IntStream.builder()
