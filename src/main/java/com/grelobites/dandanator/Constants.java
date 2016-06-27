@@ -45,6 +45,10 @@ public class Constants {
     public static final String DEFAULT_TOGGLEPOKESKEY_MESSAGE = "Toggle Pokes";
     public static final String DEFAULT_LAUNCHGAME_MESSAGE = "Launch Game";
     public static final String DEFAULT_SELECTPOKE_MESSAGE = "Select Pokes";
+    public static final int TOGGLE_POKES_MESSAGE_MAXLENGTH = 23;
+    public static final int TEST_ROM_MESSAGE_MAXLENGTH = 23;
+    public static final int LAUNCH_GAME_MESSAGE_MAXLENGTH = 23;
+    public static final int SELECT_POKE_MESSAGE_MAXLENGTH = 23;
 
     private static byte[] DEFAULT_DANDANATOR_SCREEN;
     private static byte[] SINCLAIR_SCREEN;

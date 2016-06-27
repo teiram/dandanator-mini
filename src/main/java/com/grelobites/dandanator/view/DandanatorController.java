@@ -132,6 +132,17 @@ public class DandanatorController {
                 .updateScreen(context, dandanatorPreviewImage);
     }
 
+    private void updatePreviewImage() {
+        LOGGER.debug("updatePreviewImage");
+        try {
+            ImageUtil.scrLoader(dandanatorPreviewImage,
+                    new ByteArrayInputStream(context.getConfiguration()
+                            .getBackgroundImage()));
+            recreatePreviewImage();
+        } catch (Exception e) {
+            LOGGER.error("Updating preview image", e);
+        }
+    }
 
     private void addSnapshotFiles(List<File> files) {
         files.stream()
@@ -295,7 +306,6 @@ public class DandanatorController {
             chooser.setTitle("Save ROM Set");
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
             try {
-                //GameUtil.createRomSet(saveFile, context.getGameList());
                 context.getRomSetHandler()
                         .createRomSet(context, new FileOutputStream(saveFile));
             } catch (IOException e) {
@@ -387,6 +397,16 @@ public class DandanatorController {
             event.consume();
         });
 
+        context.getConfiguration().backgroundImagePathProperty().addListener(
+                (observable, oldValue, newValue) -> updatePreviewImage());
+        context.getConfiguration().charSetPathProperty().addListener(
+                (observable, oldValue, newValue) -> updatePreviewImage());
+        context.getConfiguration().togglePokesMessageProperty().addListener(
+                (observable, oldValue, newValue) -> updatePreviewImage());
+        context.getConfiguration().testRomMessageProperty().addListener(
+                (observable, oldValue, newValue) -> updatePreviewImage());
+
+
     }
 	
 	private void onGameSelection(Game game) {
@@ -428,7 +448,6 @@ public class DandanatorController {
         InputStream is = new FileInputStream(romSetFile);
         context.getRomSetHandler()
                 .importRomSet(context, is);
-        //RomSetBuilder.importFromStream(context.getGameList(), is);
     }
 
 }

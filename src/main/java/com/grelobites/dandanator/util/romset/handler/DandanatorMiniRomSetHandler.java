@@ -329,39 +329,43 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     @Override
     public void updateScreen(Context context, ZxScreen screen) {
         LOGGER.debug("updateScreen");
-        Configuration configuration = context.getConfiguration();
+        try {
+            Configuration configuration = context.getConfiguration();
+            screen.setCharSet(configuration.getCharSet());
 
-        screen.setInk(ZxColor.BLACK);
-        screen.setPen(ZxColor.BRIGHTMAGENTA);
-        screen.printLine(Constants.currentVersion(), 8, 0);
+            screen.setInk(ZxColor.BLACK);
+            screen.setPen(ZxColor.BRIGHTMAGENTA);
+            screen.printLine(Constants.currentVersion(), 8, 0);
 
-        int line = 10;
-        int index = 1;
+            int line = 10;
+            int index = 1;
 
-        for (Game game : context.getGameList()) {
-            screen.setPen(
-                    game.getScreen() ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
-            screen.deleteLine(line);
-            screen.printLine(
-                    String.format("%d%c %s", index % Constants.SLOT_COUNT,
-                            game.getRom() ? 'r' : '.',
-                            game.getName()),
-                    line++, 0);
-            index++;
+            for (Game game : context.getGameList()) {
+                screen.setPen(
+                        game.getScreen() ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
+                screen.deleteLine(line);
+                screen.printLine(
+                        String.format("%d%c %s", index % Constants.SLOT_COUNT,
+                                game.getRom() ? 'r' : '.',
+                                game.getName()),
+                        line++, 0);
+                index++;
+            }
+            while (index <= Constants.SLOT_COUNT) {
+                screen.deleteLine(line);
+                screen.setPen(ZxColor.WHITE);
+                screen.printLine(String
+                        .format("%d.", index % Constants.SLOT_COUNT), line++, 0);
+                index++;
+            }
+
+            screen.setPen(ZxColor.BRIGHTBLUE);
+            screen.printLine(String.format("P. %s", configuration.getTogglePokesMessage()), 21, 0);
+            screen.setPen(ZxColor.BRIGHTRED);
+            screen.printLine(String.format("R. %s", configuration.getTestRomMessage()), 23, 0);
+        } catch (Exception e) {
+            LOGGER.error("Updating background screen", e);
         }
-        while (index <= Constants.SLOT_COUNT) {
-            screen.deleteLine(line);
-            screen.setPen(ZxColor.WHITE);
-            screen.printLine(String
-                    .format("%d.", index % Constants.SLOT_COUNT), line++, 0);
-            index++;
-        }
-
-        screen.setPen(ZxColor.BRIGHTBLUE);
-        screen.printLine(String.format("P. %s", configuration.getTogglePokesMessage()), 21, 0);
-        screen.setPen(ZxColor.BRIGHTRED);
-        screen.printLine(String.format("R. %s", configuration.getTestRomMessage()), 23, 0);
-
     }
 
     private static class GameDataHolder {

@@ -1,6 +1,8 @@
 package com.grelobites.dandanator;
 
 import com.grelobites.dandanator.util.romset.RomSetType;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,13 +30,13 @@ public class Configuration {
     private static final String DEFAULT_MODE = RomSetType.DANDANATOR_MINI.name();
 
     private String dandanatorRomPath;
-    private String backgroundImagePath;
+    private StringProperty backgroundImagePath;
     private String testRomPath;
-    private String charSetPath;
-    private String togglePokesMessage;
-    private String testRomMessage;
-    private String launchGameMessage;
-    private String selectPokesMessage;
+    private StringProperty charSetPath;
+    private StringProperty togglePokesMessage;
+    private StringProperty testRomMessage;
+    private StringProperty launchGameMessage;
+    private StringProperty selectPokesMessage;
     private String mode;
 
     private static Configuration INSTANCE;
@@ -44,7 +46,14 @@ public class Configuration {
     byte[] testRom;
     byte[] charSet;
 
-    private Configuration() {}
+    private Configuration() {
+        backgroundImagePath = new SimpleStringProperty();
+        charSetPath = new SimpleStringProperty();
+        togglePokesMessage = new SimpleStringProperty();
+        testRomMessage = new SimpleStringProperty();
+        launchGameMessage = new SimpleStringProperty();
+        selectPokesMessage = new SimpleStringProperty();
+    }
 
     public static Configuration getInstance() {
         if (INSTANCE == null) {
@@ -64,12 +73,18 @@ public class Configuration {
     }
 
     public String getBackgroundImagePath() {
+        return backgroundImagePath.get();
+    }
+
+    public StringProperty backgroundImagePathProperty() {
         return backgroundImagePath;
     }
 
     public void setBackgroundImagePath(String backgroundImagePath) {
-        this.backgroundImagePath = backgroundImagePath;
+        //Invalidate the background image in advance, to avoid the listeners to
+        //enter before the property is set to null
         backgroundImage = null;
+        this.backgroundImagePath.set(backgroundImagePath);
     }
 
     public String getTestRomPath() {
@@ -103,11 +118,11 @@ public class Configuration {
 
     public byte[] getBackgroundImage() throws IOException {
         if (backgroundImage == null) {
-            if (backgroundImagePath != null) {
+            if (backgroundImagePath.get() != null) {
                 try {
-                    backgroundImage = Files.readAllBytes(Paths.get(backgroundImagePath));
+                    backgroundImage = Files.readAllBytes(Paths.get(backgroundImagePath.get()));
                 } catch (Exception e) {
-                    LOGGER.error("Unable to load Background Image from  " + backgroundImagePath, e);
+                    LOGGER.error("Unable to load Background Image from  " + backgroundImagePath.get(), e);
                     backgroundImage = Constants.getDefaultDandanatorScreen();
                 }
             } else {
@@ -143,9 +158,9 @@ public class Configuration {
 
     public byte[] getCharSet() throws IOException {
         if (charSet == null) {
-            if (charSetPath != null) {
+            if (getCharSetPath() != null) {
                 try {
-                    charSet = Files.readAllBytes(Paths.get(charSetPath));
+                    charSet = Files.readAllBytes(Paths.get(charSetPath.get()));
                 } catch (Exception e) {
                     LOGGER.error("Unable to load CharSet from " + charSetPath, e);
                     charSet = Constants.getDefaultCharset();
@@ -162,53 +177,78 @@ public class Configuration {
     }
 
     public String getCharSetPath() {
+        return charSetPath.get();
+    }
+
+    public StringProperty charSetPathProperty() {
         return charSetPath;
     }
 
     public void setCharSetPath(String charSetPath) {
-        this.charSetPath = charSetPath;
         charSet = null;
+        this.charSetPath.set(charSetPath);
     }
 
     public String getTogglePokesMessage() {
-        if (togglePokesMessage == null) {
-            togglePokesMessage = Constants.DEFAULT_TOGGLEPOKESKEY_MESSAGE;
+        if (togglePokesMessage.get() == null) {
+            return Constants.DEFAULT_TOGGLEPOKESKEY_MESSAGE;
         }
-        return togglePokesMessage;
+        return togglePokesMessage.get();
     }
 
     public void setTogglePokesMessage(String togglePokesMessage) {
-        this.togglePokesMessage = togglePokesMessage;
+        this.togglePokesMessage.set(togglePokesMessage);
+    }
+
+    public StringProperty togglePokesMessageProperty() {
+        return togglePokesMessage;
     }
 
     public String getTestRomMessage() {
-        if (testRomMessage == null) {
-            testRomMessage = Constants.DEFAULT_TESTROMKEY_MESSAGE;
+        if (testRomMessage.get() == null) {
+            return Constants.DEFAULT_TESTROMKEY_MESSAGE;
         }
-        return testRomMessage;
+        return testRomMessage.get();
     }
 
     public void setTestRomMessage(String testRomMessage) {
-        this.testRomMessage = testRomMessage;
+        this.testRomMessage.set(testRomMessage);
+    }
+
+    public StringProperty testRomMessageProperty() {
+        return testRomMessage;
     }
 
     public String getLaunchGameMessage() {
-        if (launchGameMessage == null) {
-            launchGameMessage = Constants.DEFAULT_LAUNCHGAME_MESSAGE;
+        if (launchGameMessage.get() == null) {
+            return Constants.DEFAULT_LAUNCHGAME_MESSAGE;
         }
-        return launchGameMessage;
+        return launchGameMessage.get();
     }
 
     public void setLaunchGameMessage(String launchGameMessage) {
-        this.launchGameMessage = launchGameMessage;
+        this.launchGameMessage.set(launchGameMessage);
+    }
+
+    public StringProperty launchGameMessageProperty() {
+        return launchGameMessage;
     }
 
     public String getSelectPokesMessage() {
-        if (selectPokesMessage == null) {
-            selectPokesMessage = Constants.DEFAULT_SELECTPOKE_MESSAGE;
+        if (selectPokesMessage.get() == null) {
+            return Constants.DEFAULT_SELECTPOKE_MESSAGE;
         }
+        return selectPokesMessage.get();
+    }
+
+    public StringProperty selectPokesMessageProperty() {
         return selectPokesMessage;
     }
+
+    public void setSelectPokesMessage(String selectPokesMessage) {
+        this.selectPokesMessage.set(selectPokesMessage);
+    }
+
 
     public String getMode() {
         if (mode == null) {
@@ -221,9 +261,6 @@ public class Configuration {
         this.mode = mode;
     }
 
-    public void setSelectPokesMessage(String selectPokesMessage) {
-        this.selectPokesMessage = selectPokesMessage;
-    }
 
     private static Configuration setFromProperties(Properties p, Configuration configuration) {
         configuration.setBackgroundImagePath(

@@ -17,6 +17,16 @@ public class Util {
         return getNullTerminatedString(is, 0, maxLength);
     }
 
+    public static String substring(String value, int maxLength) {
+        if (value != null) {
+            return value.length() > maxLength ?
+                    value.substring(0, maxLength) :
+                    value;
+        } else {
+            return null;
+        }
+    }
+
     public static String getNullTerminatedString(InputStream is, int skip, int maxLength) throws IOException {
         byte[] buffer = new byte[maxLength];
         int nextByte;

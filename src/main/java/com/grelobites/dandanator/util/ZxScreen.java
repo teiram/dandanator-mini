@@ -14,14 +14,23 @@ public class ZxScreen extends WritableImage {
 	private String charSetPath;
 	
 	private byte[] charSet;
-	
+
+    private int lines;
+    private int columns;
+
 	private ZxColor pen = ZxColor.BLACK;
 	private ZxColor ink = ZxColor.WHITE;
 	
 	public ZxScreen() {
-		super(Constants.SPECTRUM_SCREEN_WIDTH,
-				Constants.SPECTRUM_SCREEN_HEIGHT);
+        this(Constants.SPECTRUM_SCREEN_WIDTH,
+                Constants.SPECTRUM_SCREEN_HEIGHT);
 	}
+
+	public ZxScreen(int width, int height) {
+        super(width, height);
+        this.lines = height >> 3;
+        this.columns = width >> 3;
+    }
 
 	public String getCharSetPath() {
 		if (charSetPath == null) {
@@ -77,7 +86,7 @@ public class ZxScreen extends WritableImage {
 		PixelWriter writer = getPixelWriter();
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				writer.setArgb(xpos + x, ypos + y, ZxColor.BLACK.argb());
+				writer.setArgb(xpos + x, ypos + y, ink.argb());
 			}
 		}
 	}
@@ -105,8 +114,14 @@ public class ZxScreen extends WritableImage {
 	}
 	
 	public void deleteLine(int line) {
-		for (int column = 0; column < 32; column++) {
+		for (int column = 0; column < columns; column++) {
 			deleteChar(line, column);
 		}
 	}
+
+    public void clearScreen() {
+        for (int line = 0; line < lines; line++) {
+            deleteLine(line);
+        }
+    }
 }
