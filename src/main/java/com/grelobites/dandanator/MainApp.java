@@ -26,13 +26,15 @@ import org.slf4j.LoggerFactory;
 public class MainApp extends Application {
     private static final Logger LOGGER = LoggerFactory.getLogger(MainApp.class);
     private static final String APP_NAME = "Dandanator Mini ROM Generator";
+    private static final String CSS_THEME = "@theme.css";
 
 	private Stage primaryStage;
     private AnchorPane preferencesPane;
     private Configuration configuration;
     private Stage preferencesStage;
+    private MenuToolkit menuToolkit;
 
-    private static void populateMenuBar(MenuBar menuBar, Scene scene, DandanatorController controller) {
+    private void populateMenuBar(MenuBar menuBar, Scene scene, DandanatorController controller) {
         Menu fileMenu = new Menu("File");
         MenuItem importRomSet = new MenuItem("Import ROM Set...");
         importRomSet.setAccelerator(
@@ -50,6 +52,10 @@ public class MainApp extends Application {
             }
         });
         fileMenu.getItems().add(importRomSet);
+        if (menuToolkit == null) {
+            fileMenu.getItems().add(new SeparatorMenuItem());
+            fileMenu.getItems().add(preferencesMenuItem());
+        }
         menuBar.getMenus().add(fileMenu);
     }
 
@@ -113,7 +119,7 @@ public class MainApp extends Application {
         return preferencesMenuItem;
     }
 
-    public Menu createApplicationMenu(MenuToolkit menuToolkit, String appName) {
+    public Menu createApplicationMenu(String appName) {
         if (menuToolkit != null) {
             return new Menu(appName, null,
                     menuToolkit.createAboutMenuItem(appName),
@@ -130,10 +136,10 @@ public class MainApp extends Application {
         }
     }
 
-    private MenuBar initMenuBar(MenuToolkit menuToolkit) {
+    private MenuBar initMenuBar() {
         MenuBar menuBar = new MenuBar();
         if (menuToolkit != null) {
-            Menu applicationMenu = createApplicationMenu(menuToolkit, APP_NAME);
+            Menu applicationMenu = createApplicationMenu(APP_NAME);
             menuBar.getMenus().add(applicationMenu);
         }
         return menuBar;
@@ -144,11 +150,12 @@ public class MainApp extends Application {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setLocation(MainApp.class.getResource("view/dandanator.fxml"));
 			VBox applicationPane = loader.load();
-            MenuToolkit menuToolkit = MenuToolkit.toolkit(Locale.getDefault());
-            MenuBar menuBar = initMenuBar(menuToolkit);
+            menuToolkit = MenuToolkit.toolkit(Locale.getDefault());
+            MenuBar menuBar = initMenuBar();
             Scene scene;
             if (menuToolkit == null) {
                 BorderPane container = new BorderPane();
+                container.setStyle(CSS_THEME);
                 container.setCenter(applicationPane);
                 container.setTop(menuBar);
                 scene = new Scene(container);
