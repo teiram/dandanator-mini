@@ -15,7 +15,7 @@ public class Constants {
     private static final String DEFAULT_CHARSET_RESOURCE = "charset.rom";
     private static final String DANDANATOR_ROM_RESOURCE = "dandanator-mini.rom";
     private static final String TEST_ROM_RESOURCE = "test.rom";
-    private static final String DEFAULT_VERSION = "4.1";
+    private static final String DEFAULT_VERSION = "4.0";
 
 	public static final int SNA_HEADER_SIZE = 27;
 	public static final int SPECTRUM_SCREEN_WIDTH = 256;
