@@ -143,7 +143,7 @@ public class MainApp extends Application {
     }
 
     private MenuItem preferencesMenuItem() {
-        MenuItem preferencesMenuItem = new MenuItem("Preferences");
+        MenuItem preferencesMenuItem = new MenuItem("Preferences...");
         preferencesMenuItem.setAccelerator(KeyCombination.keyCombination("SHORTCUT+,"));
         preferencesMenuItem.setOnAction(event -> showPreferencesStage());
 
@@ -159,7 +159,7 @@ public class MainApp extends Application {
     }
 
     private MenuItem aboutMenuItem() {
-        MenuItem aboutMenuItem = new MenuItem("About " + APP_NAME);
+        MenuItem aboutMenuItem = new MenuItem("About...");
         aboutMenuItem.setOnAction(event -> showAboutStage());
         return aboutMenuItem;
     }
