@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 public class MainApp extends Application {
     private static final Logger LOGGER = LoggerFactory.getLogger(MainApp.class);
     private static final String APP_NAME = "Dandanator Mini ROM Generator";
-    private static final String CSS_THEME = "@theme.css";
 
 	private Stage primaryStage;
     private AnchorPane preferencesPane;
@@ -149,21 +148,16 @@ public class MainApp extends Application {
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setLocation(MainApp.class.getResource("view/dandanator.fxml"));
-			VBox applicationPane = loader.load();
+			BorderPane applicationPane = loader.load();
             menuToolkit = MenuToolkit.toolkit(Locale.getDefault());
             MenuBar menuBar = initMenuBar();
-            Scene scene;
             if (menuToolkit == null) {
-                BorderPane container = new BorderPane();
-                container.setStyle(CSS_THEME);
-                container.setCenter(applicationPane);
-                container.setTop(menuBar);
-                scene = new Scene(container);
+                applicationPane.setTop(menuBar);
             } else {
                 menuBar.setUseSystemMenuBar(true);
                 menuToolkit.setGlobalMenuBar(menuBar);
-                scene = new Scene(applicationPane);
             }
+            Scene scene = new Scene(applicationPane);
             populateMenuBar(menuBar, scene, loader.getController());
  			primaryStage.setScene(scene);
 
