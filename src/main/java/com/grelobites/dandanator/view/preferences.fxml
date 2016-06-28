@@ -22,11 +22,11 @@
                      <children>
                         <ImageView fx:id="backgroundImageView" fitHeight="192.0" fitWidth="256.0" layoutX="12.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true" />
                         <Label layoutX="14.0" layoutY="212.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="28.0" text="Background Image" />
-                        <Button fx:id="changeBackgroundImageButton" layoutX="140.0" layoutY="213.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" prefHeight="27.0" text="Change" />
+                        <Button fx:id="changeBackgroundImageButton" layoutX="140.0" layoutY="213.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" text="Change" />
                         <Button fx:id="resetBackgroundImageButton" layoutX="216.0" layoutY="213.0" mnemonicParsing="false" text="Reset" />
                         <ImageView fx:id="charSetImageView" fitHeight="64.0" fitWidth="256.0" layoutX="275.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true" />
                         <Label layoutX="275.0" layoutY="99.0" prefHeight="28.0" text="Charset" />
-                        <Button fx:id="changeCharSetButton" alignment="CENTER" layoutX="400.0" layoutY="99.0" mnemonicParsing="false" prefHeight="28.0" text="Change" />
+                        <Button fx:id="changeCharSetButton" alignment="CENTER" layoutX="400.0" layoutY="99.0" mnemonicParsing="false" text="Change" />
                         <Button fx:id="resetCharSetButton" layoutX="476.0" layoutY="99.0" mnemonicParsing="false" text="Reset" />
                         <Label layoutX="275.0" layoutY="172.0" prefHeight="28.0" text="RomSet Mode" />
                         <ComboBox fx:id="romSetModeCombo" layoutX="370.0" layoutY="173.0" prefHeight="27.0" prefWidth="160.0" />
