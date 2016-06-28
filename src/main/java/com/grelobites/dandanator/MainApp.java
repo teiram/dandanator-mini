@@ -56,9 +56,9 @@ public class MainApp extends Application {
         if (menuToolkit == null) {
             fileMenu.getItems().add(new SeparatorMenuItem());
             fileMenu.getItems().add(preferencesMenuItem());
+            fileMenu.getItems().add(new SeparatorMenuItem());
+            fileMenu.getItems().add(quitMenuItem());
         }
-        fileMenu.getItems().add(new SeparatorMenuItem());
-        fileMenu.getItems().add(quitMenuItem());
         menuBar.getMenus().add(fileMenu);
     }
 
