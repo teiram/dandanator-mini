@@ -15,6 +15,7 @@ public class Constants {
     private static final String DEFAULT_CHARSET_RESOURCE = "charset.rom";
     private static final String DANDANATOR_ROM_RESOURCE = "dandanator-mini.rom";
     private static final String TEST_ROM_RESOURCE = "test.rom";
+    private static final String DEFAULT_VERSION = "4.1";
 
 	public static final int SNA_HEADER_SIZE = 27;
 	public static final int SPECTRUM_SCREEN_WIDTH = 256;
@@ -120,7 +121,7 @@ public class Constants {
         String version = Constants.class.getPackage()
                 .getImplementationVersion();
         if (version == null) {
-            version = "Developing";
+            version = DEFAULT_VERSION;
         }
         return version;
     }

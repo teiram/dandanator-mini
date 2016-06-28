@@ -156,6 +156,10 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         }
     }
 
+    private String getVersionInfo() {
+        return String.format("v%s", Util.stripSnapshotVersion(Constants.currentVersion()));
+    }
+
     private void fillWithValue(OutputStream os, byte value, int size) throws IOException {
         for (int i = 0; i < size; i++) {
             os.write(value);
@@ -163,7 +167,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     private void dumpVersionInfo(OutputStream os) throws IOException {
-        os.write(asNullTerminatedByteArray(Constants.currentVersion(), VERSION_SIZE));
+        os.write(asNullTerminatedByteArray(getVersionInfo(), VERSION_SIZE));
     }
 
     @Override
@@ -335,7 +339,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
             screen.setInk(ZxColor.BLACK);
             screen.setPen(ZxColor.BRIGHTMAGENTA);
-            screen.printLine(Constants.currentVersion(), 8, 0);
+            screen.printLine(getVersionInfo(), 8, 0);
 
             int line = 10;
             int index = 1;

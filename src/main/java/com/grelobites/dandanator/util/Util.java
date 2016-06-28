@@ -8,6 +8,7 @@ import java.io.InputStream;
 
 public class Util {
     private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
+    private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
     public static int asLittleEndian(InputStream is) throws IOException {
         return is.read() + (is.read() << 8);
@@ -44,5 +45,18 @@ public class Util {
             LOGGER.warn("Unexpected number of bytes skipped from stream. Was: " + read + ", expected: " + remainder);
         }
         return new String(buffer, skip, index - skip);
+    }
+
+    public static String stripSuffix(String value, String suffix) {
+        int index;
+        if ((index = value.lastIndexOf(suffix)) > -1) {
+            return value.substring(0, index);
+        } else {
+            return value;
+        }
+    }
+
+    public static String stripSnapshotVersion(String value) {
+        return stripSuffix(value, SNAPSHOT_SUFFIX);
     }
 }
