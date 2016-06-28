@@ -18,7 +18,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
-
+<?import javafx.scene.text.Font?>
 
 <BorderPane stylesheets="@theme.css" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.dandanator.view.DandanatorController">
    <center>
@@ -85,18 +85,36 @@
               <items>
                   <HBox prefHeight="27.0" prefWidth="260.0" spacing="10.0">
                      <children>
-                        <Button fx:id="addRomButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="+" />
-                        <Button fx:id="removeSelectedRomButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="-" />
-                        <Button fx:id="clearRomsetButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="x" />
+                        <Button fx:id="addRomButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="+">
+                           <font>
+                              <Font size="12.0" />
+                           </font></Button>
+                        <Button fx:id="removeSelectedRomButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="-">
+                           <font>
+                              <Font size="12.0" />
+                           </font></Button>
+                        <Button fx:id="clearRomsetButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="x">
+                           <font>
+                              <Font size="12.0" />
+                           </font></Button>
                         <Separator orientation="VERTICAL" prefHeight="27.0" prefWidth="47.0" />
                       <Button fx:id="createRomButton" disable="true" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="125.0" text="Create ROM" />
                      </children>
                   </HBox>
                   <HBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="27.0" prefWidth="252.0" spacing="10.0">
                      <children>
-                        <Button fx:id="addPokeButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="+" />
-                        <Button fx:id="removeSelectedPokeButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="-" />
-                        <Button fx:id="removeAllGamePokesButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="x" />
+                        <Button fx:id="addPokeButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="+">
+                           <font>
+                              <Font size="12.0" />
+                           </font></Button>
+                        <Button fx:id="removeSelectedPokeButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="-">
+                           <font>
+                              <Font size="12.0" />
+                           </font></Button>
+                        <Button fx:id="removeAllGamePokesButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="x">
+                           <font>
+                              <Font size="12.0" />
+                           </font></Button>
                         <ProgressBar fx:id="pokesCurrentSizeBar" maxHeight="-Infinity" minHeight="-Infinity" prefHeight="28.0" prefWidth="139.0" progress="0.0">
                            <HBox.margin>
                               <Insets left="10.0" />
