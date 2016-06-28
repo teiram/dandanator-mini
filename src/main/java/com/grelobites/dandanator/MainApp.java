@@ -14,6 +14,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -84,10 +85,10 @@ public class MainApp extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
 		this.primaryStage.setTitle("Dandanator Mini ROM Generator");
-		/*
+
 		this.primaryStage.getIcons()
-			.add(new Image("file:resources/images/address_book_32.png"));
-		*/
+			.add(new Image("file:dandanator-icon.png"));
+
 		initRootLayout();
 
 	}
