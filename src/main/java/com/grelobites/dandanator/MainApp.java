@@ -7,6 +7,7 @@ import java.util.Locale;
 import com.grelobites.dandanator.view.DandanatorController;
 import de.codecentric.centerdevice.MenuToolkit;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
@@ -16,7 +17,6 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -45,7 +45,9 @@ public class MainApp extends Application {
             chooser.setTitle("Import ROM Set");
             final File romSetFile = chooser.showOpenDialog(scene.getWindow());
             try {
-                controller.importRomSet(romSetFile);
+                if (romSetFile != null) {
+                    controller.importRomSet(romSetFile);
+                }
             } catch (Exception e) {
                 LOGGER.error("Importing ROM Set from file " +  romSetFile, e);
             }
@@ -55,6 +57,8 @@ public class MainApp extends Application {
             fileMenu.getItems().add(new SeparatorMenuItem());
             fileMenu.getItems().add(preferencesMenuItem());
         }
+        fileMenu.getItems().add(new SeparatorMenuItem());
+        fileMenu.getItems().add(quitMenuItem());
         menuBar.getMenus().add(fileMenu);
     }
 
@@ -118,6 +122,15 @@ public class MainApp extends Application {
         return preferencesMenuItem;
     }
 
+    public static MenuItem quitMenuItem() {
+        MenuItem menuItem = new MenuItem("Quit");
+        menuItem.setAccelerator(
+                KeyCombination.keyCombination("SHORTCUT+Q"));
+
+        menuItem.setOnAction(e -> Platform.exit());
+        return menuItem;
+    }
+
     public Menu createApplicationMenu(String appName) {
         if (menuToolkit != null) {
             return new Menu(appName, null,
@@ -170,7 +183,4 @@ public class MainApp extends Application {
 			ioe.printStackTrace();
 		}
 	}
-
-
-
 }
