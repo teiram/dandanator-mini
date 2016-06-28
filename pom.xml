@@ -18,9 +18,8 @@
 			<resource>
 				<directory>src/main/java</directory>
 				<includes>
-					<include>com/grelobites/dandanator/view/dandanator.fxml</include>
-                    <include>com/grelobites/dandanator/view/preferences.fxml</include>
-					<include>com/grelobites/dandanator/view/theme.css</include>
+					<include>com/grelobites/dandanator/view/*.fxml</include>
+                    <include>com/grelobites/dandanator/view/*.css</include>
 				</includes>
 			</resource>
             <resource>

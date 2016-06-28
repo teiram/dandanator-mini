@@ -28,9 +28,11 @@ public class MainApp extends Application {
     private static final String APP_NAME = "Dandanator Mini ROM Generator";
 
 	private Stage primaryStage;
-    private AnchorPane preferencesPane;
-    private Configuration configuration;
     private Stage preferencesStage;
+    private Stage aboutStage;
+    private AnchorPane preferencesPane;
+    private AnchorPane aboutPane;
+    private Configuration configuration;
     private MenuToolkit menuToolkit;
 
     private void populateMenuBar(MenuBar menuBar, Scene scene, DandanatorController controller) {
@@ -60,6 +62,11 @@ public class MainApp extends Application {
             fileMenu.getItems().add(quitMenuItem());
         }
         menuBar.getMenus().add(fileMenu);
+        if (menuToolkit == null) {
+            Menu helpMenu = new Menu("Help");
+            helpMenu.getItems().add(aboutMenuItem());
+            menuBar.getMenus().add(helpMenu);
+        }
     }
 
 	public static void main(String[] args) {
@@ -106,6 +113,27 @@ public class MainApp extends Application {
         return preferencesStage;
     }
 
+    private AnchorPane getAboutPane() throws IOException {
+        if (aboutPane == null) {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(MainApp.class.getResource("view/about.fxml"));
+            aboutPane = loader.load();
+        }
+        return aboutPane;
+    }
+
+    private Stage getAboutStage() throws IOException {
+        if (aboutStage == null) {
+            aboutStage = new Stage();
+            aboutStage.setScene(new Scene(getAboutPane()));
+            aboutStage.setTitle("");
+            aboutStage.initModality(Modality.APPLICATION_MODAL);
+            aboutStage.initOwner(primaryStage.getOwner());
+            aboutStage.setResizable(false);
+        }
+        return aboutStage;
+    }
+
     private void showPreferencesStage() {
         try {
             getPreferencesStage().show();
@@ -122,6 +150,20 @@ public class MainApp extends Application {
         return preferencesMenuItem;
     }
 
+    private void showAboutStage() {
+        try {
+            getAboutStage().show();
+        } catch (Exception e) {
+            LOGGER.error("Trying to show about stage", e);
+        }
+    }
+
+    private MenuItem aboutMenuItem() {
+        MenuItem aboutMenuItem = new MenuItem("About " + APP_NAME);
+        aboutMenuItem.setOnAction(event -> showAboutStage());
+        return aboutMenuItem;
+    }
+
     public static MenuItem quitMenuItem() {
         MenuItem menuItem = new MenuItem("Quit");
         menuItem.setAccelerator(
@@ -131,10 +173,10 @@ public class MainApp extends Application {
         return menuItem;
     }
 
-    public Menu createApplicationMenu(String appName) {
+    public Menu createApplicationMenu(String appName) throws IOException {
         if (menuToolkit != null) {
             return new Menu(appName, null,
-                    menuToolkit.createAboutMenuItem(appName),
+                    menuToolkit.createAboutMenuItem(appName, getAboutStage()),
                     new SeparatorMenuItem(),
                     preferencesMenuItem(),
                     new SeparatorMenuItem(),
@@ -148,7 +190,7 @@ public class MainApp extends Application {
         }
     }
 
-    private MenuBar initMenuBar() {
+    private MenuBar initMenuBar() throws IOException {
         MenuBar menuBar = new MenuBar();
         if (menuToolkit != null) {
             Menu applicationMenu = createApplicationMenu(APP_NAME);
