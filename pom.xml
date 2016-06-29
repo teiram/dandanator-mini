@@ -11,6 +11,12 @@
 		<mainClass>com.grelobites.dandanator.MainApp</mainClass>
 	</properties>
 
+    <scm>
+        <connection>scm:git:git@github.com:teiram/dandanator-mini.git</connection>
+        <url>scm:git:git@github.com:teiram/dandanator-mini.git</url>
+        <developerConnection>scm:git:git@github.com:teiram/dandanator-mini.git</developerConnection>
+    </scm>
+
 	<build>
 		<resources>
 		<!--  A bit ugly, but the SceneBuilder likes to have the fxml and 
@@ -72,6 +78,10 @@
                         <runtime></runtime>
                     </bundleArguments>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
             </plugin>
 		</plugins>
 	</build>
