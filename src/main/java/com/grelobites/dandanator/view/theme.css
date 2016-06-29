@@ -135,3 +135,20 @@
     -fx-font-weight: normal;
     -fx-alignment: center-left;
 }
+
+.dialog-pane {
+    -fx-background-color: #2a2a2a;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: white;
+}
+
+.dialog-pane:header .header-panel {
+    -fx-background-color: #2a2a2a;
+}
+
+.dialog-pane:header .header-panel .label {
+    -fx-font-style: italic;
+    -fx-font-size: 1.1em;
+}
