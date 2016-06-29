@@ -56,9 +56,9 @@
                   </AnchorPane>
                   <TableView fx:id="gameTable" editable="true" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
                     <columns>
-                      <TableColumn fx:id="nameColumn" prefWidth="-1.0" text="Game Name" />
-                      <TableColumn fx:id="screenColumn" maxWidth="40.0" minWidth="40.0" prefWidth="-1.0" text="Scr" />
-                        <TableColumn fx:id="romColumn" maxWidth="40.0" minWidth="40.0" prefWidth="-1.0" text="Rom" />
+                      <TableColumn fx:id="nameColumn" prefWidth="-1.0" text="%gameNameColumn" />
+                      <TableColumn fx:id="screenColumn" maxWidth="40.0" minWidth="40.0" prefWidth="-1.0" text="%gameScreenColumn" />
+                        <TableColumn fx:id="romColumn" maxWidth="40.0" minWidth="40.0" prefWidth="-1.0" text="%gameRomColumn" />
                     </columns>
                      <GridPane.margin>
                         <Insets bottom="5.0" left="5.0" />
@@ -72,7 +72,7 @@
                         <Insets bottom="5.0" right="5.0" />
                      </GridPane.margin>
                      <children>
-                        <Label fx:id="pokesViewLabel" minHeight="-Infinity" prefHeight="17.0" prefWidth="265.0" styleClass="pokesTitle" text="No game selected" />
+                        <Label fx:id="pokesViewLabel" minHeight="-Infinity" prefHeight="17.0" prefWidth="265.0" styleClass="pokesTitle" text="%noGameSelectedMessage" />
                         <TreeView fx:id="pokeView" editable="true" prefHeight="200.0" prefWidth="200.0" showRoot="false" />
                      </children>
                   </VBox>
@@ -98,7 +98,7 @@
                               <Font size="12.0" />
                            </font></Button>
                         <Separator orientation="VERTICAL" prefHeight="27.0" prefWidth="47.0" />
-                      <Button fx:id="createRomButton" disable="true" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="125.0" text="Create ROM" />
+                      <Button fx:id="createRomButton" disable="true" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="125.0" text="%createRomSetButton" />
                      </children>
                   </HBox>
                   <HBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="27.0" prefWidth="252.0" spacing="10.0">

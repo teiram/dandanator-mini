@@ -7,6 +7,7 @@ import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.model.PokeViewable;
 import com.grelobites.dandanator.util.GameUtil;
 import com.grelobites.dandanator.util.ImageUtil;
+import com.grelobites.dandanator.util.LocaleUtil;
 import com.grelobites.dandanator.util.ZxScreen;
 import com.grelobites.dandanator.view.util.DialogUtil;
 import com.grelobites.dandanator.view.util.PokeEntityTreeCell;
@@ -176,7 +177,7 @@ public class DandanatorController {
         setupContext();
 
 		gameTable.setItems(context.getGameList());
-		gameTable.setPlaceholder(new Label("Drop games here!"));
+		gameTable.setPlaceholder(new Label(LocaleUtil.i18n("dropGamesMessage")));
 
         gameTable.setRowFactory(rf -> {
 			TableRow<Game> row = new TableRow<>();
@@ -333,7 +334,7 @@ public class DandanatorController {
 
         createRomButton.setOnAction(c -> {
             FileChooser chooser = new FileChooser();
-            chooser.setTitle("Save ROM Set");
+            chooser.setTitle(LocaleUtil.i18n("saveRomSet"));
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
             try {
                 context.getRomSetHandler()
@@ -345,7 +346,7 @@ public class DandanatorController {
 
         addRomButton.setOnAction(c -> {
            FileChooser chooser = new FileChooser();
-            chooser.setTitle("Open snapshots");
+            chooser.setTitle(LocaleUtil.i18n("openSnapshot"));
             final List<File> snapshotFiles = chooser.showOpenMultipleDialog(addRomButton.getScene().getWindow());
             if (snapshotFiles != null) {
                 try {
@@ -363,9 +364,10 @@ public class DandanatorController {
 
         clearRomsetButton.setOnAction(c -> {
             Optional<ButtonType> result = DialogUtil
-                    .buildAlert("Confirm Game Deletion",
-                        "This action will completely erase the current games",
-                        "Are you sure?").showAndWait();
+                    .buildAlert(LocaleUtil.i18n("gameDeletionConfirmTitle"),
+                            LocaleUtil.i18n("gameDeletionConfirmHeader"),
+                            LocaleUtil.i18n("gameDeletionConfirmContent"))
+                    .showAndWait();
 
             if (result.get() == ButtonType.OK){
                 context.getGameList().clear();
@@ -395,9 +397,10 @@ public class DandanatorController {
             Game game = gameTable.getSelectionModel().getSelectedItem();
             if (game != null) {
                 Optional<ButtonType> result = DialogUtil
-                        .buildAlert("Confirm Poke Set Deletion",
-                                "This action will completely erase the trainers of the selected game",
-                                "Are you sure?").showAndWait();
+                        .buildAlert(LocaleUtil.i18n("pokeSetDeletionConfirmTitle"),
+                                LocaleUtil.i18n("pokeSetDeletionConfirmHeader"),
+                                LocaleUtil.i18n("pokeSetDeletionConfirmContent"))
+                        .showAndWait();
 
                 if (result.get() == ButtonType.OK){
                     game.getTrainerList().getChildren().clear();
@@ -477,7 +480,7 @@ public class DandanatorController {
             addPokeButton.setDisable(true);
             removeAllGamePokesButton.setDisable(true);
             removeSelectedPokeButton.setDisable(true);
-            pokesViewLabel.setText("No game selected");
+            pokesViewLabel.setText(LocaleUtil.i18n("noGameSelectedMessage"));
             pokeView.setDisable(true);
             pokeView.setRoot(null);
 
@@ -485,7 +488,7 @@ public class DandanatorController {
 			currentScreenshot.setImage(game.getScreenshot());
             removeSelectedRomButton.setDisable(false);
             addPokeButton.setDisable(false);
-            pokesViewLabel.setText(String.format("Trainers / Pokes for %s", game.getName()));
+            pokesViewLabel.setText(String.format(LocaleUtil.i18n("trainersHeadingMessage"), game.getName()));
             pokeView.setRoot(new RecursiveTreeItem<>(game.getTrainerList(), PokeViewable::getChildren,
                     this::computePokeChange));
             pokeView.setDisable(false);

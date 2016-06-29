@@ -1,5 +1,6 @@
 package com.grelobites.dandanator;
 
+import com.grelobites.dandanator.util.LocaleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,10 +43,10 @@ public class Constants {
     public static final int MAX_POKES_PER_TRAINER = 6;
     public static final int MAX_TRAINERS_PER_GAME = 8;
 
-    public static final String DEFAULT_TESTROMKEY_MESSAGE = "Test Rom";
-    public static final String DEFAULT_TOGGLEPOKESKEY_MESSAGE = "Toggle Pokes";
-    public static final String DEFAULT_LAUNCHGAME_MESSAGE = "Launch Game";
-    public static final String DEFAULT_SELECTPOKE_MESSAGE = "Select Pokes";
+    public static final String DEFAULT_TESTROMKEY_MESSAGE = LocaleUtil.i18n("testRomDefaultMessage");
+    public static final String DEFAULT_TOGGLEPOKESKEY_MESSAGE = LocaleUtil.i18n("togglePokesDefaultMessage");
+    public static final String DEFAULT_LAUNCHGAME_MESSAGE = LocaleUtil.i18n("launchGameDefaultMessage");
+    public static final String DEFAULT_SELECTPOKE_MESSAGE = LocaleUtil.i18n("selectPokesDefaultMessage");
     public static final int TOGGLE_POKES_MESSAGE_MAXLENGTH = 23;
     public static final int TEST_ROM_MESSAGE_MAXLENGTH = 23;
     public static final int LAUNCH_GAME_MESSAGE_MAXLENGTH = 23;

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 
+import com.grelobites.dandanator.util.LocaleUtil;
 import com.grelobites.dandanator.view.DandanatorController;
 import de.codecentric.centerdevice.MenuToolkit;
 import javafx.application.Application;
@@ -37,15 +38,15 @@ public class MainApp extends Application {
     private MenuToolkit menuToolkit;
 
     private void populateMenuBar(MenuBar menuBar, Scene scene, DandanatorController controller) {
-        Menu fileMenu = new Menu("File");
-        MenuItem importRomSet = new MenuItem("Import ROM Set...");
+        Menu fileMenu = new Menu(LocaleUtil.i18n("fileMenuTitle"));
+        MenuItem importRomSet = new MenuItem(LocaleUtil.i18n("importRomSetMenuEntry"));
         importRomSet.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+I")
         );
 
         importRomSet.setOnAction(f -> {
             FileChooser chooser = new FileChooser();
-            chooser.setTitle("Import ROM Set");
+            chooser.setTitle(LocaleUtil.i18n("importRomSetChooser"));
             final File romSetFile = chooser.showOpenDialog(scene.getWindow());
             try {
                 if (romSetFile != null) {
@@ -64,7 +65,7 @@ public class MainApp extends Application {
         }
         menuBar.getMenus().add(fileMenu);
         if (menuToolkit == null) {
-            Menu helpMenu = new Menu("Help");
+            Menu helpMenu = new Menu(LocaleUtil.i18n("helpMenuTitle"));
             helpMenu.getItems().add(aboutMenuItem());
             menuBar.getMenus().add(helpMenu);
         }
@@ -97,6 +98,7 @@ public class MainApp extends Application {
         if (preferencesPane == null) {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(MainApp.class.getResource("view/preferences.fxml"));
+            loader.setResources(LocaleUtil.getBundle());
             preferencesPane = loader.load();
         }
         return preferencesPane;
@@ -106,7 +108,7 @@ public class MainApp extends Application {
         if (preferencesStage == null) {
             preferencesStage = new Stage();
             preferencesStage.setScene(new Scene(getPreferencesPane()));
-            preferencesStage.setTitle("Preferences");
+            preferencesStage.setTitle(LocaleUtil.i18n("preferencesStageTitle"));
             preferencesStage.initModality(Modality.WINDOW_MODAL);
             preferencesStage.initOwner(primaryStage.getOwner());
             preferencesStage.setResizable(false);
@@ -144,7 +146,7 @@ public class MainApp extends Application {
     }
 
     private MenuItem preferencesMenuItem() {
-        MenuItem preferencesMenuItem = new MenuItem("Preferences...");
+        MenuItem preferencesMenuItem = new MenuItem(LocaleUtil.i18n("preferencesMenuEntry"));
         preferencesMenuItem.setAccelerator(KeyCombination.keyCombination("SHORTCUT+,"));
         preferencesMenuItem.setOnAction(event -> showPreferencesStage());
 
@@ -160,13 +162,13 @@ public class MainApp extends Application {
     }
 
     private MenuItem aboutMenuItem() {
-        MenuItem aboutMenuItem = new MenuItem("About...");
+        MenuItem aboutMenuItem = new MenuItem(LocaleUtil.i18n("aboutMenuEntry"));
         aboutMenuItem.setOnAction(event -> showAboutStage());
         return aboutMenuItem;
     }
 
     public static MenuItem quitMenuItem() {
-        MenuItem menuItem = new MenuItem("Quit");
+        MenuItem menuItem = new MenuItem(LocaleUtil.i18n("quitMenuEntry"));
         menuItem.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+Q"));
 
@@ -204,6 +206,7 @@ public class MainApp extends Application {
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			loader.setLocation(MainApp.class.getResource("view/dandanator.fxml"));
+            loader.setResources(LocaleUtil.getBundle());
 			BorderPane applicationPane = loader.load();
             menuToolkit = MenuToolkit.toolkit(Locale.getDefault());
             MenuBar menuBar = initMenuBar();

@@ -1,5 +1,6 @@
 package com.grelobites.dandanator.model;
 
+import com.grelobites.dandanator.util.LocaleUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.slf4j.Logger;
@@ -11,7 +12,7 @@ public class TrainerList implements PokeViewable {
     private static final Logger LOGGER = LoggerFactory.getLogger(TrainerList.class);
 
     private static final int MAX_TRAINERS_PER_GAME = 8;
-    private static final String NEW_TRAINER_NAME = "New Poke";
+    private static final String NEW_TRAINER_NAME = LocaleUtil.i18n("newPokeMessage");
     private static final String EMPTY_STRING = "";
 
     private ObservableList<PokeViewable> children = FXCollections.observableArrayList();

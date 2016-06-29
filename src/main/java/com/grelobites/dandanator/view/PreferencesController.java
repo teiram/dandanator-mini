@@ -3,6 +3,7 @@ package com.grelobites.dandanator.view;
 import com.grelobites.dandanator.Configuration;
 import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.util.ImageUtil;
+import com.grelobites.dandanator.util.LocaleUtil;
 import com.grelobites.dandanator.util.ZxColor;
 import com.grelobites.dandanator.util.ZxScreen;
 import com.grelobites.dandanator.util.romset.RomSetType;
@@ -167,7 +168,7 @@ public class PreferencesController {
         backgroundImageView.setImage(backgroundImage);
         changeBackgroundImageButton.setOnAction(event -> {
             FileChooser chooser = new FileChooser();
-            chooser.setTitle("Select new Background Image");
+            chooser.setTitle(LocaleUtil.i18n("selectNewBackgroundImage"));
             final File backgroundImageFile = chooser.showOpenDialog(changeBackgroundImageButton
                     .getScene().getWindow());
             try {
@@ -189,7 +190,7 @@ public class PreferencesController {
         charSetImageView.setImage(charSetImage);
         changeCharSetButton.setOnAction(event -> {
             FileChooser chooser = new FileChooser();
-            chooser.setTitle("Select new CharSet");
+            chooser.setTitle(LocaleUtil.i18n("selectNewCharSetMessage"));
             final File charSetFile = chooser.showOpenDialog(changeCharSetButton.getScene().getWindow());
             try {
                 updateCharSetPath(charSetFile);
@@ -272,7 +273,7 @@ public class PreferencesController {
 
         changeTestRomButton.setOnAction(event -> {
             FileChooser chooser = new FileChooser();
-            chooser.setTitle("Select Test ROM");
+            chooser.setTitle(LocaleUtil.i18n("selectTestRomMessage"));
             final File testRomFile = chooser.showOpenDialog(changeTestRomButton.getScene().getWindow());
             try {
                 updateTestRom(testRomFile);
@@ -284,12 +285,12 @@ public class PreferencesController {
 
         resetTestRomButton.setOnAction(event -> {
             getConfiguration().setTestRomPath(null);
-            testRomPath.setText("Built in");
+            testRomPath.setText(LocaleUtil.i18n("builtInMessage"));
         });
 
         changeDandanatorMiniRomButton.setOnAction(event -> {
             FileChooser chooser = new FileChooser();
-            chooser.setTitle("Select Dandanator ROM");
+            chooser.setTitle(LocaleUtil.i18n("selectDandanatorRomMessage"));
             final File dandanatorRomFile = chooser.showOpenDialog(changeDandanatorMiniRomButton.getScene().getWindow());
             try {
                 updateDandanatorRom(dandanatorRomFile);
@@ -300,7 +301,7 @@ public class PreferencesController {
         });
         resetDandanatorMiniRomButton.setOnAction(event -> {
             getConfiguration().setDandanatorRomPath(null);
-            dandanatorMiniRomPath.setText("Built in");
+            dandanatorMiniRomPath.setText(LocaleUtil.i18n("builtInMessage"));
         });
 
 
