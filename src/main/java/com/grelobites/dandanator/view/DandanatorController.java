@@ -373,7 +373,14 @@ public class DandanatorController {
         removeAllGamePokesButton.setOnAction(c -> {
             Game game = gameTable.getSelectionModel().getSelectedItem();
             if (game != null) {
-                game.getTrainerList().getChildren().clear();
+                Optional<ButtonType> result = DialogUtil
+                        .buildAlert("Confirm Poke Set Deletion",
+                                "This action will completely erase the trainers of the selected game",
+                                "Are you sure?").showAndWait();
+
+                if (result.get() == ButtonType.OK){
+                    game.getTrainerList().getChildren().clear();
+                }
             }
         });
 
