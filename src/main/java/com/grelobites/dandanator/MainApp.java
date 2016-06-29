@@ -87,7 +87,7 @@ public class MainApp extends Application {
 		this.primaryStage.setTitle("Dandanator Mini ROM Generator");
 
 		this.primaryStage.getIcons()
-			.add(new Image("file:dandanator-icon.png"));
+			.add(new Image(MainApp.class.getResourceAsStream("/dandanator-icon.png")));
 
 		initRootLayout();
 
