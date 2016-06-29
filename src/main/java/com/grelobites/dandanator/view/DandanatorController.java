@@ -324,10 +324,12 @@ public class DandanatorController {
            FileChooser chooser = new FileChooser();
             chooser.setTitle("Open snapshots");
             final List<File> snapshotFiles = chooser.showOpenMultipleDialog(addRomButton.getScene().getWindow());
-            try {
-                addSnapshotFiles(snapshotFiles);
-            } catch (Exception e) {
-                LOGGER.error("Opening snapshots from files " +  snapshotFiles, e);
+            if (snapshotFiles != null) {
+                try {
+                    addSnapshotFiles(snapshotFiles);
+                } catch (Exception e) {
+                    LOGGER.error("Opening snapshots from files " + snapshotFiles, e);
+                }
             }
         });
 
