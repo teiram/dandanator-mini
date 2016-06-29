@@ -68,7 +68,8 @@ public class GameUtil {
     }
 
     public static String filterGameName(String name) {
-        return name.codePoints().map(c -> allowedGameNameChar(c) ? c : '_').limit(Constants.GAMENAME_SIZE)
+        return name.codePoints().map(c -> allowedGameNameChar(c) ? c : '_')
+                .limit(Constants.GAMENAME_SIZE)
                 .collect(StringBuilder::new,
                         StringBuilder::appendCodePoint,
                         StringBuilder::append)
