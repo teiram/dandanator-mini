@@ -92,7 +92,7 @@
 
 .pokesBox .tree-view:focused {
     -fx-border-color: white;
-    -fx-border.width: 1;
+    -fx-border-width: 1;
 }
 
 .pokesBox .tree-view {
