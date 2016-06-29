@@ -90,6 +90,16 @@
     -fx-border-color: white;
 }
 
+.pokesBox .tree-view:focused {
+    -fx-border-color: white;
+    -fx-border.width: 1;
+}
+
+.pokesBox .tree-view {
+    -fx-border-color: white;
+    -fx-border-width: 1;
+}
+
 .pokesBox .tree-cell {
     -fx-background-color: #2a2a2a;
     -fx-text-fill: white;
