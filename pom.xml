@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.grelobites</groupId>
 	<artifactId>dandanator-mini</artifactId>
-	<version>4.0-SNAPSHOT</version>
+	<version>4.1-SNAPSHOT</version>
 	<name>Dandanator Mini ROM Generator</name>
 
 	<properties>
@@ -15,7 +14,8 @@
         <connection>scm:git:git@github.com:teiram/dandanator-mini.git</connection>
         <url>scm:git:git@github.com:teiram/dandanator-mini.git</url>
         <developerConnection>scm:git:git@github.com:teiram/dandanator-mini.git</developerConnection>
-    </scm>
+      <tag>HEAD</tag>
+  </scm>
 
 	<build>
 		<resources>
@@ -75,7 +75,7 @@
                     <mainClass>${mainClass}</mainClass>
                     <appName>Dandanator Mini ROM Generator</appName>
                     <bundleArguments>
-                        <runtime></runtime>
+                        <runtime />
                     </bundleArguments>
                 </configuration>
             </plugin>
