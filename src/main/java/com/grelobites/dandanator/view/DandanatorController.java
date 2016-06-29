@@ -224,7 +224,7 @@ public class DandanatorController {
 	            });
 			return row;
 		});
-		
+
         nameColumn.setCellValueFactory(
                 cellData -> cellData.getValue().nameProperty());
         
@@ -415,6 +415,19 @@ public class DandanatorController {
         context.getConfiguration().testRomMessageProperty().addListener(
                 (observable, oldValue, newValue) -> updatePreviewImage());
 
+        //Update poke usage while adding or removing games from the list
+        context.getGameList().addListener((ListChangeListener.Change<? extends Game> c) -> {
+            boolean gameRemoved = false;
+            while (c.next()) {
+                if (c.wasRemoved()) {
+                    gameRemoved = true;
+                    break;
+                }
+            }
+            if (gameRemoved) {
+                pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(context.getGameList()));
+            }
+        });
 
     }
 	
