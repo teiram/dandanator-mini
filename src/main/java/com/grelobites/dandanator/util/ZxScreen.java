@@ -6,8 +6,11 @@ import com.grelobites.dandanator.Constants;
 
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZxScreen extends WritableImage {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZxScreen.class);
 
 	private static final String DEFAULT_CHARSETPATH = "/charset.rom";
 	
@@ -81,30 +84,38 @@ public class ZxScreen extends WritableImage {
 	}
 	
 	public void deleteChar(int line, int column) {
-		int xpos = column * 8;
-		int ypos = line * 8;
-		PixelWriter writer = getPixelWriter();
-		for (int y = 0; y < 8; y++) {
-			for (int x = 0; x < 8; x++) {
-				writer.setArgb(xpos + x, ypos + y, ink.argb());
-			}
-		}
+        if (line < lines && column < columns) {
+            int xpos = column * 8;
+            int ypos = line * 8;
+            PixelWriter writer = getPixelWriter();
+            for (int y = 0; y < 8; y++) {
+                for (int x = 0; x < 8; x++) {
+                    writer.setArgb(xpos + x, ypos + y, ink.argb());
+                }
+            }
+        } else {
+            LOGGER.debug("Out of bounds access to screen");
+        }
 	}
 	
 	public void printChar(char c, int line, int column) {
-		int xpos = column * 8;
-		int ypos = line * 8;
-		PixelWriter writer = getPixelWriter();
-		for (int y = 0; y < 8; y++) {
-			int mask = 0x80;
-			byte charRasterLine = charRasterLine(c, y);
-			for (int x = 0; x < 8; x++) {
-				int color = (charRasterLine & mask) != 0 ? 
-						pen.argb() : ink.argb();
-				writer.setArgb(xpos + x, ypos + y, color);	
-				mask >>= 1;
-			}
-		}
+        if (line < lines && column < columns) {
+            int xpos = column * 8;
+            int ypos = line * 8;
+            PixelWriter writer = getPixelWriter();
+            for (int y = 0; y < 8; y++) {
+                int mask = 0x80;
+                byte charRasterLine = charRasterLine(c, y);
+                for (int x = 0; x < 8; x++) {
+                    int color = (charRasterLine & mask) != 0 ?
+                            pen.argb() : ink.argb();
+                    writer.setArgb(xpos + x, ypos + y, color);
+                    mask >>= 1;
+                }
+            }
+        } else {
+            LOGGER.debug("Out of bounds access to screen");
+        }
 	}
 
 	public void printLine(String text, int line, int column) {
