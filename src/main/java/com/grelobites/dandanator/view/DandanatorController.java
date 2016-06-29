@@ -35,6 +35,7 @@ import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.stage.FileChooser;
+import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,10 +239,21 @@ public class DandanatorController {
 
         nameColumn.setCellValueFactory(
                 cellData -> cellData.getValue().nameProperty());
-        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn(
+                new StringConverter<String>() {
+                    @Override
+                    public String toString(String value) {
+                        return value;
+                    }
+
+                    @Override
+                    public String fromString(String value) {
+                        return GameUtil.filterGameName(value);
+                    }
+                }));
 
         screenColumn.setCellValueFactory(
-        		cellData -> cellData.getValue().screenProperty());
+                        cellData -> cellData.getValue().screenProperty());
         screenColumn.setCellFactory(CheckBoxTableCell
         		.forTableColumn(screenColumn));
         

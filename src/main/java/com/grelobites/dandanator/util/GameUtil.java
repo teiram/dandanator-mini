@@ -58,11 +58,21 @@ public class GameUtil {
         int extensionIndex;
         if ((extensionIndex = fileName.lastIndexOf('.')) > 0) {
             fileName = fileName.substring(0, extensionIndex);
+
         }
-        if (fileName.length() > Constants.GAMENAME_SIZE) {
-            fileName = fileName.substring(0, Constants.GAMENAME_SIZE);
-        }
-        return fileName;
+        return filterGameName(fileName);
+    }
+
+    private static boolean allowedGameNameChar(Integer character) {
+        return character > 31 && character < 127;
+    }
+
+    public static String filterGameName(String name) {
+        return name.codePoints().map(c -> allowedGameNameChar(c) ? c : '_').limit(Constants.GAMENAME_SIZE)
+                .collect(StringBuilder::new,
+                        StringBuilder::appendCodePoint,
+                        StringBuilder::append)
+                .toString();
     }
 
     public static int getGamePokeSizeUsage(Game game) {
