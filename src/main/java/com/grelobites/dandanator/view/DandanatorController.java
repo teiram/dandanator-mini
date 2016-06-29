@@ -27,6 +27,7 @@ import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.ClipboardContent;
@@ -128,6 +129,7 @@ public class DandanatorController {
     }
     
     private void onGameListChange() {
+        LOGGER.debug("onGameListChange");
     	createRomButton.setDisable(context.getGameList().size() != getAvailableSlotCount());
         addRomButton.setDisable(context.getGameList().size() == getAvailableSlotCount());
         clearRomsetButton.setDisable(context.getGameList().isEmpty());
@@ -164,7 +166,7 @@ public class DandanatorController {
         context = new Context();
         context.setConfiguration(Configuration.getInstance());
         context.setGameList(FXCollections.observableArrayList(game -> {
-            return new Observable[] {game.romProperty(), game.screenProperty()};
+            return new Observable[] {game.nameProperty(), game.romProperty(), game.screenProperty()};
         }));
     }
 	@FXML
@@ -174,7 +176,8 @@ public class DandanatorController {
 
 		gameTable.setItems(context.getGameList());
 		gameTable.setPlaceholder(new Label("Drop games here!"));
-		gameTable.setRowFactory(rf -> {
+
+        gameTable.setRowFactory(rf -> {
 			TableRow<Game> row = new TableRow<>();
 	           row.setOnDragDetected(event -> {
 	                if (!row.isEmpty()) {
@@ -224,12 +227,19 @@ public class DandanatorController {
 	                	LOGGER.debug("Dragboard content is not of the required type");
 	                }
 	            });
+
+                row.setOnMouseClicked(e -> {
+                    if (row.isEmpty()) {
+                        gameTable.getSelectionModel().clearSelection();
+                    }
+                });
 			return row;
 		});
 
         nameColumn.setCellValueFactory(
                 cellData -> cellData.getValue().nameProperty());
-        
+        nameColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+
         screenColumn.setCellValueFactory(
         		cellData -> cellData.getValue().screenProperty());
         screenColumn.setCellFactory(CheckBoxTableCell
@@ -241,7 +251,6 @@ public class DandanatorController {
         		.forTableColumn(romColumn));
         
         initializeImages();
-
 
         pokeView.setEditable(true);
         pokeView.setCellFactory(p -> {
