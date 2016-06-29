@@ -35,9 +35,9 @@ import java.util.regex.Pattern;
  * bit 0-2 : bank value
  * 3 : ignore bank (1=yes, always set for 48K games)
  * <p>
- * There theoretically is no space between the line tag and the <bank> field.
- * However, since the <bank> value is never larger than 8, you will always see
- * 2 spaces in front of the <bank>.
+ * There theoretically is no space between the line tag and the bank field.
+ * However, since the bank value is never larger than 8, you will always see
+ * 2 spaces in front of the bank.
  * <p>
  * The 'aaaaa' (address) is in range [16384, 65535].
  * <p>
