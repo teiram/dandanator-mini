@@ -8,10 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.prefs.Preferences;
 
 public class Configuration {
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
@@ -26,6 +24,7 @@ public class Configuration {
     private static final String TESTROMMESSAGE_PROPERTY = "testRomMessage";
     private static final String LAUNCHGAMEMESSAGE_PROPERTY = "launchGameMessage";
     private static final String SELECTPOKESMESSAGE_PROPERTY = "selectPokesMessage";
+    private static final String MODE_PROPERTY = "mode";
 
     private static final String DEFAULT_MODE = RomSetType.DANDANATOR_MINI.name();
 
@@ -70,6 +69,7 @@ public class Configuration {
     public void setDandanatorRomPath(String dandanatorRomPath) {
         this.dandanatorRomPath = dandanatorRomPath;
         dandanatorRom = null;
+        persistConfigurationValue(DANDANATORROMPATH_PROPERTY, dandanatorRomPath);
     }
 
     public String getBackgroundImagePath() {
@@ -85,6 +85,7 @@ public class Configuration {
         //enter before the property is set to null
         backgroundImage = null;
         this.backgroundImagePath.set(backgroundImagePath);
+        persistConfigurationValue(BACKGROUNDIMAGEPATH_PROPERTY, this.backgroundImagePath.get());
     }
 
     public String getTestRomPath() {
@@ -94,6 +95,7 @@ public class Configuration {
     public void setTestRomPath(String testRomPath) {
         this.testRomPath = testRomPath;
         testRom = null;
+        persistConfigurationValue(TESTROMPATH_PROPERTY, testRomPath);
     }
 
     public byte[] getDandanatorRom() throws IOException {
@@ -187,6 +189,7 @@ public class Configuration {
     public void setCharSetPath(String charSetPath) {
         charSet = null;
         this.charSetPath.set(charSetPath);
+        persistConfigurationValue(CHARSETPATH_PROPERTY, this.charSetPath.get());
     }
 
     public String getTogglePokesMessage() {
@@ -198,6 +201,7 @@ public class Configuration {
 
     public void setTogglePokesMessage(String togglePokesMessage) {
         this.togglePokesMessage.set(togglePokesMessage);
+        persistConfigurationValue(CHARSETPATH_PROPERTY, this.togglePokesMessage.get());
     }
 
     public StringProperty togglePokesMessageProperty() {
@@ -213,6 +217,7 @@ public class Configuration {
 
     public void setTestRomMessage(String testRomMessage) {
         this.testRomMessage.set(testRomMessage);
+        persistConfigurationValue(TESTROMMESSAGE_PROPERTY, this.testRomMessage.get());
     }
 
     public StringProperty testRomMessageProperty() {
@@ -228,6 +233,7 @@ public class Configuration {
 
     public void setLaunchGameMessage(String launchGameMessage) {
         this.launchGameMessage.set(launchGameMessage);
+        persistConfigurationValue(LAUNCHGAMEMESSAGE_PROPERTY, this.launchGameMessage.get());
     }
 
     public StringProperty launchGameMessageProperty() {
@@ -247,6 +253,7 @@ public class Configuration {
 
     public void setSelectPokesMessage(String selectPokesMessage) {
         this.selectPokesMessage.set(selectPokesMessage);
+        persistConfigurationValue(SELECTPOKESMESSAGE_PROPERTY, this.selectPokesMessage.get());
     }
 
 
@@ -259,61 +266,49 @@ public class Configuration {
 
     public void setMode(String mode) {
         this.mode = mode;
+        persistConfigurationValue(MODE_PROPERTY, mode);
     }
 
 
-    private static Configuration setFromProperties(Properties p, Configuration configuration) {
-        configuration.setBackgroundImagePath(
-                p.getProperty(BACKGROUNDIMAGEPATH_PROPERTY));
-        configuration.setDandanatorRomPath(
-                p.getProperty(DANDANATORROMPATH_PROPERTY));
-        configuration.setTestRomPath(
-                p.getProperty(TESTROMPATH_PROPERTY));
-        configuration.setCharSetPath(
-                p.getProperty(CHARSETPATH_PROPERTY));
-        configuration.setLaunchGameMessage(
-                p.getProperty(LAUNCHGAMEMESSAGE_PROPERTY));
-        configuration.setSelectPokesMessage(
-                p.getProperty(SELECTPOKESMESSAGE_PROPERTY));
-        configuration.setTestRomMessage(
-                p.getProperty(TESTROMMESSAGE_PROPERTY));
-        configuration.setTogglePokesMessage(
-                p.getProperty(TOGGLEPOKESMESSAGE_PROPERTY));
+    private static Preferences getApplicationPreferences() {
+        return Preferences.userNodeForPackage(Configuration.class);
+    }
 
+    private static void persistConfigurationValue(String key, String value) {
+        LOGGER.debug("persistConfigurationValue " + key + ", " + value);
+        Preferences p = getApplicationPreferences();
+        if (value != null) {
+            p.put(key, value);
+        } else {
+            p.remove(key);
+        }
+    }
+
+    private static Configuration setFromPreferences(Configuration configuration) {
+        Preferences p = getApplicationPreferences();
+        //Do not use setters here, since they force the preferences to be reset again
+        configuration.backgroundImagePath.set(
+                p.get(BACKGROUNDIMAGEPATH_PROPERTY, null));
+        configuration.dandanatorRomPath =
+                p.get(DANDANATORROMPATH_PROPERTY, null);
+        configuration.testRomPath =
+                p.get(TESTROMPATH_PROPERTY, null);
+        configuration.charSetPath.set(
+                p.get(CHARSETPATH_PROPERTY, null));
+        configuration.launchGameMessage.set(
+                p.get(LAUNCHGAMEMESSAGE_PROPERTY, null));
+        configuration.selectPokesMessage.set(
+                p.get(SELECTPOKESMESSAGE_PROPERTY, null));
+        configuration.testRomMessage.set(
+                p.get(TESTROMMESSAGE_PROPERTY, null));
+        configuration.togglePokesMessage.set(
+                p.get(TOGGLEPOKESMESSAGE_PROPERTY, null));
+        configuration.mode = p.get(MODE_PROPERTY, null);
         return configuration;
-    }
-
-    private static Properties loadConfigurationFromFile(Path configFile) {
-        LOGGER.debug("Trying to load configuration from " + configFile.toAbsolutePath());
-        Properties properties = new Properties();
-        try {
-            if (Files.exists(configFile) && Files.isRegularFile(configFile) && Files.isReadable(configFile)) {
-                properties.load(Files.newInputStream(configFile));
-                return properties;
-            }
-        } catch (Exception e) {
-            LOGGER.warn("Loading configuration from " + configFile, e);
-        }
-        return null;
-    }
-
-    private static Optional<Properties> loadConfigurationFile() {
-        Properties properties = null;
-        String userHome = System.getProperty("user.home");
-        if (userHome != null) {
-            Path configFile = Paths.get(userHome, CONFIGURATION_FILE);
-            properties = loadConfigurationFromFile(configFile);
-            if (properties == null) {
-                Path currentPath = Paths.get("");
-                properties = loadConfigurationFromFile(currentPath);
-            }
-        }
-        return Optional.ofNullable(properties);
     }
 
     synchronized private static Configuration newInstance() {
         final Configuration configuration = new Configuration();
-        loadConfigurationFile().map(p -> setFromProperties(p, configuration));
-        return configuration;
+        return setFromPreferences(configuration);
     }
 }
