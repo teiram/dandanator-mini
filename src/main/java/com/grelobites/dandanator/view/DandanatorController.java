@@ -387,7 +387,12 @@ public class DandanatorController {
            if (pokeView.getSelectionModel().getSelectedItem() != null) {
                TreeItem<PokeViewable> selected = pokeView.getSelectionModel().getSelectedItem();
                if (selected != null) {
-                   pokeView.getSelectionModel().select(pokeView.getRoot());
+                   int selectedIndex = pokeView.getSelectionModel().getSelectedIndex();
+                   if (selectedIndex >= 0) {
+                       pokeView.getSelectionModel().select(selectedIndex - 1);
+                   } else {
+                       pokeView.getSelectionModel().select(pokeView.getRoot());
+                   }
                    selected.getValue().getParent().removeChild(selected.getValue());
                }
            }
