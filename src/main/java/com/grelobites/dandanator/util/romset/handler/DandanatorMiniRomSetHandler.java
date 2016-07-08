@@ -281,19 +281,17 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                     LOGGER.debug("Importing " + trainerCount + " trainers");
                     for (int j = 0; j < trainerCount; j++) {
                         int pokeCount = is.read();
-                        if (pokeCount > 0) {
-                            LOGGER.debug("Importing " + pokeCount + "pokes");
-                            String trainerName = Util.getNullTerminatedString(is, 3, 24);
-                            Optional<Trainer> trainer = holder.getTrainerList().addTrainerNode(trainerName);
-                            if (trainer.isPresent()) {
-                                for (int k = 0; k < pokeCount; k++) {
-                                    int address = Util.asLittleEndian(is);
-                                    int value = is.read();
-                                    trainer.map(t -> {
-                                        t.addPoke(address, value);
-                                        return true;
-                                    });
-                                }
+                        String trainerName = Util.getNullTerminatedString(is, 3, 24);
+                        Optional<Trainer> trainer = holder.getTrainerList().addTrainerNode(trainerName);
+                        if (trainer.isPresent() && pokeCount > 0) {
+                            LOGGER.debug("Importing " + pokeCount + " pokes on trainer " + trainerName);
+                            for (int k = 0; k < pokeCount; k++) {
+                                int address = Util.asLittleEndian(is);
+                                int value = is.read();
+                                trainer.map(t -> {
+                                    t.addPoke(address, value);
+                                    return true;
+                                });
                             }
                         }
                     }
