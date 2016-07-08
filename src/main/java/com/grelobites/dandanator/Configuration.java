@@ -20,10 +20,10 @@ public class Configuration {
 
     private static final String DANDANATORROMPATH_PROPERTY = "dandanatorRomPath";
     private static final String BACKGROUNDIMAGEPATH_PROPERTY = "backgroundImagePath";
-    private static final String TESTROMPATH_PROPERTY = "testRomPath";
+    private static final String EXTRAROMPATH_PROPERTY = "extraRomPath";
     private static final String CHARSETPATH_PROPERTY = "charSetPath";
     private static final String TOGGLEPOKESMESSAGE_PROPERTY = "togglePokesMessage";
-    private static final String TESTROMMESSAGE_PROPERTY = "testRomMessage";
+    private static final String EXTRAROMMESSAGE_PROPERTY = "extraRomMessage";
     private static final String LAUNCHGAMEMESSAGE_PROPERTY = "launchGameMessage";
     private static final String SELECTPOKESMESSAGE_PROPERTY = "selectPokesMessage";
 
@@ -31,10 +31,10 @@ public class Configuration {
 
     private String dandanatorRomPath;
     private StringProperty backgroundImagePath;
-    private String testRomPath;
+    private String extraRomPath;
     private StringProperty charSetPath;
     private StringProperty togglePokesMessage;
-    private StringProperty testRomMessage;
+    private StringProperty extraRomMessage;
     private StringProperty launchGameMessage;
     private StringProperty selectPokesMessage;
     private String mode;
@@ -43,14 +43,14 @@ public class Configuration {
 
     byte[] dandanatorRom;
     byte[] backgroundImage;
-    byte[] testRom;
+    byte[] extraRom;
     byte[] charSet;
 
     private Configuration() {
         backgroundImagePath = new SimpleStringProperty();
         charSetPath = new SimpleStringProperty();
         togglePokesMessage = new SimpleStringProperty();
-        testRomMessage = new SimpleStringProperty();
+        extraRomMessage = new SimpleStringProperty();
         launchGameMessage = new SimpleStringProperty();
         selectPokesMessage = new SimpleStringProperty();
     }
@@ -87,13 +87,13 @@ public class Configuration {
         this.backgroundImagePath.set(backgroundImagePath);
     }
 
-    public String getTestRomPath() {
-        return testRomPath;
+    public String getExtraRomPath() {
+        return extraRomPath;
     }
 
-    public void setTestRomPath(String testRomPath) {
-        this.testRomPath = testRomPath;
-        testRom = null;
+    public void setExtraRomPath(String extraRomPath) {
+        this.extraRomPath = extraRomPath;
+        extraRom = null;
     }
 
     public byte[] getDandanatorRom() throws IOException {
@@ -136,24 +136,24 @@ public class Configuration {
         this.backgroundImage = backgroundImage;
     }
 
-    public byte[] getTestRom() throws IOException {
-        if (testRom == null) {
-            if (testRomPath != null) {
+    public byte[] getExtraRom() throws IOException {
+        if (extraRom == null) {
+            if (extraRomPath != null) {
                 try {
-                    testRom = Files.readAllBytes(Paths.get(testRomPath));
+                    extraRom = Files.readAllBytes(Paths.get(extraRomPath));
                 } catch (Exception e) {
-                    LOGGER.error("Unable to load Test ROM from " + testRomPath, e);
-                    testRom = Constants.getTestRom();
+                    LOGGER.error("Unable to load Extra ROM from " + extraRomPath, e);
+                    extraRom = Constants.getExtraRom();
                 }
             } else {
-                testRom = Constants.getTestRom();
+                extraRom = Constants.getExtraRom();
             }
         }
-        return testRom;
+        return extraRom;
     }
 
-    public void setTestRom(byte[] testRom) {
-        this.testRom = testRom;
+    public void setExtraRom(byte[] extraRom) {
+        this.extraRom = extraRom;
     }
 
     public byte[] getCharSet() throws IOException {
@@ -204,19 +204,19 @@ public class Configuration {
         return togglePokesMessage;
     }
 
-    public String getTestRomMessage() {
-        if (testRomMessage.get() == null) {
-            return Constants.DEFAULT_TESTROMKEY_MESSAGE;
+    public String getExtraRomMessage() {
+        if (extraRomMessage.get() == null) {
+            return Constants.DEFAULT_EXTRAROMKEY_MESSAGE;
         }
-        return testRomMessage.get();
+        return extraRomMessage.get();
     }
 
-    public void setTestRomMessage(String testRomMessage) {
-        this.testRomMessage.set(testRomMessage);
+    public void setExtraRomMessage(String extraRomMessage) {
+        this.extraRomMessage.set(extraRomMessage);
     }
 
-    public StringProperty testRomMessageProperty() {
-        return testRomMessage;
+    public StringProperty extraRomMessageProperty() {
+        return extraRomMessage;
     }
 
     public String getLaunchGameMessage() {
@@ -267,16 +267,16 @@ public class Configuration {
                 p.getProperty(BACKGROUNDIMAGEPATH_PROPERTY));
         configuration.setDandanatorRomPath(
                 p.getProperty(DANDANATORROMPATH_PROPERTY));
-        configuration.setTestRomPath(
-                p.getProperty(TESTROMPATH_PROPERTY));
+        configuration.setExtraRomPath(
+                p.getProperty(EXTRAROMPATH_PROPERTY));
         configuration.setCharSetPath(
                 p.getProperty(CHARSETPATH_PROPERTY));
         configuration.setLaunchGameMessage(
                 p.getProperty(LAUNCHGAMEMESSAGE_PROPERTY));
         configuration.setSelectPokesMessage(
                 p.getProperty(SELECTPOKESMESSAGE_PROPERTY));
-        configuration.setTestRomMessage(
-                p.getProperty(TESTROMMESSAGE_PROPERTY));
+        configuration.setExtraRomMessage(
+                p.getProperty(EXTRAROMMESSAGE_PROPERTY));
         configuration.setTogglePokesMessage(
                 p.getProperty(TOGGLEPOKESMESSAGE_PROPERTY));
 

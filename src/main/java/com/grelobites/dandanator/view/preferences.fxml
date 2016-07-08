@@ -60,17 +60,17 @@
                         </AnchorPane>
                         <AnchorPane layoutX="10.0" layoutY="66.0" prefHeight="28.0" prefWidth="200.0">
                            <children>
-                              <Label layoutX="38.0" layoutY="6.0" text="%testRomMessage" AnchorPane.leftAnchor="5.0" />
-                              <TextField fx:id="testRomMessage" layoutX="224.0" layoutY="1.0" prefHeight="27.0" prefWidth="242.0" AnchorPane.rightAnchor="74.0" />
-                              <Button fx:id="resetTestRomMessage" layoutX="473.0" mnemonicParsing="false" text="%resetButton" />
+                              <Label layoutX="38.0" layoutY="6.0" text="%extraRomMessage" AnchorPane.leftAnchor="5.0" />
+                              <TextField fx:id="extraRomMessage" layoutX="224.0" layoutY="1.0" prefHeight="27.0" prefWidth="242.0" AnchorPane.rightAnchor="74.0" />
+                              <Button fx:id="resetExtraRomMessage" layoutX="473.0" mnemonicParsing="false" text="%resetButton" />
                            </children>
                         </AnchorPane>
                         <AnchorPane layoutX="10.0" layoutY="94.0" prefHeight="28.0" prefWidth="200.0">
                            <children>
-                              <Label layoutX="38.0" layoutY="6.0" text="%testRom" AnchorPane.leftAnchor="5.0" />
-                              <Label fx:id="testRomPath" alignment="CENTER" layoutX="153.0" prefHeight="28.0" prefWidth="249.0" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS" />
-                              <Button fx:id="changeTestRomButton" layoutX="398.0" layoutY="1.0" mnemonicParsing="false" text="%changeButton" />
-                              <Button fx:id="resetTestRomButton" layoutX="473.0" layoutY="1.0" mnemonicParsing="false" text="%resetButton" />
+                              <Label layoutX="38.0" layoutY="6.0" text="%extraRom" AnchorPane.leftAnchor="5.0" />
+                              <Label fx:id="extraRomPath" alignment="CENTER" layoutX="153.0" prefHeight="28.0" prefWidth="249.0" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS" />
+                              <Button fx:id="changeExtraRomButton" layoutX="398.0" layoutY="1.0" mnemonicParsing="false" text="%changeButton" />
+                              <Button fx:id="resetExtraRomButton" layoutX="473.0" layoutY="1.0" mnemonicParsing="false" text="%resetButton" />
                            </children>
                         </AnchorPane>
                         <AnchorPane layoutX="10.0" layoutY="122.0" prefHeight="28.0" prefWidth="200.0">

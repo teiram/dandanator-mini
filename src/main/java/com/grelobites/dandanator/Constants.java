@@ -15,8 +15,8 @@ public class Constants {
     private static final String SINCLAIR_SCREEN_RESOURCE = "sinclair-1982.scr";
     private static final String DEFAULT_CHARSET_RESOURCE = "charset.rom";
     private static final String DANDANATOR_ROM_RESOURCE = "dandanator-mini.rom";
-    private static final String TEST_ROM_RESOURCE = "test.rom";
-    private static final String DEFAULT_VERSION = "4.1";
+    private static final String EXTRA_ROM_RESOURCE = "test.rom";
+    private static final String DEFAULT_VERSION = "4.3";
 
 	public static final int SNA_HEADER_SIZE = 27;
 	public static final int SPECTRUM_SCREEN_WIDTH = 256;
@@ -43,12 +43,12 @@ public class Constants {
     public static final int MAX_POKES_PER_TRAINER = 6;
     public static final int MAX_TRAINERS_PER_GAME = 8;
 
-    public static final String DEFAULT_TESTROMKEY_MESSAGE = LocaleUtil.i18n("testRomDefaultMessage");
+    public static final String DEFAULT_EXTRAROMKEY_MESSAGE = LocaleUtil.i18n("extraRomDefaultMessage");
     public static final String DEFAULT_TOGGLEPOKESKEY_MESSAGE = LocaleUtil.i18n("togglePokesDefaultMessage");
     public static final String DEFAULT_LAUNCHGAME_MESSAGE = LocaleUtil.i18n("launchGameDefaultMessage");
     public static final String DEFAULT_SELECTPOKE_MESSAGE = LocaleUtil.i18n("selectPokesDefaultMessage");
     public static final int TOGGLE_POKES_MESSAGE_MAXLENGTH = 23;
-    public static final int TEST_ROM_MESSAGE_MAXLENGTH = 23;
+    public static final int EXTRA_ROM_MESSAGE_MAXLENGTH = 23;
     public static final int LAUNCH_GAME_MESSAGE_MAXLENGTH = 23;
     public static final int SELECT_POKE_MESSAGE_MAXLENGTH = 23;
 
@@ -56,7 +56,7 @@ public class Constants {
     private static byte[] SINCLAIR_SCREEN;
     private static byte[] DEFAULT_CHARSET;
     private static byte[] DANDANATOR_ROM;
-    private static byte[] TEST_ROM;
+    private static byte[] EXTRA_ROM;
 
     private static byte[] fromInputStream(InputStream is, int size) throws IOException {
         byte[] result = new byte[size];
@@ -108,14 +108,14 @@ public class Constants {
         return DANDANATOR_ROM;
     }
 
-    public static byte[] getTestRom() throws IOException {
-        if (TEST_ROM == null) {
-            TEST_ROM = fromInputStream(
+    public static byte[] getExtraRom() throws IOException {
+        if (EXTRA_ROM == null) {
+            EXTRA_ROM = fromInputStream(
                     Constants.class.getClassLoader()
-                            .getResourceAsStream(TEST_ROM_RESOURCE),
+                            .getResourceAsStream(EXTRA_ROM_RESOURCE),
                     SLOT_SIZE);
         }
-        return TEST_ROM;
+        return EXTRA_ROM;
     }
 
     public static String currentVersion() {

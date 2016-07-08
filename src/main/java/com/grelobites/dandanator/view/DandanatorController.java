@@ -454,7 +454,7 @@ public class DandanatorController {
                 (observable, oldValue, newValue) -> updatePreviewImage());
         context.getConfiguration().togglePokesMessageProperty().addListener(
                 (observable, oldValue, newValue) -> updatePreviewImage());
-        context.getConfiguration().testRomMessageProperty().addListener(
+        context.getConfiguration().extraRomMessageProperty().addListener(
                 (observable, oldValue, newValue) -> updatePreviewImage());
 
         //Update poke usage while adding or removing games from the list

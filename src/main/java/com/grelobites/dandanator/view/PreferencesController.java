@@ -74,19 +74,19 @@ public class PreferencesController {
     private Button resetSelectPokesMessage;
 
     @FXML
-    private TextField testRomMessage;
+    private TextField extraRomMessage;
 
     @FXML
-    private Button resetTestRomMessage;
+    private Button resetExtraRomMessage;
 
     @FXML
-    private Label testRomPath;
+    private Label extraRomPath;
 
     @FXML
-    private Button changeTestRomButton;
+    private Button changeExtraRomButton;
 
     @FXML
-    private Button resetTestRomButton;
+    private Button resetExtraRomButton;
 
     @FXML
     private Label dandanatorMiniRomPath;
@@ -146,9 +146,9 @@ public class PreferencesController {
         }
     }
 
-    private void updateTestRom(File testRomFile) {
-        if (testRomFile.canRead() && testRomFile.isFile()) {
-            getConfiguration().setTestRomPath(testRomFile.getAbsolutePath());
+    private void updateExtraRom(File extraRomFile) {
+        if (extraRomFile.canRead() && extraRomFile.isFile()) {
+            getConfiguration().setExtraRomPath(extraRomFile.getAbsolutePath());
         } else {
             throw new IllegalArgumentException("No readable file provided");
         }
@@ -258,34 +258,34 @@ public class PreferencesController {
             selectPokesMessage.setText(getConfiguration().getSelectPokesMessage());
         });
 
-        testRomMessage.setText(getConfiguration().getTestRomMessage());
-        testRomMessage.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.length() > Constants.TEST_ROM_MESSAGE_MAXLENGTH) {
-                testRomMessage.setText(oldValue);
+        extraRomMessage.setText(getConfiguration().getExtraRomMessage());
+        extraRomMessage.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.length() > Constants.EXTRA_ROM_MESSAGE_MAXLENGTH) {
+                extraRomMessage.setText(oldValue);
             } else {
-                getConfiguration().setTestRomMessage(newValue);
+                getConfiguration().setExtraRomMessage(newValue);
             }
         });
-        resetTestRomMessage.setOnAction(event -> {
-            getConfiguration().setTestRomMessage(null);
-            testRomMessage.setText(getConfiguration().getTestRomMessage());
+        resetExtraRomMessage.setOnAction(event -> {
+            getConfiguration().setExtraRomMessage(null);
+            extraRomMessage.setText(getConfiguration().getExtraRomMessage());
         });
 
-        changeTestRomButton.setOnAction(event -> {
+        changeExtraRomButton.setOnAction(event -> {
             FileChooser chooser = new FileChooser();
-            chooser.setTitle(LocaleUtil.i18n("selectTestRomMessage"));
-            final File testRomFile = chooser.showOpenDialog(changeTestRomButton.getScene().getWindow());
+            chooser.setTitle(LocaleUtil.i18n("selectExtraRomMessage"));
+            final File extraRomFile = chooser.showOpenDialog(changeExtraRomButton.getScene().getWindow());
             try {
-                updateTestRom(testRomFile);
-                testRomPath.setText(testRomFile.getAbsolutePath());
+                updateExtraRom(extraRomFile);
+                extraRomPath.setText(extraRomFile.getAbsolutePath());
             } catch (Exception e) {
-                LOGGER.error("Updating Test ROM from " +  testRomFile, e);
+                LOGGER.error("Updating Extra ROM from " +  extraRomFile, e);
             }
         });
 
-        resetTestRomButton.setOnAction(event -> {
-            getConfiguration().setTestRomPath(null);
-            testRomPath.setText(LocaleUtil.i18n("builtInMessage"));
+        resetExtraRomButton.setOnAction(event -> {
+            getConfiguration().setExtraRomPath(null);
+            extraRomPath.setText(LocaleUtil.i18n("builtInMessage"));
         });
 
         changeDandanatorMiniRomButton.setOnAction(event -> {

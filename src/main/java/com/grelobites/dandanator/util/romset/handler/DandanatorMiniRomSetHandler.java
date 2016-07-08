@@ -71,7 +71,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     private void dumpScreenTexts(OutputStream os, Configuration configuration) throws IOException {
-        os.write(asNullTerminatedByteArray(String.format("R. %s", configuration.getTestRomMessage()), 33));
+        os.write(asNullTerminatedByteArray(String.format("R. %s", configuration.getExtraRomMessage()), 33));
         os.write(asNullTerminatedByteArray(String.format("P. %s", configuration.getTogglePokesMessage()), 33));
         os.write(asNullTerminatedByteArray(String.format("0. %s", configuration.getLaunchGameMessage()), 33));
         os.write(asNullTerminatedByteArray(configuration.getSelectPokesMessage(), 33));
@@ -230,7 +230,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                 LOGGER.debug("Dumped game. Offset: " + os.size());
             }
 
-            os.write(configuration.getTestRom());
+            os.write(configuration.getExtraRom());
             LOGGER.debug("Dumped custom rom. Offset: " + os.size());
 
             os.flush();
@@ -364,7 +364,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             screen.setPen(ZxColor.BRIGHTBLUE);
             screen.printLine(String.format("P. %s", configuration.getTogglePokesMessage()), 21, 0);
             screen.setPen(ZxColor.BRIGHTRED);
-            screen.printLine(String.format("R. %s", configuration.getTestRomMessage()), 23, 0);
+            screen.printLine(String.format("R. %s", configuration.getExtraRomMessage()), 23, 0);
         } catch (Exception e) {
             LOGGER.error("Updating background screen", e);
         }
