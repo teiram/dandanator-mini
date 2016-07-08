@@ -10,24 +10,12 @@ import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class GameUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameUtil.class);
-
-    private static Optional<String> getFileExtension(String fileName) {
-        int index;
-        if ((index = fileName.lastIndexOf('.')) > -1) {
-            return Optional.of(fileName.substring(index + 1));
-        } else {
-            return Optional.empty();
-        }
-    }
 
     public static Optional<Game> createGameFromFile(File file) {
         LOGGER.debug("createGameFromFile " + file);
@@ -35,7 +23,7 @@ public class GameUtil {
             if (file.canRead() && file.isFile()) {
                 InputStream is = new FileInputStream(file);
 
-                GameImageLoader loader = getFileExtension(file.getName())
+                GameImageLoader loader = Util.getFileExtension(file.getName())
                         .map(GameImageLoaderFactory::getLoader)
                         .orElseGet(GameImageLoaderFactory::getDefaultLoader);
 
@@ -92,10 +80,17 @@ public class GameUtil {
     }
 
     public static void importPokesFromFile(Game game, File pokeFile) throws IOException {
-        PokeImporter importer = getFileExtension(pokeFile.getName())
+        PokeImporter importer = Util.getFileExtension(pokeFile.getName())
                 .map(PokeImporterFactory::getImporter)
                 .orElseGet(PokeImporterFactory::getDefaultImporter);
 
         importer.importPokes(game.getTrainerList(), new FileInputStream(pokeFile));
+    }
+
+    public static void exportPokesToFile(Game game, File pokeFile) throws IOException {
+        PokeImporter importer = Util.getFileExtension(pokeFile.getName())
+                .map(PokeImporterFactory::getImporter)
+                .orElseGet(PokeImporterFactory::getDefaultImporter);
+        importer.exportPokes(game.getTrainerList(), new FileOutputStream(pokeFile));
     }
 }

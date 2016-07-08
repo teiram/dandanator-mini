@@ -5,10 +5,11 @@ import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.Context;
 import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.model.PokeViewable;
-import com.grelobites.dandanator.util.GameUtil;
-import com.grelobites.dandanator.util.ImageUtil;
-import com.grelobites.dandanator.util.LocaleUtil;
-import com.grelobites.dandanator.util.ZxScreen;
+import com.grelobites.dandanator.util.*;
+import com.grelobites.dandanator.util.gameloader.GameImageLoader;
+import com.grelobites.dandanator.util.gameloader.GameImageLoaderFactory;
+import com.grelobites.dandanator.util.pokeimporter.PokeImporter;
+import com.grelobites.dandanator.util.pokeimporter.PokeImporterFactory;
 import com.grelobites.dandanator.view.util.DialogUtil;
 import com.grelobites.dandanator.view.util.PokeEntityTreeCell;
 import com.grelobites.dandanator.view.util.RecursiveTreeItem;
@@ -537,5 +538,29 @@ public class DandanatorController {
         InputStream is = new FileInputStream(romSetFile);
         context.getRomSetHandler()
                 .importRomSet(context, is);
+    }
+
+    public void exportCurrentGamePokes() {
+        Game selectedGame = gameTable.getSelectionModel().getSelectedItem();
+        if (selectedGame != null) {
+            if (selectedGame.hasPokes()) {
+                FileChooser chooser = new FileChooser();
+                chooser.setTitle(LocaleUtil.i18n("exportCurrentGamePokes"));
+                final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
+                try {
+                    GameUtil.exportPokesToFile(selectedGame, saveFile);
+                } catch (IOException e) {
+                    LOGGER.error("Exporting Game Pokes", e);
+                }
+            } else {
+                DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGamePokesErrorTitle"),
+                        LocaleUtil.i18n("exportCurrentGamePokesErrorHeader"),
+                        LocaleUtil.i18n("exportCurrentGamePokesErrorContentNoPokesInGame")).showAndWait();
+            }
+        } else {
+            DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGamePokesErrorTitle"),
+                    LocaleUtil.i18n("exportCurrentGamePokesErrorHeader"),
+                    LocaleUtil.i18n("exportCurrentGamePokesErrorContentNoGameSelected")).showAndWait();
+        }
     }
 }

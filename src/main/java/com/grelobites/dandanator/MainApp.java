@@ -39,6 +39,42 @@ public class MainApp extends Application {
 
     private void populateMenuBar(MenuBar menuBar, Scene scene, DandanatorController controller) {
         Menu fileMenu = new Menu(LocaleUtil.i18n("fileMenuTitle"));
+
+        fileMenu.getItems().addAll(
+                importRomSetMenuItem(scene, controller),
+                exportPokesMenuItem(scene, controller));
+
+        if (menuToolkit == null) {
+            fileMenu.getItems().add(new SeparatorMenuItem());
+            fileMenu.getItems().add(preferencesMenuItem());
+            fileMenu.getItems().add(new SeparatorMenuItem());
+            fileMenu.getItems().add(quitMenuItem());
+        }
+        menuBar.getMenus().add(fileMenu);
+        if (menuToolkit == null) {
+            Menu helpMenu = new Menu(LocaleUtil.i18n("helpMenuTitle"));
+            helpMenu.getItems().add(aboutMenuItem());
+            menuBar.getMenus().add(helpMenu);
+        }
+    }
+
+    private MenuItem exportPokesMenuItem(Scene scene, DandanatorController controller) {
+        MenuItem exportPokes = new MenuItem(LocaleUtil.i18n("exportPokesMenuEntry"));
+        exportPokes.setAccelerator(
+                KeyCombination.keyCombination("SHORTCUT+P")
+        );
+
+        exportPokes.setOnAction(f -> {
+            try {
+                controller.exportCurrentGamePokes();
+            } catch (Exception e) {
+                LOGGER.error("Exporting current game pokes", e);
+            }
+        });
+        return exportPokes;
+    }
+
+    private MenuItem importRomSetMenuItem(Scene scene, DandanatorController controller) {
         MenuItem importRomSet = new MenuItem(LocaleUtil.i18n("importRomSetMenuEntry"));
         importRomSet.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+I")
@@ -56,19 +92,7 @@ public class MainApp extends Application {
                 LOGGER.error("Importing ROM Set from file " +  romSetFile, e);
             }
         });
-        fileMenu.getItems().add(importRomSet);
-        if (menuToolkit == null) {
-            fileMenu.getItems().add(new SeparatorMenuItem());
-            fileMenu.getItems().add(preferencesMenuItem());
-            fileMenu.getItems().add(new SeparatorMenuItem());
-            fileMenu.getItems().add(quitMenuItem());
-        }
-        menuBar.getMenus().add(fileMenu);
-        if (menuToolkit == null) {
-            Menu helpMenu = new Menu(LocaleUtil.i18n("helpMenuTitle"));
-            helpMenu.getItems().add(aboutMenuItem());
-            menuBar.getMenus().add(helpMenu);
-        }
+        return importRomSet;
     }
 
 	public static void main(String[] args) {

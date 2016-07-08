@@ -55,10 +55,10 @@ import java.util.regex.Pattern;
 public class PokPoke {
     private static final Logger LOGGER = LoggerFactory.getLogger(PokPoke.class);
 
-    private static final String NEXT_TRAINER = "N";
-    private static final String LAST_LINE_MARKER = "Y";
-    private static final String LAST_POKE_MARKER = "Z";
-    private static final String POKE_MARKER = "M";
+    public static final String NEXT_TRAINER = "N";
+    public static final String LAST_LINE_MARKER = "Y";
+    public static final String LAST_POKE_MARKER = "Z";
+    public static final String POKE_MARKER = "M";
 
     private static Pattern trainerLinePattern = Pattern.compile(String.format("^%s(.*)", NEXT_TRAINER));
     private static Pattern pokeLinePattern = Pattern.compile(String

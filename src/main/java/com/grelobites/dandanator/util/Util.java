@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 public class Util {
     private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
@@ -58,5 +59,14 @@ public class Util {
 
     public static String stripSnapshotVersion(String value) {
         return stripSuffix(value, SNAPSHOT_SUFFIX);
+    }
+
+    public static Optional<String> getFileExtension(String fileName) {
+        int index;
+        if ((index = fileName.lastIndexOf('.')) > -1) {
+            return Optional.of(fileName.substring(index + 1));
+        } else {
+            return Optional.empty();
+        }
     }
 }

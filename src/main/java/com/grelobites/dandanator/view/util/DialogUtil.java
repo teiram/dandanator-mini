@@ -6,13 +6,34 @@ public class DialogUtil {
 
     private static final String CSS_LOCATION = "/com/grelobites/dandanator/view/theme.css";
 
-    public static Alert buildAlert(String title, String headerText, String contentText) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+    private static void applyTheme(Alert alert) {
+        alert.getDialogPane().getStylesheets().add(DialogUtil.class.getResource(CSS_LOCATION).toExternalForm());
+    }
 
+    private static void populateAlert(Alert alert, String title, String headerText, String contentText) {
         alert.setTitle(title);
         alert.setHeaderText(headerText);
         alert.setContentText(contentText);
-        alert.getDialogPane().getStylesheets().add(DialogUtil.class.getResource(CSS_LOCATION).toExternalForm());
+        applyTheme(alert);
+    }
+
+    public static Alert buildAlert(String title, String headerText, String contentText) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        populateAlert(alert, title, headerText, contentText);
+
+        return alert;
+    }
+
+    public static Alert buildErrorAlert(String title, String headerText, String contentText) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        populateAlert(alert, title, headerText, contentText);
+
+        return alert;
+    }
+
+    public static Alert buildWarningAlert(String title, String headerText, String contentText) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        populateAlert(alert, title, headerText, contentText);
 
         return alert;
     }
