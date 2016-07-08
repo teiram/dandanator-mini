@@ -470,7 +470,6 @@ public class DandanatorController {
                 pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(context.getGameList()));
             }
         });
-
     }
 	
 	private void onGameSelection(Game game) {
@@ -509,9 +508,18 @@ public class DandanatorController {
     }
 
     public void importRomSet(File romSetFile) throws IOException {
+        if (context.getGameList().size() > 0) {
+            Optional<ButtonType> result = DialogUtil
+                    .buildAlert(LocaleUtil.i18n("gameDeletionConfirmTitle"),
+                            LocaleUtil.i18n("gameDeletionConfirmHeader"),
+                            LocaleUtil.i18n("gameDeletionConfirmContent"))
+                    .showAndWait();
+            if (result.get() == ButtonType.OK){
+                context.getGameList().clear();
+            }
+        }
         InputStream is = new FileInputStream(romSetFile);
         context.getRomSetHandler()
                 .importRomSet(context, is);
     }
-
 }
