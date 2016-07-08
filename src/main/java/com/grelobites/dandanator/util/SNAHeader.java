@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -41,11 +43,11 @@ public class SNAHeader {
     public static final byte INTERRUPT_MODE = (byte) 25;
     public static final byte BORDER_COLOR = (byte) 26;
     public static final byte RAM_DUMP = (byte) 27;
-
+    private static final List<Integer> VALID_INTERRUPT_MODES = Arrays.asList(new Integer[] {0, 1, 2});
     private byte[] data = new byte[Constants.SNA_HEADER_SIZE];
 
 
-    public static SNAHeader fromByteArray(ByteArrayInputStream is) throws IOException {
+    public static SNAHeader fromStream(InputStream is) throws IOException {
         SNAHeader snaHeader = new SNAHeader();
         int read = is.read(snaHeader.data);
         if (read != Constants.SNA_HEADER_SIZE) {
@@ -53,6 +55,16 @@ public class SNAHeader {
             throw new IllegalArgumentException("Exhausted stream");
         }
         return snaHeader;
+    }
+
+    public static SNAHeader fromByteArray(byte[] in) {
+        if (in.length >= Constants.SNA_HEADER_SIZE) {
+            SNAHeader header = new SNAHeader();
+            System.arraycopy(in, 0, header.data, 0, Constants.SNA_HEADER_SIZE);
+            return header;
+        } else {
+            throw new IllegalArgumentException("Too short byte array provided");
+        }
     }
 
     public byte[] asByteArray() {
@@ -88,5 +100,18 @@ public class SNAHeader {
 
     public byte getByte(int offset) {
         return data[offset];
+    }
+
+    public int getValue(int offset) {
+        return data[offset];
+    }
+
+    public boolean validate() {
+        LOGGER.debug("Border Color: " + getByte(BORDER_COLOR)
+                + ", SP: " + getRegisterValue(REG_SP)
+                + ", IM: " + getByte(INTERRUPT_MODE));
+        return getByte(BORDER_COLOR) < 8 &&
+                getRegisterValue(REG_SP) >= 16384 &&
+                VALID_INTERRUPT_MODES.contains(getValue(INTERRUPT_MODE));
     }
 }

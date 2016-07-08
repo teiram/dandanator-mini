@@ -117,6 +117,9 @@ public class Z80GameImageLoader implements GameImageLoader {
         data[pcLocation] = (byte) (pc & 0xFF);
         data[pcLocation + 1] = (byte) ((pc >> 8) & 0xFF);
 
+        if (!header.validate()) {
+            throw new IllegalArgumentException("Header doesn't pass validations");
+        }
         byte[] gameData = new byte[GameImageLoader.IMAGE_SIZE];
         System.arraycopy(header.asByteArray(), 0, gameData, 0, Constants.SNA_HEADER_SIZE);
         System.arraycopy(data, 0, gameData, Constants.SNA_HEADER_SIZE, GAME_IMAGE_SIZE);

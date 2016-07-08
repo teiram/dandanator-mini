@@ -1,9 +1,11 @@
 package com.grelobites.dandanator.util.gameloader.loader;
 
+import com.grelobites.dandanator.util.SNAHeader;
 import com.grelobites.dandanator.util.gameloader.GameImageLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -15,6 +17,11 @@ public class SNAGameImageLoader implements GameImageLoader {
         byte[] gameImage = new byte[GameImageLoader.IMAGE_SIZE];
         int nread = is.read(gameImage);
         LOGGER.debug("Read " + nread + " bytes from game image");
-        return gameImage;
+        boolean isValidSnaImage = SNAHeader.fromByteArray(gameImage).validate();
+        if (isValidSnaImage) {
+            return gameImage;
+        } else {
+            throw new IllegalArgumentException("SNA doesn't pass validations");
+        }
     }
 }
