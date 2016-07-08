@@ -459,14 +459,14 @@ public class DandanatorController {
 
         //Update poke usage while adding or removing games from the list
         context.getGameList().addListener((ListChangeListener.Change<? extends Game> c) -> {
-            boolean gameRemoved = false;
+            boolean gamesAddedOrRemoved = false;
             while (c.next()) {
-                if (c.wasRemoved()) {
-                    gameRemoved = true;
+                if (c.wasRemoved() || c.wasAdded()) {
+                    gamesAddedOrRemoved = true;
                     break;
                 }
             }
-            if (gameRemoved) {
+            if (gamesAddedOrRemoved) {
                 pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(context.getGameList()));
             }
         });
