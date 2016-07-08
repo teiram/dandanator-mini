@@ -460,18 +460,29 @@ public class DandanatorController {
         //Update poke usage while adding or removing games from the list
         context.getGameList().addListener((ListChangeListener.Change<? extends Game> c) -> {
             boolean gamesAddedOrRemoved = false;
+            boolean gamesUpdated = false;
             while (c.next()) {
                 if (c.wasRemoved() || c.wasAdded()) {
                     gamesAddedOrRemoved = true;
+                }
+                if (c.wasUpdated()) {
+                    gamesUpdated = true;
+                }
+                if (gamesAddedOrRemoved && gamesUpdated) {
+                    //Don't search anymore. We know enough
                     break;
                 }
             }
             if (gamesAddedOrRemoved) {
                 pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(context.getGameList()));
             }
+            if (gamesUpdated) {
+                pokesViewLabel.setText(String.format(LocaleUtil.i18n("trainersHeadingMessage"),
+                        gameTable.getSelectionModel().getSelectedItem().getName()));
+            }
         });
     }
-	
+
 	private void onGameSelection(Game game) {
 		if (game == null) {
 			currentScreenshot.setImage(spectrum48kImage);
