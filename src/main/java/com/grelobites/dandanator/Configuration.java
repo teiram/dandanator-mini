@@ -26,12 +26,14 @@ public class Configuration {
     private static final String EXTRAROMMESSAGE_PROPERTY = "extraRomMessage";
     private static final String LAUNCHGAMEMESSAGE_PROPERTY = "launchGameMessage";
     private static final String SELECTPOKESMESSAGE_PROPERTY = "selectPokesMessage";
+    private static final String DANDANATORPICFIRMWAREPATH_PROPERTY = "dandanatorPicFirmwarePath";
 
     private static final String DEFAULT_MODE = RomSetType.DANDANATOR_MINI.name();
 
     private String dandanatorRomPath;
     private StringProperty backgroundImagePath;
     private String extraRomPath;
+    private String dandanatorPicFirmwarePath;
     private StringProperty charSetPath;
     private StringProperty togglePokesMessage;
     private StringProperty extraRomMessage;
@@ -45,6 +47,7 @@ public class Configuration {
     byte[] backgroundImage;
     byte[] extraRom;
     byte[] charSet;
+    byte[] dandanatorPicFirmware;
 
     private Configuration() {
         backgroundImagePath = new SimpleStringProperty();
@@ -70,6 +73,15 @@ public class Configuration {
     public void setDandanatorRomPath(String dandanatorRomPath) {
         this.dandanatorRomPath = dandanatorRomPath;
         dandanatorRom = null;
+    }
+
+    public String getDandanatorPicFirmwarePath() {
+        return dandanatorPicFirmwarePath;
+    }
+
+    public void setDandanatorPicFirmwarePath(String dandanatorPicFirmwarePath) {
+        this.dandanatorPicFirmwarePath = dandanatorPicFirmwarePath;
+        dandanatorPicFirmware = null;
     }
 
     public String getBackgroundImagePath() {
@@ -249,6 +261,25 @@ public class Configuration {
         this.selectPokesMessage.set(selectPokesMessage);
     }
 
+    public void setDandanatorPicFirmware(byte[] dandanatorPicFirmware) {
+        this.dandanatorPicFirmware = dandanatorPicFirmware;
+    }
+
+    public byte[] getDandanatorPicFirmware() throws IOException {
+        if (dandanatorPicFirmware == null) {
+            if (getDandanatorPicFirmwarePath() != null) {
+                try {
+                    dandanatorPicFirmware = Files.readAllBytes(Paths.get(dandanatorPicFirmwarePath));
+                } catch (Exception e) {
+                    LOGGER.error("Unable to load Dandanator PIC Firmware from " + dandanatorPicFirmwarePath, e);
+                    dandanatorPicFirmware = Constants.getDefaultDandanatorPicFirmware();
+                }
+            } else {
+                dandanatorPicFirmware = Constants.getDefaultDandanatorPicFirmware();
+            }
+        }
+        return dandanatorPicFirmware;
+    }
 
     public String getMode() {
         if (mode == null) {
@@ -267,6 +298,8 @@ public class Configuration {
                 p.getProperty(BACKGROUNDIMAGEPATH_PROPERTY));
         configuration.setDandanatorRomPath(
                 p.getProperty(DANDANATORROMPATH_PROPERTY));
+        configuration.setDandanatorPicFirmwarePath(
+                p.getProperty(DANDANATORPICFIRMWAREPATH_PROPERTY));
         configuration.setExtraRomPath(
                 p.getProperty(EXTRAROMPATH_PROPERTY));
         configuration.setCharSetPath(
