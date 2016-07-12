@@ -15,6 +15,7 @@ public class Constants {
     private static final String SINCLAIR_SCREEN_RESOURCE = "sinclair-1982.scr";
     private static final String DEFAULT_CHARSET_RESOURCE = "charset.rom";
     private static final String DANDANATOR_ROM_RESOURCE = "dandanator-mini.rom";
+    private static final String DANDANATOR_PIC_FW_RESOURCE = "dandanator-pic-fw.bin";
     private static final String EXTRA_ROM_RESOURCE = "test.rom";
     private static final String DEFAULT_VERSION = "4.3";
 
@@ -35,13 +36,18 @@ public class Constants {
 
     public static final int SLOT_SIZE = 0x4000;
 
-	public static final int BASEROM_SIZE = 4096;
+	public static final int BASEROM_SIZE = 2560;
 	public static final int CHARSET_SIZE = 768;
+    public static final int DANDANATOR_PIC_FW_SIZE = 3072;
 	public static final byte B_01 = 1;
 	public static final byte B_00 = 0;
 	public static final byte B_10 = 0x10;
     public static final int MAX_POKES_PER_TRAINER = 6;
     public static final int MAX_TRAINERS_PER_GAME = 8;
+
+    public static final String DANDANATOR_PIC_FW_HEADER = "DNTRMFW-Up";
+    public static final int DANDANATOR_PIC_FW_SIZE_0 = 1536;
+    public static final int DANDANATOR_PIC_FW_SIZE_1 = 1546;
 
     public static final String DEFAULT_EXTRAROMKEY_MESSAGE = LocaleUtil.i18n("extraRomDefaultMessage");
     public static final String DEFAULT_TOGGLEPOKESKEY_MESSAGE = LocaleUtil.i18n("togglePokesDefaultMessage");
@@ -57,6 +63,7 @@ public class Constants {
     private static byte[] DEFAULT_CHARSET;
     private static byte[] DANDANATOR_ROM;
     private static byte[] EXTRA_ROM;
+    private static byte[] DEFAULT_DANDANATOR_PIC_FW;
 
     private static byte[] fromInputStream(InputStream is, int size) throws IOException {
         byte[] result = new byte[size];
@@ -116,6 +123,16 @@ public class Constants {
                     SLOT_SIZE);
         }
         return EXTRA_ROM;
+    }
+
+    public static byte[] getDefaultDandanatorPicFirmware() throws IOException {
+        if (DEFAULT_DANDANATOR_PIC_FW == null) {
+            DEFAULT_DANDANATOR_PIC_FW = fromInputStream(
+                    Constants.class.getClassLoader()
+                            .getResourceAsStream(DANDANATOR_PIC_FW_RESOURCE),
+                    DANDANATOR_PIC_FW_SIZE);
+        }
+        return DEFAULT_DANDANATOR_PIC_FW;
     }
 
     public static String currentVersion() {

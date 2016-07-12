@@ -35,7 +35,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     private static final int VERSION_SIZE = 32;
 
     private static final int SAVEDGAMECHUNK_SIZE = 256;
-    private static final int POKE_SPACE_SIZE = 3200;
+    private static final int POKE_SPACE_SIZE = 3230;
     private static final int RESERVED_GAMETABLE_SIZE = 64;
 
     private static byte[] asNullTerminatedByteArray(String name, int arrayLength) {
@@ -179,6 +179,12 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             os.write(configuration.getDandanatorRom(), 0, Constants.BASEROM_SIZE);
             LOGGER.debug("Dumped base ROM. Offset: " + os.size());
 
+            int firmwareHeaderLength = Constants.DANDANATOR_PIC_FW_HEADER.length();
+            os.write(Constants.DANDANATOR_PIC_FW_HEADER.getBytes(), 0, firmwareHeaderLength);
+            os.write(configuration.getDandanatorPicFirmware(), 0,
+                    Constants.DANDANATOR_PIC_FW_SIZE_0 - firmwareHeaderLength);
+            LOGGER.debug("Dumped first chunk of PIC firmware. Offset: " + os.size());
+
             os.write(configuration.getCharSet(), 0, Constants.CHARSET_SIZE);
             LOGGER.debug("Dumped charset. Offset: " + os.size());
 
@@ -218,6 +224,11 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             fillWithValue(os, (byte) 0, POKE_SPACE_SIZE - (os.size() - pokeStartMark));
             LOGGER.debug("Dumped poke data. Offset: " + os.size());
 
+            os.write(configuration.getDandanatorPicFirmware(),
+                    Constants.DANDANATOR_PIC_FW_SIZE_0 - firmwareHeaderLength,
+                    Constants.DANDANATOR_PIC_FW_SIZE_1);
+            LOGGER.debug("Dumped second chunk of PIC firmware. Offset: " + os.size());
+
             fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size() - VERSION_SIZE);
             LOGGER.debug("Dumped padding zone. Offset: " + os.size());
 
@@ -247,6 +258,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         try {
             TrackeableInputStream is = new TrackeableInputStream(stream);
             is.skip(Constants.BASEROM_SIZE);
+            is.skip(Constants.DANDANATOR_PIC_FW_SIZE_0);
             is.skip(Constants.CHARSET_SIZE);
             is.skip(2048);  //Screen third
             is.skip(256);   //Attributes

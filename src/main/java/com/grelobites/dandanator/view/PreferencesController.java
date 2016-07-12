@@ -97,6 +97,15 @@ public class PreferencesController {
     @FXML
     private Button resetDandanatorMiniRomButton;
 
+    @FXML
+    private Label dandanatorPicFirmwarePath;
+
+    @FXML
+    private Button changeDandanatorPicFirmwareButton;
+
+    @FXML
+    private Button resetDandanatorPicFirmwareButton;
+
     private Configuration getConfiguration() {
         if (configuration == null) {
             return Configuration.getInstance();
@@ -157,6 +166,14 @@ public class PreferencesController {
     private void updateDandanatorRom(File dandanatorRom) {
         if (dandanatorRom.canRead() && dandanatorRom.isFile()) {
             getConfiguration().setDandanatorRomPath(dandanatorRom.getAbsolutePath());
+        } else {
+            throw new IllegalArgumentException("No readable file provided");
+        }
+    }
+
+    private void updateDandanatorPicFirmware(File dandanatorPicFirmware) {
+        if (dandanatorPicFirmware.canRead() && dandanatorPicFirmware.isFile()) {
+            getConfiguration().setDandanatorPicFirmwarePath(dandanatorPicFirmware.getAbsolutePath());
         } else {
             throw new IllegalArgumentException("No readable file provided");
         }
@@ -275,11 +292,13 @@ public class PreferencesController {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("selectExtraRomMessage"));
             final File extraRomFile = chooser.showOpenDialog(changeExtraRomButton.getScene().getWindow());
-            try {
-                updateExtraRom(extraRomFile);
-                extraRomPath.setText(extraRomFile.getAbsolutePath());
-            } catch (Exception e) {
-                LOGGER.error("Updating Extra ROM from " +  extraRomFile, e);
+            if (extraRomFile != null) {
+                try {
+                    updateExtraRom(extraRomFile);
+                    extraRomPath.setText(extraRomFile.getAbsolutePath());
+                } catch (Exception e) {
+                    LOGGER.error("Updating Extra ROM from " + extraRomFile, e);
+                }
             }
         });
 
@@ -292,16 +311,37 @@ public class PreferencesController {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("selectDandanatorRomMessage"));
             final File dandanatorRomFile = chooser.showOpenDialog(changeDandanatorMiniRomButton.getScene().getWindow());
-            try {
-                updateDandanatorRom(dandanatorRomFile);
-                dandanatorMiniRomPath.setText(dandanatorRomFile.getAbsolutePath());
-            } catch (Exception e) {
-                LOGGER.error("Updating Dandanator ROM from " +  dandanatorRomFile, e);
+            if (dandanatorRomFile != null) {
+                try {
+                    updateDandanatorRom(dandanatorRomFile);
+                    dandanatorMiniRomPath.setText(dandanatorRomFile.getAbsolutePath());
+                } catch (Exception e) {
+                    LOGGER.error("Updating Dandanator ROM from " + dandanatorRomFile, e);
+                }
             }
         });
         resetDandanatorMiniRomButton.setOnAction(event -> {
             getConfiguration().setDandanatorRomPath(null);
             dandanatorMiniRomPath.setText(LocaleUtil.i18n("builtInMessage"));
+        });
+
+        changeDandanatorPicFirmwareButton.setOnAction(event -> {
+            FileChooser chooser = new FileChooser();
+            chooser.setTitle(LocaleUtil.i18n("selectDandanatorPicFirmwareMessage"));
+            final File dandanatorPicFwFile = chooser.showOpenDialog(changeDandanatorPicFirmwareButton
+                    .getScene().getWindow());
+            if (dandanatorPicFwFile != null) {
+                try {
+                    updateDandanatorPicFirmware(dandanatorPicFwFile);
+                    dandanatorPicFirmwarePath.setText(dandanatorPicFwFile.getAbsolutePath());
+                } catch (Exception e) {
+                    LOGGER.error("Updating Dandanator PIC Firmware from " + dandanatorPicFwFile, e);
+                }
+            }
+        });
+        resetDandanatorPicFirmwareButton.setOnAction(event -> {
+           getConfiguration().setDandanatorPicFirmwarePath(null);
+            dandanatorPicFirmwarePath.setText(LocaleUtil.i18n("builtInMessage"));
         });
 
 
