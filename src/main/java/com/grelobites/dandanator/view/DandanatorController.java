@@ -8,6 +8,7 @@ import com.grelobites.dandanator.model.PokeViewable;
 import com.grelobites.dandanator.util.*;
 import com.grelobites.dandanator.util.gameloader.GameImageLoader;
 import com.grelobites.dandanator.util.gameloader.GameImageLoaderFactory;
+import com.grelobites.dandanator.util.pokeimporter.ImportContext;
 import com.grelobites.dandanator.util.pokeimporter.PokeImporter;
 import com.grelobites.dandanator.util.pokeimporter.PokeImporterFactory;
 import com.grelobites.dandanator.view.util.DialogUtil;
@@ -49,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class DandanatorController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorController.class);
@@ -442,7 +444,16 @@ public class DandanatorController {
             if (db.hasFiles() && db.getFiles().size() == 1) {
                 try {
                     Game game = gameTable.getSelectionModel().getSelectedItem();
-                    GameUtil.importPokesFromFile(game, db.getFiles().get(0));
+                    ImportContext ctx = new ImportContext(db.getFiles().get(0));
+                    GameUtil.importPokesFromFile(game, ctx);
+                    if (ctx.hasErrors()) {
+                        LOGGER.debug("Detected errors in pokes import operation");
+                        DialogUtil.buildWarningAlert(LocaleUtil.i18n("importPokesWarning"),
+                                LocaleUtil.i18n("importPokesWarningHeader"),
+                                ctx.getImportErrors().stream()
+                                        .distinct()
+                                        .collect(Collectors.joining("\n"))).showAndWait();
+                    }
                     success = true;
                 } catch (IOException ioe) {
                     LOGGER.warn("Adding poke files", ioe);

@@ -4,6 +4,7 @@ import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.util.gameloader.GameImageLoader;
 import com.grelobites.dandanator.util.gameloader.GameImageLoaderFactory;
+import com.grelobites.dandanator.util.pokeimporter.ImportContext;
 import com.grelobites.dandanator.util.pokeimporter.PokeImporter;
 import com.grelobites.dandanator.util.pokeimporter.PokeImporterFactory;
 import javafx.collections.ObservableList;
@@ -80,12 +81,12 @@ public class GameUtil {
         return ((double) usedSize) / Constants.POKE_ZONE_SIZE;
     }
 
-    public static void importPokesFromFile(Game game, File pokeFile) throws IOException {
-        PokeImporter importer = Util.getFileExtension(pokeFile.getName())
+    public static void importPokesFromFile(Game game, ImportContext ctx) throws IOException {
+        PokeImporter importer = Util.getFileExtension(ctx.getPokesFile().getName())
                 .map(PokeImporterFactory::getImporter)
                 .orElseGet(PokeImporterFactory::getDefaultImporter);
 
-        importer.importPokes(game.getTrainerList(), new FileInputStream(pokeFile));
+        importer.importPokes(game.getTrainerList(), ctx);
     }
 
     public static void exportPokesToFile(Game game, File pokeFile) throws IOException {

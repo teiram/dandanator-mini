@@ -9,27 +9,60 @@ import com.grelobites.dandanator.model.TrainerList;
 import com.grelobites.dandanator.model.poke.pok.PokPoke;
 import com.grelobites.dandanator.model.poke.pok.PokTrainer;
 import com.grelobites.dandanator.model.poke.pok.PokValue;
+import com.grelobites.dandanator.util.LocaleUtil;
+import com.grelobites.dandanator.util.pokeimporter.ImportContext;
 import com.grelobites.dandanator.util.pokeimporter.PokeImporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.List;
 
 public class POKPokeImporter implements PokeImporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(POKPokeImporter.class);
+
+    private static boolean isCompatibleSpectrum48K(ImportContext ctx, PokValue value) {
+        if (!value.isCompatibleSpectrum48K()) {
+            ctx.addImportError(LocaleUtil.i18n("non48KCompatiblePokesPresent"));
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private static boolean isInteractive(ImportContext ctx, PokValue value) {
+        if (value.isInteractive()) {
+            ctx.addImportError(LocaleUtil.i18n("interactivePokesPresent"));
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private static boolean enoughSize(ImportContext ctx, Trainer trainer) {
+        if (trainer.getChildren().size() >= Constants.MAX_POKES_PER_TRAINER) {
+            ctx.addImportError(LocaleUtil.i18n("maximumPokesPerTrainerExhausted"));
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     @Override
-    public void importPokes(TrainerList trainerList, InputStream is) throws IOException {
-        PokPoke poke = PokPoke.fromInputStream(is);
+    public void importPokes(TrainerList trainerList, ImportContext ctx) throws IOException {
+        PokPoke poke = PokPoke.fromInputStream(ctx.getPokeStream());
         for (PokTrainer pokTrainer: poke.getTrainers()) {
             if (trainerList.getChildren().size() >= Constants.MAX_TRAINERS_PER_GAME) {
+                ctx.addImportError(LocaleUtil.i18n("maximumTrainersPerGameExhausted"));
                 break;
             }
             trainerList.addTrainerNode(pokTrainer.getName()).map(trainer -> {
                 pokTrainer.getPokeValues().stream()
-                        .filter(PokValue::isCompatibleSpectrum48K)
-                        .filter(pokeValue -> !pokeValue.isInteractive())
-                        .filter(pokeValue -> trainer.getChildren().size() < Constants.MAX_POKES_PER_TRAINER)
+                        .filter(pokeValue -> isCompatibleSpectrum48K(ctx, pokeValue))
+                        .filter(pokeValue -> isInteractive(ctx, pokeValue))
+                        .filter(pokeValue -> enoughSize(ctx, trainer))
                         .forEach(pokeValue -> trainer.addPoke(pokeValue.getAddress(),
                                 pokeValue.getValue()));
                 return true;
