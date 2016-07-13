@@ -7,6 +7,7 @@ import com.grelobites.dandanator.util.LocaleUtil;
 import com.grelobites.dandanator.util.ZxColor;
 import com.grelobites.dandanator.util.ZxScreen;
 import com.grelobites.dandanator.util.romset.RomSetType;
+import com.grelobites.dandanator.view.util.DialogUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -138,7 +140,7 @@ public class PreferencesController {
     }
 
     private void updateBackgroundImage(File backgroundImageFile) throws IOException {
-        if (backgroundImageFile.canRead() && backgroundImageFile.isFile()) {
+        if (isReadableFile(backgroundImageFile)) {
             getConfiguration().setBackgroundImagePath(backgroundImageFile.getAbsolutePath());
             recreateBackgroundImage();
         } else {
@@ -147,7 +149,7 @@ public class PreferencesController {
     }
 
     private void updateCharSetPath(File charSetFile) throws IOException {
-        if (charSetFile.canRead() && charSetFile.isFile()) {
+        if (isReadableFile(charSetFile)) {
             getConfiguration().setCharSetPath(charSetFile.getAbsolutePath());
             recreateCharSetImage();
         } else {
@@ -155,28 +157,49 @@ public class PreferencesController {
         }
     }
 
+    private boolean isReadableFile(File file) {
+        return file.canRead() && file.isFile();
+    }
+
     private void updateExtraRom(File extraRomFile) {
-        if (extraRomFile.canRead() && extraRomFile.isFile()) {
+        if (isReadableFile(extraRomFile)) {
             getConfiguration().setExtraRomPath(extraRomFile.getAbsolutePath());
         } else {
-            throw new IllegalArgumentException("No readable file provided");
+            throw new IllegalArgumentException("Invalid ROM File provided");
         }
+    }
+
+    private boolean isDandanatorRomValid(File dandanatorRomFile) {
+        return dandanatorRomFile.canRead() && dandanatorRomFile.isFile()
+                && dandanatorRomFile.getTotalSpace() == Constants.BASEROM_SIZE;
     }
 
     private void updateDandanatorRom(File dandanatorRom) {
-        if (dandanatorRom.canRead() && dandanatorRom.isFile()) {
+        if (isDandanatorRomValid(dandanatorRom)) {
             getConfiguration().setDandanatorRomPath(dandanatorRom.getAbsolutePath());
         } else {
-            throw new IllegalArgumentException("No readable file provided");
+            throw new IllegalArgumentException("Invalid ROM file provided");
         }
     }
 
+    private boolean isDandanatorPicFirmwareValid(File dandanatorPicFile) {
+        return dandanatorPicFile.canRead() && dandanatorPicFile.isFile()
+                && dandanatorPicFile.getTotalSpace() == Constants.DANDANATOR_PIC_FW_SIZE;
+    }
+
     private void updateDandanatorPicFirmware(File dandanatorPicFirmware) {
-        if (dandanatorPicFirmware.canRead() && dandanatorPicFirmware.isFile()) {
+        if (isDandanatorPicFirmwareValid(dandanatorPicFirmware)) {
             getConfiguration().setDandanatorPicFirmwarePath(dandanatorPicFirmware.getAbsolutePath());
         } else {
-            throw new IllegalArgumentException("No readable file provided");
+            throw new IllegalArgumentException("Invalid PIC Firmware file provided");
         }
+    }
+
+    private static void showGenericFileErrorAlert() {
+        DialogUtil.buildErrorAlert(LocaleUtil.i18n("fileImportError"),
+                LocaleUtil.i18n("fileImportErrorHeader"),
+                LocaleUtil.i18n("fileImportErrorContent"))
+                .showAndWait();
     }
 
     @FXML
@@ -188,10 +211,13 @@ public class PreferencesController {
             chooser.setTitle(LocaleUtil.i18n("selectNewBackgroundImage"));
             final File backgroundImageFile = chooser.showOpenDialog(changeBackgroundImageButton
                     .getScene().getWindow());
-            try {
-                updateBackgroundImage(backgroundImageFile);
-            } catch (Exception e) {
-                LOGGER.error("Updating background image from " +  backgroundImageFile, e);
+            if (backgroundImageFile != null) {
+                try {
+                    updateBackgroundImage(backgroundImageFile);
+                } catch (Exception e) {
+                    LOGGER.error("Updating background image from " + backgroundImageFile, e);
+                    showGenericFileErrorAlert();
+                }
             }
         });
 
@@ -209,10 +235,13 @@ public class PreferencesController {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("selectNewCharSetMessage"));
             final File charSetFile = chooser.showOpenDialog(changeCharSetButton.getScene().getWindow());
-            try {
-                updateCharSetPath(charSetFile);
-            } catch (Exception e) {
-                LOGGER.error("Updating charset from " +  charSetFile, e);
+            if (charSetFile != null) {
+                try {
+                    updateCharSetPath(charSetFile);
+                } catch (Exception e) {
+                    LOGGER.error("Updating charset from " + charSetFile, e);
+                    showGenericFileErrorAlert();
+                }
             }
         });
         resetCharSetButton.setOnAction(event -> {
@@ -298,6 +327,7 @@ public class PreferencesController {
                     extraRomPath.setText(extraRomFile.getAbsolutePath());
                 } catch (Exception e) {
                     LOGGER.error("Updating Extra ROM from " + extraRomFile, e);
+                    showGenericFileErrorAlert();
                 }
             }
         });
@@ -317,6 +347,7 @@ public class PreferencesController {
                     dandanatorMiniRomPath.setText(dandanatorRomFile.getAbsolutePath());
                 } catch (Exception e) {
                     LOGGER.error("Updating Dandanator ROM from " + dandanatorRomFile, e);
+                    showGenericFileErrorAlert();
                 }
             }
         });
@@ -336,6 +367,7 @@ public class PreferencesController {
                     dandanatorPicFirmwarePath.setText(dandanatorPicFwFile.getAbsolutePath());
                 } catch (Exception e) {
                     LOGGER.error("Updating Dandanator PIC Firmware from " + dandanatorPicFwFile, e);
+                    showGenericFileErrorAlert();
                 }
             }
         });
