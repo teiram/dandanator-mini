@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -92,5 +93,9 @@ public class GameUtil {
                 .map(PokeImporterFactory::getImporter)
                 .orElseGet(PokeImporterFactory::getDefaultImporter);
         importer.exportPokes(game.getTrainerList(), new FileOutputStream(pokeFile));
+    }
+
+    public static void exportGameAsSNA(Game selectedGame, File saveFile) throws IOException {
+        Files.write(saveFile.toPath(), selectedGame.getData());
     }
 }

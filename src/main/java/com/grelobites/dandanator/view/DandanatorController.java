@@ -563,4 +563,23 @@ public class DandanatorController {
                     LocaleUtil.i18n("exportCurrentGamePokesErrorContentNoGameSelected")).showAndWait();
         }
     }
+
+    public void exportCurrentGame() {
+        Game selectedGame = gameTable.getSelectionModel().getSelectedItem();
+        if (selectedGame != null) {
+            FileChooser chooser = new FileChooser();
+            chooser.setTitle(LocaleUtil.i18n("exportCurrentGame"));
+            final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
+            try {
+                GameUtil.exportGameAsSNA(selectedGame, saveFile);
+            } catch (IOException e) {
+                LOGGER.error("Exporting Game", e);
+            }
+        } else {
+            DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGameErrorTitle"),
+                    LocaleUtil.i18n("exportCurrentGameErrorHeader"),
+                    LocaleUtil.i18n("exportCurrentGameErrorContentNoGameSelected")).showAndWait();
+        }
+    }
+
 }

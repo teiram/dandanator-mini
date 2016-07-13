@@ -42,7 +42,8 @@ public class MainApp extends Application {
 
         fileMenu.getItems().addAll(
                 importRomSetMenuItem(scene, controller),
-                exportPokesMenuItem(scene, controller));
+                exportPokesMenuItem(scene, controller),
+                exportGameMenuItem(scene, controller));
 
         if (menuToolkit == null) {
             fileMenu.getItems().add(new SeparatorMenuItem());
@@ -69,6 +70,22 @@ public class MainApp extends Application {
                 controller.exportCurrentGamePokes();
             } catch (Exception e) {
                 LOGGER.error("Exporting current game pokes", e);
+            }
+        });
+        return exportPokes;
+    }
+
+    private MenuItem exportGameMenuItem(Scene scene, DandanatorController controller) {
+        MenuItem exportPokes = new MenuItem(LocaleUtil.i18n("exportGameMenuEntry"));
+        exportPokes.setAccelerator(
+                KeyCombination.keyCombination("SHORTCUT+G")
+        );
+
+        exportPokes.setOnAction(f -> {
+            try {
+                controller.exportCurrentGame();
+            } catch (Exception e) {
+                LOGGER.error("Exporting current game", e);
             }
         });
         return exportPokes;
