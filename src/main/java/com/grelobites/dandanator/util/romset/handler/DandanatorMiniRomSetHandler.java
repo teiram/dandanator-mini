@@ -8,12 +8,7 @@ import com.grelobites.dandanator.model.Poke;
 import com.grelobites.dandanator.model.PokeViewable;
 import com.grelobites.dandanator.model.Trainer;
 import com.grelobites.dandanator.model.TrainerList;
-import com.grelobites.dandanator.util.SNAHeader;
-import com.grelobites.dandanator.util.TrackeableInputStream;
-import com.grelobites.dandanator.util.Util;
-import com.grelobites.dandanator.util.Z80Opcode;
-import com.grelobites.dandanator.util.ZxColor;
-import com.grelobites.dandanator.util.ZxScreen;
+import com.grelobites.dandanator.util.*;
 import com.grelobites.dandanator.util.romset.RomSetHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,7 +177,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             int firmwareHeaderLength = Constants.DANDANATOR_PIC_FW_HEADER.length();
             os.write(Constants.DANDANATOR_PIC_FW_HEADER.getBytes(), 0, firmwareHeaderLength);
             os.write(configuration.getDandanatorPicFirmware(), 0,
-                    Constants.DANDANATOR_PIC_FW_SIZE_0 - firmwareHeaderLength);
+                    Constants.DANDANATOR_PIC_FW_SIZE_0);
             LOGGER.debug("Dumped first chunk of PIC firmware. Offset: " + os.size());
 
             os.write(configuration.getCharSet(), 0, Constants.CHARSET_SIZE);
@@ -225,7 +220,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             LOGGER.debug("Dumped poke data. Offset: " + os.size());
 
             os.write(configuration.getDandanatorPicFirmware(),
-                    Constants.DANDANATOR_PIC_FW_SIZE_0 - firmwareHeaderLength,
+                    Constants.DANDANATOR_PIC_FW_SIZE_0,
                     Constants.DANDANATOR_PIC_FW_SIZE_1);
             LOGGER.debug("Dumped second chunk of PIC firmware. Offset: " + os.size());
 
@@ -256,13 +251,25 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     @Override
     public void importRomSet(Context context, InputStream stream) {
         try {
+            byte[] dandanatorPicFirmware = new byte[Constants.DANDANATOR_PIC_FW_SIZE];
             TrackeableInputStream is = new TrackeableInputStream(stream);
-            is.skip(Constants.BASEROM_SIZE);
-            is.skip(Constants.DANDANATOR_PIC_FW_SIZE_0);
-            is.skip(Constants.CHARSET_SIZE);
-            is.skip(2048);  //Screen third
-            is.skip(256);   //Attributes
-            is.skip(132);   //Text data
+            byte[] baseRom = is.getAsByteArray(Constants.BASEROM_SIZE);
+            LOGGER.debug("After reading the base rom. Offset " + is.position());
+            is.skip(Constants.DANDANATOR_PIC_FW_HEADER.length());
+            is.read(dandanatorPicFirmware, 0, Constants.DANDANATOR_PIC_FW_SIZE_0);
+            LOGGER.debug("After reading 1st section of PIC firmware. Offset " + is.position());
+
+            byte[] charSet = is.getAsByteArray(Constants.CHARSET_SIZE);
+            LOGGER.debug("After reading the charset. Offset " + is.position());
+            byte[] screen = is.getAsByteArray(2048);
+            byte[] attributes = is.getAsByteArray(256);
+            LOGGER.debug("After reading the screen. Offset " + is.position());
+
+            String extraRomMessage = is.getNullTerminatedString(33).substring(3);
+            String togglePokesMessage = is.getNullTerminatedString(33).substring(3);
+            String launchGameMessage = is.getNullTerminatedString(33).substring(3);
+            String selectPokesMessage = is.getNullTerminatedString(33);
+
             is.skip(1);     //Game count
             LOGGER.debug("Skipped head. Position is " + is.position());
 
@@ -284,6 +291,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                 GameDataHolder holder = recoveredGames.get(i);
                 holder.setTrainerCount(is.read());
             }
+            long beforePokesPosition = is.position();
             is.skip(20); //Skip poke start addresses
 
             for (int i = 0; i < Constants.SLOT_COUNT; i++) {
@@ -309,9 +317,12 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                     }
                 }
             }
+            is.skip(Constants.POKE_ZONE_SIZE - (is.position() - beforePokesPosition));
+            is.read(dandanatorPicFirmware, Constants.DANDANATOR_PIC_FW_SIZE_0, Constants.DANDANATOR_PIC_FW_SIZE_1);
+
+            LOGGER.debug("After pic firmware. Position " + is.position());
 
             is.skip(Constants.SLOT_SIZE - is.position());
-
             LOGGER.debug("After version. Position " + is.position());
 
             for (int i = 0; i < Constants.SLOT_COUNT; i++) {
@@ -335,6 +346,19 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                     });
 
             LOGGER.debug("Added " + games.size() + " to the list of games");
+
+            //Update preferences only if everything was OK
+            Configuration configuration = context.getConfiguration();
+            configuration.setCharSetPath(Configuration.ROMSET_PROVIDED);
+            configuration.setCharSet(charSet);
+            configuration.setDandanatorPicFirmwarePath(Configuration.ROMSET_PROVIDED);
+            configuration.setDandanatorPicFirmware(dandanatorPicFirmware);
+            configuration.setBackgroundImagePath(Configuration.ROMSET_PROVIDED);
+            configuration.setBackgroundImage(ImageUtil.fillZxImage(screen, attributes));
+            configuration.setExtraRomMessage(extraRomMessage, false);
+            configuration.setTogglePokesMessage(togglePokesMessage, false);
+            configuration.setLaunchGameMessage(launchGameMessage, false);
+            configuration.setSelectPokesMessage(selectPokesMessage, false);
         } catch (Exception e) {
             LOGGER.error("Importing RomSet", e);
         }
@@ -349,6 +373,10 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
             screen.setInk(ZxColor.BLACK);
             screen.setPen(ZxColor.BRIGHTMAGENTA);
+            for (int line = screen.getLines() - 1; line >= 8; line--) {
+                screen.deleteLine(line);
+            }
+
             screen.printLine(getVersionInfo(), 8, 0);
 
             int line = 10;

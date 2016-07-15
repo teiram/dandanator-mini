@@ -64,4 +64,10 @@ public class ImageUtil {
 				Constants.SPECTRUM_SCREEN_HEIGHT);
 	}
 
+	public static byte[] fillZxImage(byte[] screen, byte[] attributes) {
+		byte[] image = new byte[Constants.SPECTRUM_SCREEN_SIZE + Constants.SPECTRUM_COLORINFO_SIZE];
+		System.arraycopy(screen, 0, image, 0, screen.length);
+		System.arraycopy(attributes, 0, image, Constants.SPECTRUM_SCREEN_SIZE, attributes.length);
+		return image;
+	}
 }

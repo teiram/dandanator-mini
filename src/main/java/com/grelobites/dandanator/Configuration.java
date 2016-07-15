@@ -27,6 +27,8 @@ public class Configuration {
     private static final String DANDANATORPICFIRMWAREPATH_PROPERTY = "dandanatorPicFirmwarePath";
     private static final String MODE_PROPERTY = "mode";
 
+    public static final String ROMSET_PROVIDED = "__ROMSET_PROVIDED__";
+
     private static final String DEFAULT_MODE = RomSetType.DANDANATOR_MINI.name();
 
     private String dandanatorRomPath;
@@ -64,6 +66,9 @@ public class Configuration {
         return INSTANCE;
     }
 
+    private static boolean validConfigurationValue(String value) {
+        return value != null && !ROMSET_PROVIDED.equals(value);
+    }
 
     public String getDandanatorRomPath() throws IOException {
         return dandanatorRomPath;
@@ -113,7 +118,7 @@ public class Configuration {
 
     public byte[] getDandanatorRom() throws IOException {
         if (dandanatorRom == null) {
-            if (dandanatorRomPath != null) {
+            if (validConfigurationValue(dandanatorRomPath)) {
                 try {
                     dandanatorRom = Files.readAllBytes(Paths.get(dandanatorRomPath));
                 } catch (Exception e) {
@@ -133,7 +138,7 @@ public class Configuration {
 
     public byte[] getBackgroundImage() throws IOException {
         if (backgroundImage == null) {
-            if (backgroundImagePath.get() != null) {
+            if (validConfigurationValue(backgroundImagePath.get())) {
                 try {
                     backgroundImage = Files.readAllBytes(Paths.get(backgroundImagePath.get()));
                 } catch (Exception e) {
@@ -153,7 +158,7 @@ public class Configuration {
 
     public byte[] getExtraRom() throws IOException {
         if (extraRom == null) {
-            if (extraRomPath != null) {
+            if (validConfigurationValue(extraRomPath)) {
                 try {
                     extraRom = Files.readAllBytes(Paths.get(extraRomPath));
                 } catch (Exception e) {
@@ -173,7 +178,7 @@ public class Configuration {
 
     public byte[] getCharSet() throws IOException {
         if (charSet == null) {
-            if (getCharSetPath() != null) {
+            if (validConfigurationValue(getCharSetPath())) {
                 try {
                     charSet = Files.readAllBytes(Paths.get(charSetPath.get()));
                 } catch (Exception e) {
@@ -213,8 +218,14 @@ public class Configuration {
     }
 
     public void setTogglePokesMessage(String togglePokesMessage) {
+        setTogglePokesMessage(togglePokesMessage, true);
+    }
+
+    public void setTogglePokesMessage(String togglePokesMessage, boolean persist) {
         this.togglePokesMessage.set(togglePokesMessage);
-        persistConfigurationValue(CHARSETPATH_PROPERTY, this.togglePokesMessage.get());
+        if (persist) {
+            persistConfigurationValue(TOGGLEPOKESMESSAGE_PROPERTY, this.togglePokesMessage.get());
+        }
     }
 
     public StringProperty togglePokesMessageProperty() {
@@ -229,8 +240,14 @@ public class Configuration {
     }
 
     public void setExtraRomMessage(String extraRomMessage) {
+        setExtraRomMessage(extraRomMessage, true);
+    }
+
+    public void setExtraRomMessage(String extraRomMessage, boolean persist) {
         this.extraRomMessage.set(extraRomMessage);
-        persistConfigurationValue(EXTRAROMMESSAGE_PROPERTY, this.extraRomMessage.get());
+        if (persist) {
+            persistConfigurationValue(EXTRAROMMESSAGE_PROPERTY, this.extraRomMessage.get());
+        }
     }
 
     public StringProperty extraRomMessageProperty() {
@@ -245,8 +262,14 @@ public class Configuration {
     }
 
     public void setLaunchGameMessage(String launchGameMessage) {
+        setLaunchGameMessage(launchGameMessage, true);
+    }
+
+    public void setLaunchGameMessage(String launchGameMessage, boolean persist) {
         this.launchGameMessage.set(launchGameMessage);
-        persistConfigurationValue(LAUNCHGAMEMESSAGE_PROPERTY, this.launchGameMessage.get());
+        if (persist) {
+            persistConfigurationValue(LAUNCHGAMEMESSAGE_PROPERTY, this.launchGameMessage.get());
+        }
     }
 
     public StringProperty launchGameMessageProperty() {
@@ -265,8 +288,14 @@ public class Configuration {
     }
 
     public void setSelectPokesMessage(String selectPokesMessage) {
+        setSelectPokesMessage(selectPokesMessage, true);
+    }
+
+    public void setSelectPokesMessage(String selectPokesMessage, boolean persist) {
         this.selectPokesMessage.set(selectPokesMessage);
-        persistConfigurationValue(SELECTPOKESMESSAGE_PROPERTY, this.selectPokesMessage.get());
+        if (persist) {
+            persistConfigurationValue(SELECTPOKESMESSAGE_PROPERTY, this.selectPokesMessage.get());
+        }
     }
 
     public void setDandanatorPicFirmware(byte[] dandanatorPicFirmware) {
@@ -275,7 +304,7 @@ public class Configuration {
 
     public byte[] getDandanatorPicFirmware() throws IOException {
         if (dandanatorPicFirmware == null) {
-            if (getDandanatorPicFirmwarePath() != null) {
+            if (validConfigurationValue(getDandanatorPicFirmwarePath())) {
                 try {
                     dandanatorPicFirmware = Files.readAllBytes(Paths.get(dandanatorPicFirmwarePath));
                 } catch (Exception e) {
@@ -308,11 +337,13 @@ public class Configuration {
 
     private static void persistConfigurationValue(String key, String value) {
         LOGGER.debug("persistConfigurationValue " + key + ", " + value);
-        Preferences p = getApplicationPreferences();
-        if (value != null) {
-            p.put(key, value);
-        } else {
-            p.remove(key);
+        if (!ROMSET_PROVIDED.equals(value)) {
+            Preferences p = getApplicationPreferences();
+            if (value != null) {
+                p.put(key, value);
+            } else {
+                p.remove(key);
+            }
         }
     }
 

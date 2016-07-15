@@ -17,7 +17,7 @@ public class Constants {
     private static final String DANDANATOR_ROM_RESOURCE = "dandanator-mini.rom";
     private static final String DANDANATOR_PIC_FW_RESOURCE = "dandanator-pic-fw.bin";
     private static final String EXTRA_ROM_RESOURCE = "test.rom";
-    private static final String DEFAULT_VERSION = "4.3";
+    private static final String DEFAULT_VERSION = "4.4";
 
 	public static final int SNA_HEADER_SIZE = 27;
 	public static final int SPECTRUM_SCREEN_WIDTH = 256;
@@ -46,7 +46,7 @@ public class Constants {
     public static final int MAX_TRAINERS_PER_GAME = 8;
 
     public static final String DANDANATOR_PIC_FW_HEADER = "DNTRMFW-Up";
-    public static final int DANDANATOR_PIC_FW_SIZE_0 = 1536;
+    public static final int DANDANATOR_PIC_FW_SIZE_0 = 1526;
     public static final int DANDANATOR_PIC_FW_SIZE_1 = 1546;
 
     public static final String DEFAULT_EXTRAROMKEY_MESSAGE = LocaleUtil.i18n("extraRomDefaultMessage");

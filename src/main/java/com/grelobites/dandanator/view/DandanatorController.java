@@ -494,8 +494,11 @@ public class DandanatorController {
                 pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(context.getGameList()));
             }
             if (gamesUpdated) {
-                pokesViewLabel.setText(String.format(LocaleUtil.i18n("trainersHeadingMessage"),
-                        gameTable.getSelectionModel().getSelectedItem().getName()));
+                Game game = gameTable.getSelectionModel().getSelectedItem();
+
+                pokesViewLabel.setText(game != null ? String.format(LocaleUtil.i18n("trainersHeadingMessage"),
+                        gameTable.getSelectionModel().getSelectedItem().getName()) :
+                        LocaleUtil.i18n("noGameSelectedMessage"));
             }
         });
     }

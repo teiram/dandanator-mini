@@ -135,4 +135,13 @@ public class ZxScreen extends WritableImage {
             deleteLine(line);
         }
     }
+
+	public int getLines() {
+		return lines;
+	}
+
+	public int getColumns() {
+		return columns;
+	}
+
 }
