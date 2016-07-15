@@ -82,6 +82,7 @@ public class Configuration {
     public void setDandanatorPicFirmwarePath(String dandanatorPicFirmwarePath) {
         this.dandanatorPicFirmwarePath = dandanatorPicFirmwarePath;
         dandanatorPicFirmware = null;
+        persistConfigurationValue(DANDANATORPICFIRMWAREPATH_PROPERTY, dandanatorPicFirmwarePath);
     }
 
     public String getBackgroundImagePath() {
@@ -270,7 +271,6 @@ public class Configuration {
 
     public void setDandanatorPicFirmware(byte[] dandanatorPicFirmware) {
         this.dandanatorPicFirmware = dandanatorPicFirmware;
-        persistConfigurationvalue(DANDANATORPICFIRMWAREPATH_PROPERTY, this.dandanatorPicFirmware);
     }
 
     public byte[] getDandanatorPicFirmware() throws IOException {
@@ -323,18 +323,20 @@ public class Configuration {
                 p.get(BACKGROUNDIMAGEPATH_PROPERTY, null));
         configuration.dandanatorRomPath =
                 p.get(DANDANATORROMPATH_PROPERTY, null);
-        configuration.testRomPath =
-                p.get(TESTROMPATH_PROPERTY, null);
+        configuration.extraRomPath =
+                p.get(EXTRAROMPATH_PROPERTY, null);
         configuration.charSetPath.set(
                 p.get(CHARSETPATH_PROPERTY, null));
         configuration.launchGameMessage.set(
                 p.get(LAUNCHGAMEMESSAGE_PROPERTY, null));
         configuration.selectPokesMessage.set(
                 p.get(SELECTPOKESMESSAGE_PROPERTY, null));
-        configuration.testRomMessage.set(
-                p.get(TESTROMMESSAGE_PROPERTY, null));
+        configuration.extraRomMessage.set(
+                p.get(EXTRAROMMESSAGE_PROPERTY, null));
         configuration.togglePokesMessage.set(
                 p.get(TOGGLEPOKESMESSAGE_PROPERTY, null));
+        configuration.dandanatorPicFirmwarePath =
+                p.get(DANDANATORPICFIRMWAREPATH_PROPERTY, null);
         configuration.mode = p.get(MODE_PROPERTY, null);
         return configuration;
     }
