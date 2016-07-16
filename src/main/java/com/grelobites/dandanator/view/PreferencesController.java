@@ -8,6 +8,7 @@ import com.grelobites.dandanator.util.ZxColor;
 import com.grelobites.dandanator.util.ZxScreen;
 import com.grelobites.dandanator.util.romset.RomSetType;
 import com.grelobites.dandanator.view.util.DialogUtil;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -23,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Locale;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -157,15 +158,20 @@ public class PreferencesController {
         }
     }
 
+
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
     }
 
     private void updateExtraRom(File extraRomFile) {
-        if (isReadableFile(extraRomFile)) {
-            getConfiguration().setExtraRomPath(extraRomFile.getAbsolutePath());
+        if (extraRomFile != null) {
+            if (isReadableFile(extraRomFile)) {
+                getConfiguration().setExtraRomPath(extraRomFile.getAbsolutePath());
+            } else {
+                throw new IllegalArgumentException("Invalid ROM File provided");
+            }
         } else {
-            throw new IllegalArgumentException("Invalid ROM File provided");
+            getConfiguration().setExtraRomPath(null);
         }
     }
 
@@ -175,10 +181,14 @@ public class PreferencesController {
     }
 
     private void updateDandanatorRom(File dandanatorRom) {
-        if (isDandanatorRomValid(dandanatorRom)) {
-            getConfiguration().setDandanatorRomPath(dandanatorRom.getAbsolutePath());
+        if (dandanatorRom != null) {
+            if (isDandanatorRomValid(dandanatorRom)) {
+                getConfiguration().setDandanatorRomPath(dandanatorRom.getAbsolutePath());
+            } else {
+                throw new IllegalArgumentException("Invalid ROM file provided");
+            }
         } else {
-            throw new IllegalArgumentException("Invalid ROM file provided");
+            getConfiguration().setDandanatorRomPath(null);
         }
     }
 
@@ -188,10 +198,14 @@ public class PreferencesController {
     }
 
     private void updateDandanatorPicFirmware(File dandanatorPicFirmware) {
-        if (isDandanatorPicFirmwareValid(dandanatorPicFirmware)) {
-            getConfiguration().setDandanatorPicFirmwarePath(dandanatorPicFirmware.getAbsolutePath());
+        if (dandanatorPicFirmware != null) {
+            if (isDandanatorPicFirmwareValid(dandanatorPicFirmware)) {
+                getConfiguration().setDandanatorPicFirmwarePath(dandanatorPicFirmware.getAbsolutePath());
+            } else {
+                throw new IllegalArgumentException("Invalid PIC Firmware file provided");
+            }
         } else {
-            throw new IllegalArgumentException("Invalid PIC Firmware file provided");
+            getConfiguration().setDandanatorPicFirmwarePath(null);
         }
     }
 
@@ -202,9 +216,7 @@ public class PreferencesController {
                 .showAndWait();
     }
 
-    @FXML
-    private void initialize() throws IOException {
-        initializeImages();
+    private void backgroundImageSetup() {
         backgroundImageView.setImage(backgroundImage);
         changeBackgroundImageButton.setOnAction(event -> {
             FileChooser chooser = new FileChooser();
@@ -229,7 +241,9 @@ public class PreferencesController {
                 LOGGER.error("Resetting background Image", e);
             }
         });
+    }
 
+    private void charSetSetup() {
         charSetImageView.setImage(charSetImage);
         changeCharSetButton.setOnAction(event -> {
             FileChooser chooser = new FileChooser();
@@ -252,131 +266,119 @@ public class PreferencesController {
                 LOGGER.error("Resetting charset", e);
             }
         });
+    }
 
+    private void romSetModeSetup() {
         romSetModeCombo.setItems(FXCollections.observableArrayList(
-              Stream.of(RomSetType.values()).map(Enum::name)
+                Stream.of(RomSetType.values()).map(Enum::name)
                         .collect(Collectors.toList())));
         romSetModeCombo.getSelectionModel().select(RomSetType.DANDANATOR_MINI.name());
         romSetModeCombo.onActionProperty().addListener(event -> {
             getConfiguration().setMode(romSetModeCombo.getSelectionModel().getSelectedItem());
         });
+    }
 
-        launchGamesMessage.setText(getConfiguration().getLaunchGameMessage());
-        launchGamesMessage.textProperty().addListener(
+    private static void bindLabelToConfiguration(TextField textField,
+                                                 StringProperty stringProperty,
+                                                 int maxMessageLength) {
+        textField.textProperty().bindBidirectional(stringProperty);
+        textField.textProperty().addListener(
                 (observable, oldValue, newValue) -> {
-                    if (newValue.length() > Constants.LAUNCH_GAME_MESSAGE_MAXLENGTH) {
-                        launchGamesMessage.setText(oldValue);
-                    } else {
-                        getConfiguration().setLaunchGameMessage(newValue);
+                    if (newValue != null &&
+                            newValue.length() > maxMessageLength) {
+                        textField.setText(oldValue);
                     }
                 });
+    }
 
-        resetLaunchGamesMessage.setOnAction(event -> {
-            getConfiguration().setLaunchGameMessage(null);
-            launchGamesMessage.setText(getConfiguration().getLaunchGameMessage());
+    private void setupMessageAndResetButton(TextField textField,
+                                            StringProperty stringProperty,
+                                            int maxMessageLength,
+                                            Button resetButton,
+                                            String defaultMessage) {
+        bindLabelToConfiguration(textField, stringProperty, maxMessageLength);
+        if (stringProperty.get() == null) {
+            stringProperty.set(defaultMessage);
+        }
+        resetButton.setOnAction(event -> {
+            stringProperty.set(defaultMessage);
         });
 
-
-        togglePokesMessage.setText(getConfiguration().getTogglePokesMessage());
-        togglePokesMessage.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.length() > Constants.TOGGLE_POKES_MESSAGE_MAXLENGTH) {
-                togglePokesMessage.setText(oldValue);
-            } else {
-                getConfiguration().setTogglePokesMessage(newValue);
-            }
-        });
-        resetTogglePokesMessage.setOnAction(event -> {
-            getConfiguration().setTogglePokesMessage(null);
-            togglePokesMessage.setText(getConfiguration().getTogglePokesMessage());
-        });
-
-
-        selectPokesMessage.setText(getConfiguration().getSelectPokesMessage());
-        selectPokesMessage.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.length() > Constants.SELECT_POKE_MESSAGE_MAXLENGTH) {
-                selectPokesMessage.setText(oldValue);
-            } else {
-                getConfiguration().setSelectPokesMessage(newValue);
-            }
-        });
-        resetSelectPokesMessage.setOnAction(event -> {
-            getConfiguration().setSelectPokesMessage(null);
-            selectPokesMessage.setText(getConfiguration().getSelectPokesMessage());
-        });
-
-        extraRomMessage.setText(getConfiguration().getExtraRomMessage());
-        extraRomMessage.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue.length() > Constants.EXTRA_ROM_MESSAGE_MAXLENGTH) {
-                extraRomMessage.setText(oldValue);
-            } else {
-                getConfiguration().setExtraRomMessage(newValue);
-            }
-        });
-        resetExtraRomMessage.setOnAction(event -> {
-            getConfiguration().setExtraRomMessage(null);
-            extraRomMessage.setText(getConfiguration().getExtraRomMessage());
-        });
-
-        changeExtraRomButton.setOnAction(event -> {
+    }
+    private void setupFileBasedParameter(Button changeButton,
+                                         String changeMessage,
+                                         Label pathLabel,
+                                         Button resetButton,
+                                         Consumer<File> consumer) {
+        changeButton.setOnAction(event -> {
             FileChooser chooser = new FileChooser();
-            chooser.setTitle(LocaleUtil.i18n("selectExtraRomMessage"));
-            final File extraRomFile = chooser.showOpenDialog(changeExtraRomButton.getScene().getWindow());
-            if (extraRomFile != null) {
+            chooser.setTitle(changeMessage);
+            final File file = chooser.showOpenDialog(changeButton.getScene().getWindow());
+            if (file != null) {
                 try {
-                    updateExtraRom(extraRomFile);
-                    extraRomPath.setText(extraRomFile.getAbsolutePath());
+                    consumer.accept(file);
+                    pathLabel.setText(file.getAbsolutePath());
                 } catch (Exception e) {
-                    LOGGER.error("Updating Extra ROM from " + extraRomFile, e);
+                    LOGGER.error("In setupFileBasedParameter for " + changeMessage
+                                    + " with file " + file, e);
                     showGenericFileErrorAlert();
                 }
             }
         });
 
         resetExtraRomButton.setOnAction(event -> {
-            getConfiguration().setExtraRomPath(null);
-            extraRomPath.setText(LocaleUtil.i18n("builtInMessage"));
+            consumer.accept(null);
+            pathLabel.setText(LocaleUtil.i18n("builtInMessage"));
         });
-
-        changeDandanatorMiniRomButton.setOnAction(event -> {
-            FileChooser chooser = new FileChooser();
-            chooser.setTitle(LocaleUtil.i18n("selectDandanatorRomMessage"));
-            final File dandanatorRomFile = chooser.showOpenDialog(changeDandanatorMiniRomButton.getScene().getWindow());
-            if (dandanatorRomFile != null) {
-                try {
-                    updateDandanatorRom(dandanatorRomFile);
-                    dandanatorMiniRomPath.setText(dandanatorRomFile.getAbsolutePath());
-                } catch (Exception e) {
-                    LOGGER.error("Updating Dandanator ROM from " + dandanatorRomFile, e);
-                    showGenericFileErrorAlert();
-                }
-            }
-        });
-        resetDandanatorMiniRomButton.setOnAction(event -> {
-            getConfiguration().setDandanatorRomPath(null);
-            dandanatorMiniRomPath.setText(LocaleUtil.i18n("builtInMessage"));
-        });
-
-        changeDandanatorPicFirmwareButton.setOnAction(event -> {
-            FileChooser chooser = new FileChooser();
-            chooser.setTitle(LocaleUtil.i18n("selectDandanatorPicFirmwareMessage"));
-            final File dandanatorPicFwFile = chooser.showOpenDialog(changeDandanatorPicFirmwareButton
-                    .getScene().getWindow());
-            if (dandanatorPicFwFile != null) {
-                try {
-                    updateDandanatorPicFirmware(dandanatorPicFwFile);
-                    dandanatorPicFirmwarePath.setText(dandanatorPicFwFile.getAbsolutePath());
-                } catch (Exception e) {
-                    LOGGER.error("Updating Dandanator PIC Firmware from " + dandanatorPicFwFile, e);
-                    showGenericFileErrorAlert();
-                }
-            }
-        });
-        resetDandanatorPicFirmwareButton.setOnAction(event -> {
-           getConfiguration().setDandanatorPicFirmwarePath(null);
-            dandanatorPicFirmwarePath.setText(LocaleUtil.i18n("builtInMessage"));
-        });
-
 
     }
+    @FXML
+    private void initialize() throws IOException {
+        initializeImages();
+
+        backgroundImageSetup();
+
+        charSetSetup();
+
+        romSetModeSetup();
+
+        setupMessageAndResetButton(launchGamesMessage, getConfiguration().launchGameMessageProperty(),
+                Constants.LAUNCH_GAME_MESSAGE_MAXLENGTH,
+                resetLaunchGamesMessage,
+                Constants.DEFAULT_LAUNCHGAME_MESSAGE);
+
+        setupMessageAndResetButton(togglePokesMessage, getConfiguration().togglePokesMessageProperty(),
+                Constants.TOGGLE_POKES_MESSAGE_MAXLENGTH,
+                resetTogglePokesMessage,
+                Constants.DEFAULT_TOGGLEPOKESKEY_MESSAGE);
+
+        setupMessageAndResetButton(selectPokesMessage, getConfiguration().selectPokesMessageProperty(),
+                Constants.SELECT_POKE_MESSAGE_MAXLENGTH,
+                resetSelectPokesMessage,
+                Constants.DEFAULT_SELECTPOKE_MESSAGE);
+        setupMessageAndResetButton(extraRomMessage, getConfiguration().extraRomMessageProperty(),
+                Constants.EXTRA_ROM_MESSAGE_MAXLENGTH,
+                resetExtraRomMessage,
+                Constants.DEFAULT_EXTRAROMKEY_MESSAGE);
+
+        setupFileBasedParameter(changeExtraRomButton,
+                LocaleUtil.i18n("selectExtraRomMessage"),
+                extraRomPath, resetExtraRomButton,
+                f -> updateExtraRom(f));
+
+        setupFileBasedParameter(changeDandanatorMiniRomButton,
+                LocaleUtil.i18n("selectDandanatorRomMessage"),
+                dandanatorMiniRomPath,
+                resetDandanatorMiniRomButton,
+                f -> updateDandanatorRom(f));
+
+        setupFileBasedParameter(changeDandanatorMiniRomButton,
+                LocaleUtil.i18n("selectDandanatorPicFirmwareMessage"),
+                dandanatorPicFirmwarePath,
+                resetDandanatorPicFirmwareButton,
+                f -> updateDandanatorPicFirmware(f));
+    }
+
+
 
 }
