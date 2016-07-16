@@ -18,6 +18,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
+import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,6 +137,7 @@ public class PreferencesController {
     }
 
     private void recreateBackgroundImage() throws IOException {
+        LOGGER.debug("RecreateBackgroundImage");
         ImageUtil.scrLoader(backgroundImage,
                 new ByteArrayInputStream(getConfiguration().getBackgroundImage()));
     }
@@ -164,15 +166,12 @@ public class PreferencesController {
     }
 
     private void updateExtraRom(File extraRomFile) {
-        if (extraRomFile != null) {
-            if (isReadableFile(extraRomFile)) {
-                getConfiguration().setExtraRomPath(extraRomFile.getAbsolutePath());
-            } else {
-                throw new IllegalArgumentException("Invalid ROM File provided");
-            }
+        if (isReadableFile(extraRomFile)) {
+            getConfiguration().setExtraRomPath(extraRomFile.getAbsolutePath());
         } else {
-            getConfiguration().setExtraRomPath(null);
+            throw new IllegalArgumentException("Invalid ROM File provided");
         }
+
     }
 
     private boolean isDandanatorRomValid(File dandanatorRomFile) {
@@ -181,14 +180,10 @@ public class PreferencesController {
     }
 
     private void updateDandanatorRom(File dandanatorRom) {
-        if (dandanatorRom != null) {
-            if (isDandanatorRomValid(dandanatorRom)) {
-                getConfiguration().setDandanatorRomPath(dandanatorRom.getAbsolutePath());
-            } else {
-                throw new IllegalArgumentException("Invalid ROM file provided");
-            }
+        if (isDandanatorRomValid(dandanatorRom)) {
+            getConfiguration().setDandanatorRomPath(dandanatorRom.getAbsolutePath());
         } else {
-            getConfiguration().setDandanatorRomPath(null);
+            throw new IllegalArgumentException("Invalid ROM file provided");
         }
     }
 
@@ -198,14 +193,10 @@ public class PreferencesController {
     }
 
     private void updateDandanatorPicFirmware(File dandanatorPicFirmware) {
-        if (dandanatorPicFirmware != null) {
-            if (isDandanatorPicFirmwareValid(dandanatorPicFirmware)) {
-                getConfiguration().setDandanatorPicFirmwarePath(dandanatorPicFirmware.getAbsolutePath());
-            } else {
-                throw new IllegalArgumentException("Invalid PIC Firmware file provided");
-            }
+        if (isDandanatorPicFirmwareValid(dandanatorPicFirmware)) {
+            getConfiguration().setDandanatorPicFirmwarePath(dandanatorPicFirmware.getAbsolutePath());
         } else {
-            getConfiguration().setDandanatorPicFirmwarePath(null);
+            throw new IllegalArgumentException("Invalid PIC Firmware file provided");
         }
     }
 
@@ -241,6 +232,14 @@ public class PreferencesController {
                 LOGGER.error("Resetting background Image", e);
             }
         });
+        getConfiguration().backgroundImagePathProperty().addListener(
+            (observable, oldValue, newValue) -> {
+                try {
+                    recreateBackgroundImage();
+                } catch (IOException ioe) {
+                    LOGGER.error("Updating background image", ioe);
+                }
+            });
     }
 
     private void charSetSetup() {
@@ -266,6 +265,15 @@ public class PreferencesController {
                 LOGGER.error("Resetting charset", e);
             }
         });
+        getConfiguration().charSetPathProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    try {
+                        recreateCharSetImage();
+                    } catch (IOException ioe) {
+                        LOGGER.error("Updating charset image", ioe);
+                    }
+                });
+
     }
 
     private void romSetModeSetup() {
@@ -273,9 +281,8 @@ public class PreferencesController {
                 Stream.of(RomSetType.values()).map(Enum::name)
                         .collect(Collectors.toList())));
         romSetModeCombo.getSelectionModel().select(RomSetType.DANDANATOR_MINI.name());
-        romSetModeCombo.onActionProperty().addListener(event -> {
-            getConfiguration().setMode(romSetModeCombo.getSelectionModel().getSelectedItem());
-        });
+        romSetModeCombo.onActionProperty().addListener(event ->
+                getConfiguration().setMode(romSetModeCombo.getSelectionModel().getSelectedItem()));
     }
 
     private static void bindLabelToConfiguration(TextField textField,
@@ -291,25 +298,51 @@ public class PreferencesController {
                 });
     }
 
-    private void setupMessageAndResetButton(TextField textField,
-                                            StringProperty stringProperty,
-                                            int maxMessageLength,
-                                            Button resetButton,
-                                            String defaultMessage) {
+    private void setupMessageWithResetButton(TextField textField,
+                                             StringProperty stringProperty,
+                                             int maxMessageLength,
+                                             Button resetButton,
+                                             String defaultMessage) {
         bindLabelToConfiguration(textField, stringProperty, maxMessageLength);
         if (stringProperty.get() == null) {
             stringProperty.set(defaultMessage);
         }
-        resetButton.setOnAction(event -> {
-            stringProperty.set(defaultMessage);
-        });
+        resetButton.setOnAction(event -> stringProperty.set(defaultMessage));
 
     }
     private void setupFileBasedParameter(Button changeButton,
                                          String changeMessage,
                                          Label pathLabel,
+                                         StringProperty configurationProperty,
                                          Button resetButton,
                                          Consumer<File> consumer) {
+        pathLabel.textProperty().bindBidirectional(configurationProperty,
+                new StringConverter<String>() {
+                    @Override
+                    public String toString(String object) {
+                        LOGGER.debug("Executing toString on " + object);
+                        if (object == null) {
+                            return LocaleUtil.i18n("builtInMessage");
+                        } else if (object.equals(Configuration.ROMSET_PROVIDED)) {
+                            return LocaleUtil.i18n("romsetProvidedMessage");
+                        } else {
+                            return object;
+                        }
+                    }
+
+                    @Override
+                    public String fromString(String string) {
+                        LOGGER.debug("Executing fromString on " + string);
+                        if (string == null) {
+                            return null;
+                        } else if (string.isEmpty()) {
+                            return null;
+                        } else {
+                            return string;
+                        }
+                    }
+                });
+
         changeButton.setOnAction(event -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(changeMessage);
@@ -326,10 +359,8 @@ public class PreferencesController {
             }
         });
 
-        resetExtraRomButton.setOnAction(event -> {
-            consumer.accept(null);
-            pathLabel.setText(LocaleUtil.i18n("builtInMessage"));
-        });
+        resetButton.setOnAction(event ->
+            configurationProperty.set(null));
 
     }
     @FXML
@@ -342,43 +373,44 @@ public class PreferencesController {
 
         romSetModeSetup();
 
-        setupMessageAndResetButton(launchGamesMessage, getConfiguration().launchGameMessageProperty(),
+        setupMessageWithResetButton(launchGamesMessage, getConfiguration().launchGameMessageProperty(),
                 Constants.LAUNCH_GAME_MESSAGE_MAXLENGTH,
                 resetLaunchGamesMessage,
                 Constants.DEFAULT_LAUNCHGAME_MESSAGE);
 
-        setupMessageAndResetButton(togglePokesMessage, getConfiguration().togglePokesMessageProperty(),
+        setupMessageWithResetButton(togglePokesMessage, getConfiguration().togglePokesMessageProperty(),
                 Constants.TOGGLE_POKES_MESSAGE_MAXLENGTH,
                 resetTogglePokesMessage,
                 Constants.DEFAULT_TOGGLEPOKESKEY_MESSAGE);
 
-        setupMessageAndResetButton(selectPokesMessage, getConfiguration().selectPokesMessageProperty(),
+        setupMessageWithResetButton(selectPokesMessage, getConfiguration().selectPokesMessageProperty(),
                 Constants.SELECT_POKE_MESSAGE_MAXLENGTH,
                 resetSelectPokesMessage,
                 Constants.DEFAULT_SELECTPOKE_MESSAGE);
-        setupMessageAndResetButton(extraRomMessage, getConfiguration().extraRomMessageProperty(),
+        setupMessageWithResetButton(extraRomMessage, getConfiguration().extraRomMessageProperty(),
                 Constants.EXTRA_ROM_MESSAGE_MAXLENGTH,
                 resetExtraRomMessage,
                 Constants.DEFAULT_EXTRAROMKEY_MESSAGE);
 
         setupFileBasedParameter(changeExtraRomButton,
                 LocaleUtil.i18n("selectExtraRomMessage"),
-                extraRomPath, resetExtraRomButton,
-                f -> updateExtraRom(f));
+                extraRomPath,
+                getConfiguration().extraRomPathProperty(),
+                resetExtraRomButton,
+                this::updateExtraRom);
 
         setupFileBasedParameter(changeDandanatorMiniRomButton,
                 LocaleUtil.i18n("selectDandanatorRomMessage"),
                 dandanatorMiniRomPath,
+                getConfiguration().dandanatorRomPathProperty(),
                 resetDandanatorMiniRomButton,
-                f -> updateDandanatorRom(f));
+                this::updateDandanatorRom);
 
-        setupFileBasedParameter(changeDandanatorMiniRomButton,
+        setupFileBasedParameter(changeDandanatorPicFirmwareButton,
                 LocaleUtil.i18n("selectDandanatorPicFirmwareMessage"),
                 dandanatorPicFirmwarePath,
+                getConfiguration().dandanatorPicFirmwarePathProperty(),
                 resetDandanatorPicFirmwareButton,
-                f -> updateDandanatorPicFirmware(f));
+                this::updateDandanatorPicFirmware);
     }
-
-
-
 }

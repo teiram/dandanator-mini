@@ -8,7 +8,13 @@ import com.grelobites.dandanator.model.Poke;
 import com.grelobites.dandanator.model.PokeViewable;
 import com.grelobites.dandanator.model.Trainer;
 import com.grelobites.dandanator.model.TrainerList;
-import com.grelobites.dandanator.util.*;
+import com.grelobites.dandanator.util.ImageUtil;
+import com.grelobites.dandanator.util.SNAHeader;
+import com.grelobites.dandanator.util.TrackeableInputStream;
+import com.grelobites.dandanator.util.Util;
+import com.grelobites.dandanator.util.Z80Opcode;
+import com.grelobites.dandanator.util.ZxColor;
+import com.grelobites.dandanator.util.ZxScreen;
 import com.grelobites.dandanator.util.romset.RomSetHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -334,27 +340,40 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             LOGGER.debug("Clearing game list with recovered games count " + recoveredGames.size());
             Collection<Game> games = context.getGameList();
             games.clear();
-            recoveredGames.stream()
-                    .forEach(holder -> {
-                        final Game game = new Game();
-                        game.setName(holder.name);
-                        game.setScreen(holder.holdScreen);
-                        game.setRom(holder.activeRom);
-                        game.setData(holder.getData());
-                        holder.exportTrainers(game);
-                        games.add(game);
-                    });
+            recoveredGames.forEach(holder -> {
+                final Game game = new Game();
+                game.setName(holder.name);
+                game.setScreen(holder.holdScreen);
+                game.setRom(holder.activeRom);
+                game.setData(holder.getData());
+                holder.exportTrainers(game);
+                games.add(game);
+            });
 
             LOGGER.debug("Added " + games.size() + " to the list of games");
 
+            byte[] extraRom = is.getAsByteArray(Constants.SLOT_SIZE);
+
             //Update preferences only if everything was OK
             Configuration configuration = context.getConfiguration();
-            configuration.setCharSetPath(Configuration.ROMSET_PROVIDED);
+
+            //Keep this order, first the image and then the path, to avoid listeners to
+            //enter before the image is set
+            configuration.setDandanatorRom(baseRom);
+            configuration.setDandanatorRomPath(Configuration.ROMSET_PROVIDED);
+
             configuration.setCharSet(charSet);
-            configuration.setDandanatorPicFirmwarePath(Configuration.ROMSET_PROVIDED);
+            configuration.setCharSetPath(Configuration.ROMSET_PROVIDED);
+
             configuration.setDandanatorPicFirmware(dandanatorPicFirmware);
-            configuration.setBackgroundImagePath(Configuration.ROMSET_PROVIDED);
+            configuration.setDandanatorPicFirmwarePath(Configuration.ROMSET_PROVIDED);
+
             configuration.setBackgroundImage(ImageUtil.fillZxImage(screen, attributes));
+            configuration.setBackgroundImagePath(Configuration.ROMSET_PROVIDED);
+
+            configuration.setExtraRom(extraRom);
+            configuration.setExtraRomPath(Configuration.ROMSET_PROVIDED);
+
             configuration.setExtraRomMessage(extraRomMessage, false);
             configuration.setTogglePokesMessage(togglePokesMessage, false);
             configuration.setLaunchGameMessage(launchGameMessage, false);
