@@ -1,24 +1,11 @@
 package com.grelobites.dandanator.util.emulator.zxspectrum;
 
-/**
- * $Id: Z80.java 331 2010-09-14 10:30:13Z mviara $
- * <p>
- * Z80 emulator.
- * <p>
- * $Log: Z80.java,v $
- * Revision 1.4  2008/05/15 17:07:17  mviara
- * Added preliminary support for Z80Pack. Fixed bug in idle loop detection.
- * <p>
- * Revision 1.3  2005/03/18 16:40:02  mviara
- * Added support for stepper.
- * <p>
- * Revision 1.2  2004/06/20 16:27:29  mviara
- * Some minor change.
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 interface Z80debug {
 
-    public static final String[] opc1 = {
+    String[] opc1 = {
             "00 NOP         ", "01 LD BC,nn    ", "02 LD (BC),A   ", "03 INC BC      ",
             "04 INC B       ", "05 DEC B       ", "06 LD B,n      ", "07 RLCA        ",
             "08 EX AF,AF'   ", "09 ADD HL,BC   ", "0A LD A,(BC)   ", "0B DEC BC      ",
@@ -85,7 +72,7 @@ interface Z80debug {
             "FC CALL M,nn   ", "FD -->IY       ", "FE CP n        ", "FF RST &38     "
     };
 
-    public static final String[] opc2 = {
+    String[] opc2 = {
             "00 ???????????", "01 ???????????", "02 ???????????", "03 ???????????",
             "04 ???????????", "05 ???????????", "06 ???????????", "07 ???????????",
             "08 ???????????", "09 ???????????", "0A ???????????", "0B ???????????",
@@ -152,7 +139,7 @@ interface Z80debug {
             "FC ???????????", "FD ???????????", "FE ???????????", "FF ???????????"
     };
 
-    public static final String[] opc3 = {
+    String[] opc3 = {
             "00 ???????????", "01 ???????????", "02 ???????????", "03 ???????????",
             "04 ???????????", "05 ???????????", "06 ???????????", "07 ???????????",
             "08 ???????????", "09 ???????????", "0A ???????????", "0B ???????????",
@@ -220,56 +207,8 @@ interface Z80debug {
     };
 }
 
-/**
- * CPUZ80 emulates a Z80's behaviour
- * Written in 2001 by E.Duijs as a part of JEmu
- * <p>
- * <p>
- * V1.00	+ Many programs run ok.
- * + removed generic parsing by big switch/case blocks for better performance
- * + made functions for many instructions and flags
- * + added NMI
- * - IM0 not ok yet (is now always RST 38)
- * - some missing instructions
- * - DAA not ok, probably due to missing/incorrect half-carry updates
- * <p>
- * V1.1	+ IM0 now also supports calls to other locations (other than 0x38)
- * + DAA is corrected
- * + Fixed many flagupdates
- * + An interface 'driver' is passed to exec() instead of a class. Makes it more flexible.
- * + Implements interface 'cpu'.
- * - IM0 doesn't support instructions other than calls, but this is no big deal...
- * - still some missing instructions
- * - code needs to be cleaned up
- * - debugger needs to be finished (mainly the opcode tables).
- * - out & in need to be externalized (it's added in interface 'driver' already)
- * <p>
- * V1.2	+ Flag calculations are not done in F anymore but all flags are booleans (faster)
- * + 1 Minor bugfix...
- * <p>
- * V1.3	+ Added precalculated flag tables for speed.
- * + Removed the boolean representation for flags.
- * + The flag arrays also fixed some issues that were apparently flag related.
- * + Added some missing instructions.
- * - Because of the flag tables, it takes more memory now.
- * <p>
- * V1.4	+ Added INI and IND opcodes
- * <p>
- * V1.41	+ Removed localization of PC from fetch-decode loop to support protection in for example
- * Scramble. I'll probably remove localization of all registers later. It was a speed optimization,
- * but the result is only a very minor speedup. Also, it makes further optimizations difficult if
- * not impossible.
- * <p>
- * V1.42	+ Fixed LD D,HX / LD D,LX / LD D,HY / LD D,LY
- * <p>
- * V1.5	+ Restructured fetch/decode/exec loop so that it performs better on Sun JRE
- * (HotSpot didn't compile exec() at all).
- * + Better maintainable
- * + Fixed one index instruction.
- */
-
-
 public class Z80 implements Z80debug {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Z80.class);
     public static final int IM0 = 0;
     public static final int IM1 = 1;
     public static final int IM2 = 2;
@@ -511,7 +450,6 @@ public class Z80 implements Z80debug {
      * Use this constructor for use in applets
      */
     public Z80() {
-        super();
         this.debugLevel = 0;
     }
 
@@ -524,7 +462,7 @@ public class Z80 implements Z80debug {
     }
 
     /**
-     * returns the currently excecuted instruction
+     * returns the currently executed instruction
      */
     public final long getInstruction() {
         return (long) instruction;
@@ -621,7 +559,7 @@ public class Z80 implements Z80debug {
     /**
      * Execute a number of clock cycles
      *
-     * @param    cycles number of cycles to be excecuted
+     * @param    cycles number of cycles to be executed
      */
     public final void exec(int cycles) {
         cycleCounter += cycles;

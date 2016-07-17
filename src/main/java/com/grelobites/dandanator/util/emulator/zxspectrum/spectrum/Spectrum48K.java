@@ -1,7 +1,7 @@
 package com.grelobites.dandanator.util.emulator.zxspectrum.spectrum;
 
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.J80;
+import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
 import com.grelobites.dandanator.util.emulator.zxspectrum.MMU;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Peripheral;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Polling;
@@ -11,7 +11,7 @@ import com.grelobites.dandanator.util.emulator.zxspectrum.Polling;
  */
 public class Spectrum48K implements Peripheral, MMU, Polling, Spectrum {
     // Connected CPU
-    protected J80 cpu;
+    protected Z80VirtualMachine cpu;
 
     protected FxScreen screen;
     protected ZXSnapshot snapshot;
@@ -40,16 +40,16 @@ public class Spectrum48K implements Peripheral, MMU, Polling, Spectrum {
         return memory[add] & 0xff;
     }
 
-    public void resetCPU(J80 cpu) throws Exception {
+    public void resetCPU(Z80VirtualMachine cpu) throws Exception {
         cpu.addPeripheral(screen);
         cpu.addPeripheral(snapshot);
     }
 
-    public void disconnectCPU(J80 cpu) {
+    public void disconnectCPU(Z80VirtualMachine cpu) {
     }
 
 
-    public void connectCPU(J80 cpu) throws Exception {
+    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
         this.cpu = cpu;
         screen.setScreenMemory(memory, SCREEN_MEMORY_START);
         cpu.addPolling(20, this);
@@ -59,7 +59,7 @@ public class Spectrum48K implements Peripheral, MMU, Polling, Spectrum {
     /**
      * Polling called every 20 ms
      */
-    public void polling(J80 cpu) {
+    public void polling(Z80VirtualMachine cpu) {
         cpu.irq();
     }
 

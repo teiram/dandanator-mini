@@ -2,10 +2,11 @@ package com.grelobites.dandanator.util.emulator.zxspectrum;
 
 import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.util.emulator.zxspectrum.spectrum.Spectrum48K;
+import javafx.animation.AnimationTimer;
 import javafx.concurrent.ScheduledService;
 import javafx.concurrent.Task;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,45 +14,59 @@ import org.slf4j.LoggerFactory;
 public class EmulatorInstance {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmulatorInstance.class);
     private static final long DEFAULT_UPDATE_SCREEN_RATE = 100;
-    private J80 cpu;
     private Spectrum48K spectrumPeripheral;
+    private Z80VirtualMachine currentVm;
     private Thread emulatorThread;
-    private ScheduledService<Void> screenUpdateService;
+    private AnimationTimer screenUpdateService;
     private long updateScreenRate = DEFAULT_UPDATE_SCREEN_RATE;
 
+    private Z80VirtualMachine newEmulator() throws Exception {
+        currentVm = new Z80VirtualMachine();
+        currentVm.addPeripheral(spectrumPeripheral);
+        currentVm.load(EmulatorInstance.class.getResourceAsStream("/spectrum.rom"), 0);
+        return currentVm;
+    }
+
     public EmulatorInstance() throws Exception {
-        cpu = new J80();
         spectrumPeripheral = new Spectrum48K();
-        cpu.addPeripheral(spectrumPeripheral);
-        cpu.load(EmulatorInstance.class.getResourceAsStream("/spectrum.rom"), 0);
     }
 
     public void setUpdateScreenRate(long updateScreenRate) {
         this.updateScreenRate = updateScreenRate;
     }
 
-    public void start(ImageView imageView) {
+    public void start(Pane emulatorPane) {
         emulatorThread = new Thread(() -> {
-            try {
-                cpu.init();
-                cpu.start();
-            } catch (Exception e) {
-                LOGGER.error("Initializing emulator", e);
+            boolean terminated = false;
+            while (terminated == false) {
+                try {
+                    LOGGER.debug("Starting ZX Emulator");
+                    newEmulator().run();
+                    terminated = true;
+                } catch (Exception e) {
+                    LOGGER.error("ZXEmulator finished unexpectedly", e);
+                }
             }
-        });
+        }, "ZXEmulatorThread");
         emulatorThread.start();
 
-        screenUpdateService = new ScheduledService<Void>() {
-            protected Task<Void> createTask() {
-                return new Task<Void>() {
-                    protected Void call() {
-                        imageView.setImage(spectrumPeripheral.getScreen().nextFrame());
-                        return null;
+        screenUpdateService = new AnimationTimer() {
+            private long lastUpdate = 0;
+            private ImageView lastFrame = null;
+            private long updatePeriod = 100;
+            @Override
+            public void handle(long now) {
+                if (now - lastUpdate > updatePeriod) {
+                    lastUpdate = now;
+                    ImageView nextFrame = spectrumPeripheral.getScreen().nextFrame();
+                    if (nextFrame != null) {
+                        emulatorPane.getChildren().clear();
+                        emulatorPane.getChildren().add(nextFrame);
+                        lastFrame = nextFrame;
                     }
-                };
+                }
             }
         };
-        screenUpdateService.setPeriod(Duration.millis(updateScreenRate));
         screenUpdateService.start();
         try {
             Thread.sleep(1000);
@@ -62,22 +77,22 @@ public class EmulatorInstance {
 
     public void pause() {
         LOGGER.debug("Pausing emulator");
-        cpu.pause();
+        currentVm.pause();
     }
 
     public void resume() {
         LOGGER.debug("Resuming emulator");
-        cpu.resume();
+        currentVm.resume();
     }
 
     public void reset() {
         LOGGER.debug("Resetting emulator");
-        cpu.reset();
+        currentVm.reset();
     }
 
     public void stop() {
-        cpu.terminate();
-        screenUpdateService.cancel();
+        currentVm.stop();
+        screenUpdateService.stop();
         try {
             emulatorThread.join();
         } catch (Exception e) {

@@ -2,10 +2,11 @@ package com.grelobites.dandanator.util.emulator.zxspectrum.spectrum;
 
 import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.util.ZxColor;
-import com.grelobites.dandanator.util.emulator.zxspectrum.J80;
+import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Peripheral;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Polling;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public class FxScreen implements Spectrum, Peripheral, Polling {
     private static final Logger LOGGER = LoggerFactory.getLogger(FxScreen.class);
 
-    private J80 cpu;
+    private Z80VirtualMachine cpu;
     private boolean flash = false;
     public static final byte ATTRIBUTE_FLASH = (byte) 0x80;
     public static final byte ATTRIBUTE_BRIGHT = (byte) 0x40;
@@ -23,41 +24,42 @@ public class FxScreen implements Spectrum, Peripheral, Polling {
     private byte[] screenMemory = null;
     private int screenOffset;
 
-    private WritableImage[] frames;
+    private ImageView frame;
     private int currentFrame;
     private int frameCount = 2;
     private final int changed[] = new int[SCREEN_MEMORY_SIZE * 4];
     private int changedWrite = 0;
     private boolean screenChanged = false;
 
-    public FxScreen() {
-        frames = new WritableImage[frameCount];
+    private static ImageView initializeImageView() {
+        ImageView imageView = new ImageView();
+        imageView.setImage(new WritableImage(Constants.SPECTRUM_SCREEN_WIDTH,
+                Constants.SPECTRUM_SCREEN_HEIGHT));
+        return imageView;
+    }
 
-        for (int i = 0; i < frameCount; i++) {
-            frames[i] = new WritableImage(Constants.SPECTRUM_SCREEN_WIDTH,
-                    Constants.SPECTRUM_SCREEN_HEIGHT);
-        }
-        currentFrame = 0;
+    public FxScreen() {
+        frame = initializeImageView();
     }
 
     @Override
-    public void connectCPU(J80 cpu) throws Exception {
+    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
         this.cpu = cpu;
         cpu.addPolling(320, this);
     }
 
     @Override
-    public void disconnectCPU(J80 cpu) throws Exception {
+    public void disconnectCPU(Z80VirtualMachine cpu) throws Exception {
         this.cpu = null;
     }
 
     @Override
-    public void resetCPU(J80 cpu) throws Exception {
+    public void resetCPU(Z80VirtualMachine cpu) throws Exception {
         flash = false;
     }
 
     @Override
-    public void polling(J80 cpu) {
+    public void polling(Z80VirtualMachine cpu) {
         flash = !flash;
         for (int i = 0; i <= SCREEN_ATTRIBUTE_SIZE; i++) {
             if ((getMemory(i + SCREEN_MEMORY_SIZE) & ATTRIBUTE_FLASH) != 0) {
@@ -126,22 +128,21 @@ public class FxScreen implements Spectrum, Peripheral, Polling {
         }
     }
 
-    public Image nextFrame() {
+    public ImageView nextFrame() {
         if (!screenChanged) {
-            return frames[currentFrame];
+            return null;
         }
-        LOGGER.debug(changedWrite + " to update");
-        //currentFrame = (currentFrame + 1) % frameCount;
+        //LOGGER.debug(changedWrite + " to update");
 
-        PixelWriter writer = frames[currentFrame].getPixelWriter();
         synchronized (changed) {
+            PixelWriter writer = ((WritableImage)frame.getImage()).getPixelWriter();
             for (int i = 0; i < changedWrite; i++) {
                 drawByte(changed[i], writer);
             }
             screenChanged = false;
             changedWrite = 0;
         }
-        return frames[currentFrame];
+        return frame;
     }
 
 }

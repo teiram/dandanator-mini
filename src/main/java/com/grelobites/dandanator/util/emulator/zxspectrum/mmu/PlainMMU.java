@@ -1,7 +1,7 @@
 package com.grelobites.dandanator.util.emulator.zxspectrum.mmu;
 
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.J80;
+import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
 import com.grelobites.dandanator.util.emulator.zxspectrum.MMU;
 
 /**
@@ -44,16 +44,16 @@ public class PlainMMU implements MMU {
     /**
      * Disconnect the CPU
      */
-    public void disconnectCPU(J80 cpu) {
+    public void disconnectCPU(Z80VirtualMachine cpu) {
     }
 
     /**
      * Connect the CPU
      */
-    public void connectCPU(J80 cpu) {
+    public void connectCPU(Z80VirtualMachine cpu) {
     }
 
-    public void resetCPU(J80 cpu) {
+    public void resetCPU(Z80VirtualMachine cpu) {
     }
 
     public String toString() {

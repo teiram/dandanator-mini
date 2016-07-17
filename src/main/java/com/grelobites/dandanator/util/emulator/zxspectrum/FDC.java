@@ -87,7 +87,7 @@ public class FDC implements Peripheral, OutPort, InPort {
     private Disk disks[] = new Disk[16];
 
     // Attached cpy
-    private J80 cpu;
+    private Z80VirtualMachine cpu;
 
     public FDC() {
         for (int i = 0; i < disks.length; i++)
@@ -202,13 +202,13 @@ public class FDC implements Peripheral, OutPort, InPort {
         }
     }
 
-    public void resetCPU(J80 cpu) {
+    public void resetCPU(Z80VirtualMachine cpu) {
     }
 
-    public void disconnectCPU(J80 cpu) {
+    public void disconnectCPU(Z80VirtualMachine cpu) {
     }
 
-    public void connectCPU(J80 cpu) {
+    public void connectCPU(Z80VirtualMachine cpu) {
         this.cpu = cpu;
         cpu.addInPort(STATUS, this);
         cpu.addOutPort(DRIVE, this);

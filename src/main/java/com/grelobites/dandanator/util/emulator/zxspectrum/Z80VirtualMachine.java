@@ -9,101 +9,73 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
-/**
- * J80 is a complete Z80 extensible  virtual machine.
- * <p>
- * This main class loads from a configuration file (default j80.conf)
- * all the configured peripherals and starts the emulator.
- * <p>
- */
-public class J80 extends Z80 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(J80.class);
+public class Z80VirtualMachine extends Z80 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Z80VirtualMachine.class);
 
-    static public String version = "J80 : Java Z80 Version 1.10a";
-    static private boolean exit = false;
+    private enum State {
+        STOPPED,
+        RUNNING,
+        PAUSING,
+        PAUSED,
+        RESUMING,
+        STOPPING
+    }
+
+    private Lock stateLock = new ReentrantLock();
+    private Condition waitRunning = stateLock.newCondition();
+    private Condition waitPaused = stateLock.newCondition();
+    private Condition waitStopped = stateLock.newCondition();
+    private Condition waitResumed = stateLock.newCondition();
+    private State state = State.STOPPED;
+
     private long numOutput = 0;
     private InPort inport[] = new InPort[64 * 1024];
     private OutPort outport[] = new OutPort[64 * 1024];
-    private Vector pollers = new Vector();
+    private List<Poller> pollers = new ArrayList<>();
     private MMU mmu;
     private boolean initializeMMU = false;
     private VDU vdu = null;
     private FDC fdc = null;
     private CRT crt = null;
     private Snapshot sn = null;
-    private Vector snapshots = new Vector();
-    private Vector peripherals = new Vector();
+    private List<String> snapshotNames = new ArrayList<>();
+    private List<Peripheral> peripherals = new ArrayList<>();
     private float mhz = 3.5f;
     private long sleeped = 0;
-    private boolean running = false;
     private boolean idle = false;
     private boolean lastIdle = false;
-    private boolean paused = false;
-    private Vector steppers = new Vector();
+    private List<Stepper> steppers = new ArrayList<>();
     private boolean trapOutput = false;
     private boolean trapInput = false;
 
-    public J80() {
-        //super(5.0);
-
-
+    public Z80VirtualMachine() {
         for (int i = 0; i < 64 * 1024; i++) {
             inport[i] = null;
             outport[i] = null;
         }
-
-
     }
 
-    static public void terminate() {
-        exit = true;
-    }
 
-    static public void main(String argv[]) {
-        J80 cpu = null;
-        try {
-            System.out.println(version);
-            cpu = new J80();
-            if (argv.length > 0) {
-                for (String arg : argv) cpu.config(arg);
-            } else {
-                cpu.config("j80.conf");
-            }
-            cpu.start();
+    public void init() {
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-
-            cpu.Error(ex);
-            System.out.println(ex);
-            ex.printStackTrace();
-            System.exit(1);
-        }
-
-
-    }
-
-    /**
-     * Initialize the J80 virtual machine
-     */
-    public void init() throws Exception {
         reset();
 
-        if (vdu != null) {
-            vdu.println(version + " " + mhz + " MHz");
-        }
+        println("Initializing Z80VirtualMachine at " + mhz + " MHz");
 
-        for (int i = 0; i < peripherals.size(); i++) {
-            Peripheral p = (Peripheral) peripherals.elementAt(i);
-            println(p.toString());
+        for (Peripheral peripheral : peripherals) {
+            println(peripheral.toString());
         }
     }
-
 
     public void addPeripheral(Peripheral p) throws Exception {
 
@@ -143,8 +115,7 @@ public class J80 extends Z80 {
     }
 
     public void step() {
-        for (int i = 0; i < steppers.size(); i++) {
-            Stepper s = (Stepper) steppers.elementAt(i);
+        for (Stepper s : steppers) {
             s.step(this);
         }
     }
@@ -227,8 +198,7 @@ public class J80 extends Z80 {
     }
 
     private int getWord(String s, int pos) throws Exception {
-        int value = (getByte(s, pos + 0) << 8) + getByte(s, pos + 2);
-        return value;
+        return getByte(s, pos) << 8 + getByte(s, pos + 2);
     }
 
     private int getDigit(String s, int pos) throws Exception {
@@ -248,7 +218,7 @@ public class J80 extends Z80 {
     }
 
     private int getByte(String s, int pos) throws Exception {
-        return (getDigit(s, pos + 0) << 4) + getDigit(s, pos + 1);
+        return (getDigit(s, pos) << 4) + getDigit(s, pos + 1);
     }
 
     public void loadSnapshot(String name) throws Exception {
@@ -314,6 +284,7 @@ public class J80 extends Z80 {
 
 
     public void Error(Exception ex) {
+        LOGGER.error("Error in VM execution", ex);
         String s = ex.getMessage();
         if (s == null)
             s = "";
@@ -329,6 +300,7 @@ public class J80 extends Z80 {
             try {
                 vdu.disconnectCPU(this);
             } catch (Exception e) {
+                LOGGER.error("Disconnecting VDU from VM", e);
             }
         }
 
@@ -390,13 +362,13 @@ public class J80 extends Z80 {
 
     private void configTrapOutput(String s) {
         StringTokenizer st = parseLine(s);
-        trapOutput = st.nextToken().equalsIgnoreCase("yes") ? true : false;
+        trapOutput = st.nextToken().equalsIgnoreCase("yes");
 
     }
 
     private void configTrapInput(String s) {
         StringTokenizer st = parseLine(s);
-        trapInput = st.nextToken().equalsIgnoreCase("yes") ? true : false;
+        trapInput = st.nextToken().equalsIgnoreCase("yes");
 
     }
 
@@ -444,7 +416,7 @@ public class J80 extends Z80 {
         s = st.nextToken();
         Class c = Class.forName(s);
         Peripheral p = (Peripheral) c.newInstance();
-        Class stringClass = new String().getClass();
+        Class stringClass = String.class;
 
         // Call parameters method
         while (st.hasMoreElements()) {
@@ -455,9 +427,7 @@ public class J80 extends Z80 {
             java.lang.reflect.Method ms[] = c.getMethods();
 
 
-            for (int i = 0; i < ms.length; i++) {
-                java.lang.reflect.Method m = ms[i];
-
+            for (Method m : ms) {
                 if (m.getName().equals(method)) {
                     Class classes[] = m.getParameterTypes();
                     if (classes.length > 1)
@@ -468,7 +438,7 @@ public class J80 extends Z80 {
                     }
 
                     if (classes[0].equals(Integer.TYPE)) {
-                        args[0] = new Integer(Integer.parseInt(param));
+                        args[0] = Integer.parseInt(param);
                     }
 
                     if (args[0] != null) {
@@ -536,7 +506,7 @@ public class J80 extends Z80 {
             throw new Exception("snapshot require Snapshot peripheral");
 
         StringTokenizer st = parseLine(s);
-        snapshots.add(st.nextToken());
+        snapshotNames.add(st.nextToken());
     }
 
     private void bootLoad(String s) throws Exception {
@@ -601,36 +571,78 @@ public class J80 extends Z80 {
         rd.close();
     }
 
+    public void stop() {
+        LOGGER.debug("Requesting VM stop");
+        stateLock.lock();
+        try {
+            if (state == State.RUNNING) {
+                state = State.STOPPING;
+                while (state != State.STOPPED) {
+                    try {
+                        waitStopped.await();
+                    } catch (InterruptedException ie) {
+                        LOGGER.info("Stop operation was interrupted");
+                    }
+                }
+            }
+        } finally {
+            stateLock.unlock();
+        }
+    }
+
     public void pause() {
-        paused = true;
+        LOGGER.debug("Requesting VM pause");
+        stateLock.lock();
+        try {
+            if (state == State.RUNNING) {
+                state = State.PAUSING;
+                while (state != State.PAUSED) {
+                    try {
+                        waitPaused.await();
+                    } catch (InterruptedException ie) {
+                        LOGGER.info("Pause operation was interrupted");
+                    }
+                }
+            }
+        } finally {
+            stateLock.unlock();
+        }
     }
 
     public void resume() {
-        paused = false;
+        LOGGER.debug("Requesting VM resume");
+        stateLock.lock();
+        try {
+            if (state == State.PAUSED) {
+                state = State.RESUMING;
+                waitResumed.signal();
+                while (state != State.RUNNING) {
+                    try {
+                        waitRunning.await();
+                    } catch (InterruptedException ie) {
+                        LOGGER.info("Resume operation was interrupted");
+                    }
+                }
+            }
+        } finally {
+            stateLock.unlock();
+        }
     }
 
     public boolean isRunning() {
-        return running;
+        return state == State.RUNNING;
     }
 
-    public void start() throws Exception {
-        int numCol = 80;
-        if (vdu != null)
-            numCol = vdu.getNumCol();
+    public void run() {
 
         if (mmu == null) {
-            Error("No MMU installed");
+            throw new IllegalStateException("No MMU installed");
         }
-
         init();
 
-        for (int i = 0; i < snapshots.size(); i++) {
-            String name = (String) snapshots.elementAt(i);
-
-            sn.loadSnapshot(this, name);
-        }
-
-        running = true;
+        snapshotNames.forEach(name -> sn.loadSnapshot(this, name));
+        stateLock.lock();
+        state = State.RUNNING;
 
         long start = System.currentTimeMillis();
         long start100ms = start;
@@ -641,27 +653,34 @@ public class J80 extends Z80 {
 
         int tmp = 0;
         int states = (int) (mhz * (float) 1000);
-        while (!exit) {
-            while (paused) {
-                try {
-                    Thread.sleep(10);
-                } catch (Exception ex) {
-                }
-            }
 
+        while (state != State.STOPPING) {
+            if (state == State.PAUSING) {
+                LOGGER.debug("Entering pause state");
+                state = State.PAUSED;
+                waitPaused.signal();
+                while (state != State.RESUMING) {
+                    try {
+                        waitResumed.await();
+                    } catch (InterruptedException e) {
+                        LOGGER.info("Running thread interrupted");
+                    }
+                }
+                state = State.RUNNING;
+                waitRunning.signal();
+                LOGGER.debug("VM Resumed");
+            }
 
             exec(states);
             counter += 1;
 
             // Check polling device
-            for (int i = 0; i < pollers.size(); i++) {
-                Poller p = (Poller) pollers.elementAt(i);
-                if (p.elapsed++ >= p.interval) {
-                    p.elapsed = 0;
-                    p.polling.polling(this);
+            for (Poller poller : pollers) {
+                if (poller.elapsed++ >= poller.interval) {
+                    poller.elapsed = 0;
+                    poller.polling.polling(this);
                 }
             }
-
 
             long now = System.currentTimeMillis();
 
@@ -671,22 +690,20 @@ public class J80 extends Z80 {
                         vdu.showIdle(idle);
                     }
                 }
-
                 lastIdle = idle;
                 idle = false;
                 start100ms = now;
-
             }
 
             long elapsed = now - start;
 
             if (elapsed < counter) {
+                stateLock.unlock();
                 sleep();
+                stateLock.lock();
             }
 
-
             if (elapsed + sleeped > 1000) {
-
                 if (vdu != null) {
                     elapsed = ((elapsed - sleeped) * 100) / (counter);
                     vdu.showUtilization((int) elapsed);
@@ -694,27 +711,26 @@ public class J80 extends Z80 {
                     counter = 0;
                     sleeped = 0;
                     start = System.currentTimeMillis();
-                    exit = vdu.isTerminate();
-                    if (exit) {
+                    if (vdu.isTerminate()) {
+                        state = State.STOPPING;
                         vdu.println("\nTerminated by user");
-                        System.out.println("\nTerminated by user");
                     }
-
                 }
-
             }
-
-
         }
 
+        state = State.STOPPED;
+        waitStopped.signal();
+        stateLock.unlock();
 
         for (int i = peripherals.size() - 1; i >= 0; i--) {
-            Peripheral p = (Peripheral) peripherals.elementAt(i);
-            p.disconnectCPU(this);
+            Peripheral p = peripherals.get(i);
+            try {
+                p.disconnectCPU(this);
+            } catch (Exception e) {
+                LOGGER.error("Disconnecting peripheral " + p, e);
+            }
         }
-
-        System.exit(0);
-
     }
 
     public void sleep() {
@@ -723,9 +739,9 @@ public class J80 extends Z80 {
         try {
             Thread.sleep(5);
         } catch (Exception ex) {
+            LOGGER.info("VM interrupted in wait");
         }
         sleeped += System.currentTimeMillis() - start;
-
     }
 
     public void PC(int value) {
@@ -785,14 +801,14 @@ public class J80 extends Z80 {
         PC = pop();
     }
 
-    /**
-     * Helper class to track Polling
-     */
-    private class Poller {
-        Polling polling;
-        int interval;
-        int elapsed;
-    }
+/**
+ * Helper class to track Polling
+ */
+private class Poller {
+    Polling polling;
+    int interval;
+    int elapsed;
+}
 }
 
    

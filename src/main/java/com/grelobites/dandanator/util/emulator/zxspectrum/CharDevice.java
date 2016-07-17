@@ -38,10 +38,10 @@ public class CharDevice implements Peripheral, OutPort {
         this.port = port;
     }
 
-    public void resetCPU(J80 cpu) {
+    public void resetCPU(Z80VirtualMachine cpu) {
     }
 
-    public void disconnectCPU(J80 cpu) {
+    public void disconnectCPU(Z80VirtualMachine cpu) {
         // Close the output stream if open
         if (os != null) {
             try {
@@ -52,7 +52,7 @@ public class CharDevice implements Peripheral, OutPort {
         }
     }
 
-    public void connectCPU(J80 cpu) throws Exception {
+    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
         if (port == 0)
             throw new Exception("CharDevice : no port configured");
         if (device == null)

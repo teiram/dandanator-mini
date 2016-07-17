@@ -1,7 +1,7 @@
 package com.grelobites.dandanator.util.emulator.zxspectrum.mmu;
 
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.J80;
+import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
 import com.grelobites.dandanator.util.emulator.zxspectrum.MMU;
 import com.grelobites.dandanator.util.emulator.zxspectrum.OutPort;
 
@@ -91,16 +91,16 @@ public class BankMMU implements MMU, OutPort {
         }
     }
 
-    public void disconnectCPU(J80 cpu) {
+    public void disconnectCPU(Z80VirtualMachine cpu) {
     }
 
-    public void connectCPU(J80 cpu) {
+    public void connectCPU(Z80VirtualMachine cpu) {
         cpu.addOutPort(PAGEHI, this);
         cpu.addOutPort(PAGELOW, this);
         cpu.addOutPort(PAGEFRAME, this);
     }
 
-    public void resetCPU(J80 cpu) {
+    public void resetCPU(Z80VirtualMachine cpu) {
     }
 
     public String toString() {

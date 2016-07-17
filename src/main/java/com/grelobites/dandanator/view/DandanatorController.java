@@ -38,6 +38,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
@@ -66,7 +67,7 @@ public class DandanatorController {
 	private ImageView previewImage;
 	
 	@FXML
-	private ImageView currentScreenshot;
+	private Pane currentScreenshot;
 	
 	@FXML
 	private TableView<Game> gameTable;

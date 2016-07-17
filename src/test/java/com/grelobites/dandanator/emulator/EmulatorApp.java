@@ -1,7 +1,7 @@
 package com.grelobites.dandanator.emulator;
 
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.J80;
+import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
 import com.grelobites.dandanator.util.emulator.zxspectrum.spectrum.Spectrum48K;
 import javafx.application.Application;
 import javafx.concurrent.ScheduledService;
@@ -9,6 +9,7 @@ import javafx.concurrent.Task;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.slf4j.Logger;
@@ -21,17 +22,15 @@ public class EmulatorApp extends Application {
     public void start(Stage primaryStage) throws Exception {
 
 
-        final J80 cpu = new J80();
+        final Z80VirtualMachine cpu = new Z80VirtualMachine();
         Spectrum48K spectrum = new Spectrum48K();
         cpu.addPeripheral(spectrum);
         cpu.load(EmulatorTest.class.getResourceAsStream("/spectrum.rom"), 0);
-        final ImageView imageView = new ImageView();
+        final Pane emulatorPane = new Pane();
 
         new Thread(() -> {
             try {
-                cpu.init();
-                LOGGER.debug("CPU Initialized");
-                cpu.start();
+                cpu.run();
                 LOGGER.debug("CPU started");
                 LOGGER.debug("Image set");
             } catch (Exception e) {
@@ -44,7 +43,7 @@ public class EmulatorApp extends Application {
             protected Task<Void> createTask() {
                 return new Task<Void>() {
                     protected Void call() {
-                        imageView.setImage(spectrum.getScreen().nextFrame());
+                        emulatorPane.getChildren().setAll(spectrum.getScreen().nextFrame());
                         return null;
                     }
                 };
@@ -58,7 +57,7 @@ public class EmulatorApp extends Application {
                 EmulatorTest.class.getResourceAsStream("/kamikaze.sna"));
 
         BorderPane pane = new BorderPane();
-        pane.setCenter(imageView);
+        pane.setCenter(emulatorPane);
 
         Scene scene = new Scene(pane);
         primaryStage.setScene(scene);

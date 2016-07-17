@@ -1,6 +1,6 @@
 package com.grelobites.dandanator.util.emulator.zxspectrum.spectrum;
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.J80;
+import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Snapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,20 +40,20 @@ public class ZXSnapshot implements Snapshot {
 
 
     // Connected CPU
-    protected J80 cpu;
+    protected Z80VirtualMachine cpu;
 
 
     public ZXSnapshot() {
     }
 
-    public void resetCPU(J80 cpu) throws Exception {
+    public void resetCPU(Z80VirtualMachine cpu) throws Exception {
     }
 
-    public void disconnectCPU(J80 cpu) {
+    public void disconnectCPU(Z80VirtualMachine cpu) {
     }
 
 
-    public void connectCPU(J80 cpu) throws Exception {
+    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
         this.cpu = cpu;
     }
 
@@ -61,21 +61,26 @@ public class ZXSnapshot implements Snapshot {
     /**
      * Load snap shot in memory
      */
-    public void loadSnapshot(J80 cpu, String name) throws Exception {
-        File file = new File(name);
-        int snapshotLength = (int) file.length();
+    public void loadSnapshot(Z80VirtualMachine cpu, String name) {
+        try {
+            File file = new File(name);
+            int snapshotLength = (int) file.length();
 
-        System.out.println("snapshot " + name + " length " + snapshotLength);
-        FileInputStream is = new FileInputStream(file);
+            LOGGER.debug("Snapshot " + name + " length " + snapshotLength);
+            FileInputStream is = new FileInputStream(file);
 
-        // Crude check but it'll work (SNA is a fixed size)
-        if ((snapshotLength == 49179)) {
-            loadSNA(name, is);
-        } else {
-            loadZ80(name, is, snapshotLength);
+            // Crude check but it'll work (SNA is a fixed size)
+            if ((snapshotLength == 49179)) {
+                loadSNA(name, is);
+            } else {
+                loadZ80(name, is, snapshotLength);
+            }
+
+            is.close();
+        } catch (Exception e) {
+            LOGGER.error("Loading snapshot", e);
+            throw new RuntimeException("Loading snapshot", e);
         }
-
-        is.close();
     }
 
     public int readBytes(InputStream is, int mem[], int len) throws Exception {

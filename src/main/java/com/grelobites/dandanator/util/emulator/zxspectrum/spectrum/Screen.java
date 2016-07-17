@@ -2,7 +2,7 @@ package com.grelobites.dandanator.util.emulator.zxspectrum.spectrum;
 
 import com.grelobites.dandanator.util.emulator.zxspectrum.CRT;
 import com.grelobites.dandanator.util.emulator.zxspectrum.InPort;
-import com.grelobites.dandanator.util.emulator.zxspectrum.J80;
+import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Peripheral;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Polling;
 import com.grelobites.dandanator.util.emulator.zxspectrum.VDU;
@@ -105,7 +105,7 @@ public class Screen extends JComponent
     private int screenOffset;
 
     // Connected CPU
-    private J80 cpu;
+    private Z80VirtualMachine cpu;
 
     // Screen size
     private Dimension size = null;
@@ -357,15 +357,15 @@ public class Screen extends JComponent
     }
 
 
-    public void resetCPU(J80 cpu) {
+    public void resetCPU(Z80VirtualMachine cpu) {
         flash = false;
     }
 
-    public void disconnectCPU(J80 cpu) {
+    public void disconnectCPU(Z80VirtualMachine cpu) {
     }
 
 
-    public void connectCPU(J80 cpu) throws Exception {
+    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
         this.cpu = cpu;
         cpu.addInPort(254, this);
 
@@ -386,7 +386,7 @@ public class Screen extends JComponent
                     colors[i].getGreen() != 0 ? COLORBRIGHT : 0,
                     colors[i].getBlue() != 0 ? COLORBRIGHT : 0);
 
-        frame = new JFrame(J80.version);
+        frame = new JFrame("");
 
         JPanel p = new JPanel(new GridBagLayout());
         GridBagConstraints g = new GridBagConstraints();
@@ -476,7 +476,7 @@ public class Screen extends JComponent
     /**
      * Polling called every 320 ms
      */
-    public void polling(J80 cpu) {
+    public void polling(Z80VirtualMachine cpu) {
         // Reverse flash attribute
         flash = !flash;
         for (int i = 0; i <= SCREEN_ATTRIBUTE_SIZE; i++) {

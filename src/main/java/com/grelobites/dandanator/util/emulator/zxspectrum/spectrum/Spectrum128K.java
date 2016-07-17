@@ -17,7 +17,7 @@ import com.grelobites.dandanator.util.emulator.zxspectrum.*;
 public class Spectrum128K implements InPort, OutPort, MMU, Polling, Spectrum {
 
     // Connected CPU
-    protected J80 cpu;
+    protected Z80VirtualMachine cpu;
     protected Screen screen;
     protected ZXSnapshot snapshot;
     private int lastMmu;
@@ -65,7 +65,7 @@ public class Spectrum128K implements InPort, OutPort, MMU, Polling, Spectrum {
     }
 
 
-    public void resetCPU(J80 cpu) throws Exception {
+    public void resetCPU(Z80VirtualMachine cpu) throws Exception {
         romBank = 0;
         lastMmu = mmu = 0;
         screen.setScreenMemory(memory[videoBank()], 0);
@@ -73,10 +73,10 @@ public class Spectrum128K implements InPort, OutPort, MMU, Polling, Spectrum {
         cpu.addPeripheral(snapshot);
     }
 
-    public void disconnectCPU(J80 cpu) {
+    public void disconnectCPU(Z80VirtualMachine cpu) {
     }
 
-    public void connectCPU(J80 cpu) throws Exception {
+    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
         this.cpu = cpu;
 
         cpu.addOutPort(MMU_PORT, this);
@@ -179,7 +179,7 @@ public class Spectrum128K implements InPort, OutPort, MMU, Polling, Spectrum {
     /**
      * Polling called every 20 ms
      */
-    public void polling(J80 cpu) {
+    public void polling(Z80VirtualMachine cpu) {
         cpu.irq();
 
     }

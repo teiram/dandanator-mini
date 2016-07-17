@@ -14,18 +14,18 @@ public interface Peripheral {
      * Register the peripheral with the cpu after this call the
      * peripheral must be ready to be used.
      */
-    public void connectCPU(J80 cpu) throws Exception;
+    public void connectCPU(Z80VirtualMachine cpu) throws Exception;
 
     /**
      * Disconect the cpu from the peripheral, after this call the
      * peripheral must not have any pending operation and reset all the
      * state to the default.
      */
-    public void disconnectCPU(J80 cpu) throws Exception;
+    public void disconnectCPU(Z80VirtualMachine cpu) throws Exception;
 
     /**
      * Reset the cpu
      */
-    public void resetCPU(J80 cpu) throws Exception;
+    public void resetCPU(Z80VirtualMachine cpu) throws Exception;
 
 }

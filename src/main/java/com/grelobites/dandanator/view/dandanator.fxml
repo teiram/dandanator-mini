@@ -16,6 +16,7 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -48,7 +49,7 @@
                   </AnchorPane>
                   <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="201.0" prefWidth="265.0" style="-fx-background-radius: 5; -fx-background-color: #a0a0a0;" GridPane.columnIndex="1">
                      <children>
-                        <ImageView fx:id="currentScreenshot" fitHeight="192.0" fitWidth="256.0" pickOnBounds="true" preserveRatio="true" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0" />
+                        <Pane fx:id="currentScreenshot" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="192.0" prefWidth="256.0" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0" />
                      </children>
                      <GridPane.margin>
                         <Insets right="5.0" top="5.0" />

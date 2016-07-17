@@ -10,5 +10,5 @@ package com.grelobites.dandanator.util.emulator.zxspectrum;
  * Some minor change.
  */
 public interface Polling {
-    public void polling(J80 cpu);
+    public void polling(Z80VirtualMachine cpu);
 }
