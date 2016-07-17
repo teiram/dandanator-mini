@@ -2,6 +2,8 @@ package com.grelobites.dandanator.util.emulator.zxspectrum;
 
 import com.grelobites.dandanator.util.emulator.zxspectrum.disk.DirectoryDisk;
 import com.grelobites.dandanator.util.emulator.zxspectrum.disk.ImageDisk;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -13,33 +15,15 @@ import java.util.Vector;
 
 
 /**
- * $Id: J80.java 341 2010-09-15 09:31:54Z mviara $
- * <p>
  * J80 is a complete Z80 extensible  virtual machine.
  * <p>
- * This main class load from one configuration file (default j80.conf)
- * all the configured pheripheral and start the emulator.
+ * This main class loads from a configuration file (default j80.conf)
+ * all the configured peripherals and starts the emulator.
  * <p>
- * $Log: J80.java,v $
- * Revision 1.8  2008/05/15 17:07:17  mviara
- * Added preliminary support for Z80Pack. Fixed bug in idle loop detection.
- * <p>
- * Revision 1.7  2008/05/14 16:53:09  mviara
- * Added configuration cmmand bootload.
- * <p>
- * Revision 1.6  2007/06/21 10:23:32  mviara
- * Added support for variable number of lines in CRT.
- * <p>
- * Revision 1.5  2005/03/18 16:40:02  mviara
- * Added support for stepper.
- * <p>
- * Revision 1.4  2004/07/18 11:23:47  mviara
- * Added support for pause,resume and load snapshot on the fly.
- * <p>
- * Revision 1.3  2004/06/20 16:27:29  mviara
- * Some minor change.
  */
 public class J80 extends Z80 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(J80.class);
+
     static public String version = "J80 : Java Z80 Version 1.10a";
     static private boolean exit = false;
     private long numOutput = 0;
@@ -54,7 +38,7 @@ public class J80 extends Z80 {
     private Snapshot sn = null;
     private Vector snapshots = new Vector();
     private Vector peripherals = new Vector();
-    private float mhz = 5;
+    private float mhz = 3.5f;
     private long sleeped = 0;
     private boolean running = false;
     private boolean idle = false;
@@ -86,11 +70,10 @@ public class J80 extends Z80 {
             System.out.println(version);
             cpu = new J80();
             if (argv.length > 0) {
-                for (int i = 0; i < argv.length; i++)
-                    cpu.config(argv[i]);
-            } else
+                for (String arg : argv) cpu.config(arg);
+            } else {
                 cpu.config("j80.conf");
-
+            }
             cpu.start();
 
         } catch (Exception ex) {
@@ -111,24 +94,18 @@ public class J80 extends Z80 {
     public void init() throws Exception {
         reset();
 
-
         if (vdu != null) {
             vdu.println(version + " " + mhz + " MHz");
         }
-
 
         for (int i = 0; i < peripherals.size(); i++) {
             Peripheral p = (Peripheral) peripherals.elementAt(i);
             println(p.toString());
         }
-
-
     }
 
 
     public void addPeripheral(Peripheral p) throws Exception {
-
-        // Remember peripheral family
 
         if (p instanceof Snapshot) {
             this.sn = (Snapshot) p;
@@ -158,7 +135,6 @@ public class J80 extends Z80 {
             for (int i = 0; i < 0x10000; i++)
                 pokeb(i, 0);
         }
-
         p.resetCPU(this);
     }
 
@@ -171,7 +147,6 @@ public class J80 extends Z80 {
             Stepper s = (Stepper) steppers.elementAt(i);
             s.step(this);
         }
-
     }
 
     public void addPolling(int interval, Polling polling) {
@@ -273,9 +248,7 @@ public class J80 extends Z80 {
     }
 
     private int getByte(String s, int pos) throws Exception {
-        int value = (getDigit(s, pos + 0) << 4) + getDigit(s, pos + 1);
-
-        return value;
+        return (getDigit(s, pos + 0) << 4) + getDigit(s, pos + 1);
     }
 
     public void loadSnapshot(String name) throws Exception {
@@ -289,12 +262,12 @@ public class J80 extends Z80 {
      * Load one intel file format in memory
      */
     public void loadIntel(String name) throws Exception {
+        LOGGER.debug("loadIntel " + name);
         BufferedReader rd = new BufferedReader(new InputStreamReader(new FileInputStream(name)));
         String s;
         int data[] = new int[256];
         int count = 0;
 
-        System.out.println("Load intel " + name);
 
         while ((s = rd.readLine()) != null) {
             if (s.charAt(0) != ':')
@@ -377,7 +350,7 @@ public class J80 extends Z80 {
     public void load(InputStream is, int location, int counter) throws Exception {
         int c;
         int count = 0;
-        System.out.println("Load  at " + Integer.toHexString(location));
+        LOGGER.debug("Loading at " + Integer.toHexString(location));
 
         while ((c = is.read()) != -1) {
             pokeb(location++, c);
@@ -398,8 +371,7 @@ public class J80 extends Z80 {
      * @param location - Location in memory
      */
     public void load(String name, int location) throws Exception {
-        int c;
-        println("Loading " + name);
+        LOGGER.debug("Load " + name + " at " + location);
         FileInputStream is = new FileInputStream(name);
         load(is, location);
         is.close();
@@ -641,7 +613,7 @@ public class J80 extends Z80 {
         return running;
     }
 
-    void start() throws Exception {
+    public void start() throws Exception {
         int numCol = 80;
         if (vdu != null)
             numCol = vdu.getNumCol();

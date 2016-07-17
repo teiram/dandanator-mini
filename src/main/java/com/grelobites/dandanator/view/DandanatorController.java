@@ -6,6 +6,7 @@ import com.grelobites.dandanator.Context;
 import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.model.PokeViewable;
 import com.grelobites.dandanator.util.*;
+import com.grelobites.dandanator.util.emulator.zxspectrum.EmulatorInstance;
 import com.grelobites.dandanator.util.gameloader.GameImageLoader;
 import com.grelobites.dandanator.util.gameloader.GameImageLoaderFactory;
 import com.grelobites.dandanator.util.pokeimporter.ImportContext;
@@ -56,7 +57,7 @@ public class DandanatorController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorController.class);
     private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
 
-	private WritableImage spectrum48kImage;
+	private EmulatorInstance spectrum48kInstance;
 	private ZxScreen dandanatorPreviewImage;
 	
 	private Context context;
@@ -122,11 +123,13 @@ public class DandanatorController {
 
     	//Decorate the preview for the first time
     	recreatePreviewImage();
-    	
-    	spectrum48kImage = ImageUtil.scrLoader(
-    			ImageUtil.newScreenshot(),
-    			DandanatorController.class.getClassLoader()
-				.getResourceAsStream("sinclair-1982.scr"));	
+
+        try {
+            spectrum48kInstance = new EmulatorInstance();
+            spectrum48kInstance.start(currentScreenshot);
+        } catch (Exception e) {
+            throw new RuntimeException("Initializing emulator", e);
+        }
     }
     
     private boolean isEmptySlotAvailable() {
@@ -289,8 +292,6 @@ public class DandanatorController {
                 });
 
 		previewImage.setImage(dandanatorPreviewImage);
-	
-		currentScreenshot.setImage(spectrum48kImage);
 
 		context.getGameList().addListener((ListChangeListener.Change<? extends Game> cl) -> {
 			onGameListChange();
@@ -505,7 +506,7 @@ public class DandanatorController {
 
 	private void onGameSelection(Game game) {
 		if (game == null) {
-			currentScreenshot.setImage(spectrum48kImage);
+		    spectrum48kInstance.reset();
             removeSelectedRomButton.setDisable(true);
             addPokeButton.setDisable(true);
             removeAllGamePokesButton.setDisable(true);
@@ -515,7 +516,7 @@ public class DandanatorController {
             pokeView.setRoot(null);
 
 		} else {
-			currentScreenshot.setImage(game.getScreenshot());
+		    spectrum48kInstance.loadGame(game);
             removeSelectedRomButton.setDisable(false);
             addPokeButton.setDisable(false);
             pokesViewLabel.setText(String.format(LocaleUtil.i18n("trainersHeadingMessage"), game.getName()));

@@ -2,52 +2,43 @@ package com.grelobites.dandanator.util.emulator.zxspectrum;
 
 import com.grelobites.dandanator.util.emulator.zxspectrum.disk.DirectoryDisk;
 import com.grelobites.dandanator.util.emulator.zxspectrum.disk.ImageDisk;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
 /**
- * $Id: FDC.java 330 2010-09-14 10:29:28Z mviara $
  * <p>
  * Floppy disk controller peripheral
  * <p>
- * The FDC is one I/O mapped devices.
+ * The FDC is a I/O mapped device.
  * <p>
- * To select a drive must write the DRIVE  register and read the status
- * if the disk is ready  the status will be SUCCESS.
+ * To select a drive the DRIVE register must be written and the status read
+ * If the disk is ready the status will be SUCCESS.
  * <p>
- * For READ/WRITE operation all register (DRIVE,TRACK,SECTOR,DMA) must be filled
+ * For READ/WRITE operation all registers (DRIVE,TRACK,SECTOR,DMA) must be filled
  * and then the command (READ or WRITE) must be issued in the CMD
- * register , after the status can be read.
- * <p>
- * <p>
- * $Log: FDC.java,v $
- * Revision 1.4  2008/05/14 16:52:39  mviara
- * More flexible class to be extended ftom other FDC implementations.
- * Added command to read one sector.
- * <p>
- * Revision 1.3  2004/06/20 16:27:29  mviara
- * Some minor change.
- * <p>
- * Revision 1.2  2004/06/16 15:24:20  mviara
- * First CVS Revision.
+ * register. Afterwards the status can be read
  */
 public class FDC implements Peripheral, OutPort, InPort {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FDC.class);
+
     /**
      * FDC Command READ
      */
-    static public final int READ = 0;
+    public static final int READ = 0;
     /**
      * FDC Command write
      */
-    static public final int WRITE = 1;
+    public static final int WRITE = 1;
     /**
      * FDC Status ok
      */
-    static public final int SUCCESS = 0;
+    public static final int SUCCESS = 0;
     /**
      * FDC Status error
      */
-    static public final int ERROR = 1;
+    public static final int ERROR = 1;
     /**
      * Disk select register 0 - 15
      */
@@ -206,8 +197,8 @@ public class FDC implements Peripheral, OutPort, InPort {
             }
             commandResult = SUCCESS;
 
-        } catch (Exception ex) {
-            System.out.println(ex);
+        } catch (Exception e) {
+            LOGGER.error("In Disk I/O operation", e);
         }
     }
 
@@ -232,13 +223,12 @@ public class FDC implements Peripheral, OutPort, InPort {
     }
 
     public String toString() {
-        StringBuffer buf = new StringBuffer("FDC : Disk image  $Revision: 330 $");
+        StringBuilder buf = new StringBuilder("FDC : Disk image");
 
         for (int i = 0; i < 16; i++)
             if (disks[i] != null) {
                 String d = "ABCDEFGHIJKLMNOP";
-                buf.append("\n  Disk " + d.charAt(i) + " " + disks[i].toString());
-
+                buf.append("\n  Disk ").append(d.charAt(i)).append(" ").append(disks[i].toString());
             }
 
         return buf.toString();
