@@ -234,7 +234,7 @@ public class Screen extends JComponent
 
         color &= 0x7f;
 
-        // Calculate hasing using pixel and color
+        // Calculate hashing using pixel and color
         int hashValue = pixel << 8 | color;
         Integer keyImage = new Integer(hashValue);
         Image img = (Image) patterns.get(keyImage);
@@ -462,7 +462,6 @@ public class Screen extends JComponent
         });
 
         requestFocus();
-        ;
 
         Timer timer = new Timer(20, this);
 

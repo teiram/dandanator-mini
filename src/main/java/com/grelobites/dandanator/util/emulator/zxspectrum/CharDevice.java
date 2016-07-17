@@ -4,15 +4,11 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 /**
- * $Id: CharDevice.java 330 2010-09-14 10:29:28Z mviara $
  * <p>
- * Class to implements a generic character device, one port of the Z80
- * is trap and every output on this port are written to the file
+ * Class to implements a generic character device, a port of the Z80
+ * is trapped and every output on this port is written to the file
  * specified.
  * <p>
- * $Log: CharDevice.java,v $
- * Revision 1.3  2004/06/20 16:27:29  mviara
- * Some minor change.
  */
 public class CharDevice implements Peripheral, OutPort {
     private int port;

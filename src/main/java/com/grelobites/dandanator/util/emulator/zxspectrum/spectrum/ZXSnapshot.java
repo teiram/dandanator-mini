@@ -2,6 +2,8 @@ package com.grelobites.dandanator.util.emulator.zxspectrum.spectrum;
 
 import com.grelobites.dandanator.util.emulator.zxspectrum.J80;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Snapshot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +25,7 @@ import java.io.InputStream;
  * Added partial support for 128K.
  */
 public class ZXSnapshot implements Snapshot {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZXSnapshot.class);
     /**
      * Memory map
      */
@@ -88,7 +91,7 @@ public class ZXSnapshot implements Snapshot {
     }
 
     public void loadSNA(String name, InputStream is) throws Exception {
-        System.out.println("loadSNA " + name);
+        LOGGER.debug("Load SNA " + name);
         int header[] = new int[27];
 
         readBytes(is, header, 27);
@@ -145,7 +148,7 @@ public class ZXSnapshot implements Snapshot {
 
 
     public void loadZ80(String name, InputStream is, int bytesLeft) throws Exception {
-        System.out.println("LoadZ80 " + name);
+        LOGGER.debug("LoadZ80 " + name);
 
         int header[] = new int[30];
         boolean compressed = false;

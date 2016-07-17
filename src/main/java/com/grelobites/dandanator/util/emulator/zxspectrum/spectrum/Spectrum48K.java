@@ -7,30 +7,18 @@ import com.grelobites.dandanator.util.emulator.zxspectrum.Peripheral;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Polling;
 
 /**
- * $Id: Spectrum48K.java 330 2010-09-14 10:29:28Z mviara $
- * <p>
- * Sinclair spectrum emulator
- * <p>
- * $Log: Spectrum48K.java,v $
- * Revision 1.2  2005/03/18 16:40:48  mviara
- * Added support for speaker.
- * <p>
- * Revision 1.1  2004/06/20 16:25:58  mviara
- * Split spectrum emulator in more files.
- * Added partial support for 128K.
+ * Sinclair spectrum emulator.
  */
 public class Spectrum48K implements Peripheral, MMU, Polling, Spectrum {
-
-
     // Connected CPU
     protected J80 cpu;
 
-    protected Screen screen;
+    protected FxScreen screen;
     protected ZXSnapshot snapshot;
     private byte memory[];
 
     public Spectrum48K() {
-        screen = new Screen();
+        screen = new FxScreen();
         snapshot = new ZXSnapshot();
         memory = new byte[0x10000];
     }
@@ -73,13 +61,18 @@ public class Spectrum48K implements Peripheral, MMU, Polling, Spectrum {
      */
     public void polling(J80 cpu) {
         cpu.irq();
-
-
     }
 
+    public FxScreen getScreen() {
+        return screen;
+    }
+
+    public ZXSnapshot getZxSnapshot() {
+        return snapshot;
+    }
 
     public String toString() {
-        return "Spectrum 48K $Revision: 330 $";
+        return "Spectrum 48K";
     }
 
 }
