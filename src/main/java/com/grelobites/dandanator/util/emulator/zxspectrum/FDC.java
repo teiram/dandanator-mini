@@ -20,7 +20,7 @@ import java.io.File;
  * and then the command (READ or WRITE) must be issued in the CMD
  * register. Afterwards the status can be read
  */
-public class FDC implements Peripheral, OutPort, InPort {
+public class FDC implements Peripheral, OutputPort, InputPort {
     private static final Logger LOGGER = LoggerFactory.getLogger(FDC.class);
 
     /**
@@ -202,13 +202,13 @@ public class FDC implements Peripheral, OutPort, InPort {
         }
     }
 
-    public void resetCPU(Z80VirtualMachine cpu) {
+    public void onCpuReset(Z80VirtualMachine cpu) {
     }
 
-    public void disconnectCPU(Z80VirtualMachine cpu) {
+    public void unbind(Z80VirtualMachine cpu) {
     }
 
-    public void connectCPU(Z80VirtualMachine cpu) {
+    public void bind(Z80VirtualMachine cpu) {
         this.cpu = cpu;
         cpu.addInPort(STATUS, this);
         cpu.addOutPort(DRIVE, this);

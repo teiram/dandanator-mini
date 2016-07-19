@@ -39,15 +39,15 @@ public class Z80VirtualMachine extends Z80 {
     private State state = State.STOPPED;
 
     private long numOutput = 0;
-    private InPort inport[] = new InPort[64 * 1024];
-    private OutPort outport[] = new OutPort[64 * 1024];
-    private List<Poller> pollers = new ArrayList<>();
+    private InputPort inport[] = new InputPort[64 * 1024];
+    private OutputPort outport[] = new OutputPort[64 * 1024];
+    private List<PollingTargetContext> pollers = new ArrayList<>();
     private MMU mmu;
     private boolean initializeMMU = false;
     private VDU vdu = null;
     private FDC fdc = null;
     private CRT crt = null;
-    private Snapshot sn = null;
+    private SnapshotLoader sn = null;
     private List<String> snapshotNames = new ArrayList<>();
     private List<Peripheral> peripherals = new ArrayList<>();
     private float mhz = 3.5f;
@@ -79,8 +79,8 @@ public class Z80VirtualMachine extends Z80 {
 
     public void addPeripheral(Peripheral p) throws Exception {
 
-        if (p instanceof Snapshot) {
-            this.sn = (Snapshot) p;
+        if (p instanceof SnapshotLoader) {
+            this.sn = (SnapshotLoader) p;
         }
 
         if (p instanceof VDU) {
@@ -99,7 +99,7 @@ public class Z80VirtualMachine extends Z80 {
         peripherals.add(p);
 
         // Add the cpu
-        p.connectCPU(this);
+        p.bind(this);
 
         // If necessary initialize MMU
         if (initializeMMU) {
@@ -107,32 +107,29 @@ public class Z80VirtualMachine extends Z80 {
             for (int i = 0; i < 0x10000; i++)
                 pokeb(i, 0);
         }
-        p.resetCPU(this);
+        p.onCpuReset(this);
     }
 
     public void addStepper(Stepper s) {
         steppers.add(s);
     }
 
+    @Override
     public void step() {
         for (Stepper s : steppers) {
             s.step(this);
         }
     }
 
-    public void addPolling(int interval, Polling polling) {
-        Poller p = new Poller();
-        p.polling = polling;
-        p.interval = interval;
-        p.elapsed = 0;
-        pollers.add(p);
+    public void addPollingTarget(int interval, PollingTarget target) {
+        pollers.add(new PollingTargetContext(target, interval));
     }
 
-    public void addInPort(int port, InPort trap) {
+    public void addInPort(int port, InputPort trap) {
         inport[port] = trap;
     }
 
-    public void addOutPort(int port, OutPort trap) {
+    public void addOutPort(int port, OutputPort trap) {
         outport[port] = trap;
     }
 
@@ -140,14 +137,12 @@ public class Z80VirtualMachine extends Z80 {
         return numOutput;
     }
 
+    @Override
     public void outb(int port, int bite, int tstates) {
         int portHi = port + tstates * 256;
 
-        //System.out.println("Outb "+Integer.toHexString(port)+" "+Integer.toHexString(portHi)+" = "+Integer.toHexString(bite));
-
         numOutput++;
 
-        // Try hi port registreed
         if (outport[portHi] != null)
             port = portHi;
 
@@ -164,14 +159,17 @@ public class Z80VirtualMachine extends Z80 {
         }
     }
 
+    @Override
     public int peekb(int add) {
         return mmu.peekb(add);
     }
 
+    @Override
     public void pokeb(int add, int value) {
         mmu.pokeb(add, value);
     }
 
+    @Override
     public int inb(int port, int hi) {
         int result = 0;
 
@@ -224,7 +222,7 @@ public class Z80VirtualMachine extends Z80 {
     public void loadSnapshot(String name) throws Exception {
         if (sn == null)
             throw new Exception("snapshot require Snapshot peripheral");
-        sn.loadSnapshot(this, name);
+        sn.load(this, name);
 
     }
 
@@ -298,7 +296,7 @@ public class Z80VirtualMachine extends Z80 {
     public void Error(String s) {
         if (vdu != null) {
             try {
-                vdu.disconnectCPU(this);
+                vdu.unbind(this);
             } catch (Exception e) {
                 LOGGER.error("Disconnecting VDU from VM", e);
             }
@@ -336,12 +334,6 @@ public class Z80VirtualMachine extends Z80 {
 
     }
 
-    /**
-     * Load one binary file in memory.
-     *
-     * @param name     - File name
-     * @param location - Location in memory
-     */
     public void load(String name, int location) throws Exception {
         LOGGER.debug("Load " + name + " at " + location);
         FileInputStream is = new FileInputStream(name);
@@ -640,7 +632,7 @@ public class Z80VirtualMachine extends Z80 {
         }
         init();
 
-        snapshotNames.forEach(name -> sn.loadSnapshot(this, name));
+        snapshotNames.forEach(name -> sn.load(this, name));
         stateLock.lock();
         state = State.RUNNING;
 
@@ -675,12 +667,8 @@ public class Z80VirtualMachine extends Z80 {
             counter += 1;
 
             // Check polling device
-            for (Poller poller : pollers) {
-                if (poller.elapsed++ >= poller.interval) {
-                    poller.elapsed = 0;
-                    poller.polling.polling(this);
-                }
-            }
+            pollers.stream().filter(PollingTargetContext::needsAttention)
+                    .forEach(ctx -> ctx.poll(this));
 
             long now = System.currentTimeMillis();
 
@@ -707,7 +695,6 @@ public class Z80VirtualMachine extends Z80 {
                 if (vdu != null) {
                     elapsed = ((elapsed - sleeped) * 100) / (counter);
                     vdu.showUtilization((int) elapsed);
-                    start = now;
                     counter = 0;
                     sleeped = 0;
                     start = System.currentTimeMillis();
@@ -726,7 +713,7 @@ public class Z80VirtualMachine extends Z80 {
         for (int i = peripherals.size() - 1; i >= 0; i--) {
             Peripheral p = peripherals.get(i);
             try {
-                p.disconnectCPU(this);
+                p.unbind(this);
             } catch (Exception e) {
                 LOGGER.error("Disconnecting peripheral " + p, e);
             }
@@ -801,14 +788,34 @@ public class Z80VirtualMachine extends Z80 {
         PC = pop();
     }
 
-/**
- * Helper class to track Polling
- */
-private class Poller {
-    Polling polling;
-    int interval;
-    int elapsed;
-}
+    private static class PollingTargetContext {
+        private PollingTarget target;
+        private int interval;
+        private int elapsed;
+
+        public PollingTargetContext(PollingTarget target, int interval) {
+            this.elapsed = 0;
+            this.interval = interval;
+            this.target = target;
+        }
+
+        public PollingTarget getTarget() {
+            return target;
+        }
+
+        public int getInterval() {
+            return interval;
+        }
+
+        public boolean needsAttention() {
+            return ++elapsed >= interval;
+        }
+
+        public void poll(Z80VirtualMachine cpu) {
+            target.poll(cpu);
+            elapsed = 0;
+        }
+    }
 }
 
    

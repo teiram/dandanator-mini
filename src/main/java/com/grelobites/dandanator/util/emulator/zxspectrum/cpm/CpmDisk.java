@@ -5,18 +5,6 @@ import com.grelobites.dandanator.util.emulator.zxspectrum.Disk;
 
 import java.util.Vector;
 
-/**
- * $Id: CpmDisk.java 330 2010-09-14 10:29:28Z mviara $
- * <p>
- * CP/M File system implementation.
- * <p>
- * $Log: CpmDisk.java,v $
- * Revision 1.3  2004/07/18 11:23:01  mviara
- * Some minor changes.
- * <p>
- * Revision 1.2  2004/06/20 16:26:45  mviara
- * Some minor change.
- */
 public class CpmDisk {
     private Disk disk;
     private DPB dpb;
@@ -30,8 +18,6 @@ public class CpmDisk {
     public CpmDisk(DPB dpb, Disk disk) {
         this.dpb = dpb;
         this.disk = disk;
-
-        //dpb.dump();
         directoryUsed = new boolean[dpb.drm + 1];
         blockUsed = new boolean[dpb.dsm + 1];
         block = new byte[getBlockSize()];
@@ -41,13 +27,12 @@ public class CpmDisk {
         for (int i = 0; i <= dpb.trackOffset; i++)
             disk.format(i);
 
-        for (int i = 0; i < block.length; i++)
+        for (int i = 0; i < block.length; i++) {
             block[i] = (byte) 0xe5;
-
-        //System.out.println("dir block "+getNumDirBlock());
-        //System.out.println("Block size "+block.length);
-        for (int i = 0; i < getNumDirBlock() * 2; i++)
+        }
+        for (int i = 0; i < getNumDirBlock() * 2; i++) {
             writeBlock(i, block);
+        }
     }
 
     public CpmFile getFileAt(int index) {
@@ -109,8 +94,7 @@ public class CpmDisk {
 
         readSector(sector, fcbBuffer);
 
-        for (int i = 0; i < 32; i++)
-            fcbBuffer[offset + i] = fcb.getBytes()[i];
+        System.arraycopy(fcb.getBytes(), 0, fcbBuffer, offset + 0, 32);
 
         writeSector(sector, fcbBuffer);
 

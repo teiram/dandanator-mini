@@ -107,12 +107,6 @@
     -fx-font-size: 12px;
 }
 
-/*
-.pokesBox .tree-cell:hover {
-  -fx-background-color: #e0e0e0;
-}
-*/
-
 .pokesBox .tree-cell:selected {
   -fx-background-color: #e0e0e0;
   -fx-text-fill: black;

@@ -1,25 +1,18 @@
 package com.grelobites.dandanator.util.emulator.zxspectrum.spectrum;
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.*;
+import com.grelobites.dandanator.util.emulator.zxspectrum.InputPort;
+import com.grelobites.dandanator.util.emulator.zxspectrum.MMU;
+import com.grelobites.dandanator.util.emulator.zxspectrum.OutputPort;
+import com.grelobites.dandanator.util.emulator.zxspectrum.PollingTarget;
+import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * $Id: Spectrum128K.java 330 2010-09-14 10:29:28Z mviara $
- * <p>
- * ZX Spectrum 128K emulator
- * <p>
- * $Log: Spectrum128K.java,v $
- * Revision 1.3  2005/03/18 16:40:48  mviara
- * Added support for speaker.
- * <p>
- * Revision 1.2  2004/07/18 11:22:29  mviara
- * Better 128K emulator.
- */
-public class Spectrum128K implements InPort, OutPort, MMU, Polling, Spectrum {
-
-    // Connected CPU
+public class Spectrum128K implements InputPort, OutputPort, MMU, PollingTarget {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Spectrum128K.class);
     protected Z80VirtualMachine cpu;
-    protected Screen screen;
-    protected ZXSnapshot snapshot;
+    protected FxScreen screen;
+    protected ZXSnapshotLoader snapshot;
     private int lastMmu;
     private int mmu = 0;
     private int romBank = 0;
@@ -31,41 +24,36 @@ public class Spectrum128K implements InPort, OutPort, MMU, Polling, Spectrum {
 
 
     public Spectrum128K() {
-        screen = new Screen();
-        snapshot = new ZXSnapshot();
-
+        screen = new FxScreen();
+        snapshot = new ZXSnapshotLoader();
     }
 
-    /**
-     * J80.InPort
-     */
+    @Override
     public int inb(int port, int hi) {
         return 0xff;
     }
 
-    /**
-     * j80.OutPort
-     */
+    @Override
     public void outb(int port, int value, int tstates) {
         switch (port) {
-            case MMU_PORT:
-                if ((mmu & MMU_DISABLE) != 0)
+            case SpectrumConstants.MMU_PORT:
+                if ((mmu & SpectrumConstants.MMU_DISABLE) != 0)
                     break;
 
                 mmu = value;
 
 
-                if ((mmu & MMU_VIDEO) != (lastMmu & MMU_VIDEO)) {
+                if ((mmu & SpectrumConstants.MMU_VIDEO) !=
+                        (lastMmu & SpectrumConstants.MMU_VIDEO)) {
                     screen.setScreenMemory(memory[videoBank()], 0);
                 }
                 lastMmu = mmu;
                 break;
         }
-        //System.out.println("spectrum outb "+port+" = "+bite);
     }
 
 
-    public void resetCPU(Z80VirtualMachine cpu) throws Exception {
+    public void onCpuReset(Z80VirtualMachine cpu) throws Exception {
         romBank = 0;
         lastMmu = mmu = 0;
         screen.setScreenMemory(memory[videoBank()], 0);
@@ -73,64 +61,64 @@ public class Spectrum128K implements InPort, OutPort, MMU, Polling, Spectrum {
         cpu.addPeripheral(snapshot);
     }
 
-    public void disconnectCPU(Z80VirtualMachine cpu) {
+    public void unbind(Z80VirtualMachine cpu) {
     }
 
-    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
+    public void bind(Z80VirtualMachine cpu) throws Exception {
         this.cpu = cpu;
 
-        cpu.addOutPort(MMU_PORT, this);
+        cpu.addOutPort(SpectrumConstants.MMU_PORT, this);
         cpu.addOutPort(0xfffd, this);
         cpu.addOutPort(0xbffd, this);
         cpu.addOutPort(0xfd, this);
         cpu.addInPort(0xfffd, this);
-        cpu.addPolling(20, this);
+        cpu.addPollingTarget(20, this);
     }
 
     private int videoBank() {
-        return ((mmu & MMU_VIDEO) != 0) ? 7 : 5;
+        return ((mmu & SpectrumConstants.MMU_VIDEO) != 0) ? 7 : 5;
     }
 
-    private void checkScreen(int bank, int add) {
+    private void checkScreen(int bank, int address) {
         if (bank == videoBank()) {
-            if (add < SCREEN_MEMORY_SIZE) {
-                screen.repaintScreen(add);
-            } else if (add < SCREEN_ATTRIBUTE_SIZE + SCREEN_MEMORY_SIZE)
-                screen.repaintAttribute(add - SCREEN_MEMORY_SIZE);
+            if (address < SpectrumConstants.SCREEN_MEMORY_SIZE) {
+                screen.repaintScreen(address);
+            } else if (address < SpectrumConstants.SCREEN_ATTRIBUTE_SIZE
+                    + SpectrumConstants.SCREEN_MEMORY_SIZE)
+                screen.repaintAttribute(address -
+                        SpectrumConstants.SCREEN_MEMORY_SIZE);
         }
     }
 
-    private void pokeBank3(int add, int value) {
+    private void pokeBank3(int address, int value) {
         int bank = mmu & 7;
-        memory[bank][add] = (byte) value;
-        checkScreen(bank, add);
+        memory[bank][address] = (byte) value;
+        checkScreen(bank, address);
     }
 
-    private void pokeBank2(int add, int value) {
-        memory[2][add] = (byte) value;
+    private void pokeBank2(int address, int value) {
+        memory[2][address] = (byte) value;
     }
 
-    private void pokeBank1(int add, int value) {
-        memory[5][add] = (byte) value;
+    private void pokeBank1(int address, int value) {
+        memory[5][address] = (byte) value;
 
-        checkScreen(5, add);
+        checkScreen(5, address);
     }
 
-    private void pokeBank0(int add, int value) {
+    private void pokeBank0(int address, int value) {
         if (cpu.isRunning())
             return;
 
-        roms[romBank][add] = (byte) value;
+        roms[romBank][address] = (byte) value;
 
-        if (add == 0x3FFF) {
-            System.out.println("Rom " + romBank + " loaded");
+        if (address == 0x3FFF) {
+            LOGGER.info("Rom " + romBank + " loaded");
             romBank++;
         }
     }
 
-    /**
-     * j80.MMU
-     */
+    @Override
     public void pokeb(int add, int value) {
         int bank = add / 0x4000;
         add &= 0x3fff;
@@ -153,14 +141,14 @@ public class Spectrum128K implements InPort, OutPort, MMU, Polling, Spectrum {
 
     }
 
-
+    @Override
     public int peekb(int add) {
         int bank = add / 0x4000;
         add &= 0x3fff;
 
         switch (bank) {
             default:
-                int romBank = (mmu & MMU_ROM) != 0 ? 1 : 0;
+                int romBank = (mmu & SpectrumConstants.MMU_ROM) != 0 ? 1 : 0;
                 return roms[romBank][add] & 0xff;
 
             case 1:
@@ -175,17 +163,9 @@ public class Spectrum128K implements InPort, OutPort, MMU, Polling, Spectrum {
         }
     }
 
-
-    /**
-     * Polling called every 20 ms
-     */
-    public void polling(Z80VirtualMachine cpu) {
+    @Override
+    public void poll(Z80VirtualMachine cpu) {
         cpu.irq();
 
-    }
-
-
-    public String toString() {
-        return "Spectrum 128K $Revision: 330 $";
     }
 }

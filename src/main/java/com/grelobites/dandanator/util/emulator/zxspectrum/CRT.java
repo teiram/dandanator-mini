@@ -1,13 +1,5 @@
 package com.grelobites.dandanator.util.emulator.zxspectrum;
 
-/**
- * $Id: CRT.java 330 2010-09-14 10:29:28Z mviara $
- * <p>
- * Physical CRT interface<p>
- * <p>
- * Represents a physical device suitable for terminal emulation.
- * <p>
- */
 public interface CRT {
     /**
      * Normal attribute

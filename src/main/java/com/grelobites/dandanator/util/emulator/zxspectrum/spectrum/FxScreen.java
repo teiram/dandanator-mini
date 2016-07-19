@@ -4,8 +4,7 @@ import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.util.ZxColor;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Peripheral;
-import com.grelobites.dandanator.util.emulator.zxspectrum.Polling;
-import javafx.scene.image.Image;
+import com.grelobites.dandanator.util.emulator.zxspectrum.PollingTarget;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
@@ -13,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class FxScreen implements Spectrum, Peripheral, Polling {
+public class FxScreen implements Peripheral, PollingTarget {
     private static final Logger LOGGER = LoggerFactory.getLogger(FxScreen.class);
 
     private Z80VirtualMachine cpu;
@@ -27,7 +26,7 @@ public class FxScreen implements Spectrum, Peripheral, Polling {
     private ImageView frame;
     private int currentFrame;
     private int frameCount = 2;
-    private final int changed[] = new int[SCREEN_MEMORY_SIZE * 4];
+    private final int changed[] = new int[SpectrumConstants.SCREEN_MEMORY_SIZE * 4];
     private int changedWrite = 0;
     private boolean screenChanged = false;
 
@@ -43,26 +42,26 @@ public class FxScreen implements Spectrum, Peripheral, Polling {
     }
 
     @Override
-    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
+    public void bind(Z80VirtualMachine cpu) throws Exception {
         this.cpu = cpu;
-        cpu.addPolling(320, this);
+        cpu.addPollingTarget(320, this);
     }
 
     @Override
-    public void disconnectCPU(Z80VirtualMachine cpu) throws Exception {
+    public void unbind(Z80VirtualMachine cpu) throws Exception {
         this.cpu = null;
     }
 
     @Override
-    public void resetCPU(Z80VirtualMachine cpu) throws Exception {
+    public void onCpuReset(Z80VirtualMachine cpu) throws Exception {
         flash = false;
     }
 
     @Override
-    public void polling(Z80VirtualMachine cpu) {
+    public void poll(Z80VirtualMachine cpu) {
         flash = !flash;
-        for (int i = 0; i <= SCREEN_ATTRIBUTE_SIZE; i++) {
-            if ((getMemory(i + SCREEN_MEMORY_SIZE) & ATTRIBUTE_FLASH) != 0) {
+        for (int i = 0; i <= SpectrumConstants.SCREEN_ATTRIBUTE_SIZE; i++) {
+            if ((getMemory(i + SpectrumConstants.SCREEN_MEMORY_SIZE) & ATTRIBUTE_FLASH) != 0) {
                 repaintAttribute(i);
             }
         }
@@ -71,7 +70,7 @@ public class FxScreen implements Spectrum, Peripheral, Polling {
     public void setScreenMemory(byte memory[], int offset) {
         screenMemory = memory;
         screenOffset = offset;
-        for (int i = 0; i < SCREEN_MEMORY_SIZE; i++) {
+        for (int i = 0; i < SpectrumConstants.SCREEN_MEMORY_SIZE; i++) {
             repaintScreen(i);
         }
     }
@@ -84,7 +83,6 @@ public class FxScreen implements Spectrum, Peripheral, Polling {
     }
 
     void repaintAttribute(int addr) {
-        //LOGGER.debug("repaintAttribute at " + addr);
         int scrAddr = ((addr & 0x300) << 3) | (addr & 0xff);
 
         for (int i = 0; i < 8; i++) {
@@ -110,14 +108,7 @@ public class FxScreen implements Spectrum, Peripheral, Polling {
         int y = (( (address & 0x00e0)) >> 2) +
                 (( (address & 0x0700)) >> 8) +
                 (( (address & 0x1800)) >> 5);
-        int attributeByte = getMemory(SCREEN_MEMORY_SIZE + (address & 0x1f) + ((y >> 3) * 32)) & 0xff;
-/*
-        LOGGER.debug("drawByte " + Integer.toHexString(address)
-            + ", pixel " + Integer.toHexString(pixel)
-            + ", attribute " + Integer.toHexString(attributeByte)
-                + ", x " + x
-                + ", y " + y);
-*/
+        int attributeByte = getMemory(SpectrumConstants.SCREEN_MEMORY_SIZE + (address & 0x1f) + ((y >> 3) * 32)) & 0xff;
         int ink = ZxColor.byIndex((attributeByte & 7) + ((attributeByte & 64) >> 3));
         int paper = ZxColor.byIndex(((attributeByte & 56) >> 3) + ((attributeByte & 64) >> 3));
         int attributeMask = 0x80;
@@ -132,8 +123,6 @@ public class FxScreen implements Spectrum, Peripheral, Polling {
         if (!screenChanged) {
             return null;
         }
-        //LOGGER.debug(changedWrite + " to update");
-
         synchronized (changed) {
             PixelWriter writer = ((WritableImage)frame.getImage()).getPixelWriter();
             for (int i = 0; i < changedWrite; i++) {

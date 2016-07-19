@@ -40,7 +40,4 @@ class JavaxAudio extends Audio {
             xlat[i] = (byte) (vol * i / div);
     }
 
-    public String toString() {
-        return "Javax sound system $Id: JavaxAudio.java 330 2010-09-14 10:29:28Z mviara $";
-    }
 }

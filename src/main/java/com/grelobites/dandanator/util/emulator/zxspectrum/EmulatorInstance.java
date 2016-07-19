@@ -3,11 +3,8 @@ package com.grelobites.dandanator.util.emulator.zxspectrum;
 import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.util.emulator.zxspectrum.spectrum.Spectrum48K;
 import javafx.animation.AnimationTimer;
-import javafx.concurrent.ScheduledService;
-import javafx.concurrent.Task;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
-import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +35,7 @@ public class EmulatorInstance {
     public void start(Pane emulatorPane) {
         emulatorThread = new Thread(() -> {
             boolean terminated = false;
-            while (terminated == false) {
+            while (!terminated) {
                 try {
                     LOGGER.debug("Starting ZX Emulator");
                     newEmulator().run();
@@ -68,26 +65,30 @@ public class EmulatorInstance {
             }
         };
         screenUpdateService.start();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            LOGGER.debug("Emulator thread interrupted!");
-        }
+        LOGGER.debug("Scene to attach: " + emulatorPane.getScene());
+        spectrumPeripheral.getKeyboard()
+                .attachToScene(emulatorPane.getScene());
     }
 
     public void pause() {
         LOGGER.debug("Pausing emulator");
         currentVm.pause();
+        screenUpdateService.stop();
     }
 
     public void resume() {
         LOGGER.debug("Resuming emulator");
+        screenUpdateService.start();
         currentVm.resume();
     }
 
     public void reset() {
         LOGGER.debug("Resetting emulator");
         currentVm.reset();
+    }
+
+    public boolean isRunning() {
+        return currentVm.isRunning();
     }
 
     public void stop() {
@@ -103,13 +104,13 @@ public class EmulatorInstance {
     public void loadGame(Game game) {
         LOGGER.debug("Loading Game in emulator");
         try {
-            pause();
+            currentVm.pause();
             spectrumPeripheral.getZxSnapshot()
                     .loadSNA(game.getName(), game.getDataStream());
-            resume();
+            currentVm.resume();
         } catch (Exception e) {
             LOGGER.error("Loading Snapshot", e);
-            reset();
+            currentVm.reset();
         }
     }
 }

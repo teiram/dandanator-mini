@@ -3,6 +3,8 @@ package com.grelobites.dandanator.util.emulator.zxspectrum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.PrintStream;
+
 interface Z80debug {
 
     String[] opc1 = {
@@ -440,7 +442,7 @@ public class Z80 implements Z80debug {
     // Currently executed instruction
     private int instruction = 0;
     // Misc
-    private int tmp, tmp1, tmp2, tmp3;
+    private int tmp;
     private int PPC = 0;                // previous PC - used by debugger
     private String tag;
 
@@ -450,7 +452,7 @@ public class Z80 implements Z80debug {
      * Use this constructor for use in applets
      */
     public Z80() {
-        this.debugLevel = 0;
+        debugLevel = 0;
     }
 
     public String getTag() {
@@ -541,25 +543,17 @@ public class Z80 implements Z80debug {
         E1 = 0;
         H1 = 0;
         L1 = 0;
-        //if (!debugDisabled)
-        //{ log("***Z80 RESET***"); }
-
     }
-
 
     public final int getCycle() {
         return cycleCounter - cycle;
-
     }
 
     public void step() {
     }
 
-
     /**
      * Execute a number of clock cycles
-     *
-     * @param    cycles number of cycles to be executed
      */
     public final void exec(int cycles) {
         cycleCounter += cycles;
@@ -573,14 +567,13 @@ public class Z80 implements Z80debug {
             step();
 
             // Cpu in HALT state
-            if (state_HALT == true) {
-                while (state_HALT == true) {
+            if (state_HALT) {
+                while (state_HALT) {
                     halt();
                     cycle = checkInterrupt(cycle);
-                    if (cycle <= 0)
+                    if (cycle <= 0) {
                         return;
-                    //  if (state_HALT == false)
-                    //	  PC = (PC + 1 ) & 0xffff;
+                    }
                 }
             }
 
@@ -593,7 +586,7 @@ public class Z80 implements Z80debug {
             switch (instruction) {
                 case 0x00:
                     nop();
-                    break;        // NOP			ok
+                    break;        // NOP   ok
                 case 0x01:
                     ld_BC_nn();
                     break;    // LD BC,nn		ok
@@ -1371,7 +1364,7 @@ public class Z80 implements Z80debug {
     /**
      * $ED prefix opcodes
      */
-    private final void prefix_ED() {
+    private void prefix_ED() {
         int tmp1, tmp2, tmp3;
         instruction = (instruction << 8) + peekb(PC);
         PC = (PC + 1) & 0xffff;
@@ -1529,7 +1522,6 @@ public class Z80 implements Z80debug {
                 cycle -= 9;
                 A = R();
                 break;                // LD A,R
-
             case 0x60:
                 cycle -= 12;
                 H = in(C, B);
@@ -1568,7 +1560,6 @@ public class Z80 implements Z80debug {
                 cycle -= 18;
                 A = rrd_A(A, H, L);
                 break;        // RRD
-
             case 0x68:
                 cycle -= 12;
                 L = in(C, B);
@@ -1845,7 +1836,7 @@ public class Z80 implements Z80debug {
     /**
      * $CB prefix opcodes
      */
-    private final void prefix_BC() {
+    private void prefix_BC() {
         instruction = (instruction << 8) + peekb(PC++);
         switch (instruction & 0xff) {
             case 0x00:
@@ -2909,7 +2900,7 @@ public class Z80 implements Z80debug {
     /**
      * $DD and $FD prefix opcodes (index instructions)
      */
-    private final int execXY(int XY) {
+    private int execXY(int XY) {
         int tmp1, tmp2, tmp3;
         instruction = (instruction << 8) + peekb(PC++);
         IXYd = (XY + sign(peekb(PC))) & 0xffff;
@@ -3607,14 +3598,14 @@ public class Z80 implements Z80debug {
     /**
      * NOP
      */
-    private final void nop() {
+    private void nop() {
         cycle -= 4;
     }
 
     /**
      * LD BC, nn
      */
-    private final void ld_BC_nn() {
+    private void ld_BC_nn() {
         cycle -= 10;
         C = peekb(PC++);
         B = peekb(PC++);
@@ -3623,7 +3614,7 @@ public class Z80 implements Z80debug {
     /**
      * LD (BC),A
      */
-    private final void ld_BCi_A() {
+    private void ld_BCi_A() {
         cycle -= 7;
         pokeb(BC(), A);
     }
@@ -3631,7 +3622,7 @@ public class Z80 implements Z80debug {
     /**
      * INC BC
      */
-    private final void inc_BC() {
+    private void inc_BC() {
         cycle -= 6;
         BC((BC() + 1) & 0xffff);
     }
@@ -3639,7 +3630,7 @@ public class Z80 implements Z80debug {
     /**
      * INC B
      */
-    private final void inc_B() {
+    private void inc_B() {
         cycle -= 4;
         B = inc8(B);
     }
@@ -3647,7 +3638,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC B
      */
-    private final void dec_B() {
+    private void dec_B() {
         cycle -= 4;
         B = dec8(B);
     }
@@ -3655,7 +3646,7 @@ public class Z80 implements Z80debug {
     /**
      * LD B,n
      */
-    private final void ld_B_n() {
+    private void ld_B_n() {
         cycle -= 7;
         B = peekb(PC++);
     }
@@ -3663,7 +3654,7 @@ public class Z80 implements Z80debug {
     /**
      * RLCA
      */
-    private final void rlca() {
+    private void rlca() {
         cycle -= 4;
         A = rlc_A(A);
     }
@@ -3684,7 +3675,7 @@ public class Z80 implements Z80debug {
     /**
      * ADD HL,BC
      */
-    private final void add_HL_BC() {
+    private void add_HL_BC() {
         cycle -= 11;
         HL(add16(HL(), BC()));
     }
@@ -3692,7 +3683,7 @@ public class Z80 implements Z80debug {
     /**
      * LD A,(BC)
      */
-    private final void ld_A_BCi() {
+    private void ld_A_BCi() {
         cycle -= 7;
         A = peekb(BC());
     }
@@ -3700,7 +3691,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC BC
      */
-    private final void dec_BC() {
+    private void dec_BC() {
         cycle -= 6;
         BC((BC() - 1) & 0xffff);
     }
@@ -3708,7 +3699,7 @@ public class Z80 implements Z80debug {
     /**
      * INC C
      */
-    private final void inc_C() {
+    private void inc_C() {
         cycle -= 4;
         C = inc8(C);
     }
@@ -3716,7 +3707,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC C
      */
-    private final void dec_C() {
+    private void dec_C() {
         cycle -= 4;
         C = dec8(C);
     }
@@ -3724,7 +3715,7 @@ public class Z80 implements Z80debug {
     /**
      * LD C,n
      */
-    private final void ld_C_n() {
+    private void ld_C_n() {
         cycle -= 7;
         C = peekb(PC++);
     }
@@ -3732,7 +3723,7 @@ public class Z80 implements Z80debug {
     /**
      * RRCA
      */
-    private final void rrca() {
+    private void rrca() {
         cycle -= 4;
         A = rrc_A(A);
     }
@@ -3740,7 +3731,7 @@ public class Z80 implements Z80debug {
     /**
      * DJNZ,n
      */
-    private final void djnz_n() {
+    private void djnz_n() {
         B = (B - 1) & 0xff;
         if (B != 0) {
             cycle -= 13;
@@ -3755,7 +3746,7 @@ public class Z80 implements Z80debug {
     /**
      * LD DE,nn
      */
-    private final void ld_DE_nn() {
+    private void ld_DE_nn() {
         cycle -= 10;
         E = peekb(PC++);
         D = peekb(PC++);
@@ -3764,7 +3755,7 @@ public class Z80 implements Z80debug {
     /**
      * LD (DE),A
      */
-    private final void ld_DEi_A() {
+    private void ld_DEi_A() {
         cycle -= 7;
         pokeb(DE(), A);
     }
@@ -3772,7 +3763,7 @@ public class Z80 implements Z80debug {
     /**
      * INC DE
      */
-    private final void inc_DE() {
+    private void inc_DE() {
         cycle -= 6;
         DE((DE() + 1) & 0xffff);
     }
@@ -3780,7 +3771,7 @@ public class Z80 implements Z80debug {
     /**
      * INC D
      */
-    private final void inc_D() {
+    private void inc_D() {
         cycle -= 4;
         D = inc8(D);
     }
@@ -3788,7 +3779,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC D
      */
-    private final void dec_D() {
+    private void dec_D() {
         cycle -= 4;
         D = dec8(D);
     }
@@ -3796,7 +3787,7 @@ public class Z80 implements Z80debug {
     /**
      * LD D,n
      */
-    private final void ld_D_n() {
+    private void ld_D_n() {
         cycle -= 7;
         D = peekb(PC++);
     }
@@ -3804,7 +3795,7 @@ public class Z80 implements Z80debug {
     /**
      * RLA
      */
-    private final void rla() {
+    private void rla() {
         cycle -= 4;
         A = rl_A(A);
     }
@@ -3812,7 +3803,7 @@ public class Z80 implements Z80debug {
     /**
      * JR e
      */
-    private final void jr_e() {
+    private void jr_e() {
         cycle -= 12;
         PC += sign(peekb(PC));
         PC++;
@@ -3821,7 +3812,7 @@ public class Z80 implements Z80debug {
     /**
      * ADD HL,DE
      */
-    private final void add_HL_DE() {
+    private void add_HL_DE() {
         cycle -= 11;
         HL(add16(HL(), DE()));
     }
@@ -3829,7 +3820,7 @@ public class Z80 implements Z80debug {
     /**
      * LD A,(DE)
      */
-    private final void ld_A_DEi() {
+    private void ld_A_DEi() {
         cycle -= 7;
         A = peekb(DE());
     }
@@ -3837,7 +3828,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC DE
      */
-    private final void dec_DE() {
+    private void dec_DE() {
         cycle -= 6;
         DE((DE() - 1) & 0xffff);
     }
@@ -3845,7 +3836,7 @@ public class Z80 implements Z80debug {
     /**
      * INC E
      */
-    private final void inc_E() {
+    private void inc_E() {
         cycle -= 4;
         E = inc8(E);
     }
@@ -3853,7 +3844,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC E
      */
-    private final void dec_E() {
+    private void dec_E() {
         cycle -= 4;
         E = dec8(E);
     }
@@ -3861,7 +3852,7 @@ public class Z80 implements Z80debug {
     /**
      * LD E,n
      */
-    private final void ld_E_n() {
+    private void ld_E_n() {
         cycle -= 7;
         E = peekb(PC++);
     }
@@ -3869,7 +3860,7 @@ public class Z80 implements Z80debug {
     /**
      * RRA
      */
-    private final void rra() {
+    private void rra() {
         cycle -= 4;
         A = rr_A(A);
     }
@@ -3877,7 +3868,7 @@ public class Z80 implements Z80debug {
     /**
      * JR NZ,e
      */
-    private final void jr_NZ_e() {
+    private void jr_NZ_e() {
         if ((F & ZF) == 0) {
             cycle -= 12;
             PC += sign(peekb(PC));
@@ -3891,7 +3882,7 @@ public class Z80 implements Z80debug {
     /**
      * LD HL,nn
      */
-    private final void ld_HL_nn() {
+    private void ld_HL_nn() {
         cycle -= 10;
         L = peekb(PC++);
         H = peekb(PC++);
@@ -3900,7 +3891,7 @@ public class Z80 implements Z80debug {
     /**
      * LD (nn),HL
      */
-    private final void ld_ni_HL() {
+    private void ld_ni_HL() {
         cycle -= 16;
         ld_ea_ind16(HL());
     }
@@ -3908,7 +3899,7 @@ public class Z80 implements Z80debug {
     /**
      * INC HL
      */
-    private final void inc_HL() {
+    private void inc_HL() {
         cycle -= 6;
         HL((HL() + 1) & 0xffff);
     }
@@ -3916,7 +3907,7 @@ public class Z80 implements Z80debug {
     /**
      * INC H
      */
-    private final void inc_H() {
+    private void inc_H() {
         cycle -= 4;
         H = inc8(H);
     }
@@ -3924,7 +3915,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC H
      */
-    private final void dec_H() {
+    private void dec_H() {
         cycle -= 4;
         H = dec8(H);
     }
@@ -3932,7 +3923,7 @@ public class Z80 implements Z80debug {
     /**
      * LD H,n
      */
-    private final void ld_H_n() {
+    private void ld_H_n() {
         cycle -= 7;
         H = peekb(PC++);
     }
@@ -3940,11 +3931,11 @@ public class Z80 implements Z80debug {
     /**
      * DAA
      */
-    private final void daa() {
+    private void daa() {
         cycle -= 4;
-        tmp1 = A;
-        tmp2 = 0;
-        tmp3 = (F & 1);
+        int tmp1 = A;
+        int tmp2 = 0;
+        int tmp3 = (F & 1);
         int tmp = tmp3;
         if (((F & 0x10) != 0) || ((tmp1 & 0x0f) > 0x09)) {
             tmp2 |= 0x06;
@@ -3974,7 +3965,7 @@ public class Z80 implements Z80debug {
     /**
      * JR Z,e
      */
-    private final void jr_Z_e() {
+    private void jr_Z_e() {
         if ((F & ZF) != 0) {
             cycle -= 12;
             PC += sign(peekb(PC));
@@ -3988,7 +3979,7 @@ public class Z80 implements Z80debug {
     /**
      * ADD HL,HL
      */
-    private final void add_HL_HL() {
+    private void add_HL_HL() {
         cycle -= 11;
         int hl = HL();
         HL(add16(hl, hl));
@@ -3997,7 +3988,7 @@ public class Z80 implements Z80debug {
     /**
      * LD HL,(nn)
      */
-    private final void ld_HL_ni() {
+    private void ld_HL_ni() {
         cycle -= 16;
         int ea = peekw(PC);
         H = peekb(ea + 1);
@@ -4008,7 +3999,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC HL
      */
-    private final void dec_HL() {
+    private void dec_HL() {
         cycle -= 6;
         HL((HL() - 1) & 0xffff);
     }
@@ -4016,7 +4007,7 @@ public class Z80 implements Z80debug {
     /**
      * INC L
      */
-    private final void inc_L() {
+    private void inc_L() {
         cycle -= 4;
         L = inc8(L);
     }
@@ -4024,7 +4015,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC L
      */
-    private final void dec_L() {
+    private void dec_L() {
         cycle -= 4;
         L = dec8(L);
     }
@@ -4032,7 +4023,7 @@ public class Z80 implements Z80debug {
     /**
      * LD L,n
      */
-    private final void ld_L_n() {
+    private void ld_L_n() {
         cycle -= 7;
         L = peekb(PC++);
     }
@@ -4040,7 +4031,7 @@ public class Z80 implements Z80debug {
     /**
      * CPL
      */
-    private final void cpl() {
+    private void cpl() {
         cycle -= 4;
         A ^= 0xff;
         F = (F & (0xc5)) | 0x12 | (A & (0x28));
@@ -4049,7 +4040,7 @@ public class Z80 implements Z80debug {
     /**
      * JR NC,e
      */
-    private final void jr_NC_e() {
+    private void jr_NC_e() {
         if ((F & CF) == 0) {
             cycle -= 12;
             PC += sign(peekb(PC));
@@ -4063,7 +4054,7 @@ public class Z80 implements Z80debug {
     /**
      * LD SP,nn
      */
-    private final void ld_SP_nn() {
+    private void ld_SP_nn() {
         cycle -= 10;
         SP = peekw(PC);
         PC += 2;
@@ -4072,7 +4063,7 @@ public class Z80 implements Z80debug {
     /**
      * LD (nn),A
      */
-    private final void ld_ni_A() {
+    private void ld_ni_A() {
         cycle -= 13;
         ld_ea_ind8(A);
     }
@@ -4080,7 +4071,7 @@ public class Z80 implements Z80debug {
     /**
      * INC SP
      */
-    private final void inc_SP() {
+    private void inc_SP() {
         cycle -= 6;
         SP = (SP + 1) & 0xffff;
     }
@@ -4088,7 +4079,7 @@ public class Z80 implements Z80debug {
     /**
      * INC (HL)
      */
-    private final void inc_HLi() {
+    private void inc_HLi() {
         cycle -= 11;
         int hl = HL();
         pokeb(hl, inc8(peekb(hl)));
@@ -4097,7 +4088,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC (HL)
      */
-    private final void dec_HLi() {
+    private void dec_HLi() {
         cycle -= 11;
         int hl = HL();
         pokeb(hl, dec8(peekb(hl)));
@@ -4106,7 +4097,7 @@ public class Z80 implements Z80debug {
     /**
      * LD (HL),n
      */
-    private final void ld_HLi_n() {
+    private void ld_HLi_n() {
         cycle -= 10;
         pokeb(HL(), peekb(PC++));
     }
@@ -4114,7 +4105,7 @@ public class Z80 implements Z80debug {
     /**
      * SCF
      */
-    private final void scf() {
+    private void scf() {
         cycle -= 4;
         F = (F & 0xc4) | 1 | (A & (0x28));
     }
@@ -4122,7 +4113,7 @@ public class Z80 implements Z80debug {
     /**
      * JR C,e
      */
-    private final void jr_C_e() {
+    private void jr_C_e() {
         if ((F & CF) != 0) {
             cycle -= 12;
             PC += sign(peekb(PC));
@@ -4136,7 +4127,7 @@ public class Z80 implements Z80debug {
     /**
      * ADD HL,SP
      */
-    private final void add_HL_SP() {
+    private void add_HL_SP() {
         cycle -= 11;
         HL(add16(HL(), SP));
     }
@@ -4144,7 +4135,7 @@ public class Z80 implements Z80debug {
     /**
      * LD A,(nn)
      */
-    private final void ld_A_ni() {
+    private void ld_A_ni() {
         cycle -= 13;
         A = peekb(peekw(PC));
         PC += 2;
@@ -4153,7 +4144,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC SP
      */
-    private final void dec_SP() {
+    private void dec_SP() {
         cycle -= 6;
         SP = (SP - 1) & 0xffff;
     }
@@ -4161,7 +4152,7 @@ public class Z80 implements Z80debug {
     /**
      * INC A
      */
-    private final void inc_A() {
+    private void inc_A() {
         cycle -= 4;
         A = inc8(A);
     }
@@ -4169,7 +4160,7 @@ public class Z80 implements Z80debug {
     /**
      * DEC A
      */
-    private final void dec_A() {
+    private void dec_A() {
         cycle -= 4;
         A = dec8(A);
     }
@@ -4177,7 +4168,7 @@ public class Z80 implements Z80debug {
     /**
      * LD A,n
      */
-    private final void ld_A_n() {
+    private void ld_A_n() {
         cycle -= 7;
         A = peekb(PC++);
     }
@@ -4185,7 +4176,7 @@ public class Z80 implements Z80debug {
     /**
      * CCF
      */
-    private final void ccf() {
+    private void ccf() {
         cycle -= 4;
         F = ((F & 0xc5) | ((F & 1) << 4) | (A & 0x28)) ^ 1;
     }
@@ -4193,7 +4184,7 @@ public class Z80 implements Z80debug {
     /**
      * HALT
      */
-    private final void halt() {
+    private void halt() {
         cycle -= 4;
         state_HALT = true;
         goingToirq = false;
@@ -4204,7 +4195,7 @@ public class Z80 implements Z80debug {
     /**
      * RET NZ
      */
-    private final void ret_NZ() {
+    private void ret_NZ() {
         if ((F & ZF) == 0) {
             cycle -= 11;
             PC = pop();
@@ -4216,7 +4207,7 @@ public class Z80 implements Z80debug {
     /**
      * POP BC
      */
-    private final void pop_BC() {
+    private void pop_BC() {
         cycle -= 10;
         C = peekb(SP++);
         B = peekb(SP++);
@@ -4225,7 +4216,7 @@ public class Z80 implements Z80debug {
     /**
      * JP NZ,nn
      */
-    private final void jp_NZ_nn() {
+    private void jp_NZ_nn() {
         cycle -= 10;
         if ((F & ZF) == 0) {
             PC = peekw(PC);
@@ -4237,7 +4228,7 @@ public class Z80 implements Z80debug {
     /**
      * JP nn
      */
-    private final void jp_nn() {
+    private void jp_nn() {
         cycle -= 10;
         PC = peekw(PC);
     }
@@ -4245,7 +4236,7 @@ public class Z80 implements Z80debug {
     /**
      * CALL NZ,nn
      */
-    private final void call_NZ_nn() {
+    private void call_NZ_nn() {
         if ((F & ZF) == 0) {
             cycle -= 17;
             push(PC + 2);
@@ -4259,7 +4250,7 @@ public class Z80 implements Z80debug {
     /**
      * PUSH BC
      */
-    private final void push_BC() {
+    private void push_BC() {
         cycle -= 11;
         push(BC());
     }
@@ -4267,7 +4258,7 @@ public class Z80 implements Z80debug {
     /**
      * ADD A,n
      */
-    private final void add_A_n() {
+    private void add_A_n() {
         cycle -= 7;
         A = addA_8(peekb(PC++), A);
     }
@@ -4275,7 +4266,7 @@ public class Z80 implements Z80debug {
     /**
      * RET Z
      */
-    private final void ret_Z() {
+    private void ret_Z() {
         if ((F & ZF) != 0) {
             cycle -= 11;
             PC = pop();
@@ -4287,7 +4278,7 @@ public class Z80 implements Z80debug {
     /**
      * RET
      */
-    private final void ret() {
+    private void ret() {
         cycle -= 10;
         PC = pop();
     }
@@ -4295,7 +4286,7 @@ public class Z80 implements Z80debug {
     /**
      * JP Z,nn
      */
-    private final void jp_Z_nn() {
+    private void jp_Z_nn() {
         cycle -= 10;
         if ((F & ZF) != 0) {
             PC = peekw(PC);
@@ -4307,7 +4298,7 @@ public class Z80 implements Z80debug {
     /**
      * CALL Z,nn
      */
-    private final void call_Z_nn() {
+    private void call_Z_nn() {
         if ((F & ZF) != 0) {
             cycle -= 17;
             push(PC + 2);
@@ -4321,7 +4312,7 @@ public class Z80 implements Z80debug {
     /**
      * CALL nn
      */
-    private final void call_nn() {
+    private void call_nn() {
         cycle -= 17;
         push(PC + 2);
         PC = peekw(PC);
@@ -4330,7 +4321,7 @@ public class Z80 implements Z80debug {
     /**
      * ADC A,n
      */
-    private final void adc_A_n() {
+    private void adc_A_n() {
         cycle -= 7;
         A = adcA_8(peekb(PC++), A);
     }
@@ -4338,7 +4329,7 @@ public class Z80 implements Z80debug {
     /**
      * RET NC
      */
-    private final void ret_NC() {
+    private void ret_NC() {
         if ((F & CF) == 0) {
             cycle -= 11;
             PC = pop();
@@ -4350,7 +4341,7 @@ public class Z80 implements Z80debug {
     /**
      * POP DE
      */
-    private final void pop_DE() {
+    private void pop_DE() {
         cycle -= 10;
         E = peekb(SP++);
         D = peekb(SP++);
@@ -4359,7 +4350,7 @@ public class Z80 implements Z80debug {
     /**
      * JP NC,nn
      */
-    private final void jp_NC_nn() {
+    private void jp_NC_nn() {
         cycle -= 10;
         if ((F & CF) == 0) {
             PC = peekw(PC);
@@ -4371,7 +4362,7 @@ public class Z80 implements Z80debug {
     /**
      * OUT (n),A
      */
-    private final void out_n_A() {
+    private void out_n_A() {
         cycle -= 11;
         out(peekb(PC++), A);
     }
@@ -4379,7 +4370,7 @@ public class Z80 implements Z80debug {
     /**
      * CALL NC, nn
      */
-    private final void call_NC_nn() {
+    private void call_NC_nn() {
         if ((F & CF) == 0) {
             cycle -= 17;
             push(PC + 2);
@@ -4393,7 +4384,7 @@ public class Z80 implements Z80debug {
     /**
      * PUSH DE
      */
-    private final void push_DE() {
+    private void push_DE() {
         cycle -= 11;
         push(DE());
     }
@@ -4401,7 +4392,7 @@ public class Z80 implements Z80debug {
     /**
      * SUB A,n
      */
-    private final void sub_A_n() {
+    private void sub_A_n() {
         cycle -= 7;
         A = subA_8(peekb(PC++), A);
     }
@@ -4409,7 +4400,7 @@ public class Z80 implements Z80debug {
     /**
      * RET C
      */
-    private final void ret_C() {
+    private void ret_C() {
         if ((F & CF) != 0) {
             cycle -= 11;
             PC = pop();
@@ -4446,7 +4437,7 @@ public class Z80 implements Z80debug {
     /**
      * JP C,nn
      */
-    private final void jp_C_nn() {
+    private void jp_C_nn() {
         cycle -= 10;
         if ((F & CF) != 0) {
             PC = peekw(PC);
@@ -4456,7 +4447,7 @@ public class Z80 implements Z80debug {
     }
 
     /* IN A,(n) */
-    private final void in_A_n() {
+    private void in_A_n() {
         cycle -= 11;
         A = in(peekb(PC++), A);
     }
@@ -4464,7 +4455,7 @@ public class Z80 implements Z80debug {
     /**
      * CALL C,nn
      */
-    private final void call_C_nn() {
+    private void call_C_nn() {
         if ((F & CF) != 0) {
             cycle -= 17;
             push(PC + 2);
@@ -4478,7 +4469,7 @@ public class Z80 implements Z80debug {
     /**
      * SBC A,n
      */
-    private final void sbc_A_n() {
+    private void sbc_A_n() {
         cycle -= 7;
         A = sbcA_8(peekb(PC++), A);
     }
@@ -4486,7 +4477,7 @@ public class Z80 implements Z80debug {
     /**
      * RET PO
      */
-    private final void ret_PO() {
+    private void ret_PO() {
         if ((F & PF) == 0) {
             cycle -= 11;
             PC = peekw(SP);
@@ -4499,7 +4490,7 @@ public class Z80 implements Z80debug {
     /**
      * POP HL
      */
-    private final void pop_HL() {
+    private void pop_HL() {
         cycle -= 10;
         L = peekb(SP++);
         H = peekb(SP++);
@@ -4508,7 +4499,7 @@ public class Z80 implements Z80debug {
     /**
      * JP PO,nn
      */
-    private final void jp_PO_nn() {
+    private void jp_PO_nn() {
         cycle -= 10;
         if ((F & PF) == 0) {
             PC = peekw(PC);
@@ -4520,7 +4511,7 @@ public class Z80 implements Z80debug {
     /**
      * EX (SP),HL
      */
-    private final void ex_SPi_HL() {
+    private void ex_SPi_HL() {
         cycle -= 19;
         tmp = peekb(SP + 1);
         pokeb(SP + 1, H);
@@ -4533,7 +4524,7 @@ public class Z80 implements Z80debug {
     /**
      * CALL PO,nn
      */
-    private final void call_PO_nn() {
+    private void call_PO_nn() {
         if ((F & PF) == 0) {
             cycle -= 17;
             push(PC + 2);
@@ -4547,7 +4538,7 @@ public class Z80 implements Z80debug {
     /**
      * PUSH HL
      */
-    private final void push_HL() {
+    private void push_HL() {
         cycle -= 11;
         push(HL());
     }
@@ -4555,7 +4546,7 @@ public class Z80 implements Z80debug {
     /**
      * AND A,n
      */
-    private final void and_A_n() {
+    private void and_A_n() {
         cycle -= 7;
         A = andA(peekb(PC++), A);
     }
@@ -4563,7 +4554,7 @@ public class Z80 implements Z80debug {
     /**
      * RET PE
      */
-    private final void ret_PE() {
+    private void ret_PE() {
         if ((F & PF) != 0) {
             cycle -= 11;
             PC = pop();
@@ -4575,7 +4566,7 @@ public class Z80 implements Z80debug {
     /**
      * JP (HL)
      */
-    private final void jp_HLi() {
+    private void jp_HLi() {
         cycle -= 4;
         PC = HL();
     }
@@ -4583,7 +4574,7 @@ public class Z80 implements Z80debug {
     /**
      * JP PE,nn
      */
-    private final void jp_PE_nn() {
+    private void jp_PE_nn() {
         cycle -= 10;
         if ((F & PF) != 0) {
             PC = peekw(PC);
@@ -4595,7 +4586,7 @@ public class Z80 implements Z80debug {
     /**
      * EX DE,HL
      */
-    private final void ex_DE_HL() {
+    private void ex_DE_HL() {
         cycle -= 4;
         tmp = D;
         D = H;
@@ -4608,7 +4599,7 @@ public class Z80 implements Z80debug {
     /**
      * CALL PE,nn
      */
-    private final void call_PE_nn() {
+    private void call_PE_nn() {
         if ((F & PF) != 0) {
             cycle -= 17;
             push(PC + 2);
@@ -4623,7 +4614,7 @@ public class Z80 implements Z80debug {
     /**
      * XOR A,n
      */
-    private final void xor_n() {
+    private void xor_n() {
         cycle -= 7;
         A = xorA(peekb(PC++), A);
     }
@@ -4631,7 +4622,7 @@ public class Z80 implements Z80debug {
     /**
      * RET P
      */
-    private final void ret_P() {
+    private void ret_P() {
         if ((F & SF) == 0) {
             cycle -= 11;
             PC = pop();
@@ -4643,7 +4634,7 @@ public class Z80 implements Z80debug {
     /**
      * POP AF
      */
-    private final void pop_AF() {
+    private void pop_AF() {
         cycle -= 10;
         F = peekb(SP++);
         A = peekb(SP++);
@@ -4652,7 +4643,7 @@ public class Z80 implements Z80debug {
     /**
      * JP P,nn
      */
-    private final void jp_P_nn() {
+    private void jp_P_nn() {
         cycle -= 10;
         if ((F & SF) == 0) {
             PC = peekw(PC);
@@ -4664,7 +4655,7 @@ public class Z80 implements Z80debug {
     /**
      * DI
      */
-    private final void di() {
+    private void di() {
         cycle -= 4;
         IFF0 = IFF1 = false;
     }
@@ -4672,7 +4663,7 @@ public class Z80 implements Z80debug {
     /**
      * CALL P,nn
      */
-    private final void call_P_nn() {
+    private void call_P_nn() {
         if ((F & SF) == 0) {
             cycle -= 17;
             push(PC + 2);
@@ -4686,7 +4677,7 @@ public class Z80 implements Z80debug {
     /**
      * PUSH AF
      */
-    private final void push_AF() {
+    private void push_AF() {
         cycle -= 11;
         push(AF());
     }
@@ -4694,7 +4685,7 @@ public class Z80 implements Z80debug {
     /**
      * OR A,n
      */
-    private final void or_n() {
+    private void or_n() {
         cycle -= 7;
         A = orA(peekb(PC++), A);
     }
@@ -4702,7 +4693,7 @@ public class Z80 implements Z80debug {
     /**
      * RET M
      */
-    private final void ret_M() {
+    private void ret_M() {
         if ((F & SF) != 0) {
             cycle -= 11;
             PC = pop();
@@ -4714,7 +4705,7 @@ public class Z80 implements Z80debug {
     /**
      * LD SP,HL
      */
-    private final void ld_SP_HL() {
+    private void ld_SP_HL() {
         cycle -= 6;
         SP = HL();
     }
@@ -4722,7 +4713,7 @@ public class Z80 implements Z80debug {
     /**
      * JP M,nn
      */
-    private final void jp_M_nn() {
+    private void jp_M_nn() {
         cycle -= 10;
         if ((F & SF) != 0) {
             PC = peekw(PC);
@@ -4734,7 +4725,7 @@ public class Z80 implements Z80debug {
     /**
      * EI
      */
-    private final void ei() {
+    private void ei() {
         cycle -= 4;
         IFF0 = IFF1 = true;
         goingToirq = true;
@@ -4744,7 +4735,7 @@ public class Z80 implements Z80debug {
     /**
      * CALL M,nn
      */
-    private final void call_M_nn() {
+    private void call_M_nn() {
         if ((F & SF) != 0) {
             cycle -= 17;
             push(PC + 2);
@@ -4758,28 +4749,28 @@ public class Z80 implements Z80debug {
     /**
      * CP A,n
      */
-    private final void cp_n() {
+    private void cp_n() {
         cycle -= 7;
         cpA_8(peekb(PC++), A);
     }
 
-    private final int AF() {
+    private int AF() {
         return (A << 8) | F;
     }
 
-    private final int BC() {
+    private int BC() {
         return (B << 8) | C;
     }
 
-    private final int DE() {
+    private int DE() {
         return (D << 8) | E;
     }
 
-    private final int HL() {
+    private int HL() {
         return (H << 8) | L;
     }
 
-    private final int HLi() {
+    private int HLi() {
         return peekb(HL());
     }
 
@@ -4811,7 +4802,7 @@ public class Z80 implements Z80debug {
         L = nn & 0xff;
     }
 
-    private final void push(int nn) {
+    private void push(int nn) {
         SP = (SP - 2) & 0xffff;
         pokew(SP, nn);
     }
@@ -4822,52 +4813,52 @@ public class Z80 implements Z80debug {
         return nn;
     }
 
-    private final int sign(int nn) {
+    private int sign(int nn) {
         return nn - ((nn & 128) << 1);
     }
 
-    private final void rst(int ea) {
+    private void rst(int ea) {
         cycle -= 11;
         push(PC);
         PC = ea;
     }
 
-    private final void ld_A(int n, int cycles) {
+    private void ld_A(int n, int cycles) {
         cycle -= cycles;
         A = n;
     }
 
-    private final void ld_B(int n, int cycles) {
+    private void ld_B(int n, int cycles) {
         cycle -= cycles;
         B = n;
     }
 
-    private final void ld_C(int n, int cycles) {
+    private void ld_C(int n, int cycles) {
         cycle -= cycles;
         C = n;
     }
 
-    private final void ld_D(int n, int cycles) {
+    private void ld_D(int n, int cycles) {
         cycle -= cycles;
         D = n;
     }
 
-    private final void ld_E(int n, int cycles) {
+    private void ld_E(int n, int cycles) {
         cycle -= cycles;
         E = n;
     }
 
-    private final void ld_H(int n, int cycles) {
+    private void ld_H(int n, int cycles) {
         cycle -= cycles;
         H = n;
     }
 
-    private final void ld_L(int n, int cycles) {
+    private void ld_L(int n, int cycles) {
         cycle -= cycles;
         L = n;
     }
 
-    private final void ld_HLi(int n, int cycles) {
+    private void ld_HLi(int n, int cycles) {
         cycle -= cycles;
         pokeb(HL(), n);
     }
@@ -4875,7 +4866,7 @@ public class Z80 implements Z80debug {
     /**
      * LD (ea),nn
      */
-    private final void ld_ea_ind16(int nn) {
+    private void ld_ea_ind16(int nn) {
         pokew(peekw(PC), nn);
         PC += 2;
     }
@@ -4883,7 +4874,7 @@ public class Z80 implements Z80debug {
     /**
      * LD (ea),n
      */
-    private final void ld_ea_ind8(int n) {
+    private void ld_ea_ind8(int n) {
         pokeb(peekw(PC), n);
         PC += 2;
     }
@@ -4891,7 +4882,7 @@ public class Z80 implements Z80debug {
     /**
      * Add value to Accu and set flags accordingly
      */
-    private final int addA_8(int value, int A) {
+    private int addA_8(int value, int A) {
         tmp = (A + value) & 0xff;
         F = SZHVC_Add[(A << 8) | tmp];
         return tmp;
@@ -4900,7 +4891,7 @@ public class Z80 implements Z80debug {
     /**
      * Add to accu and count cycles
      */
-    private final void add_A(int n, int c) {
+    private void add_A(int n, int c) {
         cycle -= c;
         A = addA_8(n, A);
     }
@@ -4908,7 +4899,7 @@ public class Z80 implements Z80debug {
     /**
      * Add value with carry to Accu and set flags accordingly
      */
-    private final int adcA_8(int value, int A) {
+    private int adcA_8(int value, int A) {
         int c = F & 1;
         int result = (A + value + c) & 0xff;
         F = SZHVC_Add[(c << 16) | (A << 8) | result];
@@ -4918,7 +4909,7 @@ public class Z80 implements Z80debug {
     /**
      * Add to accu and count cycles
      */
-    private final void adc_A(int n, int c) {
+    private void adc_A(int n, int c) {
         cycle -= c;
         A = adcA_8(n, A);
     }
@@ -4926,7 +4917,7 @@ public class Z80 implements Z80debug {
     /**
      * 8 bit increment
      */
-    private final int inc8(int value) {
+    private int inc8(int value) {
         value = (value + 1) & 0xff;
         F = (F & 1) | SZHV_inc[value];
         return value;
@@ -4935,7 +4926,7 @@ public class Z80 implements Z80debug {
     /**
      * 8 bit decrement
      */
-    private final int dec8(int value) {
+    private int dec8(int value) {
         value = (value - 1) & 0xff;
         F = (F & 1) | SZHV_dec[value];
         return (value);
@@ -4944,7 +4935,7 @@ public class Z80 implements Z80debug {
     /**
      * Compare value with Accu
      */
-    private final void cpA_8(int value, int A) {
+    private void cpA_8(int value, int A) {
         int result = (A - value) & 0xff;
         F = SZHVC_sub[(A << 8) | result];
     }
@@ -4952,7 +4943,7 @@ public class Z80 implements Z80debug {
     /**
      * Compare with accu and count cycles
      */
-    private final void cp_A(int n, int c) {
+    private void cp_A(int n, int c) {
         cycle -= c;
         cpA_8(n, A);
     }
@@ -4960,7 +4951,7 @@ public class Z80 implements Z80debug {
     /**
      * Subtract value from Accu and set flags accordingly
      */
-    private final int subA_8(int value, int A) {
+    private int subA_8(int value, int A) {
         int result = (A - value) & 0xff;
         F = SZHVC_sub[(A << 8) | result];
         return result;
@@ -4969,7 +4960,7 @@ public class Z80 implements Z80debug {
     /**
      * Subtract from accu and count cycles
      */
-    private final void sub_A(int n, int c) {
+    private void sub_A(int n, int c) {
         cycle -= c;
         A = subA_8(n, A);
     }
@@ -4977,7 +4968,7 @@ public class Z80 implements Z80debug {
     /**
      * Subtract value with carry from Accu and set flags accordingly
      */
-    private final int sbcA_8(int value, int A) {
+    private int sbcA_8(int value, int A) {
         int c = F & 1;
         int result = (A - value - c) & 0xff;
         F = SZHVC_sub[(c << 16) | (A << 8) | result];
@@ -4987,7 +4978,7 @@ public class Z80 implements Z80debug {
     /**
      * Subtract from accu and count cycles
      */
-    private final void sbc_A(int n, int c) {
+    private void sbc_A(int n, int c) {
         cycle -= c;
         A = sbcA_8(n, A);
     }
@@ -4995,7 +4986,7 @@ public class Z80 implements Z80debug {
     /**
      * 16bit Add
      */
-    private final int add16(int a, int b) {
+    private int add16(int a, int b) {
         int result = a + b;
         F = (F & 0xc4) | (((a ^ result ^ b) >> 8) & 0x10) | ((result >> 16) & 1);
         return (result & 0xffff);
@@ -5004,7 +4995,7 @@ public class Z80 implements Z80debug {
     /**
      * SBC HL,nn
      */
-    private final void sbcHL(int value) {
+    private void sbcHL(int value) {
         int _HLD = HL();
         int result = _HLD - value - (F & 1);
         F = (((_HLD ^ result ^ value) >> 8) & 0x10) | 0x02 | ((result >> 16) & 1) | ((result >> 8) & 0x80) | (((result & 0xffff) != 0) ? 0 : 0x40) | (((value ^ _HLD) & (_HLD ^ result) & 0x8000) >> 13);
@@ -5015,7 +5006,7 @@ public class Z80 implements Z80debug {
     /**
      * ADC HL,nn
      */
-    private final void adcHL(int value) {
+    private void adcHL(int value) {
         int _HLD = HL();
         int result = _HLD + value + (F & 1);
         F = (((_HLD ^ result ^ value) >> 8) & 0x10) | ((result >> 16) & 1) | ((result >> 8) & 0x80) | (((result & 0xffff) != 0) ? 0 : 0x40) | (((value ^ _HLD ^ 0x8000) & (value ^ result) & 0x8000) >> 13);
@@ -5026,7 +5017,7 @@ public class Z80 implements Z80debug {
     /**
      * Shift right	- ok
      */
-    private final int srl(int value) {
+    private int srl(int value) {
         int c = value & 0x01;
         value = (value >> 1) & 0xff;
         F = SZP[value] | c;
@@ -5036,7 +5027,7 @@ public class Z80 implements Z80debug {
     /**
      * Shift left	- ok
      */
-    private final int sla(int value) {
+    private int sla(int value) {
         int c = (value & 0x80) >> 7;
         value = (value << 1) & 0xff;
         F = SZP[value] | c;
@@ -5046,7 +5037,7 @@ public class Z80 implements Z80debug {
     /**
      * Shift left and insert a 1
      */
-    private final int sll(int value) {
+    private int sll(int value) {
         int c = (value & 0x80) >> 7;
         value = ((value << 1) | 1) & 0xff;
         F = SZP[value] | c;
@@ -5056,7 +5047,7 @@ public class Z80 implements Z80debug {
     /**
      * Shift right while keeping the correct sign
      */
-    private final int sra(int value) {
+    private int sra(int value) {
         int c = value & 0x01;
         value = (value >> 1) | (value & 128);
         F = SZP[value] | c;
@@ -5066,7 +5057,7 @@ public class Z80 implements Z80debug {
     /**
      * 9-bit left rotate	- ok
      */
-    private final int rl(int value) {
+    private int rl(int value) {
         int c = (value & 0x80) >> 7;
         value = ((value << 1) | (F & 1)) & 0xff;
         F = SZP[value] | c;
@@ -5076,7 +5067,7 @@ public class Z80 implements Z80debug {
     /**
      * 9-bit left rotate A	- ok
      */
-    private final int rl_A(int A) {
+    private int rl_A(int A) {
         int old = A;
         A = ((A << 1) | (F & 1)) & 0xff;                        // rotate
         F = (F & 0xec) | (old >> 7);
@@ -5086,7 +5077,7 @@ public class Z80 implements Z80debug {
     /**
      * 9-bit right rotate
      */
-    private final int rr(int value) {
+    private int rr(int value) {
         int c = (value & 0x01);
         value = ((value >> 1) | (F << 7)) & 0xff;
         F = SZP[value] | c;
@@ -5096,7 +5087,7 @@ public class Z80 implements Z80debug {
     /**
      * 9-bit right rotate A
      */
-    private final int rr_A(int A) {
+    private int rr_A(int A) {
         int old = A;
         A = ((A >> 1) | (F & 1) << 7) & 0xff;                    // rotate
         F = (F & 0xec) | (old & 1);
@@ -5106,7 +5097,7 @@ public class Z80 implements Z80debug {
     /**
      * left rotate	- ok
      */
-    private final int rlc(int value) {
+    private int rlc(int value) {
         int c = (value & 0x80) >> 7;
         value = ((value << 1) | (value >> 7)) & 0xff;
         F = SZP[value] | c;
@@ -5116,7 +5107,7 @@ public class Z80 implements Z80debug {
     /**
      * left rotate	- ok
      */
-    private final int rlc_A(int A) {
+    private int rlc_A(int A) {
         F = (F & 0xec) | (A >> 7);
         //F = (F & 0xc5) | ((A >> 7) | (A & 0x28));		// including undocumented flags
         return ((A << 1) + ((A & 128) >> 7)) & 0xff;                // rotate
@@ -5125,7 +5116,7 @@ public class Z80 implements Z80debug {
     /**
      * right rotate	- ok
      */
-    private final int rrc(int value) {
+    private int rrc(int value) {
         int c = (value & 0x01);
         value = ((value >> 1) | (value << 7)) & 0xff;
         F = SZP[value] | c;
@@ -5135,7 +5126,7 @@ public class Z80 implements Z80debug {
     /**
      * right rotate	A - ok
      */
-    private final int rrc_A(int A) {
+    private int rrc_A(int A) {
         F = (F & 0xec) | (A & 0x29);
         return ((A >> 1) + ((A & 1) << 7)) & 0xff;                // rotate
     }
@@ -5143,7 +5134,7 @@ public class Z80 implements Z80debug {
     /**
      * RLD
      */
-    private final int rld_A(int A, int H, int L) {
+    private int rld_A(int A, int H, int L) {
         int result = A;
         int t = peekb(HL());
         int q = t;
@@ -5160,7 +5151,7 @@ public class Z80 implements Z80debug {
     /**
      * RRD
      */
-    private final int rrd_A(int A, int H, int L) {
+    private int rrd_A(int A, int H, int L) {
         int result = A;
         int t = peekb(HL());
         int q = t;
@@ -5177,14 +5168,14 @@ public class Z80 implements Z80debug {
     /**
      * test specified bit - ok
      */
-    private final void bit(int bitNumber, int value) {
+    private void bit(int bitNumber, int value) {
         F = (F & 1) | 0x10 | SZ_BIT[value & bitSet[bitNumber]];
     }
 
     /**
      * set specified bit	- ok
      */
-    private final int set(int bitNumber, int value) {
+    private int set(int bitNumber, int value) {
         value = value | bitSet[bitNumber];
         return value;
     }
@@ -5192,7 +5183,7 @@ public class Z80 implements Z80debug {
     /**
      * reset specified bit	- ok
      */
-    private final int res(int bitNumber, int value) {
+    private int res(int bitNumber, int value) {
         value = value & bitRes[bitNumber];
         return value;
     }
@@ -5200,13 +5191,13 @@ public class Z80 implements Z80debug {
     /**
      * AND	- ok
      */
-    private final int andA(int value, int A) {
+    private int andA(int value, int A) {
         A &= value;
         F = SZP[A] | 0x10;
         return A;
     }
 
-    private final void and_A(int n, int c) {
+    private void and_A(int n, int c) {
         cycle -= c;
         A = andA(n, A);
     }
@@ -5214,13 +5205,13 @@ public class Z80 implements Z80debug {
     /**
      * OR	- ok
      */
-    private final int orA(int value, int A) {
+    private int orA(int value, int A) {
         A |= value;
         F = SZP[A];
         return A;
     }
 
-    private final void or_A(int n, int c) {
+    private void or_A(int n, int c) {
         cycle -= c;
         A = orA(n, A);
     }
@@ -5228,13 +5219,13 @@ public class Z80 implements Z80debug {
     /**
      * XOR - ok
      */
-    private final int xorA(int value, int A) {
+    private int xorA(int value, int A) {
         A ^= value;
         F = SZP[A];
         return A;
     }
 
-    private final void xor_A(int n, int c) {
+    private void xor_A(int n, int c) {
         cycle -= c;
         A = xorA(n, A);
     }
@@ -5242,18 +5233,18 @@ public class Z80 implements Z80debug {
     /**
      * OUT
      */
-    private final void out(int port, int value) {
+    private void out(int port, int value) {
         outb(port, value, 0);
     }
 
-    private final void out(int port, int value, int state) {
+    private void out(int port, int value, int state) {
         outb(port, value, state);
     }
 
     /**
      * IN
      */
-    private final int in(int port, int hi) {
+    private int in(int port, int hi) {
         int in = inb(port, hi);
         F = (F & 1) | SZP[A];
         return in;
@@ -5289,19 +5280,19 @@ public class Z80 implements Z80debug {
     /**
      * Undocumented
      */
-    private final int incL16(int value) {
+    private int incL16(int value) {
         return (value & 0xff00) | inc8(value & 0xff);
     }
 
-    private final int decL16(int value) {
+    private int decL16(int value) {
         return (value & 0xff00) | dec8(value & 0xff);
     }
 
-    private final int ldXYH_8(int val16, int val8) {
+    private int ldXYH_8(int val16, int val8) {
         return (val16 & 0xff) | (val8 << 8);
     }
 
-    private final int ldXYL_8(int val16, int val8) {
+    private int ldXYL_8(int val16, int val8) {
         return (val16 & 0xff00) | val8;
     }
 
@@ -5318,9 +5309,7 @@ public class Z80 implements Z80debug {
      */
     private int checkInterrupt(int cycle) {
         if (NMI || (IFF0 && IRQ)) {
-            if (NMI) { // Take NMI
-                //if (!goingToirq) {
-                //if (!debugDisabled) { log("...CPUZ80 takes non maskable interrupt"); }
+            if (NMI) {
                 state_HALT = false;
 
                 IFF1 = IFF0;
@@ -5376,7 +5365,7 @@ public class Z80 implements Z80debug {
     /**
      * Illegal instruction
      */
-    private final void error(int instruction, int address) {
+    private void error(int instruction, int address) {
         System.out.println("CPU error: illegal instruction $" + Integer.toHexString(instruction) + " at $" + Integer.toHexString(address));
         System.exit(1);
     }
@@ -5419,4 +5408,22 @@ public class Z80 implements Z80debug {
         }
     }
 
-}; // end class declaration
+    public String dumpStatus() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("PC: 0x").append(Integer.toHexString(PC));
+        sb.append(", AF: 0x").append(Integer.toHexString(AF()));
+        sb.append(", BC: 0x").append(Integer.toHexString(BC()));
+        sb.append(", DE: 0x").append(Integer.toHexString(DE()));
+        sb.append(", HL: 0x").append(Integer.toHexString(HL()));
+        sb.append(", SP: 0x").append(Integer.toHexString(SP));
+        sb.append(", IX: 0x").append(Integer.toHexString(IX));
+        sb.append(", IY: 0x").append(Integer.toHexString(IY));
+        sb.append(", I: 0x").append(Integer.toHexString(I));
+        sb.append(", R: 0x").append(Integer.toHexString(R));
+        sb.append(", IFF0: ").append(IFF0);
+        sb.append(", IFF1: ").append(IFF1);
+        sb.append(", IM: " ).append(IM);
+
+        return sb.toString();
+    }
+}

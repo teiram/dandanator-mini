@@ -38,6 +38,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
@@ -111,6 +112,7 @@ public class DandanatorController {
     @FXML
     private ProgressBar pokesCurrentSizeBar;
 
+    private boolean emulatorStarted = false;
 
     private int getAvailableSlotCount() {
     	return Constants.SLOT_COUNT;
@@ -127,7 +129,7 @@ public class DandanatorController {
 
         try {
             spectrum48kInstance = new EmulatorInstance();
-            spectrum48kInstance.start(currentScreenshot);
+            //spectrum48kInstance.start(currentScreenshot);
         } catch (Exception e) {
             throw new RuntimeException("Initializing emulator", e);
         }
@@ -174,9 +176,10 @@ public class DandanatorController {
     private void setupContext() {
         context = new Context();
         context.setConfiguration(Configuration.getInstance());
-        context.setGameList(FXCollections.observableArrayList(game -> {
-            return new Observable[] {game.nameProperty(), game.romProperty(), game.screenProperty()};
-        }));
+        context.setGameList(FXCollections.observableArrayList(game ->
+                new Observable[] {game.nameProperty(),
+                        game.romProperty(),
+                        game.screenProperty()}));
     }
 	@FXML
 	private void initialize() throws IOException {
@@ -401,6 +404,22 @@ public class DandanatorController {
                    selected.getValue().getParent().removeChild(selected.getValue());
                }
            }
+        });
+
+
+        currentScreenshot.setOnMouseClicked(e -> {
+            if (!emulatorStarted) {
+                emulatorStarted = true;
+                spectrum48kInstance.start(currentScreenshot);
+                currentScreenshot.getParent().setStyle("-fx-background-color: green; -fx-background-radius: 5;");
+            }
+            if (spectrum48kInstance.isRunning()) {
+                spectrum48kInstance.pause();
+                currentScreenshot.getParent().setStyle("-fx-background-color: #a0a0a0; -fx-background-radius: 5;");
+            } else {
+                spectrum48kInstance.resume();
+                currentScreenshot.getParent().setStyle("-fx-background-color: green; -fx-background-radius: 5;");
+            }
         });
 
         removeAllGamePokesButton.setOnAction(c -> {

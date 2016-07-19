@@ -2,20 +2,19 @@ package com.grelobites.dandanator.util.emulator.zxspectrum.spectrum;
 
 
 import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
-import com.grelobites.dandanator.util.emulator.zxspectrum.OutPort;
+import com.grelobites.dandanator.util.emulator.zxspectrum.OutputPort;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Peripheral;
-import com.grelobites.dandanator.util.emulator.zxspectrum.Stepper;
 
-public class Speaker implements Peripheral, OutPort {
+public class Speaker implements Peripheral, OutputPort {
     private Audio audio = null;
     private boolean beeper = false;
     private int beepStates = 0;
     private Z80VirtualMachine cpu;
 
-    public void resetCPU(Z80VirtualMachine cpu) {
+    public void onCpuReset(Z80VirtualMachine cpu) {
     }
 
-    public void disconnectCPU(Z80VirtualMachine cpu) {
+    public void unbind(Z80VirtualMachine cpu) {
     }
 
     public void outb(int port, int value, int tstates) {
@@ -34,7 +33,7 @@ public class Speaker implements Peripheral, OutPort {
         }
     }
 
-    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
+    public void bind(Z80VirtualMachine cpu) throws Exception {
         this.cpu = cpu;
 
         // Sound
@@ -46,13 +45,11 @@ public class Speaker implements Peripheral, OutPort {
 
             cpu.addOutPort(254, this);
 
-            cpu.addStepper(new Stepper() {
-                public void step(Z80VirtualMachine cpu) {
-                    if (audio != null) {
-                        int t = cpu.getCycle();
-                        audio.pulse(t - beepStates, false);
-                        beepStates = t;
-                    }
+            cpu.addStepper(c -> {
+                if (audio != null) {
+                    int t = c.getCycle();
+                    audio.pulse(t - beepStates, false);
+                    beepStates = t;
                 }
             });
         }

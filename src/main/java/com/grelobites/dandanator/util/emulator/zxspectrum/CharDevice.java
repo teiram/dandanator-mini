@@ -10,7 +10,7 @@ import java.io.OutputStream;
  * specified.
  * <p>
  */
-public class CharDevice implements Peripheral, OutPort {
+public class CharDevice implements Peripheral, OutputPort {
     private int port;
     private String device = null;
     private OutputStream os = null;
@@ -38,10 +38,10 @@ public class CharDevice implements Peripheral, OutPort {
         this.port = port;
     }
 
-    public void resetCPU(Z80VirtualMachine cpu) {
+    public void onCpuReset(Z80VirtualMachine cpu) {
     }
 
-    public void disconnectCPU(Z80VirtualMachine cpu) {
+    public void unbind(Z80VirtualMachine cpu) {
         // Close the output stream if open
         if (os != null) {
             try {
@@ -52,7 +52,7 @@ public class CharDevice implements Peripheral, OutPort {
         }
     }
 
-    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
+    public void bind(Z80VirtualMachine cpu) throws Exception {
         if (port == 0)
             throw new Exception("CharDevice : no port configured");
         if (device == null)

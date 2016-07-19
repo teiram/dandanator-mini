@@ -1,7 +1,8 @@
 package com.grelobites.dandanator.util.emulator.zxspectrum.spectrum;
 
+import com.grelobites.dandanator.util.emulator.zxspectrum.Z80;
 import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
-import com.grelobites.dandanator.util.emulator.zxspectrum.Snapshot;
+import com.grelobites.dandanator.util.emulator.zxspectrum.SnapshotLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,59 +10,32 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-/**
- * $Id: ZXSnapshot.java 330 2010-09-14 10:29:28Z mviara $
- * <p>
- * Sinclair spectrum emulator
- * <p>
- * Snapshot loader.
- * <p>
- * $Log: ZXSnapshot.java,v $
- * Revision 1.2  2004/07/18 11:22:29  mviara
- * Better 128K emulator.
- * <p>
- * Revision 1.1  2004/06/20 16:25:58  mviara
- * Split spectrum emulator in more files.
- * Added partial support for 128K.
- */
-public class ZXSnapshot implements Snapshot {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ZXSnapshot.class);
+public class ZXSnapshotLoader implements SnapshotLoader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZXSnapshotLoader.class);
     /**
      * Memory map
      */
-    //public static final int ROM_MEMORY_END		= 0x3FFF;
     public static final int RAM_MEMORY_START = 0x4000;
-    //	public static final int SCREEN_MEMORY_SIZE	= 0x1800;
     public static final int SCREEN_MEMORY_START = 0x4000;
     public static final int SCREEN_MEMORY_END = 0x57FF;
     public static final int SCREEN_ATTRIBUTE_START = 0x5800;
     public static final int SCREEN_ATTRIBUTE_END = 0x5AFF;
-    //public static final int SCREEN_ATTRIBUTE_SIZE = 0x0300;
 
-
-    // Connected CPU
     protected Z80VirtualMachine cpu;
 
 
-    public ZXSnapshot() {
+    public void onCpuReset(Z80VirtualMachine cpu) throws Exception {
     }
 
-    public void resetCPU(Z80VirtualMachine cpu) throws Exception {
-    }
-
-    public void disconnectCPU(Z80VirtualMachine cpu) {
+    public void unbind(Z80VirtualMachine cpu) {
     }
 
 
-    public void connectCPU(Z80VirtualMachine cpu) throws Exception {
+    public void bind(Z80VirtualMachine cpu) throws Exception {
         this.cpu = cpu;
     }
 
-
-    /**
-     * Load snap shot in memory
-     */
-    public void loadSnapshot(Z80VirtualMachine cpu, String name) {
+    public void load(Z80VirtualMachine cpu, String name) {
         try {
             File file = new File(name);
             int snapshotLength = (int) file.length();
@@ -96,6 +70,7 @@ public class ZXSnapshot implements Snapshot {
     }
 
     public void loadSNA(String name, InputStream is) throws Exception {
+        LOGGER.debug("Before loading SNA. CPU Status: " + cpu.dumpStatus());
         LOGGER.debug("Load SNA " + name);
         int header[] = new int[27];
 
@@ -119,11 +94,7 @@ public class ZXSnapshot implements Snapshot {
         cpu.IY(header[15] | (header[16] << 8));
         cpu.IX(header[17] | (header[18] << 8));
 
-        if ((header[19] & 0x04) != 0) {
-            cpu.IFF1 = true;
-        } else {
-            cpu.IFF1 = false;
-        }
+        cpu.IFF1 = (header[19] & 0x04) != 0;
 
         cpu.R(header[20]);
 
@@ -132,23 +103,23 @@ public class ZXSnapshot implements Snapshot {
 
         switch (header[25]) {
             case 0:
-                cpu.IM(cpu.IM0);
+                cpu.IM(Z80.IM0);
                 break;
             case 1:
-                cpu.IM(cpu.IM1);
+                cpu.IM(Z80.IM1);
                 break;
             default:
-                cpu.IM(cpu.IM2);
+                cpu.IM(Z80.IM2);
                 break;
         }
 
         cpu.outb(254, header[26], 0); // border
 
 		/* Emulate RETN to start */
+        LOGGER.debug("After loading SNA. CPU Status: " + cpu.dumpStatus());
         cpu.IFF0 = cpu.IFF1;
-        //REFRESH( 2 );
         cpu.poppc();
-
+        LOGGER.debug("After popping PC. CPU Status: " + cpu.dumpStatus());
     }
 
 
@@ -302,12 +273,6 @@ public class ZXSnapshot implements Snapshot {
 		 */
         int type = header[2];
 
-		
-		/*
-		if ( type > 1 ) {
-			throw new Exception( "Z80 (v201): unsupported type " + type );
-		}
-*/
         int data[] = new int[bytesLeft];
         readBytes(is, data, bytesLeft);
 
@@ -456,10 +421,4 @@ public class ZXSnapshot implements Snapshot {
 
         return i;
     }
-
-
-    public String toString() {
-        return "Spectrum Snapshot $Revision: 330 $";
-    }
-
 }
