@@ -76,7 +76,7 @@ public class SNAHeader {
     }
 
     public int getRegisterValue(int offset) {
-        return data[offset] & 0xFF |  (data[offset + 1] << 8);
+        return data[offset] & 0xFF |  ((data[offset + 1] << 8) & 0xFF00);
     }
 
     public void setWord(int offset, byte[] value) {
