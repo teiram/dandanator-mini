@@ -69,7 +69,8 @@ public class GameUtil {
     public static int getGamePokeSizeUsage(Game game) {
         return game.getTrainerList().getChildren().stream()
                 .flatMapToInt(g -> IntStream.builder()
-                        .add(Constants.GAMENAME_SIZE)
+                        .add(Constants.POKE_NAME_SIZE)
+                        .add(1) //Number of pokes byte
                         .add(g.getChildren().size() * Constants.POKE_ENTRY_SIZE)
                         .build()).sum();
     }
