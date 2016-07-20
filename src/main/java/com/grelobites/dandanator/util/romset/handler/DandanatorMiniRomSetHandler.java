@@ -109,7 +109,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
         if (zoneSize == requiredSize) {
             os.write(asLittleEndianWord(Constants.SPECTRUM_SCREEN_OFFSET
-                    + attr2pixelOffset(i - requiredSize - 1)));
+                    + attr2pixelOffset(i - requiredSize )));
         } else {
             //Use last screen pixels
             os.write(asLittleEndianWord(Constants.SPECTRUM_SCREEN_OFFSET
