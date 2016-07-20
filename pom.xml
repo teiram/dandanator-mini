@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.grelobites</groupId>
 	<artifactId>dandanator-mini</artifactId>
-	<version>4.3</version>
+	<version>4.4</version>
 	<name>Dandanator Mini ROM Generator</name>
 
 	<properties>
