@@ -34,7 +34,7 @@ This means that probably an OpenJDK VM won't work and you would need a Oracle JV
 
 A jar with all the dependencies is generated and can be executed directly with the following invocation:
 
-	java -jar target/dandanator-mini-4.0-jar-with-dependencies.jar
+	java -jar target/dandanator-mini-4.4-jar-with-dependencies.jar
 	
 In case you've generated a native package, just execute the binary you'll find in the application folder (or the generated app in OSX)
  
