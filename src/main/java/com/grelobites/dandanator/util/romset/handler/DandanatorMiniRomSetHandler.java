@@ -56,7 +56,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     private static void dumpGameSnaHeader(OutputStream os, Game game) throws IOException {
-        os.write(Arrays.copyOfRange(game.getData(), 0, Constants.SNA_HEADER_SIZE ));
+        os.write(Arrays.copyOfRange(game.getData(), 0, Constants.SNA_HEADER_SIZE));
     }
 
     private static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
