@@ -4,6 +4,7 @@ import com.grelobites.dandanator.util.LocaleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -17,7 +18,7 @@ public class Constants {
     private static final String DANDANATOR_ROM_RESOURCE = "dandanator-mini.rom";
     private static final String DANDANATOR_PIC_FW_RESOURCE = "dandanator-pic-fw.bin";
     private static final String EXTRA_ROM_RESOURCE = "test.rom";
-    private static final String DEFAULT_VERSION = "4.3";
+    private static final String DEFAULT_VERSION = "4.4";
 
 	public static final int SNA_HEADER_SIZE = 27;
 	public static final int SPECTRUM_SCREEN_WIDTH = 256;
@@ -67,11 +68,8 @@ public class Constants {
 
     private static byte[] fromInputStream(InputStream is, int size) throws IOException {
         byte[] result = new byte[size];
-        int len = is.read(result, 0, size);
-        if (len != size) {
-            LOGGER.warn("Unexpected number of bytes read from stream. Read: " + len
-            + ", expected: " + size);
-        }
+        DataInputStream dis = new DataInputStream(is);
+        dis.readFully(result);
         return result;
     }
 
