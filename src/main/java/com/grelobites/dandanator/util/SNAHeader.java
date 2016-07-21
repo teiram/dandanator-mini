@@ -4,7 +4,6 @@ import com.grelobites.dandanator.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -76,7 +75,7 @@ public class SNAHeader {
     }
 
     public int getRegisterValue(int offset) {
-        return data[offset] & 0xFF |  (data[offset + 1] << 8);
+        return data[offset] & 0xFF |  ((data[offset + 1] << 8) & 0xFF00);
     }
 
     public void setWord(int offset, byte[] value) {
@@ -113,5 +112,16 @@ public class SNAHeader {
         return getByte(BORDER_COLOR) < 8 &&
                 getRegisterValue(REG_SP) >= 16384 &&
                 VALID_INTERRUPT_MODES.contains(getValue(INTERRUPT_MODE));
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SNAHeader [");
+        for (byte value: data) {
+            sb.append("0x").append(String.format("%02X", value)).append(" ");
+        }
+        sb.append(" ]");
+        return sb.toString();
     }
 }

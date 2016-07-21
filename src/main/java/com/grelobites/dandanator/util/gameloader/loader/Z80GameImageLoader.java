@@ -82,7 +82,7 @@ public class Z80GameImageLoader implements GameImageLoader {
         header.setWord(SNAHeader.REG_SP, (byte)(sp & 0xff), (byte) ((sp >> 8) & 0xff));
         header.setByte(SNAHeader.REG_I, (byte) is.read());
         LOGGER.debug(String.format("PC: %04x, SP: %04x", pc, sp));
-        byte r = (byte) (is.read() & 0xEF);
+        byte r = (byte) (is.read() & 0x7F);
         byte info = (byte) is.read();
         LOGGER.debug("Info byte: " + info);
         if (info == (byte) 0xff) info = 1; //Compatibility issue
@@ -96,8 +96,8 @@ public class Z80GameImageLoader implements GameImageLoader {
         header.setWord(SNAHeader.REG_DE_alt, (byte) is.read(), (byte) is.read());
         header.setWord(SNAHeader.REG_HL_alt, (byte) is.read(), (byte) is.read());
         header.setWordSwapped(SNAHeader.REG_AF_alt, (byte) is.read(), (byte) is.read());
-        header.setWord(SNAHeader.REG_IX, (byte) is.read(), (byte) is.read());
         header.setWord(SNAHeader.REG_IY, (byte) is.read(), (byte) is.read());
+        header.setWord(SNAHeader.REG_IX, (byte) is.read(), (byte) is.read());
 
         header.setByte(SNAHeader.INTERRUPT_ENABLE, (byte) (is.read() == 0 ? 0x0 : 0xff));
         is.read(); //Skip IFF2 byte
@@ -120,6 +120,7 @@ public class Z80GameImageLoader implements GameImageLoader {
         if (!header.validate()) {
             throw new IllegalArgumentException("Header doesn't pass validations");
         }
+        LOGGER.debug("Loaded Z80 game. SNAHeader: " + header);
         byte[] gameData = new byte[GameImageLoader.IMAGE_SIZE];
         System.arraycopy(header.asByteArray(), 0, gameData, 0, Constants.SNA_HEADER_SIZE);
         System.arraycopy(data, 0, gameData, Constants.SNA_HEADER_SIZE, GAME_IMAGE_SIZE);

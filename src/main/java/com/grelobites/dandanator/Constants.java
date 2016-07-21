@@ -4,6 +4,7 @@ import com.grelobites.dandanator.util.LocaleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -31,6 +32,7 @@ public class Constants {
     public static final int SLOT_COUNT = 10;
     public static final int GAMENAME_SIZE = 33;
     public static final int POKE_ENTRY_SIZE = 3;
+    public static final int POKE_NAME_SIZE = 24;
     public static final int POKE_ZONE_SIZE = 3200;
     public static final int POKE_HEADER_SIZE = 3 * SLOT_COUNT;
 
@@ -67,11 +69,8 @@ public class Constants {
 
     private static byte[] fromInputStream(InputStream is, int size) throws IOException {
         byte[] result = new byte[size];
-        int len = is.read(result, 0, size);
-        if (len != size) {
-            LOGGER.warn("Unexpected number of bytes read from stream. Read: " + len
-            + ", expected: " + size);
-        }
+        DataInputStream dis = new DataInputStream(is);
+        dis.readFully(result);
         return result;
     }
 
