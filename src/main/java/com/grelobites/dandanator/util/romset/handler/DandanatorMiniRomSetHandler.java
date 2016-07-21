@@ -39,6 +39,9 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     private static final int POKE_SPACE_SIZE = 3230;
     private static final int RESERVED_GAMETABLE_SIZE = 64;
 
+    private static final int SCREEN_THIRD_PIXEL_SIZE = 2048;
+    private static final int SCREEN_THIRD_ATTRINFO_SIZE = 256;
+
     private static byte[] asNullTerminatedByteArray(String name, int arrayLength) {
         String trimmedName =
                 name.length() < arrayLength ?
@@ -53,7 +56,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         String gameName = String.format("%d%c %s", (index + 1) % Constants.SLOT_COUNT,
                 game.getRom() ? 'r' : '.',
                 game.getName());
-        os.write(asNullTerminatedByteArray(gameName, 33));
+        os.write(asNullTerminatedByteArray(gameName, Constants.GAMENAME_SIZE));
     }
 
     private static void dumpGameSnaHeader(OutputStream os, Game game) throws IOException {
@@ -72,10 +75,13 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     private void dumpScreenTexts(OutputStream os, Configuration configuration) throws IOException {
-        os.write(asNullTerminatedByteArray(String.format("R. %s", configuration.getExtraRomMessage()), 33));
-        os.write(asNullTerminatedByteArray(String.format("P. %s", configuration.getTogglePokesMessage()), 33));
-        os.write(asNullTerminatedByteArray(String.format("0. %s", configuration.getLaunchGameMessage()), 33));
-        os.write(asNullTerminatedByteArray(configuration.getSelectPokesMessage(), 33));
+        os.write(asNullTerminatedByteArray(String.format("R. %s", configuration.getExtraRomMessage()),
+                Constants.GAMENAME_SIZE));
+        os.write(asNullTerminatedByteArray(String.format("P. %s", configuration.getTogglePokesMessage()),
+                Constants.GAMENAME_SIZE));
+        os.write(asNullTerminatedByteArray(String.format("0. %s", configuration.getLaunchGameMessage()),
+                Constants.GAMENAME_SIZE));
+        os.write(asNullTerminatedByteArray(configuration.getSelectPokesMessage(), Constants.GAMENAME_SIZE));
     }
 
 
@@ -190,9 +196,9 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             os.write(configuration.getCharSet(), 0, Constants.CHARSET_SIZE);
             LOGGER.debug("Dumped charset. Offset: " + os.size());
 
-            os.write(Arrays.copyOfRange(configuration.getBackgroundImage(), 0, 2048));
+            os.write(Arrays.copyOfRange(configuration.getBackgroundImage(), 0, SCREEN_THIRD_PIXEL_SIZE));
             os.write(Arrays.copyOfRange(configuration.getBackgroundImage(), Constants.SPECTRUM_SCREEN_SIZE,
-                    Constants.SPECTRUM_SCREEN_SIZE + 256));
+                    Constants.SPECTRUM_SCREEN_SIZE + SCREEN_THIRD_ATTRINFO_SIZE));
             LOGGER.debug("Dumped screen. Offset: " + os.size());
 
             dumpScreenTexts(os, configuration);
@@ -268,14 +274,14 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
             byte[] charSet = is.getAsByteArray(Constants.CHARSET_SIZE);
             LOGGER.debug("After reading the charset. Offset " + is.position());
-            byte[] screen = is.getAsByteArray(2048);
-            byte[] attributes = is.getAsByteArray(256);
+            byte[] screen = is.getAsByteArray(SCREEN_THIRD_PIXEL_SIZE);
+            byte[] attributes = is.getAsByteArray(SCREEN_THIRD_ATTRINFO_SIZE);
             LOGGER.debug("After reading the screen. Offset " + is.position());
 
-            String extraRomMessage = is.getNullTerminatedString(33).substring(3);
-            String togglePokesMessage = is.getNullTerminatedString(33).substring(3);
-            String launchGameMessage = is.getNullTerminatedString(33).substring(3);
-            String selectPokesMessage = is.getNullTerminatedString(33);
+            String extraRomMessage = is.getNullTerminatedString(Constants.GAMENAME_SIZE).substring(3);
+            String togglePokesMessage = is.getNullTerminatedString(Constants.GAMENAME_SIZE).substring(3);
+            String launchGameMessage = is.getNullTerminatedString(Constants.GAMENAME_SIZE).substring(3);
+            String selectPokesMessage = is.getNullTerminatedString(Constants.GAMENAME_SIZE);
 
             is.skip(1);     //Game count
             LOGGER.debug("Skipped head. Position is " + is.position());
