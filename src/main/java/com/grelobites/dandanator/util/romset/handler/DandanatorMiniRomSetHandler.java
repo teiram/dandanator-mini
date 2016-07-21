@@ -107,15 +107,16 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             i++;
         } while (i < Constants.SPECTRUM_COLORINFO_SIZE && zoneSize < requiredSize);
 
+        int ramAddress = Constants.SPECTRUM_SCREEN_OFFSET;
         if (zoneSize == requiredSize) {
-            os.write(asLittleEndianWord(Constants.SPECTRUM_SCREEN_OFFSET
-                    + attr2pixelOffset(i - requiredSize )));
+            ramAddress += attr2pixelOffset(i - requiredSize);
         } else {
             //Use last screen pixels
-            os.write(asLittleEndianWord(Constants.SPECTRUM_SCREEN_OFFSET
-                    + Constants.SPECTRUM_SCREEN_SIZE - requiredSize));
+            LOGGER.debug("Using last screen pixels for RAM Address");
+            ramAddress += Constants.SPECTRUM_SCREEN_SIZE - requiredSize;
         }
-
+        os.write(asLittleEndianWord(ramAddress));
+        LOGGER.debug(String.format("RAM Address calculated as 0x%04X", ramAddress));
     }
 
     private static void dumpGameSavedChunk(OutputStream os, Game game) throws IOException {
