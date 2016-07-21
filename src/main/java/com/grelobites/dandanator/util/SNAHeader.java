@@ -109,8 +109,7 @@ public class SNAHeader {
         LOGGER.debug("Border Color: " + getByte(BORDER_COLOR)
                 + ", SP: " + getRegisterValue(REG_SP)
                 + ", IM: " + getByte(INTERRUPT_MODE));
-        return getByte(BORDER_COLOR) < 8 &&
-                getRegisterValue(REG_SP) >= 16384 &&
+        return getRegisterValue(REG_SP) >= 16384 &&
                 VALID_INTERRUPT_MODES.contains(getValue(INTERRUPT_MODE));
     }
 
