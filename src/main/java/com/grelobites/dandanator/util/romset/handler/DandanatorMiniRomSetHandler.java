@@ -57,7 +57,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     private static void dumpGameSnaHeader(OutputStream os, Game game) throws IOException {
-        os.write(Arrays.copyOfRange(game.getData(), 0, Constants.SNA_HEADER_SIZE ));
+        os.write(Arrays.copyOfRange(game.getData(), 0, Constants.SNA_HEADER_SIZE));
     }
 
     private static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
@@ -108,15 +108,16 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             i++;
         } while (i < Constants.SPECTRUM_COLORINFO_SIZE && zoneSize < requiredSize);
 
+        int ramAddress = Constants.SPECTRUM_SCREEN_OFFSET;
         if (zoneSize == requiredSize) {
-            os.write(asLittleEndianWord(Constants.SPECTRUM_SCREEN_OFFSET
-                    + attr2pixelOffset(i - requiredSize - 1)));
+            ramAddress += attr2pixelOffset(i - requiredSize);
         } else {
             //Use last screen pixels
-            os.write(asLittleEndianWord(Constants.SPECTRUM_SCREEN_OFFSET
-                    + Constants.SPECTRUM_SCREEN_SIZE - requiredSize));
+            LOGGER.debug("Using last screen pixels for RAM Address");
+            ramAddress += Constants.SPECTRUM_SCREEN_SIZE - requiredSize;
         }
-
+        os.write(asLittleEndianWord(ramAddress));
+        LOGGER.debug(String.format("RAM Address calculated as 0x%04X", ramAddress));
     }
 
     private static void dumpGameSavedChunk(OutputStream os, Game game) throws IOException {
