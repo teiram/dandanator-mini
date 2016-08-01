@@ -7,6 +7,10 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * Java port of the ZX7 Backwards compressor v1.01 by Einar Saukas/Antonio Villena, 28 Dec 2013
+ * Ported to Java by Mad3001 28Jul2016
+ */
 public class Zx7bOutputStream extends FilterOutputStream {
 
     private static final Integer MAX_OFFSET = 2176; // Range 1..2176

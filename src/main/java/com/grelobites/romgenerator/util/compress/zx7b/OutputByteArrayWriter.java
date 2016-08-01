@@ -1,7 +1,5 @@
 package com.grelobites.romgenerator.util.compress.zx7b;
 
-import com.grelobites.romgenerator.util.Util;
-
 public class OutputByteArrayWriter {
     private byte[] output;
     private int bitMask;
@@ -33,10 +31,6 @@ public class OutputByteArrayWriter {
             output[bitIndex] |= bitMask;
         }
         bitMask >>= 1;
-    }
-
-    public byte[] reversed() {
-        return Util.reverseByteArray(output);
     }
 
     public byte[] asByteArray() {
