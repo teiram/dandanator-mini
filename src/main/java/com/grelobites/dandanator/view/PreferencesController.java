@@ -176,7 +176,7 @@ public class PreferencesController {
 
     private boolean isDandanatorRomValid(File dandanatorRomFile) {
         return dandanatorRomFile.canRead() && dandanatorRomFile.isFile()
-                && dandanatorRomFile.getTotalSpace() == Constants.BASEROM_SIZE;
+                && dandanatorRomFile.length() == Constants.BASEROM_SIZE;
     }
 
     private void updateDandanatorRom(File dandanatorRom) {
@@ -189,7 +189,7 @@ public class PreferencesController {
 
     private boolean isDandanatorPicFirmwareValid(File dandanatorPicFile) {
         return dandanatorPicFile.canRead() && dandanatorPicFile.isFile()
-                && dandanatorPicFile.getTotalSpace() == Constants.DANDANATOR_PIC_FW_SIZE;
+                && dandanatorPicFile.length() == Constants.DANDANATOR_PIC_FW_SIZE;
     }
 
     private void updateDandanatorPicFirmware(File dandanatorPicFirmware) {
