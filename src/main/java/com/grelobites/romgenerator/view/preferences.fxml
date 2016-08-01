@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PreferencesController">
+   <children>
+      <ImageView fx:id="backgroundImageView" fitHeight="192.0" fitWidth="256.0" layoutX="7.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true" />
+      <Label alignment="CENTER" layoutX="2.0" layoutY="212.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="28.0" prefWidth="116.0" text="%backgroundImageMessage" />
+      <Button fx:id="changeBackgroundImageButton" layoutX="120.0" layoutY="213.0" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" text="%changeButton" />
+      <Button fx:id="resetBackgroundImageButton" layoutX="197.0" layoutY="213.0" mnemonicParsing="false" text="%resetButton" />
+      <ImageView fx:id="charSetImageView" fitHeight="64.0" fitWidth="256.0" layoutX="275.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true" />
+      <Label alignment="CENTER" contentDisplay="CENTER" layoutX="261.0" layoutY="99.0" prefHeight="28.0" prefWidth="135.0" text="%charSetMessage" />
+      <Button fx:id="changeCharSetButton" alignment="CENTER" layoutX="397.0" layoutY="99.0" mnemonicParsing="false" text="%changeButton" />
+      <Button fx:id="resetCharSetButton" layoutX="470.0" layoutY="99.0" mnemonicParsing="false" text="%resetButton" />
+      <Label layoutX="275.0" layoutY="172.0" prefHeight="28.0" text="%romSetTypeMessage" />
+      <ComboBox fx:id="romSetModeCombo" layoutX="370.0" layoutY="173.0" prefHeight="27.0" prefWidth="160.0" />
+   </children>
+</AnchorPane>
+
