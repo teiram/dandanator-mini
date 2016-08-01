@@ -1,6 +1,8 @@
 package com.grelobites.romgenerator.util.compress.zx7b;
 
 import com.grelobites.romgenerator.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
@@ -12,6 +14,7 @@ import java.io.OutputStream;
  * Ported to Java by Mad3001 28Jul2016
  */
 public class Zx7bOutputStream extends FilterOutputStream {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Zx7bOutputStream.class);
 
     private static final Integer MAX_OFFSET = 2176; // Range 1..2176
     private static final Integer MAX_LEN = 65536;   // Range 2..65536
@@ -40,6 +43,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
 
     @Override
     public void flush() throws IOException {
+        inputData.flush();
         byte[] data = Util.reverseByteArray(inputData.toByteArray());
         Optimal[] optimals = optimize(data);
         byte[] result = compress(optimals, data);
@@ -47,11 +51,10 @@ public class Zx7bOutputStream extends FilterOutputStream {
     }
 
     private static Optimal[] optimize(byte[] data) {
+        LOGGER.debug("Optimizing for input size " + data.length);
         int matchIndex;
         int offset;
-        int len;
-        int best_len;
-        int bits;    //ORIGINAL LINE: size_t bits;
+        int bits;
         int inputSize = data.length;
 
         int min[] = new int[MAX_OFFSET + 1];
@@ -84,8 +87,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
                     data[i - 1]) << 8 | (data[i] < 0 ?
                     data[i] + 256 :
                     data[i]);
-
-            best_len = 1;
+            int best_len = 1;
             for (Match match = matches[matchIndex];
                  match.next != null && best_len < MAX_LEN;
                  match = match.next) {
@@ -94,6 +96,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
                     match.next = null;
                     break;
                 }
+                int len = 0;
                 for (len = 2; len <= MAX_LEN; len++) {
                     if ((len > best_len) && (len & 0xff) != 0) {
                         best_len = len;
@@ -126,7 +129,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
     public byte[] compress(Optimal[] optimals, byte[] data) throws IOException {
         int inputSize = data.length;
         int outputSize = (optimals[inputSize - 1].bits + 16 + 7) / 8;
-
+        LOGGER.debug("Compressed size will be " + outputSize);
         OutputByteArrayWriter output = new OutputByteArrayWriter(outputSize);
 
         int offset;
@@ -188,8 +191,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
     }
 
     public static int eliasGammaBits(int value) {
-        int bits;
-        bits = 1;
+        int bits = 1;
         while (value > 1) {
             bits += 2;
             value >>= 1;
