@@ -2,7 +2,6 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.util.romsethandler.RomSetType;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.slf4j.Logger;
@@ -23,9 +22,6 @@ public class DandanatorMiniConfiguration {
     private static final String LAUNCHGAMEMESSAGE_PROPERTY = "launchGameMessage";
     private static final String SELECTPOKESMESSAGE_PROPERTY = "selectPokesMessage";
     private static final String DANDANATORPICFIRMWAREPATH_PROPERTY = "dandanatorPicFirmwarePath";
-
-
-    private static final String DEFAULT_MODE = RomSetType.DANDANATOR_MINI.name();
 
     private StringProperty dandanatorRomPath;
     private StringProperty extraRomPath;
@@ -277,6 +273,4 @@ public class DandanatorMiniConfiguration {
                 p.get(DANDANATORPICFIRMWAREPATH_PROPERTY, null));
         return configuration;
     }
-
 }
-
