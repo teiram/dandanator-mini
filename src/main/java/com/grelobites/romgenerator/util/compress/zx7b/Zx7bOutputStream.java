@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Java port of the ZX7 Backwards compressor v1.01 by Einar Saukas/Antonio Villena, 28 Dec 2013
+ * ZX7 Backwards compressor v1.01 by Einar Saukas/Antonio Villena, 28 Dec 2013
  * Ported to Java by Mad3001 28Jul2016
  */
 public class Zx7bOutputStream extends FilterOutputStream {
@@ -52,9 +52,6 @@ public class Zx7bOutputStream extends FilterOutputStream {
 
     private static Optimal[] optimize(byte[] data) {
         LOGGER.debug("Optimizing for input size " + data.length);
-        int matchIndex;
-        int offset;
-        int bits;
         int inputSize = data.length;
 
         int min[] = new int[MAX_OFFSET + 1];
@@ -63,26 +60,23 @@ public class Zx7bOutputStream extends FilterOutputStream {
         Match[] matches = new Match[256 * 256];
         Match[] matchSlots = new Match[inputSize];
 
-        /* first byte is always literal */
-        //Initialize arrays
         for (int i = 0; i < optimals.length; i++) {
             optimals[i] = new Optimal();
         }
-
         for (int i = 0; i < matches.length; i++) {
             matches[i] = new Match();
         }
-
         for (int i = 0; i < matchSlots.length; i++) {
             matchSlots[i] = new Match();
         }
 
+        //First byte is always literal
         optimals[0].bits = 8;
 
-		/* process remaining bytes */
+		//Process remaining bytes
         for (int i = 1; i < inputSize; i++) {
             optimals[i].bits = optimals[i - 1].bits + 9;
-            matchIndex = (data[i - 1] < 0 ?
+            int matchIndex = (data[i - 1] < 0 ?
                     data[i - 1] + 256 :
                     data[i - 1]) << 8 | (data[i] < 0 ?
                     data[i] + 256 :
@@ -91,16 +85,16 @@ public class Zx7bOutputStream extends FilterOutputStream {
             for (Match match = matches[matchIndex];
                  match.next != null && best_len < MAX_LEN;
                  match = match.next) {
-                offset = i - match.next.index;
+                int offset = i - match.next.index;
                 if (offset > MAX_OFFSET) {
                     match.next = null;
                     break;
                 }
-                int len = 0;
+                int len;
                 for (len = 2; len <= MAX_LEN; len++) {
                     if ((len > best_len) && (len & 0xff) != 0) {
                         best_len = len;
-                        bits = optimals[i - len].bits + bitsCount(offset, len);
+                        int bits = optimals[i - len].bits + bitsCount(offset, len);
                         if (optimals[i].bits > bits) {
                             optimals[i].bits = bits;
                             optimals[i].offset = offset;
