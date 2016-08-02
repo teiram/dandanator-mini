@@ -396,10 +396,10 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             dandanatorMiniConfiguration.setExtraRom(extraRom);
             dandanatorMiniConfiguration.setExtraRomPath(Constants.ROMSET_PROVIDED);
 
-            dandanatorMiniConfiguration.setExtraRomMessage(extraRomMessage, false);
-            dandanatorMiniConfiguration.setTogglePokesMessage(togglePokesMessage, false);
-            dandanatorMiniConfiguration.setLaunchGameMessage(launchGameMessage, false);
-            dandanatorMiniConfiguration.setSelectPokesMessage(selectPokesMessage, false);
+            dandanatorMiniConfiguration.setExtraRomMessage(extraRomMessage);
+            dandanatorMiniConfiguration.setTogglePokesMessage(togglePokesMessage);
+            dandanatorMiniConfiguration.setLaunchGameMessage(launchGameMessage);
+            dandanatorMiniConfiguration.setSelectPokesMessage(selectPokesMessage);
         } catch (Exception e) {
             LOGGER.error("Importing RomSet", e);
         }

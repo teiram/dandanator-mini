@@ -37,9 +37,21 @@ public class DandanatorMiniConfiguration {
 
     private static DandanatorMiniConfiguration INSTANCE;
 
+    private static void setPersistenceListenerOnPropertyChange(StringProperty property,
+                                                               String configurationKey,
+                                                               String defaultValue) {
+        property.addListener(
+                (observable, oldValue, newValue) -> {
+                    if (!Constants.ROMSET_PROVIDED.equals(newValue)) {
+                        Configuration.persistConfigurationValue(configurationKey,
+                                newValue == null ? null : newValue.equals(defaultValue) ? null : newValue);
+                    }
+                });
+    }
+
     public static DandanatorMiniConfiguration getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new DandanatorMiniConfiguration();
+            INSTANCE = newInstance();
         }
         return INSTANCE;
     }
@@ -52,6 +64,21 @@ public class DandanatorMiniConfiguration {
         extraRomMessage = new SimpleStringProperty();
         launchGameMessage = new SimpleStringProperty();
         selectPokesMessage = new SimpleStringProperty();
+
+        setPersistenceListenerOnPropertyChange(dandanatorRomPath, DANDANATORROMPATH_PROPERTY,
+                null);
+        setPersistenceListenerOnPropertyChange(extraRomPath, EXTRAROMPATH_PROPERTY,
+                null);
+        setPersistenceListenerOnPropertyChange(dandanatorPicFirmwarePath, DANDANATORPICFIRMWAREPATH_PROPERTY,
+                null);
+        setPersistenceListenerOnPropertyChange(togglePokesMessage, TOGGLEPOKESMESSAGE_PROPERTY,
+                DandanatorMiniConstants.DEFAULT_TOGGLEPOKESKEY_MESSAGE);
+        setPersistenceListenerOnPropertyChange(extraRomMessage, EXTRAROMMESSAGE_PROPERTY,
+                DandanatorMiniConstants.DEFAULT_EXTRAROMKEY_MESSAGE);
+        setPersistenceListenerOnPropertyChange(launchGameMessage, LAUNCHGAMEMESSAGE_PROPERTY,
+                DandanatorMiniConstants.DEFAULT_LAUNCHGAME_MESSAGE);
+        setPersistenceListenerOnPropertyChange(selectPokesMessage, SELECTPOKESMESSAGE_PROPERTY,
+                DandanatorMiniConstants.DEFAULT_SELECTPOKE_MESSAGE);
     }
 
     private static boolean validConfigurationValue(String value) {
@@ -67,7 +94,6 @@ public class DandanatorMiniConfiguration {
             dandanatorRom = null;
         }
         this.dandanatorRomPath.set(dandanatorRomPath);
-        Configuration.persistConfigurationValue(DANDANATORROMPATH_PROPERTY, dandanatorRomPath);
     }
 
     public StringProperty dandanatorRomPathProperty() {
@@ -87,7 +113,6 @@ public class DandanatorMiniConfiguration {
             dandanatorPicFirmware = null;
         }
         this.dandanatorPicFirmwarePath.set(dandanatorPicFirmwarePath);
-        Configuration.persistConfigurationValue(DANDANATORPICFIRMWAREPATH_PROPERTY, dandanatorPicFirmwarePath);
     }
 
     public String getExtraRomPath() {
@@ -97,7 +122,6 @@ public class DandanatorMiniConfiguration {
     public void setExtraRomPath(String extraRomPath) {
         extraRom = null;
         this.extraRomPath.set(extraRomPath);
-        Configuration.persistConfigurationValue(EXTRAROMPATH_PROPERTY, extraRomPath);
     }
 
     public StringProperty extraRomPathProperty() {
@@ -154,14 +178,7 @@ public class DandanatorMiniConfiguration {
     }
 
     public void setTogglePokesMessage(String togglePokesMessage) {
-        setTogglePokesMessage(togglePokesMessage, true);
-    }
-
-    public void setTogglePokesMessage(String togglePokesMessage, boolean persist) {
         this.togglePokesMessage.set(togglePokesMessage);
-        if (persist) {
-            Configuration.persistConfigurationValue(TOGGLEPOKESMESSAGE_PROPERTY, this.togglePokesMessage.get());
-        }
     }
 
     public StringProperty togglePokesMessageProperty() {
@@ -176,14 +193,7 @@ public class DandanatorMiniConfiguration {
     }
 
     public void setExtraRomMessage(String extraRomMessage) {
-        setExtraRomMessage(extraRomMessage, true);
-    }
-
-    public void setExtraRomMessage(String extraRomMessage, boolean persist) {
         this.extraRomMessage.set(extraRomMessage);
-        if (persist) {
-            Configuration.persistConfigurationValue(EXTRAROMMESSAGE_PROPERTY, this.extraRomMessage.get());
-        }
     }
 
     public StringProperty extraRomMessageProperty() {
@@ -198,14 +208,7 @@ public class DandanatorMiniConfiguration {
     }
 
     public void setLaunchGameMessage(String launchGameMessage) {
-        setLaunchGameMessage(launchGameMessage, true);
-    }
-
-    public void setLaunchGameMessage(String launchGameMessage, boolean persist) {
         this.launchGameMessage.set(launchGameMessage);
-        if (persist) {
-            Configuration.persistConfigurationValue(LAUNCHGAMEMESSAGE_PROPERTY, this.launchGameMessage.get());
-        }
     }
 
     public StringProperty launchGameMessageProperty() {
@@ -224,14 +227,7 @@ public class DandanatorMiniConfiguration {
     }
 
     public void setSelectPokesMessage(String selectPokesMessage) {
-        setSelectPokesMessage(selectPokesMessage, true);
-    }
-
-    public void setSelectPokesMessage(String selectPokesMessage, boolean persist) {
         this.selectPokesMessage.set(selectPokesMessage);
-        if (persist) {
-            Configuration.persistConfigurationValue(SELECTPOKESMESSAGE_PROPERTY, this.selectPokesMessage.get());
-        }
     }
 
     public void setDandanatorPicFirmware(byte[] dandanatorPicFirmware) {
@@ -272,5 +268,10 @@ public class DandanatorMiniConfiguration {
         configuration.dandanatorPicFirmwarePath.set(
                 p.get(DANDANATORPICFIRMWAREPATH_PROPERTY, null));
         return configuration;
+    }
+
+    synchronized private static DandanatorMiniConfiguration newInstance() {
+        final DandanatorMiniConfiguration configuration = new DandanatorMiniConfiguration();
+        return setFromPreferences(configuration);
     }
 }
