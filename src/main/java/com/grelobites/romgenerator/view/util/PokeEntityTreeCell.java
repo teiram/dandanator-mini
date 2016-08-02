@@ -26,13 +26,14 @@ public class PokeEntityTreeCell extends TreeCell<PokeViewable> {
         if(textField == null) {
             createTextField();
         }
+        textField.setText(getItem().getViewRepresentation());
         setText(null);
         setGraphic(textField);
         textField.selectAll();
     }
 
     private void createTextField() {
-        textField = new TextField(getItem().getViewRepresentation());
+        textField = new TextField();
         textField.setOnKeyReleased(e -> {
             if (e.getCode() == KeyCode.ENTER) {
                 getItem().update(textField.getText());
