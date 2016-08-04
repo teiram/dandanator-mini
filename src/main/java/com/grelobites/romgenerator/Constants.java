@@ -13,7 +13,7 @@ public class Constants {
     public static final String ROMSET_PROVIDED = "__ROMSET_PROVIDED__";
     private static final Logger LOGGER = LoggerFactory.getLogger(Constants.class);
 
-    private static final String DEFAULT_VERSION = "4.5";
+    private static final String DEFAULT_VERSION = "5.0s";
 
     public static final int CHARSET_SIZE = 768;
 
