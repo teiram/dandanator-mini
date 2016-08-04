@@ -468,6 +468,16 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         }
     }
 
+    @Override
+    public boolean addGame(Game game) {
+        if (controller.getGameList().size() < DandanatorMiniConstants.SLOT_COUNT) {
+            controller.getGameList().add(game);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private static class GameDataHolder {
         private boolean holdScreen;
         private boolean activeRom;

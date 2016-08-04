@@ -124,19 +124,9 @@ public class MainAppController {
         return gameList;
     }
 
-    private int getAvailableSlotCount() {
-    	return DandanatorMiniConstants.SLOT_COUNT;
-    }
-    
-    private boolean isEmptySlotAvailable() {
-    	return getGameList().size() < getAvailableSlotCount();
-    }
-
-
     private void onGameListChange() {
         LOGGER.debug("onGameListChange");
-    	createRomButton.setDisable(getGameList().size() != getAvailableSlotCount());
-        addRomButton.setDisable(getGameList().size() == getAvailableSlotCount());
+    	createRomButton.setDisable(getGameList().isEmpty());
         clearRomsetButton.setDisable(getGameList().isEmpty());
 
     	recreatePreviewImage();
@@ -149,9 +139,10 @@ public class MainAppController {
 
     private void addSnapshotFiles(List<File> files) {
         files.stream()
-                .filter(f -> isEmptySlotAvailable())
                 .map(GameUtil::createGameFromFile)
-                .forEach(gameOptional -> gameOptional.map(g -> getGameList().add(g)));
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(g -> romSetHandler.addGame(g));
     }
 
     private void updateRomSetHandler() {
@@ -293,8 +284,7 @@ public class MainAppController {
 
         gameTable.setOnDragEntered(event -> {
         	if (event.getGestureSource() != gameTable &&
-        			event.getDragboard().hasFiles() &&
-        			isEmptySlotAvailable()) {
+        			event.getDragboard().hasFiles()) {
         		//TODO: Give feedback
         	}
         	event.consume();
@@ -309,7 +299,7 @@ public class MainAppController {
                 LOGGER.debug("onDragDropped");
                 Dragboard db = event.getDragboard();
                 boolean success = false;
-                if (db.hasFiles() && isEmptySlotAvailable()) {
+                if (db.hasFiles()) {
                     addSnapshotFiles(db.getFiles());
                     success = true;
                 }
@@ -454,13 +444,8 @@ public class MainAppController {
                 (observable, oldValue, newValue) -> recreatePreviewImage());
         Configuration.getInstance().modeProperty().addListener(
                 (observable, oldValue, newValue) -> updateRomSetHandler());
-        /* TODO: Transfer responsability to Handler
-        context.getConfiguration().togglePokesMessageProperty().addListener(
-                (observable, oldValue, newValue) -> updatePreviewImage());
-        context.getConfiguration().extraRomMessageProperty().addListener(
-                (observable, oldValue, newValue) -> updatePreviewImage());
-        */
-        //Update poke usage while adding or removing games from the list
+
+       //Update poke usage while adding or removing games from the list
         getGameList().addListener((ListChangeListener.Change<? extends Game> c) -> {
             boolean gamesAddedOrRemoved = false;
             boolean gamesUpdated = false;

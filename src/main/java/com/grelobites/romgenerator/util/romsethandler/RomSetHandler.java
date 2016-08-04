@@ -1,5 +1,6 @@
 package com.grelobites.romgenerator.util.romsethandler;
 
+import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.view.MainAppController;
 
 import java.io.InputStream;
@@ -15,4 +16,6 @@ public interface RomSetHandler {
     void importRomSet(InputStream is);
 
     void updateMenuPreview();
+
+    boolean addGame(Game game);
 }
