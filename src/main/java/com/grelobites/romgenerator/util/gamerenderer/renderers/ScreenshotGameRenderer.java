@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.util.gamerenderer.renderers;
 
 
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.gamerenderer.GameRenderer;
 import com.grelobites.romgenerator.util.gamerenderer.PassiveGameRendererBase;
@@ -34,8 +35,8 @@ public class ScreenshotGameRenderer extends PassiveGameRendererBase implements G
 
     @Override
     public void previewGame(Game game) {
-        if (game != null) {
-            targetView.setImage(game.getScreenshot());
+        if (game != null && game instanceof RamGame) {
+            targetView.setImage(((RamGame) game).getScreenshot());
         } else {
             targetView.setImage(spectrum48kImage);
         }

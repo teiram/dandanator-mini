@@ -41,10 +41,6 @@ public class BaseGame {
 		return this.name;
 	}
 
-	public InputStream getDataStream() {
-		return new ByteArrayInputStream(data);
-	}
-
 	public GameType getType() {
 	    return gameType;
     }

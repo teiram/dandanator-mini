@@ -31,5 +31,4 @@ public interface Game {
 
     int getSlotCount();
 
-    InputStream getDataStream();
 }

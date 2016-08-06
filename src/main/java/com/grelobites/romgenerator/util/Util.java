@@ -114,7 +114,7 @@ public class Util {
     }
 
     public static <S, T> Collection<T> collectionUpcast(Collection<S> list) {
-        return list.stream().map(item -> (T)item)
+        return list.stream().map(item -> (T) item)
             .collect(Collectors.toList());
     }
 

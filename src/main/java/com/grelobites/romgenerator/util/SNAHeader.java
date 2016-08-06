@@ -4,8 +4,6 @@ import com.grelobites.romgenerator.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -54,15 +52,15 @@ public class SNAHeader {
     }
 
     public static SNAHeader from48kSNAGameByteArray(byte[] in) {
-        SNAHeader header = new SNAHeader(Constants.SNA_SHORT_HEADER_SIZE);
-        System.arraycopy(in, 0, header.data, 0, Constants.SNA_SHORT_HEADER_SIZE);
+        SNAHeader header = new SNAHeader(Constants.SNA_HEADER_SIZE);
+        System.arraycopy(in, 0, header.data, 0, Constants.SNA_HEADER_SIZE);
         return header;
     }
 
     public static SNAHeader from128kSNAGameByteArray(byte[] in) {
-        SNAHeader header = new SNAHeader(Constants.SNA_LONG_HEADER_SIZE);
-        System.arraycopy(in, 0, header.data, 0, Constants.SNA_SHORT_HEADER_SIZE);
-        int extendedHeaderOffset = Constants.SNA_SHORT_HEADER_SIZE + Constants.SLOT_SIZE * 3;
+        SNAHeader header = new SNAHeader(Constants.SNA_EXTENDED_HEADER_SIZE);
+        System.arraycopy(in, 0, header.data, 0, Constants.SNA_HEADER_SIZE);
+        int extendedHeaderOffset = Constants.SNA_HEADER_SIZE + Constants.SLOT_SIZE * 3;
         header.setWord(REG_PC, in[extendedHeaderOffset], in[extendedHeaderOffset + 1]);
         header.setByte(PORT_7FFD, in[extendedHeaderOffset + 2]);
         header.setByte(TRDOS_ROM_MAPPED, in[extendedHeaderOffset + 3]);
