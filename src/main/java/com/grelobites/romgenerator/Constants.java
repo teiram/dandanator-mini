@@ -14,7 +14,7 @@ public class Constants {
     public static final int SLOT_SIZE = 0x4000;
     private static final Logger LOGGER = LoggerFactory.getLogger(Constants.class);
 
-    private static final String DEFAULT_VERSION = "5.0s";
+    private static final String DEFAULT_VERSION = "5.0";
 
     public static final int CHARSET_SIZE = 768;
 

@@ -113,4 +113,12 @@ public class GameUtil {
                 .save(selectedGame, fos);
         fos.close();
     }
+
+    public static boolean gameHasPokes(Game game) {
+        if (game instanceof RamGame) {
+            return ((RamGame) game).hasPokes();
+        } else {
+            return false;
+        }
+    }
 }

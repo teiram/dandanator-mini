@@ -2,11 +2,15 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.effect.Blend?>
@@ -57,8 +61,6 @@
                   <TableView fx:id="gameTable" editable="true" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
                     <columns>
                       <TableColumn fx:id="nameColumn" prefWidth="-1.0" text="%gameNameColumn" />
-                      <TableColumn fx:id="screenColumn" maxWidth="40.0" minWidth="40.0" prefWidth="-1.0" text="%gameScreenColumn" />
-                        <TableColumn fx:id="romColumn" maxWidth="40.0" minWidth="40.0" prefWidth="-1.0" text="%gameRomColumn" />
                     </columns>
                      <GridPane.margin>
                         <Insets bottom="5.0" left="5.0" />
@@ -67,15 +69,36 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <VBox styleClass="pokesBox" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <TabPane GridPane.columnIndex="1" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets bottom="5.0" right="5.0" />
                      </GridPane.margin>
-                     <children>
-                        <Label fx:id="pokesViewLabel" minHeight="-Infinity" prefHeight="17.0" prefWidth="265.0" styleClass="pokesTitle" text="%noGameSelectedMessage" />
-                        <TreeView fx:id="pokeView" editable="true" prefHeight="200.0" prefWidth="200.0" showRoot="false" />
-                     </children>
-                  </VBox>
+                     <tabs>
+                        <Tab fx:id="gameInfoTab" closable="false" text="General">
+                           <content>
+                              <AnchorPane fx:id="gameInfoPane" prefHeight="200.0" prefWidth="200.0">
+                                 <children>
+                                    <Label layoutX="10.0" layoutY="14.0" text="Name" textFill="WHITE" />
+                                    <Label layoutX="10.0" layoutY="43.0" text="Type" textFill="WHITE" />
+                                    <Label layoutX="10.0" layoutY="76.0" text="Rom" textFill="WHITE" />
+                                    <Label layoutX="10.0" layoutY="107.0" text="Hold Screen" textFill="WHITE" />
+                                    <Label layoutX="10.0" layoutY="138.0" text="Compressed Size" textFill="WHITE" />
+                                    <Label fx:id="compressedGameSize" layoutX="140.0" layoutY="138.0" prefHeight="17.0" prefWidth="90.0" text="0" textFill="WHITE" />
+                                    <CheckBox fx:id="isHoldScreen" layoutX="140.0" layoutY="107.0" mnemonicParsing="false" text="CheckBox" />
+                                    <CheckBox fx:id="isRom" layoutX="140.0" layoutY="76.0" mnemonicParsing="false" text="CheckBox" />
+                                    <TextField fx:id="gameName" layoutX="80.0" layoutY="9.0" prefHeight="27.0" prefWidth="171.0" />
+                                    <Label fx:id="gameType" layoutX="137.0" layoutY="43.0" text="RAM" textFill="WHITE" />
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                        </Tab>
+                        <Tab fx:id="pokesTab" closable="false" text="Pokes">
+                           <content>
+                              <TreeView fx:id="pokeView" editable="true" prefHeight="200.0" prefWidth="200.0" showRoot="false" />
+                           </content>
+                        </Tab>
+                     </tabs>
+                  </TabPane>
                </children>
                <VBox.margin>
                   <Insets top="5.0" />

@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.PokeViewable;
+import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.gamerenderer.GameRenderer;
@@ -20,16 +21,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
@@ -37,6 +29,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
@@ -71,12 +64,7 @@ public class MainAppController {
 	@FXML
 	private TableColumn<Game, String> nameColumn;
 	
-    @FXML
-    private TableColumn<Game, Boolean> screenColumn;
-    
-    @FXML
-    private TableColumn<Game, Boolean> romColumn;
-   
+
     @FXML
     private Button createRomButton;
 
@@ -88,9 +76,6 @@ public class MainAppController {
 
     @FXML
     private Button clearRomsetButton;
-
-    @FXML
-    private Label pokesViewLabel;
 
     @FXML
     private TreeView<PokeViewable> pokeView;
@@ -107,9 +92,33 @@ public class MainAppController {
     @FXML
     private ProgressBar pokesCurrentSizeBar;
 
+    @FXML
+    private Tab gameInfoTab;
+
+    @FXML
+    private Tab pokesTab;
+
+    @FXML
+    private AnchorPane gameInfoPane;
+
+    @FXML
+    private TextField gameName;
+
+    @FXML
+    private Label gameType;
+
+    @FXML
+    private CheckBox gameRomAttribute;
+
+    @FXML
+    private CheckBox gameHoldScreenAttribute;
+
+    @FXML
+    private Label compressedSize;
+
     public MainAppController() {
         this.gameList = FXCollections.observableArrayList(game ->
-                new Observable[] {game.nameProperty(), game.romProperty(), game.screenProperty()});
+                new Observable[] {game.nameProperty()});
     }
 
     public ImageView getMenuPreviewImage() {
@@ -236,16 +245,6 @@ public class MainAppController {
                         return GameUtil.filterGameName(value);
                     }
                 }));
-
-        screenColumn.setCellValueFactory(
-                        cellData -> cellData.getValue().screenProperty());
-        screenColumn.setCellFactory(CheckBoxTableCell
-        		.forTableColumn(screenColumn));
-        
-        romColumn.setCellValueFactory(
-        		cellData -> cellData.getValue().romProperty());
-        romColumn.setCellFactory(CheckBoxTableCell
-        		.forTableColumn(romColumn));
 
         pokeView.setEditable(true);
         pokeView.setCellFactory(p -> {
@@ -383,8 +382,8 @@ public class MainAppController {
                                 LocaleUtil.i18n("pokeSetDeletionConfirmContent"))
                         .showAndWait();
 
-                if (result.get() == ButtonType.OK){
-                    game.getTrainerList().getChildren().clear();
+                if (result.get() == ButtonType.OK) {
+                    ((RamGame) game).getTrainerList().getChildren().clear();
                 }
             }
         });
@@ -418,7 +417,7 @@ public class MainAppController {
                 try {
                     Game game = gameTable.getSelectionModel().getSelectedItem();
                     ImportContext ctx = new ImportContext(db.getFiles().get(0));
-                    GameUtil.importPokesFromFile(game, ctx);
+                    GameUtil.importPokesFromFile((RamGame) game, ctx);
                     if (ctx.hasErrors()) {
                         LOGGER.debug("Detected errors in pokes import operation");
                         DialogUtil.buildWarningAlert(LocaleUtil.i18n("importPokesWarning"),
@@ -466,10 +465,6 @@ public class MainAppController {
             }
             if (gamesUpdated) {
                 Game game = gameTable.getSelectionModel().getSelectedItem();
-
-                pokesViewLabel.setText(game != null ? String.format(LocaleUtil.i18n("trainersHeadingMessage"),
-                        gameTable.getSelectionModel().getSelectedItem().getName()) :
-                        LocaleUtil.i18n("noGameSelectedMessage"));
             }
         });
     }
@@ -481,22 +476,22 @@ public class MainAppController {
             addPokeButton.setDisable(true);
             removeAllGamePokesButton.setDisable(true);
             removeSelectedPokeButton.setDisable(true);
-            pokesViewLabel.setText(LocaleUtil.i18n("noGameSelectedMessage"));
             pokeView.setDisable(true);
             pokeView.setRoot(null);
 
 		} else {
-			gamePreviewImage.setImage(game.getScreenshot());
             removeSelectedRomButton.setDisable(false);
-            addPokeButton.setDisable(false);
-            pokesViewLabel.setText(String.format(LocaleUtil.i18n("trainersHeadingMessage"), game.getName()));
-            pokeView.setRoot(new RecursiveTreeItem<>(game.getTrainerList(), PokeViewable::getChildren,
-                    this::computePokeChange));
-            pokeView.setDisable(false);
-            if (game.getTrainerList().getChildren().size() > 0) {
-                removeAllGamePokesButton.setDisable(false);
-            } else {
-                removeAllGamePokesButton.setDisable(true);
+            if (game instanceof RamGame) {
+                RamGame ramGame = (RamGame) game;
+                addPokeButton.setDisable(false);
+                pokeView.setRoot(new RecursiveTreeItem<>(ramGame.getTrainerList(), PokeViewable::getChildren,
+                        this::computePokeChange));
+                pokeView.setDisable(false);
+                if (ramGame.getTrainerList().getChildren().size() > 0) {
+                    removeAllGamePokesButton.setDisable(false);
+                } else {
+                    removeAllGamePokesButton.setDisable(true);
+                }
             }
 		}
 	}
@@ -505,7 +500,7 @@ public class MainAppController {
         LOGGER.debug("New poke ocupation is " + GameUtil.getOverallPokeUsage(getGameList()));
         pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(getGameList()));
         if (gameTable.getSelectionModel().getSelectedItem() == f.getOwner()) {
-            removeAllGamePokesButton.setDisable(!f.getOwner().hasPokes());
+            removeAllGamePokesButton.setDisable(!GameUtil.gameHasPokes(f.getOwner()));
         }
     }
 
@@ -526,13 +521,13 @@ public class MainAppController {
 
     public void exportCurrentGamePokes() {
         Game selectedGame = gameTable.getSelectionModel().getSelectedItem();
-        if (selectedGame != null) {
-            if (selectedGame.hasPokes()) {
+        if (selectedGame != null && selectedGame instanceof RamGame) {
+            if (GameUtil.gameHasPokes(selectedGame)) {
                 FileChooser chooser = new FileChooser();
                 chooser.setTitle(LocaleUtil.i18n("exportCurrentGamePokes"));
                 final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
                 try {
-                    GameUtil.exportPokesToFile(selectedGame, saveFile);
+                    GameUtil.exportPokesToFile((RamGame) selectedGame, saveFile);
                 } catch (IOException e) {
                     LOGGER.error("Exporting Game Pokes", e);
                 }

@@ -30,9 +30,9 @@ public class DandanatorMiniConstants {
     public static final int EXTRA_ROM_MESSAGE_MAXLENGTH = 23;
     public static final int LAUNCH_GAME_MESSAGE_MAXLENGTH = 23;
     public static final int SELECT_POKE_MESSAGE_MAXLENGTH = 23;
-    private static final String DANDANATOR_ROM_RESOURCE = "/dandanator-mini/dandanator-mini.rom";
-    private static final String DANDANATOR_PIC_FW_RESOURCE = "/dandanator-mini/dandanator-pic-fw.bin";
-    private static final String EXTRA_ROM_RESOURCE = "/dandanator-mini/test.rom";
+    private static final String DANDANATOR_ROM_RESOURCE = "dandanator-mini/dandanator-mini.rom";
+    private static final String DANDANATOR_PIC_FW_RESOURCE = "dandanator-mini/dandanator-pic-fw.bin";
+    private static final String EXTRA_ROM_RESOURCE = "dandanator-mini/test.rom";
     public static final int POKE_TARGET_ADDRESS = 33668;
     private static byte[] DANDANATOR_ROM;
     private static byte[] EXTRA_ROM;
