@@ -2,8 +2,11 @@ package com.grelobites.romgenerator.util;
 
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameType;
+import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoaderFactory;
+import com.grelobites.romgenerator.util.gameloader.GameImageType;
 import com.grelobites.romgenerator.util.pokeimporter.ImportContext;
 import com.grelobites.romgenerator.util.pokeimporter.PokeImporter;
 import com.grelobites.romgenerator.util.pokeimporter.PokeImporterFactory;
@@ -11,8 +14,11 @@ import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.nio.file.Files;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -29,12 +35,11 @@ public class GameUtil {
                         .map(GameImageLoaderFactory::getLoader)
                         .orElseGet(GameImageLoaderFactory::getDefaultLoader);
 
-                byte[] snaStream = loader.load(is);
-                Game game = new Game();
-                game.setData(snaStream);
+                //TODO: Add logic for ROM games
+                RamGame game = (RamGame) loader.load(is);
                 game.setName(getGameName(file));
                 game.setRom(false);
-                game.setScreen(false);
+                game.setHoldScreen(false);
                 return Optional.of(game);
             }
         } catch (Exception e) {
@@ -67,12 +72,17 @@ public class GameUtil {
     }
 
     public static int getGamePokeSizeUsage(Game game) {
-        return game.getTrainerList().getChildren().stream()
-                .flatMapToInt(g -> IntStream.builder()
-                        .add(DandanatorMiniConstants.POKE_NAME_SIZE)
-                        .add(1) //Number of pokes byte
-                        .add(g.getChildren().size() * DandanatorMiniConstants.POKE_ENTRY_SIZE)
-                        .build()).sum();
+        if (game.getType() != GameType.ROM) {
+            RamGame ramGame = (RamGame) game;
+            return ramGame.getTrainerList().getChildren().stream()
+                    .flatMapToInt(g -> IntStream.builder()
+                            .add(DandanatorMiniConstants.POKE_NAME_SIZE)
+                            .add(1) //Number of pokes byte
+                            .add(g.getChildren().size() * DandanatorMiniConstants.POKE_ENTRY_SIZE)
+                            .build()).sum();
+        } else {
+            return 0;
+        }
     }
 
     public static double getOverallPokeUsage(ObservableList<Game> gameList) {
@@ -82,7 +92,7 @@ public class GameUtil {
         return ((double) usedSize) / DandanatorMiniConstants.POKE_ZONE_SIZE;
     }
 
-    public static void importPokesFromFile(Game game, ImportContext ctx) throws IOException {
+    public static void importPokesFromFile(RamGame game, ImportContext ctx) throws IOException {
         PokeImporter importer = Util.getFileExtension(ctx.getPokesFile().getName())
                 .map(PokeImporterFactory::getImporter)
                 .orElseGet(PokeImporterFactory::getDefaultImporter);
@@ -90,7 +100,7 @@ public class GameUtil {
         importer.importPokes(game.getTrainerList(), ctx);
     }
 
-    public static void exportPokesToFile(Game game, File pokeFile) throws IOException {
+    public static void exportPokesToFile(RamGame game, File pokeFile) throws IOException {
         PokeImporter importer = Util.getFileExtension(pokeFile.getName())
                 .map(PokeImporterFactory::getImporter)
                 .orElseGet(PokeImporterFactory::getDefaultImporter);
@@ -98,6 +108,9 @@ public class GameUtil {
     }
 
     public static void exportGameAsSNA(Game selectedGame, File saveFile) throws IOException {
-        Files.write(saveFile.toPath(), selectedGame.getData());
+        FileOutputStream fos = new FileOutputStream(saveFile);
+        GameImageLoaderFactory.getLoader(GameImageType.SNA)
+                .save(selectedGame, fos);
+        fos.close();
     }
 }

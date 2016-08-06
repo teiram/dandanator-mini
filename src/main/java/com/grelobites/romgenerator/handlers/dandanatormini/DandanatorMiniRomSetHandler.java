@@ -3,21 +3,34 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.Poke;
 import com.grelobites.romgenerator.model.PokeViewable;
+import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.Trainer;
 import com.grelobites.romgenerator.model.TrainerList;
-import com.grelobites.romgenerator.util.*;
+import com.grelobites.romgenerator.util.ImageUtil;
+import com.grelobites.romgenerator.util.SNAHeader;
+import com.grelobites.romgenerator.util.TrackeableInputStream;
+import com.grelobites.romgenerator.util.Util;
+import com.grelobites.romgenerator.util.Z80Opcode;
+import com.grelobites.romgenerator.util.ZxColor;
+import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.view.MainAppController;
 import javafx.beans.value.ChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public class DandanatorMiniRomSetHandler implements RomSetHandler {
@@ -25,17 +38,17 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
     private static final int DANDANATOR_ROMSET_SIZE = 512 * 1024;
     static final int GAME_SIZE = 0xc000;
-    private static final int VERSION_SIZE = 32;
+    protected static final int VERSION_SIZE = 32;
 
     private static final int SAVEDGAMECHUNK_SIZE = 256;
     private static final int POKE_SPACE_SIZE = 3230;
     private static final int RESERVED_GAMETABLE_SIZE = 64;
 
-    private static final int SCREEN_THIRD_PIXEL_SIZE = 2048;
-    private static final int SCREEN_THIRD_ATTRINFO_SIZE = 256;
+    protected static final int SCREEN_THIRD_PIXEL_SIZE = 2048;
+    protected static final int SCREEN_THIRD_ATTRINFO_SIZE = 256;
 
     private ZxScreen menuImage;
-    private MainAppController controller;
+    protected MainAppController controller;
     private ChangeListener<? super String> updateImageListener =
             (observable, oldValue, newValue) -> updateMenuPreview();
 
@@ -61,29 +74,39 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         return result;
     }
 
-    private static void dumpGameName(OutputStream os, Game game, int index) throws IOException {
+    protected static void dumpGameName(OutputStream os, Game game, int index) throws IOException {
         String gameName = String.format("%d%c %s", (index + 1) % DandanatorMiniConstants.SLOT_COUNT,
-                game.getRom() ? 'r' : '.',
+                isGameRom(game) ? 'r' : '.',
                 game.getName());
         os.write(asNullTerminatedByteArray(gameName, DandanatorMiniConstants.GAMENAME_SIZE));
     }
 
-    private static void dumpGameSnaHeader(OutputStream os, Game game) throws IOException {
-        os.write(Arrays.copyOfRange(game.getData(), 0, Constants.SNA_HEADER_SIZE));
+    private static void dumpGameSnaHeader(OutputStream os, RamGame game) throws IOException {
+        os.write(Arrays.copyOfRange(game.getSnaHeader().asByteArray(), 0, Constants.SNA_HEADER_SIZE));
     }
 
-    private static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
-        os.write(Z80Opcode.PUSH_HL);
-        os.write(Z80Opcode.POP_HL);
-        os.write(Z80Opcode.PUSH_HL);
-        os.write(Z80Opcode.POP_HL);
-        os.write((game.getData()[SNAHeader.INTERRUPT_ENABLE] & 0x04) == 0 ?
-                Z80Opcode.DI : Z80Opcode.EI);
-        os.write(Z80Opcode.RET);
-        return 6;
+    protected static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
+        if (game instanceof RamGame) {
+            if (game.getType() == GameType.RAM48) {
+                RamGame ramGame = (RamGame) game;
+
+                os.write(Z80Opcode.PUSH_HL);
+                os.write(Z80Opcode.POP_HL);
+                os.write(Z80Opcode.PUSH_HL);
+                os.write(Z80Opcode.POP_HL);
+                os.write((ramGame.getSnaHeader().asByteArray()[SNAHeader.INTERRUPT_ENABLE] & 0x04) == 0 ?
+                        Z80Opcode.DI : Z80Opcode.EI);
+                os.write(Z80Opcode.RET);
+                return 6;
+            } else {
+                throw new IllegalArgumentException("Not implemented yet");
+            }
+        } else {
+            throw new IllegalStateException("Unsupported game type");
+        }
     }
 
-    private void dumpScreenTexts(OutputStream os, DandanatorMiniConfiguration configuration) throws IOException {
+    protected static void dumpScreenTexts(OutputStream os, DandanatorMiniConfiguration configuration) throws IOException {
         os.write(asNullTerminatedByteArray(String.format("R. %s", configuration.getExtraRomMessage()),
                 DandanatorMiniConstants.GAMENAME_SIZE));
         os.write(asNullTerminatedByteArray(String.format("P. %s", configuration.getTogglePokesMessage()),
@@ -94,8 +117,8 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
 
-    private static byte[] asLittleEndianWord(int value) {
-        return new byte[] {
+    protected static byte[] asLittleEndianWord(int value) {
+        return new byte[]{
                 (byte) (value & 0xff),
                 (byte) ((value >> 8) & 0xff)};
     }
@@ -108,12 +131,12 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
     }
 
-    private void dumpGameRamCodeLocation(OutputStream os, Game game, int requiredSize) throws IOException {
-        byte[] gameData = game.getData();
+    protected static void dumpGameRamCodeLocation(OutputStream os, Game game, int requiredSize) throws IOException {
+        byte[] screenData = game.getSlot(0); //Screen slot
         int attributeBaseOffset = Constants.SPECTRUM_SCREEN_SIZE + Constants.SNA_HEADER_SIZE;
         int zoneSize = 0, i = 0;
         do {
-            byte value = gameData[i + attributeBaseOffset];
+            byte value = screenData[i + attributeBaseOffset];
             //Attribute byte with pen == ink
             if ((value & 0x7) == ((value >> 3) & 0x7)) {
                 zoneSize++;
@@ -136,39 +159,55 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     private static void dumpGameSavedChunk(OutputStream os, Game game) throws IOException {
-        byte[] gameData = game.getData();
-        os.write(Arrays.copyOfRange(gameData, gameData.length - SAVEDGAMECHUNK_SIZE, gameData.length));
+        byte[] lastSlot = game.getSlot(game.getSlotCount() - 1);
+        os.write(Arrays.copyOfRange(lastSlot, lastSlot.length - SAVEDGAMECHUNK_SIZE, lastSlot.length));
     }
 
-    private void dumpGameTable(OutputStream os, Game game, int index) throws IOException {
+    private void dumpGameTable(OutputStream os, RamGame game, int index) throws IOException {
         dumpGameName(os, game, index);
         dumpGameSnaHeader(os, game);
-        os.write(game.getScreen() ? Constants.B_01 : Constants.B_00);
-        os.write(game.getRom() ? Constants.B_10 : Constants.B_00);
+        os.write(isGameScreenHold(game) ? Constants.B_01 : Constants.B_00);
+        os.write(isGameRom(game) ? Constants.B_10 : Constants.B_00);
         int codeSize = dumpGameLaunchCode(os, game);
         dumpGameRamCodeLocation(os, game, codeSize);
         fillWithValue(os, (byte) 0, RESERVED_GAMETABLE_SIZE);
         dumpGameSavedChunk(os, game);
     }
 
-    private int pokeRequiredSize(Game game) {
-        int headerSize = 25; //Fixed size required per poke
-        //Sum of all the addressValues * 3 (address + value)
-        int size = game.getTrainerList().getChildren().stream()
-                .map(p -> p.getChildren().size() * 3).reduce(0, (a, b) -> a + b);
-        return size + headerSize * game.getTrainerList().getChildren().size();
+    protected static int pokeRequiredSize(Game game) {
+        if (game instanceof RamGame) {
+            RamGame ramGame = (RamGame) game;
+            int headerSize = 25; //Fixed size required per poke
+            //Sum of all the addressValues * 3 (address + value)
+            int size = ramGame.getTrainerList().getChildren().stream()
+                    .map(p -> p.getChildren().size() * 3).reduce(0, (a, b) -> a + b);
+            return size + headerSize * ramGame.getTrainerList().getChildren().size();
+        } else {
+            return 0;
+        }
     }
 
-    private void dumpGamePokeData(OutputStream os, Game game) throws IOException {
-        int index = 1;
-        for (PokeViewable trainer: game.getTrainerList().getChildren()) {
-            os.write((byte) trainer.getChildren().size());
-            os.write(asNullTerminatedByteArray(String.format("%d. %s",
-                    index++, trainer.getViewRepresentation()), 24));
-            for (PokeViewable viewable : trainer.getChildren()) {
-                Poke poke = (Poke) viewable;
-                os.write(poke.addressBytes());
-                os.write(poke.valueBytes());
+    protected static int getGamePokeCount(Game game) {
+        if (game instanceof RamGame) {
+            return ((RamGame) game).getTrainerList().getChildren().size();
+        } else {
+            return 0;
+        }
+    }
+
+    protected static void dumpGamePokeData(OutputStream os, Game game) throws IOException {
+        if (game instanceof RamGame) {
+            RamGame ramGame = (RamGame) game;
+            int index = 1;
+            for (PokeViewable trainer : ramGame.getTrainerList().getChildren()) {
+                os.write((byte) trainer.getChildren().size());
+                os.write(asNullTerminatedByteArray(String.format("%d. %s",
+                        index++, trainer.getViewRepresentation()), 24));
+                for (PokeViewable viewable : trainer.getChildren()) {
+                    Poke poke = (Poke) viewable;
+                    os.write(poke.addressBytes());
+                    os.write(poke.valueBytes());
+                }
             }
         }
     }
@@ -177,14 +216,20 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         return String.format("v%s", Util.stripSnapshotVersion(Constants.currentVersion()));
     }
 
-    private void fillWithValue(OutputStream os, byte value, int size) throws IOException {
+    protected void fillWithValue(OutputStream os, byte value, int size) throws IOException {
         for (int i = 0; i < size; i++) {
             os.write(value);
         }
     }
 
-    private void dumpVersionInfo(OutputStream os) throws IOException {
+    protected void dumpVersionInfo(OutputStream os) throws IOException {
         os.write(asNullTerminatedByteArray(getVersionInfo(), VERSION_SIZE));
+    }
+
+    private void dumpGameData(OutputStream os, Game game) throws IOException {
+        for (int i = 0; i < 3; i++) {
+            os.write(game.getSlot(i));
+        }
     }
 
     @Override
@@ -194,7 +239,8 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             DandanatorMiniConfiguration dmConfiguration = DandanatorMiniConfiguration.getInstance();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Collection<Game> games = controller.getGameList();
+            //Only RamGame type supported in this RomSetHandler
+            Collection<RamGame> games = Util.collectionUpcast(controller.getGameList());
             os.write(dmConfiguration.getDandanatorRom(), 0, DandanatorMiniConstants.BASEROM_SIZE);
             LOGGER.debug("Dumped base ROM. Offset: " + os.size());
 
@@ -219,25 +265,25 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             LOGGER.debug("Dumped game count. Offset: " + os.size());
 
             int index = 0;
-            for (Game game : games) {
+            for (RamGame game : games) {
                 dumpGameTable(os, game, index++);
             }
             LOGGER.debug("Dumped game table. Offset: " + os.size());
 
             int pokeStartMark = os.size(); //Mark position before start of poke zone
-            for (Game game : games) {
+            for (RamGame game : games) {
                 byte pokeCount = (byte) game.getTrainerList().getChildren().size();
                 os.write(pokeCount);
             }
             LOGGER.debug("Dumped poke main header. Offset: " + os.size());
             int basePokeAddress = os.size() + 20; //Add the address header
 
-            for (Game game : games) {
+            for (RamGame game : games) {
                 os.write(asLittleEndianWord(basePokeAddress));
                 basePokeAddress += pokeRequiredSize(game);
             }
             LOGGER.debug("Dumped poke headers. Offset: " + os.size());
-            for (Game game : games) {
+            for (RamGame game : games) {
                 dumpGamePokeData(os, game);
             }
             fillWithValue(os, (byte) 0, POKE_SPACE_SIZE - (os.size() - pokeStartMark));
@@ -248,15 +294,14 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                     DandanatorMiniConstants.DANDANATOR_PIC_FW_SIZE_1);
             LOGGER.debug("Dumped second chunk of PIC firmware. Offset: " + os.size());
 
-            fillWithValue(os, (byte) 0, DandanatorMiniConstants.SLOT_SIZE - os.size() - VERSION_SIZE);
+            fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size() - VERSION_SIZE);
             LOGGER.debug("Dumped padding zone. Offset: " + os.size());
 
             dumpVersionInfo(os);
             LOGGER.debug("Dumped version info. Offset: " + os.size());
 
             for (Game game : games) {
-                os.write(Arrays.copyOfRange(game.getData(), Constants.SNA_HEADER_SIZE,
-                        Constants.SNA_HEADER_SIZE + GAME_SIZE));
+                dumpGameData(os, game);
                 LOGGER.debug("Dumped game. Offset: " + os.size());
             }
 
@@ -349,31 +394,30 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
             LOGGER.debug("After pic firmware. Position " + is.position());
 
-            is.skip(DandanatorMiniConstants.SLOT_SIZE - is.position());
+            is.skip(Constants.SLOT_SIZE - is.position());
             LOGGER.debug("After version. Position " + is.position());
 
             for (int i = 0; i < DandanatorMiniConstants.SLOT_COUNT; i++) {
                 LOGGER.debug("Reading game " + i + " data from " + is.position());
                 GameDataHolder holder = recoveredGames.get(i);
-                holder.readGameData(is);
+                holder.readGameSlots(is);
             }
             //If we reached this far, we have all the data and it's safe to replace the game list
             LOGGER.debug("Clearing game list with recovered games count " + recoveredGames.size());
             Collection<Game> games = controller.getGameList();
             games.clear();
             recoveredGames.forEach(holder -> {
-                final Game game = new Game();
+                final RamGame game = new RamGame(GameType.RAM48, holder.getGameSlots());
                 game.setName(holder.name);
-                game.setScreen(holder.holdScreen);
+                game.setHoldScreen(holder.holdScreen);
                 game.setRom(holder.activeRom);
-                game.setData(holder.getData());
                 holder.exportTrainers(game);
                 games.add(game);
             });
 
             LOGGER.debug("Added " + games.size() + " to the list of games");
 
-            byte[] extraRom = is.getAsByteArray(DandanatorMiniConstants.SLOT_SIZE);
+            byte[] extraRom = is.getAsByteArray(Constants.SLOT_SIZE);
 
             //Update preferences only if everything was OK
             Configuration globalConfiguration = Configuration.getInstance();
@@ -422,6 +466,39 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                 .removeListener(updateImageListener);
     }
 
+
+    protected static boolean isGameScreenHold(Game game) {
+        if (game instanceof RamGame) {
+            return ((RamGame) game).getHoldScreen();
+        } else {
+            return false;
+        }
+    }
+
+    protected static boolean isGameRom(Game game) {
+        if (game instanceof RamGame) {
+            return ((RamGame) game).getRom();
+        } else {
+            return false;
+        }
+    }
+
+    protected static boolean isGameCompressed(Game game) {
+        if (game instanceof RamGame) {
+            return ((RamGame) game).getCompressed();
+        } else {
+            return false;
+        }
+    }
+
+    protected static TrainerList gameTrainers(Game game) {
+        if (game instanceof RamGame) {
+            return ((RamGame) game).getTrainerList();
+        } else {
+            return TrainerList.EMPTY_LIST;
+        }
+    }
+
     @Override
     public void updateMenuPreview() {
         LOGGER.debug("updateMenuPreview");
@@ -442,11 +519,11 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
             for (Game game : controller.getGameList()) {
                 menuImage.setPen(
-                        game.getScreen() ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
+                        isGameScreenHold(game) ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
                 menuImage.deleteLine(line);
                 menuImage.printLine(
                         String.format("%d%c %s", index % DandanatorMiniConstants.SLOT_COUNT,
-                                game.getRom() ? 'r' : '.',
+                                isGameRom(game) ? 'r' : '.',
                                 game.getName()),
                         line++, 0);
                 index++;
@@ -470,12 +547,17 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
     @Override
     public boolean addGame(Game game) {
-        if (controller.getGameList().size() < DandanatorMiniConstants.SLOT_COUNT) {
-            controller.getGameList().add(game);
-            return true;
-        } else {
-            return false;
+        if (game.getType() == GameType.RAM48) {
+            if (game instanceof RamGame) {
+                if (controller.getGameList().size() < DandanatorMiniConstants.SLOT_COUNT) {
+                    controller.getGameList().add(game);
+                    return true;
+                }
+            } else {
+                LOGGER.warn("Non RAM48 games are not supported by this RomSethandler");
+            }
         }
+        return false;
     }
 
     private static class GameDataHolder {
@@ -483,7 +565,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         private boolean activeRom;
         private String name;
         private byte[] snaHeader;
-        private byte[] gameData;
+        private List<byte[]> gameSlots;
         private TrainerList trainerList = new TrainerList(null);
         private int trainerCount = 0;
 
@@ -500,9 +582,11 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             is.read(snaHeader);
         }
 
-        void readGameData(InputStream is) throws IOException {
-            gameData = new byte[DandanatorMiniRomSetHandler.GAME_SIZE];
-            is.read(gameData);
+        void readGameSlots(InputStream is) throws IOException {
+            gameSlots = new ArrayList<>();
+            for (int i = 0; i < 3; i++) {
+                gameSlots.add(Util.fromInputStream(is, Constants.SLOT_SIZE));
+            }
         }
 
         void readName(InputStream is) throws IOException {
@@ -522,20 +606,26 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             this.trainerCount = trainerCount;
         }
 
-        public byte[] getData() {
-            if (snaHeader != null && gameData != null) {
-                byte[] data = new byte[Constants.SNA_HEADER_SIZE + GAME_SIZE];
-                System.arraycopy(snaHeader, 0, data, 0, Constants.SNA_HEADER_SIZE);
-                System.arraycopy(gameData, 0, data, Constants.SNA_HEADER_SIZE, GAME_SIZE);
-                return data;
+        public List<byte[]> getGameSlots() {
+            if (gameSlots != null) {
+                return gameSlots;
             } else {
-                throw new IllegalStateException("Either SNA Header or Game Image not set");
+                throw new IllegalStateException("Game slots not set");
             }
         }
 
-        public void exportTrainers(Game game) {
+        public byte[] getSnaHeader() {
+            if (snaHeader != null) {
+                return snaHeader;
+            } else {
+                throw new IllegalStateException("SNA Header not set");
+            }
+        }
+
+        public void exportTrainers(RamGame game) {
             trainerList.setOwner(game);
             game.setTrainerList(trainerList);
         }
     }
 }
+

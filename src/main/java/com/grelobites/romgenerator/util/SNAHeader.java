@@ -25,45 +25,48 @@ public class SNAHeader {
     private static final Logger LOGGER = LoggerFactory.getLogger(SNAHeader.class);
 
 
-    public static final byte REG_I = 0;
-    public static final byte REG_HL_alt = 1;
-    public static final byte REG_DE_alt = 3;
-    public static final byte REG_BC_alt = 5;
-    public static final byte REG_AF_alt = 7;
-    public static final byte REG_HL = 9;
-    public static final byte REG_DE = 11;
-    public static final byte REG_BC = 13;
-    public static final byte REG_IY = 15;
-    public static final byte REG_IX = 17;
-    public static final byte INTERRUPT_ENABLE = (byte) 19;
-    public static final byte REG_R = 20;
-    public static final byte REG_AF = 21;
-    public static final byte REG_SP = 23;
-    public static final byte INTERRUPT_MODE = (byte) 25;
-    public static final byte BORDER_COLOR = (byte) 26;
-    public static final byte RAM_DUMP = (byte) 27;
+    public static final int REG_I = 0;
+    public static final int REG_HL_alt = 1;
+    public static final int REG_DE_alt = 3;
+    public static final int REG_BC_alt = 5;
+    public static final int REG_AF_alt = 7;
+    public static final int REG_HL = 9;
+    public static final int REG_DE = 11;
+    public static final int REG_BC = 13;
+    public static final int REG_IY = 15;
+    public static final int REG_IX = 17;
+    public static final int INTERRUPT_ENABLE = (byte) 19;
+    public static final int REG_R = 20;
+    public static final int REG_AF = 21;
+    public static final int REG_SP = 23;
+    public static final int INTERRUPT_MODE = (byte) 25;
+    public static final int BORDER_COLOR = (byte) 26;
+    public static final int RAM_DUMP = (byte) 27;
+    public static final int REG_PC = (byte) 28;
+    public static final int PORT_7FFD = (byte) 30;
+    public static final int TRDOS_ROM_MAPPED = (byte) 31;
+
     private static final List<Integer> VALID_INTERRUPT_MODES = Arrays.asList(new Integer[] {0, 1, 2});
-    private byte[] data = new byte[Constants.SNA_HEADER_SIZE];
+    private byte[] data;
 
-
-    public static SNAHeader fromStream(InputStream is) throws IOException {
-        SNAHeader snaHeader = new SNAHeader();
-        int read = is.read(snaHeader.data);
-        if (read != Constants.SNA_HEADER_SIZE) {
-            LOGGER.error("Unexpected size read from SNA Header. Was: " + read + ", expected: " + Constants.SNA_HEADER_SIZE);
-            throw new IllegalArgumentException("Exhausted stream");
-        }
-        return snaHeader;
+    public SNAHeader(int size) {
+        data = new byte[size];
     }
 
-    public static SNAHeader fromByteArray(byte[] in) {
-        if (in.length >= Constants.SNA_HEADER_SIZE) {
-            SNAHeader header = new SNAHeader();
-            System.arraycopy(in, 0, header.data, 0, Constants.SNA_HEADER_SIZE);
-            return header;
-        } else {
-            throw new IllegalArgumentException("Too short byte array provided");
-        }
+    public static SNAHeader from48kSNAGameByteArray(byte[] in) {
+        SNAHeader header = new SNAHeader(Constants.SNA_SHORT_HEADER_SIZE);
+        System.arraycopy(in, 0, header.data, 0, Constants.SNA_SHORT_HEADER_SIZE);
+        return header;
+    }
+
+    public static SNAHeader from128kSNAGameByteArray(byte[] in) {
+        SNAHeader header = new SNAHeader(Constants.SNA_LONG_HEADER_SIZE);
+        System.arraycopy(in, 0, header.data, 0, Constants.SNA_SHORT_HEADER_SIZE);
+        int extendedHeaderOffset = Constants.SNA_SHORT_HEADER_SIZE + Constants.SLOT_SIZE * 3;
+        header.setWord(REG_PC, in[extendedHeaderOffset], in[extendedHeaderOffset + 1]);
+        header.setByte(PORT_7FFD, in[extendedHeaderOffset + 2]);
+        header.setByte(TRDOS_ROM_MAPPED, in[extendedHeaderOffset + 3]);
+        return header;
     }
 
     public byte[] asByteArray() {

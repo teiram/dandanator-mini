@@ -15,6 +15,8 @@ public class TrainerList implements PokeViewable {
     private static final String NEW_TRAINER_NAME = LocaleUtil.i18n("newPokeMessage");
     private static final String EMPTY_STRING = "";
 
+    public static final TrainerList EMPTY_LIST = new TrainerList(null);
+
     private ObservableList<PokeViewable> children = FXCollections.observableArrayList();
     private Game owner;
 

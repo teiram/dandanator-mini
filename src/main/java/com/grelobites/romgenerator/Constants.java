@@ -11,6 +11,7 @@ import java.io.IOException;
 public class Constants {
 
     public static final String ROMSET_PROVIDED = "__ROMSET_PROVIDED__";
+    public static final int SLOT_SIZE = 0x4000;
     private static final Logger LOGGER = LoggerFactory.getLogger(Constants.class);
 
     private static final String DEFAULT_VERSION = "5.0s";
@@ -18,6 +19,7 @@ public class Constants {
     public static final int CHARSET_SIZE = 768;
 
     public static final int SNA_HEADER_SIZE = 27;
+    public static final int SNA_EXTENDED_HEADER_SIZE = 31;
 	public static final int SPECTRUM_SCREEN_WIDTH = 256;
 	public static final int SPECTRUM_SCREEN_HEIGHT = 192;
 	public static final int SPECTRUM_SCREEN_SIZE = 6144;

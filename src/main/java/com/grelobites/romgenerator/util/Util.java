@@ -3,10 +3,15 @@ package com.grelobites.romgenerator.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Util {
     private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
@@ -78,6 +83,17 @@ public class Util {
         return result;
     }
 
+    public static byte[] fromInputStream(InputStream is) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buffer = new byte[2048];
+        int nread;
+        while ((nread = is.read(buffer)) != -1) {
+            out.write(buffer, 0, nread);
+        }
+        out.flush();
+        return out.toByteArray();
+    }
+
     public static byte[] reverseByteArray(byte[] array) {
         int i = 0;
         int j = array.length - 1;
@@ -88,6 +104,18 @@ public class Util {
             array[i++] = tmp;
         }
         return array;
+    }
+
+    public static byte[] paddedByteArray(byte[] source, int length, byte filler) {
+        byte[] result = new byte[length];
+        Arrays.fill(result, filler);
+        System.arraycopy(source, 0, result, 0, source.length);
+        return result;
+    }
+
+    public static <S, T> Collection<T> collectionUpcast(Collection<S> list) {
+        return list.stream().map(item -> (T)item)
+            .collect(Collectors.toList());
     }
 
 }
