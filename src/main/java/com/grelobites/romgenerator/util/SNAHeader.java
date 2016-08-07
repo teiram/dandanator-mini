@@ -39,10 +39,9 @@ public class SNAHeader {
     public static final int REG_SP = 23;
     public static final int INTERRUPT_MODE = (byte) 25;
     public static final int BORDER_COLOR = (byte) 26;
-    public static final int RAM_DUMP = (byte) 27;
-    public static final int REG_PC = (byte) 28;
-    public static final int PORT_7FFD = (byte) 30;
-    public static final int TRDOS_ROM_MAPPED = (byte) 31;
+    public static final int REG_PC = (byte) 27;
+    public static final int PORT_7FFD = (byte) 29;
+    public static final int TRDOS_ROM_MAPPED = (byte) 30;
 
     private static final List<Integer> VALID_INTERRUPT_MODES = Arrays.asList(new Integer[] {0, 1, 2});
     private byte[] data;
@@ -116,12 +115,6 @@ public class SNAHeader {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SNAHeader [");
-        for (byte value: data) {
-            sb.append("0x").append(String.format("%02X", value)).append(" ");
-        }
-        sb.append(" ]");
-        return sb.toString();
+        return Util.dumpAsHexString(data);
     }
 }

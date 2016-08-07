@@ -63,7 +63,6 @@ public class MainAppController {
 	
 	@FXML
 	private TableColumn<Game, String> nameColumn;
-	
 
     @FXML
     private Button createRomButton;
@@ -91,6 +90,9 @@ public class MainAppController {
 
     @FXML
     private ProgressBar pokesCurrentSizeBar;
+
+    @FXML
+    private TabPane gameInfoTabPane;
 
     @FXML
     private Tab gameInfoTab;
@@ -137,7 +139,6 @@ public class MainAppController {
         LOGGER.debug("onGameListChange");
     	createRomButton.setDisable(getGameList().isEmpty());
         clearRomsetButton.setDisable(getGameList().isEmpty());
-
     	recreatePreviewImage();
     }
     
@@ -172,6 +173,8 @@ public class MainAppController {
 
 		gameTable.setItems(getGameList());
 		gameTable.setPlaceholder(new Label(LocaleUtil.i18n("dropGamesMessage")));
+
+        onGameSelection(null);
 
         gameTable.setRowFactory(rf -> {
 			TableRow<Game> row = new TableRow<>();
@@ -470,30 +473,74 @@ public class MainAppController {
         });
     }
 
+    private void bindInfoPropertiesToGame(Game game) {
+        if (game == null) {
+            gameName.textProperty().unbind();
+            gameHoldScreenAttribute.selectedProperty().unbind();
+            gameRomAttribute.selectedProperty().unbind();
+            gameType.textProperty().unbind();
+            pokeView.setRoot(null);
+        } else {
+            gameName.textProperty().bindBidirectional(game.nameProperty());
+            gameType.textProperty().set(game.getType().name());
+            if (game instanceof RamGame) {
+                RamGame ramGame = (RamGame) game;
+                gameHoldScreenAttribute.selectedProperty().bindBidirectional(ramGame.holdScreenProperty());
+                gameRomAttribute.selectedProperty().bindBidirectional(ramGame.romProperty());
+                pokeView.setRoot(new RecursiveTreeItem<>(ramGame.getTrainerList(), PokeViewable::getChildren,
+                        this::computePokeChange));
+            } else {
+                gameHoldScreenAttribute.selectedProperty().unbind();
+                gameRomAttribute.selectedProperty().unbind();
+                pokeView.setRoot(null);
+            }
+        }
+    }
+
 	private void onGameSelection(Game game) {
 	    gameRenderer.previewGame(game);
+        bindInfoPropertiesToGame(game);
 		if (game == null) {
             removeSelectedRomButton.setDisable(true);
             addPokeButton.setDisable(true);
             removeAllGamePokesButton.setDisable(true);
             removeSelectedPokeButton.setDisable(true);
             pokeView.setDisable(true);
-            pokeView.setRoot(null);
-
+            gameInfoTabPane.setDisable(true);
 		} else {
             removeSelectedRomButton.setDisable(false);
+
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 addPokeButton.setDisable(false);
-                pokeView.setRoot(new RecursiveTreeItem<>(ramGame.getTrainerList(), PokeViewable::getChildren,
-                        this::computePokeChange));
                 pokeView.setDisable(false);
+                pokesTab.setDisable(false);
+                gameRomAttribute.selectedProperty().addListener(
+                        (observable, oldValue, newValue) -> {
+                            recreatePreviewImage();
+                        }
+                );
+                gameHoldScreenAttribute.selectedProperty().addListener(
+                        (observable, oldValue, newValue) -> {
+                            recreatePreviewImage();
+                        });
+                gameName.textProperty().addListener(
+                        (observable, oldValue, newValue) -> {
+                            recreatePreviewImage();
+                        });
                 if (ramGame.getTrainerList().getChildren().size() > 0) {
                     removeAllGamePokesButton.setDisable(false);
                 } else {
                     removeAllGamePokesButton.setDisable(true);
                 }
+
+            } else {
+                pokeView.setDisable(true);
+                pokesTab.setDisable(true);
             }
+            gameInfoTab.setDisable(false);
+            gameInfoTabPane.setDisable(false);
+
 		}
 	}
 

@@ -118,4 +118,13 @@ public class Util {
             .collect(Collectors.toList());
     }
 
+    public static String dumpAsHexString(byte[] byteArray) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (byte value: byteArray) {
+            sb.append("0x").append(String.format("%02X", value)).append(" ");
+        }
+        sb.append(" ]");
+        return sb.toString();
+    }
 }

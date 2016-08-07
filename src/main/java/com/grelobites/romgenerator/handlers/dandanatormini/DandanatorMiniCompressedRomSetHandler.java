@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.compress.Compressor;
@@ -27,15 +28,18 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
     private static final int CBLOCKS_TABLE_SIZE = 20;
 
     private static Compressor compressor = CompressorFactory.getCompressor(CompressorType.ZX7B);
+    private int currentSize = 0;
 
     public DandanatorMiniCompressedRomSetHandler() throws IOException {
         super();
     }
 
-    private static byte[] compress(byte [] source) throws IOException {
+    private static byte[] compress(byte[]... sources) throws IOException {
         ByteArrayOutputStream target = new ByteArrayOutputStream();
         OutputStream os = compressor.getCompressingOutputStream(target);
-        os.write(source);
+        for (byte[] source : sources) {
+            os.write(source);
+        }
         os.close();
         return target.toByteArray();
     }
@@ -53,22 +57,24 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
 
     private int dumpGameCBlocks(OutputStream os, Game game, int offset)
         throws IOException {
+        LOGGER.debug("Writing CBlocks for game " + game.getName() + ", of type " + game.getType());
         ByteArrayOutputStream gameCBlocks = new ByteArrayOutputStream();
-        int compressedSize = 0;
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
             List<byte[]> compressedBlocks = ramGame.getCompressedData(compressor);
             for (byte[] block: compressedBlocks) {
+                LOGGER.debug("Writing CBlock with offset " + offset + " and length " + block.length);
                 gameCBlocks.write(offset / Constants.SLOT_SIZE + 1);
                 gameCBlocks.write(asLittleEndianWord(offset % Constants.SLOT_SIZE));
                 gameCBlocks.write(asLittleEndianWord(block.length));
+                offset += block.length;
             }
-            compressedSize = ramGame.getCompressedSize(compressor);
         }
         //Fill the remaining space with 0xFF
-        os.write(Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 9, (byte) 0xff));
-        LOGGER.debug("Compressed size of " + game.getName() + " is " + compressedSize);
-        return compressedSize;
+        byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 9, (byte) 0xff);
+        LOGGER.debug("CBlocks array calculated as " + Util.dumpAsHexString(cBlocksArray));
+        os.write(cBlocksArray);
+        return offset;
     }
 
     private int dumpGameHeader(OutputStream os, int index, Game game,
@@ -181,10 +187,6 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
 
             ByteArrayOutputStream cBlocksTable = new ByteArrayOutputStream();
             int cBlockOffset = CBLOCKS_TABLE_OFFSET + CBLOCKS_TABLE_SIZE;
-            byte[] compressedCharset = compress(configuration.getCharSet());
-            cBlocksTable.write(asLittleEndianWord(cBlockOffset));
-            cBlocksTable.write(asLittleEndianWord(compressedCharset.length));
-            cBlockOffset += compressedCharset.length;
 
             byte[] compressedScreen = compress(getScreenThirdSection(configuration.getBackgroundImage()));
             cBlocksTable.write(asLittleEndianWord(cBlockOffset));
@@ -201,10 +203,11 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             cBlocksTable.write(asLittleEndianWord(compressedPokeData.length));
             cBlockOffset += compressedPokeData.length;
 
-            byte[] compressedFirmware = compress(dmConfiguration.getDandanatorPicFirmware());
+            byte[] compressedCharSetAndFirmware = compress(configuration.getCharSet(),
+                    dmConfiguration.getDandanatorPicFirmware());
             cBlocksTable.write(asLittleEndianWord(cBlockOffset));
-            cBlocksTable.write(asLittleEndianWord(compressedFirmware.length));
-            cBlockOffset += compressedFirmware.length;
+            cBlocksTable.write(asLittleEndianWord(compressedCharSetAndFirmware.length));
+            cBlockOffset += compressedCharSetAndFirmware.length;
 
             GameChunk[] gameChunkTable = calculateGameChunkTable(games, cBlockOffset);
 
@@ -212,10 +215,10 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
 
             os.write(cBlocksTable.toByteArray());
             LOGGER.debug("Dumped CBlocks table. Offset " + os.size());
-            os.write(compressedCharset);
             os.write(compressedScreen);
             os.write(compressedScreenTexts);
-            os.write(compressedFirmware);
+            os.write(compressedPokeData);
+            os.write(compressedCharSetAndFirmware);
 
             LOGGER.debug("Dumped compressed data. Offset: " + os.size());
 
@@ -247,6 +250,46 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         } catch (Exception e) {
             LOGGER.error("Creating RomSet", e);
         }
+    }
+
+    private int getGameSize(Game game) throws IOException {
+        if (game.getType() == GameType.ROM) {
+            return game.getSlotCount() * Constants.SLOT_SIZE;
+        } else {
+            if (game instanceof RamGame) {
+                RamGame ramGame = (RamGame) game;
+                if (ramGame.getCompressed()) {
+                    return ramGame.getCompressedSize(compressor);
+                } else {
+                    return ramGame.getSlotCount() * Constants.SLOT_SIZE;
+                }
+            } else {
+                throw new IllegalArgumentException("Unable to calculate size for game " + game);
+            }
+        }
+    }
+
+    @Override
+    public boolean addGame(Game game) {
+        if (controller.getGameList().size() < DandanatorMiniConstants.MAX_GAMES) {
+            try {
+                int gameSize = getGameSize(game);
+                if ((currentSize + gameSize) < DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE) {
+                    //TODO: Alignment for ROM Games
+                    currentSize += gameSize;
+                    controller.getGameList().add(game);
+                    LOGGER.debug("After adding game " + game.getName() + ", used size: " + currentSize);
+                    return true;
+                } else {
+                    LOGGER.warn("Unable to add game of size " + gameSize + ". Currently used: " + currentSize);
+                }
+            } catch (Exception e) {
+                LOGGER.error("Calculating game size", e);
+            }
+        } else {
+            LOGGER.warn("Unable to add game. Game limit reached. Currently used size: " + currentSize);
+        }
+        return false;
     }
 
     @Override

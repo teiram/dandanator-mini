@@ -69,7 +69,7 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <TabPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <TabPane fx:id="gameInfoTabPane" GridPane.columnIndex="1" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets bottom="5.0" right="5.0" />
                      </GridPane.margin>
@@ -83,9 +83,9 @@
                                     <Label layoutX="10.0" layoutY="76.0" text="Rom" textFill="WHITE" />
                                     <Label layoutX="10.0" layoutY="107.0" text="Hold Screen" textFill="WHITE" />
                                     <Label layoutX="10.0" layoutY="138.0" text="Compressed Size" textFill="WHITE" />
-                                    <Label fx:id="compressedGameSize" layoutX="140.0" layoutY="138.0" prefHeight="17.0" prefWidth="90.0" text="0" textFill="WHITE" />
-                                    <CheckBox fx:id="isHoldScreen" layoutX="140.0" layoutY="107.0" mnemonicParsing="false" text="CheckBox" />
-                                    <CheckBox fx:id="isRom" layoutX="140.0" layoutY="76.0" mnemonicParsing="false" text="CheckBox" />
+                                    <Label fx:id="compressedSize" layoutX="140.0" layoutY="138.0" prefHeight="17.0" prefWidth="90.0" text="0" textFill="WHITE" />
+                                    <CheckBox fx:id="gameHoldScreenAttribute" layoutX="140.0" layoutY="107.0" mnemonicParsing="false" text="CheckBox" />
+                                    <CheckBox fx:id="gameRomAttribute" layoutX="140.0" layoutY="76.0" mnemonicParsing="false" text="CheckBox" />
                                     <TextField fx:id="gameName" layoutX="80.0" layoutY="9.0" prefHeight="27.0" prefWidth="171.0" />
                                     <Label fx:id="gameType" layoutX="137.0" layoutY="43.0" text="RAM" textFill="WHITE" />
                                  </children>

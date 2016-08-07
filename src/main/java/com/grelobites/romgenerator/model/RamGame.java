@@ -79,7 +79,7 @@ public class RamGame extends BaseGame implements Game {
 	}
 	
 	public BooleanProperty holdScreenProperty() {
-		return this.holdScreen;
+		return holdScreen;
 	}
 	
 	public Image getScreenshot() {

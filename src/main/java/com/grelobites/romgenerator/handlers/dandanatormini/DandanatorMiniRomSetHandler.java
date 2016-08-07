@@ -554,8 +554,10 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                     return true;
                 }
             } else {
-                LOGGER.warn("Non RAM48 games are not supported by this RomSethandler");
+                LOGGER.warn("Non RAM games are not supported by this RomSethandler");
             }
+        } else {
+            LOGGER.warn("Non RAM48 games are not supported by this RomSetHandler");
         }
         return false;
     }
