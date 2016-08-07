@@ -26,6 +26,6 @@ public class RomSetHandlerFactory {
     }
 
     public static RomSetHandler getDefaultHandler() {
-        return getHandler(RomSetType.DANDANATOR_MINI);
+        return getHandler(RomSetType.DDNTR_V4);
     }
 }

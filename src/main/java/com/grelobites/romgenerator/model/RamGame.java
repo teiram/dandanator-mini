@@ -35,6 +35,7 @@ public class RamGame extends BaseGame implements Game {
         super(gameType, data);
 		rom = new SimpleBooleanProperty();
 		holdScreen = new SimpleBooleanProperty();
+        compressed = new SimpleBooleanProperty(true);
 	}
 
     public SNAHeader getSnaHeader() {

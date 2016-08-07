@@ -24,7 +24,6 @@ public class PreferencesController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PreferencesController.class);
 
-
     private WritableImage backgroundImage;
     private ZxScreen charSetImage;
 
@@ -178,9 +177,12 @@ public class PreferencesController {
         romSetModeCombo.setItems(FXCollections.observableArrayList(
                 Stream.of(RomSetType.values()).map(Enum::name)
                         .collect(Collectors.toList())));
-        romSetModeCombo.getSelectionModel().select(RomSetType.DANDANATOR_MINI.name());
-        romSetModeCombo.onActionProperty().addListener(event ->
-                Configuration.getInstance().setMode(romSetModeCombo.getSelectionModel().getSelectedItem()));
+        romSetModeCombo.getSelectionModel().select(Configuration.getInstance()
+                .getMode());
+        romSetModeCombo.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    Configuration.getInstance().setMode(newValue);
+                });
     }
 
     @FXML

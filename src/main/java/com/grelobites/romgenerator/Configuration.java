@@ -19,7 +19,7 @@ public class Configuration {
     private static final String CHARSETPATH_PROPERTY = "charSetPath";
 
 
-    private static final String DEFAULT_MODE = RomSetType.DANDANATOR_MINI.name();
+    private static final String DEFAULT_MODE = RomSetType.DDNTR_V4.name();
 
     byte[] charSet;
     byte[] backgroundImage;

@@ -177,7 +177,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             LOGGER.debug("Dumped base ROM. Offset: " + os.size());
 
             os.write((byte) games.size());
-            LOGGER.debug("Dumped game headers. Offset: " + os.size());
+            LOGGER.debug("Dumped game count. Offset: " + os.size());
 
             ByteArrayOutputStream cBlocksTable = new ByteArrayOutputStream();
             int cBlockOffset = CBLOCKS_TABLE_OFFSET + CBLOCKS_TABLE_SIZE;

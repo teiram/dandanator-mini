@@ -4,8 +4,8 @@ import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniCompres
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniRomSetHandler;
 
 public enum RomSetType {
-    DANDANATOR_MINI(DandanatorMiniRomSetHandler.class),
-    DANDANATOR_V5(DandanatorMiniCompressedRomSetHandler.class);
+    DDNTR_V4(DandanatorMiniRomSetHandler.class),
+    DDNTR_V5(DandanatorMiniCompressedRomSetHandler.class);
 
     private Class<? extends RomSetHandler> handler;
 

@@ -158,6 +158,7 @@ public class MainAppController {
         if (romSetHandler != null) {
             romSetHandler.unbind();
         }
+        LOGGER.debug("Changing RomSetHandler to " + Configuration.getInstance().getMode());
         romSetHandler = RomSetHandlerFactory.getHandler(Configuration.getInstance().getMode());
         romSetHandler.bind(this);
     }
