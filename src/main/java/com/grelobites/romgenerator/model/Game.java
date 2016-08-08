@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.model;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import javafx.beans.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,5 +31,7 @@ public interface Game {
     byte[] getSlot(int slot);
 
     int getSlotCount();
+
+    Observable[] getObservable();
 
 }

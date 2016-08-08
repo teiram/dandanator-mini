@@ -18,6 +18,7 @@ import com.grelobites.romgenerator.util.ZxColor;
 import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.view.MainAppController;
+import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniRomSetHandler.class);
 
     private static final int DANDANATOR_ROMSET_SIZE = 512 * 1024;
-    static final int GAME_SIZE = 0xc000;
+    static final int GAME_SIZE = Constants.SLOT_SIZE * 3;
     protected static final int VERSION_SIZE = 32;
 
     private static final int SAVEDGAMECHUNK_SIZE = 256;
@@ -49,8 +50,8 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
     private ZxScreen menuImage;
     protected MainAppController controller;
-    private ChangeListener<? super String> updateImageListener =
-            (observable, oldValue, newValue) -> updateMenuPreview();
+    private InvalidationListener updateImageListener =
+            (c) -> updateMenuPreview();
 
     public DandanatorMiniRomSetHandler() throws IOException {
         initializeImages();
@@ -453,10 +454,17 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         this.controller = controller;
         updateMenuPreview();
         controller.getMenuPreviewImage().setImage(menuImage);
+
         DandanatorMiniConfiguration.getInstance().togglePokesMessageProperty()
                 .addListener(updateImageListener);
         DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
                 .addListener(updateImageListener);
+        Configuration.getInstance().backgroundImagePathProperty()
+                .addListener(updateImageListener);
+        Configuration.getInstance().charSetPathProperty()
+                .addListener(updateImageListener);
+
+        controller.getGameList().addListener(updateImageListener);
     }
 
     public void unbind() {
@@ -464,6 +472,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                 .removeListener(updateImageListener);
         DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
                 .removeListener(updateImageListener);
+        controller.getGameList().removeListener(updateImageListener);
     }
 
 

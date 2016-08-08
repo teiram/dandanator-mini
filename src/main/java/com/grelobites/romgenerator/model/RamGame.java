@@ -5,6 +5,7 @@ import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.compress.CompressorType;
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.image.Image;
@@ -88,7 +89,7 @@ public class RamGame extends BaseGame implements Game {
 				screenshot = ImageUtil
 						.scrLoader(ImageUtil.newScreenshot(), 
 								new ByteArrayInputStream(getSlot(0),
-										Constants.SNA_HEADER_SIZE,
+										0,
 										Constants.SPECTRUM_FULLSCREEN_SIZE));
 			} catch (Exception e) {
 				LOGGER.error("Loading screenshot", e);
@@ -124,6 +125,11 @@ public class RamGame extends BaseGame implements Game {
 	public boolean isCompressible() {
 		return true;
 	}
+
+	@Override
+    public Observable[] getObservable() {
+	    return new Observable[]{name, rom, holdScreen, compressed};
+    }
 
 	public List<byte[]> getCompressedData(Compressor compressor) throws IOException {
 	    if (compressedData == null || lastCompressor != compressor.getCompressorType()) {

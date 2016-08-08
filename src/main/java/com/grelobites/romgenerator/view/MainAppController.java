@@ -119,8 +119,7 @@ public class MainAppController {
     private Label compressedSize;
 
     public MainAppController() {
-        this.gameList = FXCollections.observableArrayList(game ->
-                new Observable[] {game.nameProperty()});
+        this.gameList = FXCollections.observableArrayList(game -> game.getObservable());
     }
 
     public ImageView getMenuPreviewImage() {
@@ -139,12 +138,7 @@ public class MainAppController {
         LOGGER.debug("onGameListChange");
     	createRomButton.setDisable(getGameList().isEmpty());
         clearRomsetButton.setDisable(getGameList().isEmpty());
-    	recreatePreviewImage();
-    }
-    
-    private void recreatePreviewImage() {
-        LOGGER.debug("recreatePreviewImage");
-        romSetHandler.updateMenuPreview();
+    	//recreatePreviewImage();
     }
 
     private void addSnapshotFiles(List<File> files) {
@@ -174,7 +168,7 @@ public class MainAppController {
 		gameTable.setItems(getGameList());
 		gameTable.setPlaceholder(new Label(LocaleUtil.i18n("dropGamesMessage")));
 
-        onGameSelection(null);
+        onGameSelection(null, null);
 
         gameTable.setRowFactory(rf -> {
 			TableRow<Game> row = new TableRow<>();
@@ -193,7 +187,6 @@ public class MainAppController {
 
 	            row.setOnDragOver(event -> {
 	                Dragboard db = event.getDragboard();
-	                LOGGER.debug("onDragOver: " + db);
 	                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
 	                    if (row.getIndex() != (Integer) db.getContent(SERIALIZED_MIME_TYPE)) {
 	                        event.acceptTransferModes(TransferMode.MOVE);
@@ -275,7 +268,7 @@ public class MainAppController {
 		});
 
         gameTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> onGameSelection(newValue));
+                (observable, oldValue, newValue) -> onGameSelection(oldValue, newValue));
         
         gameTable.setOnDragOver(event -> {
         	if (event.getGestureSource() != gameTable &&
@@ -441,14 +434,10 @@ public class MainAppController {
             event.consume();
         });
 
-        Configuration.getInstance().backgroundImagePathProperty().addListener(
-                (observable, oldValue, newValue) -> recreatePreviewImage());
-        Configuration.getInstance().charSetPathProperty().addListener(
-                (observable, oldValue, newValue) -> recreatePreviewImage());
-        Configuration.getInstance().modeProperty().addListener(
+         Configuration.getInstance().modeProperty().addListener(
                 (observable, oldValue, newValue) -> updateRomSetHandler());
 
-       //Update poke usage while adding or removing games from the list
+        //Update poke usage while adding or removing games from the list
         getGameList().addListener((ListChangeListener.Change<? extends Game> c) -> {
             boolean gamesAddedOrRemoved = false;
             boolean gamesUpdated = false;
@@ -473,14 +462,22 @@ public class MainAppController {
         });
     }
 
+    private void unbindInfoPropertiesFromGame(Game game) {
+        if (game != null) {
+            LOGGER.debug("Unbinding bidirectionally name property from game " + game);
+            gameName.textProperty().unbindBidirectional(game.nameProperty());
+            if (game instanceof RamGame) {
+                RamGame ramGame = (RamGame) game;
+                gameHoldScreenAttribute.selectedProperty().unbindBidirectional(ramGame.holdScreenProperty());
+                gameRomAttribute.selectedProperty().unbindBidirectional(ramGame.romProperty());
+                pokeView.setRoot(null);
+            }
+        }
+    }
+
     private void bindInfoPropertiesToGame(Game game) {
-        if (game == null) {
-            gameName.textProperty().unbind();
-            gameHoldScreenAttribute.selectedProperty().unbind();
-            gameRomAttribute.selectedProperty().unbind();
-            gameType.textProperty().unbind();
-            pokeView.setRoot(null);
-        } else {
+        if (game != null) {
+            LOGGER.debug("Binding bidirectionally name property to game " + game);
             gameName.textProperty().bindBidirectional(game.nameProperty());
             gameType.textProperty().set(game.getType().name());
             if (game instanceof RamGame) {
@@ -489,18 +486,16 @@ public class MainAppController {
                 gameRomAttribute.selectedProperty().bindBidirectional(ramGame.romProperty());
                 pokeView.setRoot(new RecursiveTreeItem<>(ramGame.getTrainerList(), PokeViewable::getChildren,
                         this::computePokeChange));
-            } else {
-                gameHoldScreenAttribute.selectedProperty().unbind();
-                gameRomAttribute.selectedProperty().unbind();
-                pokeView.setRoot(null);
             }
         }
     }
 
-	private void onGameSelection(Game game) {
-	    gameRenderer.previewGame(game);
-        bindInfoPropertiesToGame(game);
-		if (game == null) {
+	private void onGameSelection(Game oldGame, Game newGame) {
+	    LOGGER.debug("onGameSelection oldGame=" + oldGame+ ", newGame=" + newGame);
+	    unbindInfoPropertiesFromGame(oldGame);
+	    gameRenderer.previewGame(newGame);
+        bindInfoPropertiesToGame(newGame);
+		if (newGame == null) {
             removeSelectedRomButton.setDisable(true);
             addPokeButton.setDisable(true);
             removeAllGamePokesButton.setDisable(true);
@@ -510,37 +505,22 @@ public class MainAppController {
 		} else {
             removeSelectedRomButton.setDisable(false);
 
-            if (game instanceof RamGame) {
-                RamGame ramGame = (RamGame) game;
+            if (newGame instanceof RamGame) {
+                RamGame ramGame = (RamGame) newGame;
                 addPokeButton.setDisable(false);
                 pokeView.setDisable(false);
                 pokesTab.setDisable(false);
-                gameRomAttribute.selectedProperty().addListener(
-                        (observable, oldValue, newValue) -> {
-                            recreatePreviewImage();
-                        }
-                );
-                gameHoldScreenAttribute.selectedProperty().addListener(
-                        (observable, oldValue, newValue) -> {
-                            recreatePreviewImage();
-                        });
-                gameName.textProperty().addListener(
-                        (observable, oldValue, newValue) -> {
-                            recreatePreviewImage();
-                        });
                 if (ramGame.getTrainerList().getChildren().size() > 0) {
                     removeAllGamePokesButton.setDisable(false);
                 } else {
                     removeAllGamePokesButton.setDisable(true);
                 }
-
             } else {
                 pokeView.setDisable(true);
                 pokesTab.setDisable(true);
             }
             gameInfoTab.setDisable(false);
             gameInfoTabPane.setDisable(false);
-
 		}
 	}
 

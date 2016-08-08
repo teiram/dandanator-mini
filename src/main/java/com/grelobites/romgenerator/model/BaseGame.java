@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.model;
 
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.util.ImageUtil;
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -41,7 +42,15 @@ public class BaseGame {
 		return this.name;
 	}
 
-	public GameType getType() {
+    @Override
+    public String toString() {
+        return "BaseGame{" +
+                "name=" + name.get() +
+                ", gameType=" + gameType +
+                '}';
+    }
+
+    public GameType getType() {
 	    return gameType;
     }
 
@@ -51,5 +60,9 @@ public class BaseGame {
 
     public byte[] getSlot(int slot) {
         return data.get(slot);
+    }
+
+    public Observable[] getObservable() {
+        return new Observable[] {name};
     }
 }
