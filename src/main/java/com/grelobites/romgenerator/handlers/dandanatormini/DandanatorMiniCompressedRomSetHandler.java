@@ -27,6 +27,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
     private static final int CBLOCKS_TABLE_OFFSET = 6642;
     private static final int CBLOCKS_TABLE_SIZE = 20;
 
+    //TODO: Move to DandanatorMiniConfiguration
     private static Compressor compressor = CompressorFactory.getCompressor(CompressorType.ZX7B);
     private int currentSize = 0;
 
@@ -55,9 +56,32 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         return paddedHeader;
     }
 
-    private int dumpGameCBlocks(OutputStream os, Game game, int offset)
+    private int dumpUncompressedGameCBlocks(OutputStream os, Game game, int offset)
         throws IOException {
-        LOGGER.debug("Writing CBlocks for game " + game.getName() + ", of type " + game.getType());
+        LOGGER.debug("Writing CBlocks for uncompressed game " + game.getName()
+                + ", of type " + game.getType()
+                + ", at offset " + offset);
+        ByteArrayOutputStream gameCBlocks = new ByteArrayOutputStream();
+
+        for (int i = 0; i < game.getSlotCount(); i++) {
+            byte[] block = game.getSlot(i);
+            offset -= Constants.SLOT_SIZE;
+            LOGGER.debug("Writing CBlock with offset " + offset + " and length " + block.length);
+            gameCBlocks.write(offset / Constants.SLOT_SIZE + 1);
+            gameCBlocks.write(asLittleEndianWord(Constants.B_00)); //Blocks always at offset 0 (uncompressed)
+            gameCBlocks.write(asLittleEndianWord(Constants.SLOT_SIZE));
+        }
+        byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 9, (byte) 0xff);
+        LOGGER.debug("CBlocks array calculated as " + Util.dumpAsHexString(cBlocksArray));
+        os.write(cBlocksArray);
+        return offset;
+    }
+
+    private int dumpCompressedGameCBlocks(OutputStream os, Game game, int offset)
+        throws IOException {
+        LOGGER.debug("Writing CBlocks for compressed game " + game.getName()
+                + ", of type " + game.getType()
+                + ", at offset " + offset);
         ByteArrayOutputStream gameCBlocks = new ByteArrayOutputStream();
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
@@ -69,6 +93,8 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                 gameCBlocks.write(asLittleEndianWord(block.length));
                 offset += block.length;
             }
+        } else {
+            throw new IllegalArgumentException("Cannot extract compressed blocks from a non-RAM game");
         }
         //Fill the remaining space with 0xFF
         byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 9, (byte) 0xff);
@@ -89,14 +115,21 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         dumpGameRamCodeLocation(os, game, codeSize);
         os.write(asLittleEndianWord(gameChunk.addr));
         os.write(asLittleEndianWord(gameChunk.data.length));
-        return dumpGameCBlocks(os, game, offset);
+        return isGameCompressed(game) ?
+                dumpCompressedGameCBlocks(os, game, offset) :
+                dumpUncompressedGameCBlocks(os, game, offset);
     }
 
     private void dumpGameHeaders(OutputStream os, GameChunk[] gameChunkTable) throws IOException {
         int index = 0;
-        int offset = 0;
+        int forwardOffset = 0;
+        int backwardsOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1);
         for (Game game: controller.getGameList()) {
-            offset += dumpGameHeader(os, index, game, gameChunkTable[index], offset);
+            if (isGameCompressed(game)) {
+                forwardOffset = dumpGameHeader(os, index, game, gameChunkTable[index], forwardOffset);
+            } else {
+                backwardsOffset = dumpGameHeader(os, index, game, gameChunkTable[index], backwardsOffset);
+            }
             index++;
         }
         os.write(DandanatorMiniConstants.MAX_GAMES);
@@ -160,7 +193,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         return chunkList.toArray(new GameChunk[0]);
     }
 
-    private void dumpGameData(OutputStream os, Game game) throws IOException {
+    private void dumpCompressedGameData(OutputStream os, Game game) throws IOException {
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
             for (byte[] compressedChunk: ramGame.getCompressedData(compressor)) {
@@ -168,6 +201,13 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                 LOGGER.debug("Dumped compressed chunk for game " + ramGame.getName()
                         + " of size: " + compressedChunk.length);
             }
+        }
+    }
+
+    private void dumpUncompressedGameData(OutputStream os, Game game) throws IOException {
+        for (int i = 0; i < game.getSlotCount(); i++) {
+            os.write(game.getSlot(i));
+            LOGGER.debug("Dumped uncompressed chunk for game " + game.getName());
         }
     }
 
@@ -236,8 +276,20 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
 
 
             for (Game game : games) {
-                dumpGameData(os, game);
-                LOGGER.debug("Dumped game. Offset: " + os.size());
+                if (isGameCompressed(game)) {
+                    dumpCompressedGameData(os, game);
+                    LOGGER.debug("Dumped compressed game. Offset: " + os.size());
+                }
+            }
+
+            fillWithValue(os, Constants.B_00, os.size() % Constants.SLOT_SIZE);
+            LOGGER.debug("Dumped alignment zone. Offset: " + os.size());
+
+            for (Game game : games) {
+                if (!isGameCompressed(game)) {
+                    dumpUncompressedGameData(os, game);
+                    LOGGER.debug("Dumped uncompressed game. Offset: " + os.size());
+                }
             }
 
             os.write(dmConfiguration.getExtraRom());
