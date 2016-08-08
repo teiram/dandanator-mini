@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Z80GameImageLoader implements GameImageLoader {
@@ -23,12 +24,12 @@ public class Z80GameImageLoader implements GameImageLoader {
     private static final int GAME_IMAGE_SIZE = 0xC000;
     private static final int PAGE_SIZE = 0x4000;
 
-    private static List<byte[]> getGameImageV1(InputStream is, boolean compressed) throws IOException {
+    private static byte[][] getGameImageV1(InputStream is, boolean compressed) throws IOException {
         LOGGER.debug("Loading Z80 version 1 image, compressed " + compressed);
         InputStream z80is = compressed ? new Z80CompressedInputStream(is) : is;
-        List<byte[]> gameSlots = new ArrayList<>();
+        byte[][] gameSlots = new byte[3][];
         for (int i = 0; i < 3; i++) {
-            gameSlots.add(Util.fromInputStream(z80is, Constants.SLOT_SIZE));
+            gameSlots[i] = Util.fromInputStream(z80is, Constants.SLOT_SIZE);
         }
         return gameSlots;
     }
@@ -38,43 +39,80 @@ public class Z80GameImageLoader implements GameImageLoader {
         return Util.fromInputStream(z80is, Constants.SLOT_SIZE);
     }
 
-    private static List<byte[]> getGameImageV23(InputStream is) throws IOException {
-        List<byte[]> gameSlots = new ArrayList<>(3);
+    private static byte[][] getGameImageV23(InputStream is) throws IOException {
+        byte[][] gameSlots = new byte[12][];
         int pagesRead = 0;
         boolean eof = false;
-        while (pagesRead < 3 && !eof) {
+        while (pagesRead < 8 && !eof) {
             int compressedBlockLen = Util.asLittleEndian(is);
             int pageNumber = is.read();
             LOGGER.debug("Reading page number " + pageNumber +
                     " of compressed size " + compressedBlockLen +
                     " from stream with " + is.available() +
                     " available bytes");
-            switch (pageNumber) {
-                case 4:
-                    gameSlots.set(1, getCompressedChunk(is));
-                    pagesRead++;
-                    break;
-                case 5:
-                    gameSlots.set(2, getCompressedChunk(is));
-                    pagesRead++;
-                    break;
-                case 8:
-                    gameSlots.set(0, getCompressedChunk(is));
-                    pagesRead++;
-                    break;
-                case -1:
-                    LOGGER.warn("Found EOF while reading pages");
-                    eof = true;
-                default:
-                    long skipped = is.skip(compressedBlockLen);
-                    LOGGER.info("Skipped " + skipped + " bytes");
+            if (pageNumber == -1) {
+                LOGGER.info("EOF reading game pages");
+                eof = true;
+            } else if (pageNumber < gameSlots.length) {
+                gameSlots[pageNumber] = getCompressedChunk(is);
+                pagesRead++;
+            } else {
+                long skipped = is.skip(compressedBlockLen);
+                LOGGER.info("Skipped " + skipped + " bytes due to unexpected page number "
+                        + pageNumber);
             }
         }
+        LOGGER.debug("Pages read " + pagesRead);
         return gameSlots;
     }
 
-    private static List<byte[]> getGameImage(InputStream is, boolean compressed, boolean version1) throws IOException {
+    private static byte[][] getGameImage(InputStream is, boolean compressed, boolean version1) throws IOException {
         return version1 ? getGameImageV1(is, compressed) : getGameImageV23(is);
+    }
+
+    private boolean is48KGame(int version, int hwmode) {
+        return version == 1 ||
+                (version == 2 && (hwmode < 3)) ||
+                (version == 3 && (hwmode < 4));
+    }
+
+    private void injectPCintoStack(List<byte[]> gameSlots, int sp, int pc) {
+        int pcLocation = sp - 0x4000; //Offset of PC in game image (Starts at 0x4000)
+        int pcSlot = pcLocation / Constants.SLOT_SIZE;
+        int pcOffset = pcLocation % Constants.SLOT_SIZE;
+        gameSlots.get(pcSlot)[pcOffset] = (byte) (pc & 0xFF);
+        gameSlots.get(pcSlot)[pcOffset + 1] = (byte) ((pc >> 8) & 0xFF);
+    }
+
+    private RamGame createRamGameFromData(int version, int c000MappedPage,
+                                          int pc, int sp,
+                                          int hwMode, byte[][] gameData) {
+        if (version == 1) {
+            LOGGER.debug("Assembling game as version 1 48K game");
+            return new RamGame(GameType.RAM48, Arrays.asList(gameData));
+        } else {
+            ArrayList<byte[]> arrangedBlocks = new ArrayList<>();
+            final int pageOffset = 3; //To map array positions to page numbers
+            GameType gameType;
+            if (is48KGame(version, hwMode)) {
+                arrangedBlocks.add(gameData[8]);
+                arrangedBlocks.add(gameData[4]);
+                arrangedBlocks.add(gameData[5]);
+                gameType = GameType.RAM48;
+                injectPCintoStack(arrangedBlocks, sp, pc);
+            } else {
+                arrangedBlocks.add(gameData[5 + pageOffset]);
+                arrangedBlocks.add(gameData[2 + pageOffset]);
+                arrangedBlocks.add(gameData[c000MappedPage + pageOffset]);
+                for (int page : new Integer[] {0, 1, 3, 4, 6, 7}) {
+                    if (page != c000MappedPage) {
+                        arrangedBlocks.add(gameData[page + pageOffset]);
+                    }
+                }
+                gameType = arrangedBlocks.size() == 8 ? GameType.RAM128_LO : GameType.RAM128_HI;
+            }
+            return new RamGame(gameType, arrangedBlocks);
+        }
     }
 
     @Override
@@ -110,26 +148,28 @@ public class Z80GameImageLoader implements GameImageLoader {
 
         header.setByte(SNAHeader.INTERRUPT_MODE, (byte) (is.read() & 0x3));
 
+        int version = 1;
         boolean version1 = (pc != 0);
-
+        int hwMode = -1;
+        int c000MappedPage = -1;
         if (!version1) {
             //Version 2 or 3
             int headerLength = Util.asLittleEndian(is);
+            version = headerLength == 23 ? 2 : 3;
             pc = Util.asLittleEndian(is);
-            is.skip(headerLength - 2);
+            hwMode = is.read();
+            c000MappedPage = is.read() & 0x03;
+            is.skip(headerLength - 4);
         }
-        List<byte[]> gameSlots = getGameImage(is, compressed, version1);
-        int pcLocation = sp - 0x4000; //Offset of PC in game image (Starts at 0x4000)
-        int pcSlot = pcLocation / Constants.SLOT_SIZE;
-        int pcOffset = pcLocation % Constants.SLOT_SIZE;
-        gameSlots.get(pcSlot)[pcOffset] = (byte) (pc & 0xFF);
-        gameSlots.get(pcSlot)[pcOffset + 1] = (byte) ((pc >> 8) & 0xFF);
+        LOGGER.debug("Version is " + version + ", hardware mode is " + hwMode
+                + ", c000MappedPage is " + c000MappedPage);
+        byte[][] gameSlots = getGameImage(is, compressed, version1);
 
         if (!header.validate()) {
             throw new IllegalArgumentException("Header doesn't pass validations");
         }
         LOGGER.debug("Loaded Z80 game. SNAHeader: " + header);
-        RamGame game = new RamGame(GameType.RAM48, gameSlots);
+        RamGame game = createRamGameFromData(version, c000MappedPage, hwMode, pc, sp,  gameSlots);
         game.setSnaHeader(header);
         return game;
     }
