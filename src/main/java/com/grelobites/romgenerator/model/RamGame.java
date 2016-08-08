@@ -146,13 +146,21 @@ public class RamGame extends BaseGame implements Game {
         return compressedData;
     }
 
+    public int getCompressedSize() throws IOException {
+        return getCompressedSize(null);
+    }
+
     public int getCompressedSize(Compressor compressor) throws IOException {
         if (compressedSize == null) {
-            int size = 0;
-            for (byte[] compressedSlot: getCompressedData(compressor)) {
-                size += compressedSlot.length;
+            if (compressor != null) {
+                int size = 0;
+                for (byte[] compressedSlot : getCompressedData(compressor)) {
+                    size += compressedSlot.length;
+                }
+                compressedSize = size;
+            } else {
+                throw new IllegalStateException("Compressed size not calculated yet");
             }
-            compressedSize = size;
         }
         return compressedSize;
     }

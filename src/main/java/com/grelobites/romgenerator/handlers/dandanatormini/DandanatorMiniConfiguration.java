@@ -2,6 +2,8 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.util.compress.Compressor;
+import com.grelobites.romgenerator.util.compress.CompressorFactory;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.slf4j.Logger;
@@ -34,6 +36,8 @@ public class DandanatorMiniConfiguration {
     private byte[] dandanatorRom;
     private byte[] extraRom;
     private byte[] dandanatorPicFirmware;
+
+    private static Compressor compressor = CompressorFactory.getDefaultCompressor();
 
     private static DandanatorMiniConfiguration INSTANCE;
 
@@ -232,6 +236,10 @@ public class DandanatorMiniConfiguration {
 
     public void setDandanatorPicFirmware(byte[] dandanatorPicFirmware) {
         this.dandanatorPicFirmware = dandanatorPicFirmware;
+    }
+
+    public Compressor getCompressor() {
+        return compressor;
     }
 
     public byte[] getDandanatorPicFirmware() throws IOException {

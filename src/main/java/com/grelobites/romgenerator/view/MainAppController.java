@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.Configuration;
+import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.PokeViewable;
@@ -499,11 +500,30 @@ public class MainAppController {
         }
     }
 
+    private String getGameCompressedSize(Game game) {
+        try {
+            if (game instanceof RamGame) {
+                RamGame ramGame = (RamGame) game;
+                if (ramGame.getCompressed()) {
+                    return Integer.toString(ramGame.getCompressedSize());
+                } else {
+                    return Integer.toString(ramGame.getSlotCount() * Constants.SLOT_SIZE);
+                }
+            } else {
+                return Integer.toString(game.getSlotCount() * Constants.SLOT_SIZE);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Calculating game compressed size", e);
+        }
+        return "-";
+    }
+
     private void bindInfoPropertiesToGame(Game game) {
         if (game != null) {
             LOGGER.debug("Binding bidirectionally name property to game " + game);
             gameName.textProperty().bindBidirectional(game.nameProperty());
             gameType.textProperty().set(game.getType().name());
+            compressedSize.textProperty().set(getGameCompressedSize(game));
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 gameHoldScreenAttribute.selectedProperty().bindBidirectional(ramGame.holdScreenProperty());

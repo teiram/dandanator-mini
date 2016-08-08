@@ -35,11 +35,8 @@ public class GameUtil {
                         .map(GameImageLoaderFactory::getLoader)
                         .orElseGet(GameImageLoaderFactory::getDefaultLoader);
 
-                //TODO: Add logic for ROM games
-                RamGame game = (RamGame) loader.load(is);
+                Game game = loader.load(is);
                 game.setName(getGameName(file));
-                game.setRom(false);
-                game.setHoldScreen(false);
                 return Optional.of(game);
             }
         } catch (Exception e) {

@@ -1,11 +1,13 @@
 package com.grelobites.romgenerator.util.gameloader;
 
+import com.grelobites.romgenerator.util.gameloader.loaders.RomGameImageLoader;
 import com.grelobites.romgenerator.util.gameloader.loaders.SNAGameImageLoader;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
 
 public enum GameImageType {
     SNA(SNAGameImageLoader.class),
-    Z80(Z80GameImageLoader.class);
+    Z80(Z80GameImageLoader.class),
+    ROM(RomGameImageLoader.class);
 
     private Class<? extends GameImageLoader> generator;
 
