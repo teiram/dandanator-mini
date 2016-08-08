@@ -118,6 +118,14 @@ public class MainAppController {
     @FXML
     private Label compressedSize;
 
+    @FXML
+    private ProgressBar romUsage;
+
+    @FXML
+    private ProgressIndicator operationInProgressIndicator;
+
+    int backgroundOperationCount = 0;
+
     public MainAppController() {
         this.gameList = FXCollections.observableArrayList(game -> game.getObservable());
     }
@@ -140,12 +148,29 @@ public class MainAppController {
         clearRomsetButton.setDisable(getGameList().isEmpty());
     }
 
+    public void markBackgroundOperationStart() {
+        operationInProgressIndicator.setVisible(true);
+        backgroundOperationCount++;
+    }
+
+    public void markBackgroundOperationStop() {
+        backgroundOperationCount--;
+        if (backgroundOperationCount == 0) {
+            operationInProgressIndicator.setVisible(false);
+        }
+    }
+
+    public void setRomUsage(double usage) {
+        LOGGER.debug("Setting rom usage as " + usage);
+        romUsage.setProgress(usage);
+    }
+
     private void addSnapshotFiles(List<File> files) {
-        files.stream()
-                .map(GameUtil::createGameFromFile)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .forEach(g -> romSetHandler.addGame(g));
+            files.stream()
+                    .map(GameUtil::createGameFromFile)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .forEach(g -> romSetHandler.addGame(g));
     }
 
     private void updateRomSetHandler() {

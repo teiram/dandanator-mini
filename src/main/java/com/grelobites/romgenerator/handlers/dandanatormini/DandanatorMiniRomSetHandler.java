@@ -55,6 +55,9 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     private InvalidationListener updateImageListener =
             (c) -> updateMenuPreview();
 
+    private InvalidationListener updateRomUsage =
+            (c) -> updateRomUsage();
+
     public DandanatorMiniRomSetHandler() throws IOException {
         menuImage = new ZxScreen();
         updateBackgroundImage(menuImage);
@@ -66,6 +69,21 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                         .getBackgroundImage()));
     }
 
+    protected double getRomUsage() {
+        return (double) getMainAppController().getGameList().size() / DandanatorMiniConstants.SLOT_COUNT;
+    }
+
+    private void updateRomUsage() {
+        getMainAppController().setRomUsage(getRomUsage());
+    }
+
+    protected MainAppController getMainAppController() {
+        if (controller == null) {
+            throw new IllegalStateException("RomSetHandler is currently not bound to any controller");
+        } else {
+            return controller;
+        }
+    }
 
     private static byte[] asNullTerminatedByteArray(String name, int arrayLength) {
         String trimmedName =
@@ -467,6 +485,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                 .addListener(updateImageListener);
 
         controller.getGameList().addListener(updateImageListener);
+        controller.getGameList().addListener(updateRomUsage);
     }
 
     public void unbind() {
@@ -475,6 +494,8 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
                 .removeListener(updateImageListener);
         controller.getGameList().removeListener(updateImageListener);
+        controller.getGameList().removeListener(updateRomUsage);
+        controller = null;
     }
 
 
@@ -530,7 +551,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             int line = 10;
             int index = 1;
 
-            for (Game game : controller.getGameList()) {
+            for (Game game : getMainAppController().getGameList()) {
                 menuImage.setPen(
                         isGameScreenHold(game) ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
                 menuImage.deleteLine(line);
@@ -562,8 +583,9 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     public boolean addGame(Game game) {
         if (game.getType() == GameType.RAM48) {
             if (game instanceof RamGame) {
-                if (controller.getGameList().size() < DandanatorMiniConstants.SLOT_COUNT) {
-                    controller.getGameList().add(game);
+                int numGames = getMainAppController().getGameList().size();
+                if (numGames < DandanatorMiniConstants.SLOT_COUNT) {
+                    getMainAppController().getGameList().add(game);
                     return true;
                 }
             } else {

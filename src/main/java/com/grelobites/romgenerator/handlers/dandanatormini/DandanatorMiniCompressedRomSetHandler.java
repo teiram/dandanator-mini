@@ -9,6 +9,7 @@ import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.compress.CompressorFactory;
 import com.grelobites.romgenerator.util.compress.CompressorType;
+import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -322,26 +323,51 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
     }
 
     @Override
-    public boolean addGame(Game game) {
-        if (controller.getGameList().size() < DandanatorMiniConstants.MAX_GAMES) {
+    protected double getRomUsage() {
+        int size = 0;
+        for (Game game: getMainAppController().getGameList()) {
             try {
-                int gameSize = getGameSize(game);
-                if ((currentSize + gameSize) < DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE) {
-                    //TODO: Alignment for ROM Games
-                    currentSize += gameSize;
-                    controller.getGameList().add(game);
-                    LOGGER.debug("After adding game " + game.getName() + ", used size: " + currentSize);
-                    return true;
-                } else {
-                    LOGGER.warn("Unable to add game of size " + gameSize + ". Currently used: " + currentSize);
-                }
+                size += getGameSize(game);
+                LOGGER.debug("After adding size of game " + game.getName() + ", subtotal: " + size);
             } catch (Exception e) {
-                LOGGER.error("Calculating game size", e);
+                LOGGER.warn("Calculating game size usage", e);
             }
-        } else {
-            LOGGER.warn("Unable to add game. Game limit reached. Currently used size: " + currentSize);
         }
-        return false;
+        LOGGER.debug("Used size: " + size + ", total size: "
+                + DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE);
+        return ((double) size / (DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE));
+    }
+
+    @Override
+    public boolean addGame(Game game) {
+        controller.markBackgroundOperationStart();
+        new Thread(() -> {
+
+            if (controller.getGameList().size() < DandanatorMiniConstants.MAX_GAMES) {
+                try {
+                    int gameSize = getGameSize(game);
+                    final int maxSize = DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE;
+                    if ((currentSize + gameSize) < maxSize) {
+                        //TODO: Alignment for ROM Games
+                        currentSize += gameSize;
+                        Platform.runLater(() -> {
+                            controller.getGameList().add(game);
+                            controller.markBackgroundOperationStop();
+                                });
+                        LOGGER.debug("After adding game " + game.getName() + ", used size: " + currentSize);
+                        //return true;
+                    } else {
+                        LOGGER.warn("Unable to add game of size " + gameSize + ". Currently used: " + currentSize);
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Calculating game size", e);
+                }
+            } else {
+                LOGGER.warn("Unable to add game. Game limit reached. Currently used size: " + currentSize);
+            }
+            //return false;
+        }).start();
+        return true;
     }
 
     @Override
