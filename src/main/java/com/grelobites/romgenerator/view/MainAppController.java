@@ -138,7 +138,6 @@ public class MainAppController {
         LOGGER.debug("onGameListChange");
     	createRomButton.setDisable(getGameList().isEmpty());
         clearRomsetButton.setDisable(getGameList().isEmpty());
-    	//recreatePreviewImage();
     }
 
     private void addSnapshotFiles(List<File> files) {

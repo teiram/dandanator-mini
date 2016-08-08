@@ -76,9 +76,8 @@ public class Configuration {
     public void setBackgroundImagePath(String backgroundImagePath) {
         //Invalidate the background image in advance, to avoid the listeners to
         //enter before the property is set to null
-        if (!Constants.ROMSET_PROVIDED.equals(backgroundImagePath)) {
-            backgroundImage = null;
-        }
+        backgroundImage = null;
+
         this.backgroundImagePath.set(backgroundImagePath);
         persistConfigurationValue(BACKGROUNDIMAGEPATH_PROPERTY, this.backgroundImagePath.get());
     }

@@ -20,6 +20,8 @@ import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.view.MainAppController;
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
+import javafx.scene.image.Image;
+import javafx.scene.image.WritableImage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,12 +56,12 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
             (c) -> updateMenuPreview();
 
     public DandanatorMiniRomSetHandler() throws IOException {
-        initializeImages();
+        menuImage = new ZxScreen();
+        updateBackgroundImage(menuImage);
     }
 
-    private void initializeImages() throws IOException {
-        menuImage = ImageUtil.scrLoader(
-                new ZxScreen(),
+    private static void updateBackgroundImage(WritableImage image) throws IOException {
+        ImageUtil.scrLoader(image,
                 new ByteArrayInputStream(Configuration.getInstance()
                         .getBackgroundImage()));
     }
@@ -513,6 +515,8 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         LOGGER.debug("updateMenuPreview");
         try {
             DandanatorMiniConfiguration configuration = DandanatorMiniConfiguration.getInstance();
+
+            updateBackgroundImage(menuImage);
             menuImage.setCharSet(Configuration.getInstance().getCharSet());
 
             menuImage.setInk(ZxColor.BLACK);
