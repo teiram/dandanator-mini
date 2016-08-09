@@ -5,12 +5,11 @@ import com.grelobites.dandanator.Constants;
 import com.grelobites.dandanator.Context;
 import com.grelobites.dandanator.model.Game;
 import com.grelobites.dandanator.model.PokeViewable;
-import com.grelobites.dandanator.util.*;
-import com.grelobites.dandanator.util.gameloader.GameImageLoader;
-import com.grelobites.dandanator.util.gameloader.GameImageLoaderFactory;
+import com.grelobites.dandanator.util.GameUtil;
+import com.grelobites.dandanator.util.ImageUtil;
+import com.grelobites.dandanator.util.LocaleUtil;
+import com.grelobites.dandanator.util.ZxScreen;
 import com.grelobites.dandanator.util.pokeimporter.ImportContext;
-import com.grelobites.dandanator.util.pokeimporter.PokeImporter;
-import com.grelobites.dandanator.util.pokeimporter.PokeImporterFactory;
 import com.grelobites.dandanator.view.util.DialogUtil;
 import com.grelobites.dandanator.view.util.PokeEntityTreeCell;
 import com.grelobites.dandanator.view.util.RecursiveTreeItem;
@@ -339,11 +338,13 @@ public class DandanatorController {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("saveRomSet"));
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
-            try {
-                context.getRomSetHandler()
-                        .createRomSet(context, new FileOutputStream(saveFile));
-            } catch (IOException e) {
-                LOGGER.error("Creating ROM Set", e);
+            if (saveFile != null) {
+                try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+                    context.getRomSetHandler()
+                            .createRomSet(context, new FileOutputStream(saveFile));
+                } catch (IOException e) {
+                    LOGGER.error("Creating ROM Set", e);
+                }
             }
         });
 
@@ -581,10 +582,12 @@ public class DandanatorController {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("exportCurrentGame"));
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
-            try {
-                GameUtil.exportGameAsSNA(selectedGame, saveFile);
-            } catch (IOException e) {
-                LOGGER.error("Exporting Game", e);
+            if (saveFile != null) {
+                try {
+                    GameUtil.exportGameAsSNA(selectedGame, saveFile);
+                } catch (IOException e) {
+                    LOGGER.error("Exporting Game", e);
+                }
             }
         } else {
             DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGameErrorTitle"),
