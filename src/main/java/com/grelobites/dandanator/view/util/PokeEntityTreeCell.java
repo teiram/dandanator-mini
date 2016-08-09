@@ -23,8 +23,10 @@ public class PokeEntityTreeCell extends TreeCell<PokeViewable> {
     public void startEdit() {
         LOGGER.debug("Starting edition");
         super.startEdit();
-        if(textField == null) {
+        if (textField == null) {
             createTextField();
+        } else {
+            textField.setText(getItem().getViewRepresentation());
         }
         setText(null);
         setGraphic(textField);
