@@ -145,19 +145,21 @@ public class MainAppController {
 
     private void onGameListChange() {
         LOGGER.debug("onGameListChange");
-    	createRomButton.setDisable(getGameList().isEmpty());
+    	createRomButton.setDisable(getGameList().isEmpty() || backgroundOperationCount > 0);
         clearRomsetButton.setDisable(getGameList().isEmpty());
     }
 
     public void markBackgroundOperationStart() {
         operationInProgressIndicator.setVisible(true);
         backgroundOperationCount++;
+        createRomButton.setDisable(true);
     }
 
     public void markBackgroundOperationStop() {
         backgroundOperationCount--;
         if (backgroundOperationCount == 0) {
             operationInProgressIndicator.setVisible(false);
+            createRomButton.setDisable(getGameList().isEmpty());
         }
     }
 
