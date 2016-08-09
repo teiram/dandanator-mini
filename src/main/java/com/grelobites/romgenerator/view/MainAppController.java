@@ -524,7 +524,7 @@ public class MainAppController {
         if (game != null) {
             LOGGER.debug("Binding bidirectionally name property to game " + game);
             gameName.textProperty().bindBidirectional(game.nameProperty());
-            gameType.textProperty().set(game.getType().name());
+            gameType.textProperty().set(game.getType().screenName());
             compressedSize.textProperty().set(getGameCompressedSize(game));
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
@@ -548,6 +548,7 @@ public class MainAppController {
             removeSelectedPokeButton.setDisable(true);
             pokeView.setDisable(true);
             gameInfoTabPane.setDisable(true);
+            gameInfoTabPane.setVisible(false);
 		} else {
             removeSelectedRomButton.setDisable(false);
 
@@ -556,6 +557,8 @@ public class MainAppController {
                 addPokeButton.setDisable(false);
                 pokeView.setDisable(false);
                 pokesTab.setDisable(false);
+                gameRomAttribute.setVisible(true);
+                gameHoldScreenAttribute.setVisible(true);
                 if (ramGame.getTrainerList().getChildren().size() > 0) {
                     removeAllGamePokesButton.setDisable(false);
                 } else {
@@ -564,9 +567,12 @@ public class MainAppController {
             } else {
                 pokeView.setDisable(true);
                 pokesTab.setDisable(true);
+                gameRomAttribute.setVisible(false);
+                gameHoldScreenAttribute.setVisible(false);
             }
             gameInfoTab.setDisable(false);
             gameInfoTabPane.setDisable(false);
+            gameInfoTabPane.setVisible(true);
 		}
 	}
 

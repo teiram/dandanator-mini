@@ -19,6 +19,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -68,81 +69,90 @@
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
-                  <TabPane fx:id="gameInfoTabPane" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <Pane styleClass="gameInfoPane" GridPane.columnIndex="1" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets bottom="5.0" right="5.0" />
                      </GridPane.margin>
-                     <tabs>
-                        <Tab fx:id="gameInfoTab" closable="false" text="General">
-                           <content>
-                              <AnchorPane fx:id="gameInfoPane" prefHeight="200.0" prefWidth="200.0">
-                                 <children>
-                                    <Label layoutX="10.0" layoutY="14.0" text="Name" textFill="WHITE" />
-                                    <Label layoutX="10.0" layoutY="43.0" text="Type" textFill="WHITE" />
-                                    <Label layoutX="10.0" layoutY="138.0" text="Compressed Size" textFill="WHITE" />
-                                    <Label fx:id="compressedSize" layoutX="140.0" layoutY="138.0" prefHeight="17.0" prefWidth="90.0" text="0" textFill="WHITE" />
-                                    <CheckBox fx:id="gameHoldScreenAttribute" layoutX="10.0" layoutY="108.0" mnemonicParsing="false" text="Hold Screen" textFill="WHITE" />
-                                    <CheckBox fx:id="gameRomAttribute" layoutX="10.0" layoutY="76.0" mnemonicParsing="false" text="ROM" textFill="WHITE" />
-                                    <TextField fx:id="gameName" layoutX="80.0" layoutY="9.0" prefHeight="27.0" prefWidth="171.0" />
-                                    <Label fx:id="gameType" layoutX="137.0" layoutY="43.0" text="RAM" textFill="WHITE" />
-                                 </children>
-                              </AnchorPane>
-                           </content>
-                        </Tab>
-                        <Tab fx:id="pokesTab" closable="false" text="Pokes">
-                           <content>
-                              <AnchorPane>
-                                 <children>
-                                    <TreeView fx:id="pokeView" editable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="142.0" prefWidth="264.0" showRoot="false" />
-                                    <Button fx:id="addPokeButton" disable="true" layoutX="2.0" layoutY="144.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="+">
-                                       <font>
-                                          <Font size="10.0" />
-                                       </font>
-                                    </Button>
-                                    <Button fx:id="removeAllGamePokesButton" disable="true" layoutX="70.0" layoutY="144.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="x">
-                                       <font>
-                                          <Font size="10.0" />
-                                       </font>
-                                    </Button>
-                                    <ProgressBar fx:id="pokesCurrentSizeBar" layoutX="122.0" layoutY="145.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="22.0" prefWidth="139.0" progress="0.0" />
-                                    <Button fx:id="removeSelectedPokeButton" disable="true" layoutX="36.0" layoutY="144.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="-">
-                                       <font>
-                                          <Font size="10.0" />
-                                       </font>
-                                    </Button>
-                                 </children>
-                              </AnchorPane>
-                           </content>
-                        </Tab>
-                     </tabs>
-                  </TabPane>
+                     <children>
+                        <TabPane fx:id="gameInfoTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="230.0" prefWidth="260.0" styleClass="infoTabPane">
+                           <tabs>
+                              <Tab fx:id="gameInfoTab" closable="false" text="General">
+                                 <content>
+                                    <AnchorPane fx:id="gameInfoPane" prefHeight="200.0" prefWidth="200.0">
+                                       <children>
+                                          <Label layoutX="10.0" layoutY="14.0" text="Name" textFill="WHITE" />
+                                          <Label layoutX="10.0" layoutY="45.0" text="Type" textFill="WHITE" />
+                                          <Label layoutX="10.0" layoutY="138.0" text="Compressed Size" textFill="WHITE" />
+                                          <Label fx:id="compressedSize" layoutX="140.0" layoutY="138.0" prefHeight="17.0" prefWidth="90.0" text="0" textFill="WHITE" />
+                                          <CheckBox fx:id="gameHoldScreenAttribute" layoutX="10.0" layoutY="108.0" mnemonicParsing="false" text="Hold Screen" textFill="WHITE" />
+                                          <CheckBox fx:id="gameRomAttribute" layoutX="10.0" layoutY="76.0" mnemonicParsing="false" text="ROM" textFill="WHITE" />
+                                          <TextField fx:id="gameName" layoutX="58.0" layoutY="9.0" prefHeight="27.0" prefWidth="194.0" />
+                                          <Label fx:id="gameType" layoutX="58.0" layoutY="45.0" text="RAM" textFill="WHITE" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </Tab>
+                              <Tab fx:id="pokesTab" closable="false" text="Pokes">
+                                 <content>
+                                    <AnchorPane>
+                                       <children>
+                                          <TreeView fx:id="pokeView" editable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="141.0" prefWidth="260.0" showRoot="false" styleClass="pokesBox" />
+                                          <Button fx:id="addPokeButton" disable="true" layoutX="2.0" layoutY="142.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="+">
+                                             <font>
+                                                <Font size="10.0" />
+                                             </font>
+                                          </Button>
+                                          <Button fx:id="removeAllGamePokesButton" disable="true" layoutX="70.0" layoutY="142.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="x">
+                                             <font>
+                                                <Font size="10.0" />
+                                             </font>
+                                          </Button>
+                                          <Button fx:id="removeSelectedPokeButton" disable="true" layoutX="36.0" layoutY="142.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="-">
+                                             <font>
+                                                <Font size="10.0" />
+                                             </font>
+                                          </Button>
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </Tab>
+                           </tabs>
+                           <padding>
+                              <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
+                           </padding>
+                        </TabPane>
+                     </children>
+                  </Pane>
                </children>
                <VBox.margin>
                   <Insets top="5.0" />
                </VBox.margin>
             </GridPane>
-            <ToolBar prefHeight="39.0" prefWidth="536.0">
+            <ToolBar maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="42.0" prefWidth="552.0">
               <items>
-                  <AnchorPane prefHeight="28.0" prefWidth="520.0">
+                  <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="42.0" prefWidth="525.0">
                      <children>
-                        <Button fx:id="addRomButton" layoutX="3.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="+">
+                        <Button fx:id="addRomButton" layoutX="3.0" layoutY="8.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="+">
                            <font>
                               <Font size="12.0" />
                            </font>
                         </Button>
-                        <Button fx:id="removeSelectedRomButton" disable="true" layoutX="40.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="-">
+                        <Button fx:id="removeSelectedRomButton" disable="true" layoutX="40.0" layoutY="8.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="-">
                            <font>
                               <Font size="12.0" />
                            </font>
                         </Button>
-                        <Button fx:id="clearRomsetButton" disable="true" layoutX="76.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="x">
+                        <Button fx:id="clearRomsetButton" disable="true" layoutX="76.0" layoutY="8.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" text="x">
                            <font>
                               <Font size="12.0" />
                            </font>
                         </Button>
-                      <Button fx:id="createRomButton" disable="true" layoutX="134.0" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="125.0" text="%createRomSetButton" />
-                        <ProgressBar fx:id="romUsage" layoutX="271.0" layoutY="4.0" prefHeight="22.0" prefWidth="200.0" progress="0.0" />
-                        <ProgressIndicator fx:id="operationInProgressIndicator" layoutX="492.0" layoutY="-1.0" prefHeight="31.0" prefWidth="28.0" visible="false" />
+                      <Button fx:id="createRomButton" disable="true" layoutX="134.0" layoutY="8.0" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="125.0" text="%createRomSetButton" />
+                        <ProgressBar fx:id="romUsage" layoutX="295.0" layoutY="5.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="15.0" prefWidth="200.0" progress="0.0" />
+                        <ProgressIndicator fx:id="operationInProgressIndicator" layoutX="510.0" layoutY="8.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="25.0" visible="false" />
+                        <ProgressBar fx:id="pokesCurrentSizeBar" layoutX="295.0" layoutY="23.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="15.0" prefWidth="200.0" progress="0.0" />
+                        <Label layoutX="280.0" layoutY="4.0" text="R" />
+                        <Label layoutX="280.0" layoutY="20.0" text="P" />
                      </children>
                   </AnchorPane>
               </items>
