@@ -336,8 +336,8 @@ public class MainAppController {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("saveRomSet"));
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
-            try {
-                romSetHandler.exportRomSet(new FileOutputStream(saveFile));
+            try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+                romSetHandler.exportRomSet(fos);
             } catch (IOException e) {
                 LOGGER.error("Creating ROM Set", e);
             }
@@ -606,10 +606,12 @@ public class MainAppController {
                 FileChooser chooser = new FileChooser();
                 chooser.setTitle(LocaleUtil.i18n("exportCurrentGamePokes"));
                 final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
-                try {
-                    GameUtil.exportPokesToFile((RamGame) selectedGame, saveFile);
-                } catch (IOException e) {
-                    LOGGER.error("Exporting Game Pokes", e);
+                if (saveFile != null) {
+                    try {
+                        GameUtil.exportPokesToFile((RamGame) selectedGame, saveFile);
+                    } catch (IOException e) {
+                        LOGGER.error("Exporting Game Pokes", e);
+                    }
                 }
             } else {
                 DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGamePokesErrorTitle"),
@@ -629,10 +631,12 @@ public class MainAppController {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("exportCurrentGame"));
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
-            try {
-                GameUtil.exportGameAsSNA(selectedGame, saveFile);
-            } catch (IOException e) {
-                LOGGER.error("Exporting Game", e);
+            if (saveFile != null) {
+                try {
+                    GameUtil.exportGameAsSNA(selectedGame, saveFile);
+                } catch (IOException e) {
+                    LOGGER.error("Exporting Game", e);
+                }
             }
         } else {
             DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGameErrorTitle"),

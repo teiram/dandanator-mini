@@ -101,14 +101,16 @@ public class GameUtil {
         PokeImporter importer = Util.getFileExtension(pokeFile.getName())
                 .map(PokeImporterFactory::getImporter)
                 .orElseGet(PokeImporterFactory::getDefaultImporter);
-        importer.exportPokes(game.getTrainerList(), new FileOutputStream(pokeFile));
+        try (FileOutputStream fos = new FileOutputStream(pokeFile)) {
+            importer.exportPokes(game.getTrainerList(), fos);
+        }
     }
 
     public static void exportGameAsSNA(Game selectedGame, File saveFile) throws IOException {
-        FileOutputStream fos = new FileOutputStream(saveFile);
-        GameImageLoaderFactory.getLoader(GameImageType.SNA)
-                .save(selectedGame, fos);
-        fos.close();
+        try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+            GameImageLoaderFactory.getLoader(GameImageType.SNA)
+                    .save(selectedGame, fos);
+        }
     }
 
     public static boolean gameHasPokes(Game game) {
