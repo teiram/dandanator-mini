@@ -1,7 +1,6 @@
 package com.grelobites.romgenerator.util;
 
 import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.model.RamGame;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
@@ -10,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.util.Optional;
 
 import static junit.framework.TestCase.fail;
