@@ -62,7 +62,7 @@ public class PokPoke {
 
     private static Pattern trainerLinePattern = Pattern.compile(String.format("^%s(.*)", NEXT_TRAINER));
     private static Pattern pokeLinePattern = Pattern.compile(String
-            .format("^([%s%s]) *([0-9]{1,3}) +([0-9]{1,5}) +([0-9]{1,3}) +([0-9]{1,3})",
+            .format("^([%s%s])\\s*([0-9]{1,3})\\s+([0-9]{1,5})\\s+([0-9]{1,3})\\s+([0-9]{1,3})\\s*",
                     POKE_MARKER, LAST_POKE_MARKER));
     private static Pattern lastLinePattern = Pattern.compile("^" + LAST_LINE_MARKER);
 
@@ -90,9 +90,11 @@ public class PokPoke {
         PokPoke poke = new PokPoke();
         PokTrainer trainer = null;
         while ((line = br.readLine()) != null) {
+            LOGGER.debug("Processing poke file line " + line);
             if (trainer == null) {
                 Matcher m = trainerLinePattern.matcher(line);
                 if (m.matches()) {
+                    LOGGER.debug("Detected trainer line");
                     trainer = new PokTrainer();
                     trainer.setName(m.group(1).trim());
                     continue;
@@ -100,6 +102,7 @@ public class PokPoke {
             }
             Matcher pokeMatcher = pokeLinePattern.matcher(line);
             if (pokeMatcher.matches()) {
+                LOGGER.debug("Detected poke line");
                 if (trainer != null) {
                     PokValue pokeValue = new PokValue();
                     pokeValue.setBank(pokeMatcher.group(2));
@@ -108,6 +111,7 @@ public class PokPoke {
                     pokeValue.setOriginalValue(pokeMatcher.group(5));
                     trainer.addPokeValue(pokeValue);
                     if (LAST_POKE_MARKER.equals(pokeMatcher.group(1))) {
+                        LOGGER.debug("Detected last poke marker");
                         poke.addTrainer(trainer);
                         trainer = null;
                     }
