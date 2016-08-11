@@ -10,6 +10,7 @@ import com.grelobites.dandanator.model.poke.pok.PokPoke;
 import com.grelobites.dandanator.model.poke.pok.PokTrainer;
 import com.grelobites.dandanator.model.poke.pok.PokValue;
 import com.grelobites.dandanator.util.LocaleUtil;
+import com.grelobites.dandanator.util.Util;
 import com.grelobites.dandanator.util.pokeimporter.ImportContext;
 import com.grelobites.dandanator.util.pokeimporter.PokeImporter;
 import org.slf4j.Logger;
@@ -54,17 +55,19 @@ public class POKPokeImporter implements PokeImporter {
     public void importPokes(TrainerList trainerList, ImportContext ctx) throws IOException {
         PokPoke poke = PokPoke.fromInputStream(ctx.getPokeStream());
         for (PokTrainer pokTrainer: poke.getTrainers()) {
+            LOGGER.debug("Importing pokes for trainer " + pokTrainer.getName());
             if (trainerList.getChildren().size() >= Constants.MAX_TRAINERS_PER_GAME) {
                 ctx.addImportError(LocaleUtil.i18n("maximumTrainersPerGameExhausted"));
                 break;
             }
-            trainerList.addTrainerNode(pokTrainer.getName()).map(trainer -> {
-                pokTrainer.getPokeValues().stream()
-                        .filter(pokeValue -> isCompatibleSpectrum48K(ctx, pokeValue))
-                        .filter(pokeValue -> isInteractive(ctx, pokeValue))
-                        .filter(pokeValue -> enoughSize(ctx, trainer))
-                        .forEach(pokeValue -> trainer.addPoke(pokeValue.getAddress(),
-                                pokeValue.getValue()));
+            trainerList.addTrainerNode(Util.substring(pokTrainer.getName(), Constants.POKE_EFFECTIVE_NAME_SIZE))
+                    .map(trainer -> {
+                        pokTrainer.getPokeValues().stream()
+                            .filter(pokeValue -> isCompatibleSpectrum48K(ctx, pokeValue))
+                            .filter(pokeValue -> isInteractive(ctx, pokeValue))
+                            .filter(pokeValue -> enoughSize(ctx, trainer))
+                            .forEach(pokeValue -> trainer.addPoke(pokeValue.getAddress(),
+                                    pokeValue.getValue()));
                 return true;
             });
         }
