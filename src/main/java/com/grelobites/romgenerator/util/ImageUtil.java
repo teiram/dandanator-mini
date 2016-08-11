@@ -3,14 +3,21 @@ package com.grelobites.romgenerator.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Optional;
 
 import com.grelobites.romgenerator.Constants;
 
+import com.grelobites.romgenerator.model.Game;
+import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ImageUtil {
-				
+	private static final Logger LOGGER = LoggerFactory.getLogger(ImageUtil.class);
+
 	private static void writeToImage(byte[] imageBytes, byte[] attributeBytes, 
 			PixelWriter writer) {
 		for (int y = 0; y < Constants.SPECTRUM_SCREEN_HEIGHT; y++) {
@@ -70,4 +77,35 @@ public class ImageUtil {
 		System.arraycopy(attributes, 0, image, Constants.SPECTRUM_SCREEN_SIZE, attributes.length);
 		return image;
 	}
+
+    public static int attribute2pixelOffset(int attrOffset) {
+        int col = attrOffset % 0x20;
+        int line = attrOffset >> 5;
+        return ((line & 0x18) << 8) | ((line << 5) & 0xe0) | (col & 0x1f);
+    }
+
+
+    public static Optional<Integer> getHiddenDisplayOffset(byte[] displayData, int requiredSize) {
+        int attributeBaseOffset = Constants.SPECTRUM_SCREEN_SIZE;
+        int zoneSize = 0, i = 0;
+        do {
+            byte value = displayData[i + attributeBaseOffset];
+            //Attribute byte with pen == ink
+            if ((value & 0x7) == ((value >> 3) & 0x7)) {
+                zoneSize++;
+            } else {
+                zoneSize = 0;
+            }
+            i++;
+        } while (i < Constants.SPECTRUM_COLORINFO_SIZE && zoneSize < requiredSize);
+
+        int ramAddress = Constants.SPECTRUM_SCREEN_OFFSET;
+        if (zoneSize == requiredSize) {
+            LOGGER.debug("Found hidden attribute at " + (i - requiredSize));
+            ramAddress += attribute2pixelOffset(i - requiredSize);
+            return Optional.of(ramAddress);
+        } else {
+            return Optional.empty();
+        }
+    }
 }

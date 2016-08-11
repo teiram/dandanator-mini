@@ -142,37 +142,9 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                 (byte) ((value >> 8) & 0xff)};
     }
 
-    private static int attr2pixelOffset(int attrOffset) {
-        int col = attrOffset % 0x20;
-        int line = attrOffset >> 5;
-        LOGGER.debug("col = " + col + ", line = " + line);
-        return ((line & 0x18) << 8) | ((line << 5) & 0xe0) | (col & 0x1f);
-    }
-
-
     protected static void dumpGameRamCodeLocation(OutputStream os, Game game, int requiredSize) throws IOException {
-        byte[] gameData = game.getSlot(0); //Screen slot
-        int attributeBaseOffset = Constants.SPECTRUM_SCREEN_SIZE;
-        int zoneSize = 0, i = 0;
-        do {
-            byte value = gameData[i + attributeBaseOffset];
-            //Attribute byte with pen == ink
-            if ((value & 0x7) == ((value >> 3) & 0x7)) {
-                zoneSize++;
-            } else {
-                zoneSize = 0;
-            }
-            i++;
-        } while (i < Constants.SPECTRUM_COLORINFO_SIZE && zoneSize < requiredSize);
-
-        int ramAddress = Constants.SPECTRUM_SCREEN_OFFSET;
-        if (zoneSize == requiredSize) {
-            ramAddress += attr2pixelOffset(i - requiredSize);
-        } else {
-            //Use last screen pixels
-            LOGGER.debug("Using last screen pixels for RAM Address");
-            ramAddress += Constants.SPECTRUM_SCREEN_SIZE - requiredSize;
-        }
+        int ramAddress = ImageUtil.getHiddenDisplayOffset(game.getSlot(0), requiredSize)
+                .orElse(Constants.SPECTRUM_SCREEN_SIZE - requiredSize);
         os.write(asLittleEndianWord(ramAddress));
         LOGGER.debug(String.format("RAM Address calculated as 0x%04X", ramAddress));
     }
