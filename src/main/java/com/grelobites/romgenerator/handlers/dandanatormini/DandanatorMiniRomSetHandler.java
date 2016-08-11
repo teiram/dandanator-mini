@@ -19,8 +19,6 @@ import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.view.MainAppController;
 import javafx.beans.InvalidationListener;
-import javafx.beans.value.ChangeListener;
-import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,19 +143,19 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     private static int attr2pixelOffset(int attrOffset) {
-        int x = attrOffset % 0x20;
-        int y = (attrOffset - x) >> 2;
-        return ((((y >> 3) & 0x18) + y & 0x07) << 8)
-                + ((y << 2) & 0xe0) + x;
-
+        int col = attrOffset % 0x20;
+        int line = attrOffset >> 5;
+        LOGGER.debug("col = " + col + ", line = " + line);
+        return ((line & 0x18) << 8) | ((line << 5) & 0xe0) | (col & 0x1f);
     }
 
+
     protected static void dumpGameRamCodeLocation(OutputStream os, Game game, int requiredSize) throws IOException {
-        byte[] screenData = game.getSlot(0); //Screen slot
-        int attributeBaseOffset = Constants.SPECTRUM_SCREEN_SIZE + Constants.SNA_HEADER_SIZE;
+        byte[] gameData = game.getSlot(0); //Screen slot
+        int attributeBaseOffset = Constants.SPECTRUM_SCREEN_SIZE;
         int zoneSize = 0, i = 0;
         do {
-            byte value = screenData[i + attributeBaseOffset];
+            byte value = gameData[i + attributeBaseOffset];
             //Attribute byte with pen == ink
             if ((value & 0x7) == ((value >> 3) & 0x7)) {
                 zoneSize++;
