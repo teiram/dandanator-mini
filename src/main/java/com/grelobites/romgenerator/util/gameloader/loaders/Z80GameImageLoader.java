@@ -85,8 +85,9 @@ public class Z80GameImageLoader implements GameImageLoader {
     }
 
     private RamGame createRamGameFromData(int version, int c000MappedPage,
+                                          int hwMode,
                                           int pc, int sp,
-                                          int hwMode, byte[][] gameData) {
+                                          byte[][] gameData) {
         if (version == 1) {
             LOGGER.debug("Assembling game as version 1 48K game");
             return new RamGame(GameType.RAM48, Arrays.asList(gameData));
@@ -95,12 +96,14 @@ public class Z80GameImageLoader implements GameImageLoader {
             final int pageOffset = 3; //To map array positions to page numbers
             GameType gameType;
             if (is48KGame(version, hwMode)) {
+                LOGGER.debug("Assembling game as version 2/3 48K game");
                 arrangedBlocks.add(gameData[8]);
                 arrangedBlocks.add(gameData[4]);
                 arrangedBlocks.add(gameData[5]);
                 gameType = GameType.RAM48;
                 injectPCintoStack(arrangedBlocks, sp, pc);
             } else {
+                LOGGER.debug("Assembling game as version 2/3 128K game");
                 arrangedBlocks.add(gameData[5 + pageOffset]);
                 arrangedBlocks.add(gameData[2 + pageOffset]);
                 arrangedBlocks.add(gameData[c000MappedPage + pageOffset]);
