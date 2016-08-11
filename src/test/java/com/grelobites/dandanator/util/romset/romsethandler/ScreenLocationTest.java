@@ -68,7 +68,7 @@ public class ScreenLocationTest {
         }
         assertTrue(equalImages(originalImage, ImageUtil.scrLoader(ImageUtil.newScreenshot(),
                 new ByteArrayInputStream(screenData,
-                        Constants.SNA_HEADER_SIZE,
+                        0,
                         Constants.SPECTRUM_FULLSCREEN_SIZE))));
 
     }

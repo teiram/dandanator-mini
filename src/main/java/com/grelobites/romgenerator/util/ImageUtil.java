@@ -103,7 +103,7 @@ public class ImageUtil {
             LOGGER.debug("Found hidden attribute at " + (i - requiredSize));
             return Optional.of(attribute2pixelOffset(i - requiredSize));
         } else {
-            LOGGER.debug("Unable to find hidding screen area");
+            LOGGER.debug("Unable to find hiding screen area of size " + requiredSize);
             return Optional.empty();
         }
     }
