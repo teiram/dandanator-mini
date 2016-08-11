@@ -1,14 +1,15 @@
 package com.grelobites.romgenerator.util.romsethandler;
 
 import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.view.MainAppController;
+import com.grelobites.romgenerator.view.ApplicationContext;
+import javafx.beans.property.BooleanProperty;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface RomSetHandler {
 
-    void bind(MainAppController controller);
+    void bind(ApplicationContext applicationContext);
     void unbind();
 
     void exportRomSet(OutputStream os);
@@ -17,5 +18,6 @@ public interface RomSetHandler {
 
     void updateMenuPreview();
 
+    BooleanProperty generationAllowedProperty();
     boolean addGame(Game game);
 }

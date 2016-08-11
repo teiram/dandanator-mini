@@ -99,12 +99,11 @@ public class ImageUtil {
             i++;
         } while (i < Constants.SPECTRUM_COLORINFO_SIZE && zoneSize < requiredSize);
 
-        int ramAddress = Constants.SPECTRUM_SCREEN_OFFSET;
         if (zoneSize == requiredSize) {
             LOGGER.debug("Found hidden attribute at " + (i - requiredSize));
-            ramAddress += attribute2pixelOffset(i - requiredSize);
-            return Optional.of(ramAddress);
+            return Optional.of(attribute2pixelOffset(i - requiredSize));
         } else {
+            LOGGER.debug("Unable to find hidding screen area");
             return Optional.empty();
         }
     }

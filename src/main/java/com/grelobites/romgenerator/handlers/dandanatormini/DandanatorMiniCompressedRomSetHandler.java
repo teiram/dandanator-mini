@@ -5,9 +5,14 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.Util;
+import com.grelobites.romgenerator.util.Z80Opcode;
 import com.grelobites.romgenerator.util.compress.Compressor;
+import com.grelobites.romgenerator.view.ApplicationContext;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +84,13 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         return offset;
     }
 
+    protected static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
+        byte[] header = new byte[16];
+        os.write(header);
+        LOGGER.warn("Adding empty game launch code!!");
+        return header.length;
+    }
+
     private int dumpCompressedGameCBlocks(OutputStream os, Game game, int offset)
         throws IOException {
         LOGGER.debug("Writing CBlocks for compressed game " + game.getName()
@@ -126,7 +138,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         int index = 0;
         int forwardOffset = 0;
         int backwardsOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1);
-        for (Game game: controller.getGameList()) {
+        for (Game game: getApplicationContext().getGameList()) {
             if (isGameCompressed(game)) {
                 forwardOffset = dumpGameHeader(os, index, game, gameChunkTable[index], forwardOffset);
             } else {
@@ -220,7 +232,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             DandanatorMiniConfiguration dmConfiguration = DandanatorMiniConfiguration.getInstance();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Collection<Game> games = controller.getGameList();
+            Collection<Game> games = getApplicationContext().getGameList();
             os.write(dmConfiguration.getDandanatorRom(), 0, DandanatorMiniConstants.BASEROM_SIZE);
             LOGGER.debug("Dumped base ROM. Offset: " + os.size());
 
@@ -323,10 +335,15 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         }
     }
 
+    protected BooleanBinding getGenerationAllowedBinding(ApplicationContext ctx) {
+        return Bindings.size(ctx.getGameList())
+                .isNotEqualTo(0);
+    }
+
     @Override
-    protected double getRomUsage() {
+    protected double calculateRomUsage() {
         int size = 0;
-        for (Game game: getMainAppController().getGameList()) {
+        for (Game game: getApplicationContext().getGameList()) {
             try {
                 size += getGameSize(game);
                 LOGGER.debug("After adding size of game " + game.getName() + ", subtotal: " + size);
@@ -341,20 +358,16 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
 
     @Override
     public boolean addGame(Game game) {
-        controller.markBackgroundOperationStart();
-        new Thread(() -> {
-
-            if (controller.getGameList().size() < DandanatorMiniConstants.MAX_GAMES) {
+        getApplicationContext().addBackgroundTask(() -> {
+            if (getApplicationContext().getGameList().size() < DandanatorMiniConstants.MAX_GAMES) {
                 try {
                     int gameSize = getGameSize(game);
                     final int maxSize = DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE;
                     if ((currentSize + gameSize) < maxSize) {
-                        //TODO: Alignment for ROM Games
                         currentSize += gameSize;
                         Platform.runLater(() -> {
-                            controller.getGameList().add(game);
-                            controller.markBackgroundOperationStop();
-                                });
+                            getApplicationContext().getGameList().add(game);
+                        });
                         LOGGER.debug("After adding game " + game.getName() + ", used size: " + currentSize);
                         //return true;
                     } else {
@@ -366,8 +379,8 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             } else {
                 LOGGER.warn("Unable to add game. Game limit reached. Currently used size: " + currentSize);
             }
-            //return false;
-        }).start();
+            return null;
+        });
         return true;
     }
 

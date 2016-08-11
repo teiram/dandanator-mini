@@ -77,7 +77,7 @@ public class MainApp extends Application {
         exportPokes.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+G")
         );
-
+        exportPokes.disableProperty().bind(controller.getApplicationContext().gameSelectedProperty().not());
         exportPokes.setOnAction(f -> {
             try {
                 controller.exportCurrentGame();

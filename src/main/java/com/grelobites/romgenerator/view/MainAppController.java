@@ -2,7 +2,6 @@ package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.PokeViewable;
 import com.grelobites.romgenerator.model.RamGame;
@@ -16,14 +15,27 @@ import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerFactory;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import com.grelobites.romgenerator.view.util.PokeEntityTreeCell;
 import com.grelobites.romgenerator.view.util.RecursiveTreeItem;
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
@@ -48,9 +60,9 @@ import java.util.stream.Collectors;
 public class MainAppController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainAppController.class);
     private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
+    private ApplicationContext applicationContext;
 
-    private ObservableList<Game> gameList;
-    private RomSetHandler romSetHandler;
+    private ObjectProperty<RomSetHandler> romSetHandler;
     private GameRenderer gameRenderer;
 
     @FXML
@@ -125,47 +137,8 @@ public class MainAppController {
     @FXML
     private ProgressIndicator operationInProgressIndicator;
 
-    int backgroundOperationCount = 0;
-
-    public MainAppController() {
-        this.gameList = FXCollections.observableArrayList(game -> game.getObservable());
-    }
-
-    public ImageView getMenuPreviewImage() {
-        return menuPreviewImage;
-    }
-
-    public ImageView getGamePreviewImage() {
-        return gamePreviewImage;
-    }
-
-    public ObservableList<Game> getGameList() {
-        return gameList;
-    }
-
-    private void onGameListChange() {
-        LOGGER.debug("onGameListChange");
-    	createRomButton.setDisable(getGameList().isEmpty() || backgroundOperationCount > 0);
-        clearRomsetButton.setDisable(getGameList().isEmpty());
-    }
-
-    public void markBackgroundOperationStart() {
-        operationInProgressIndicator.setVisible(true);
-        backgroundOperationCount++;
-        createRomButton.setDisable(true);
-    }
-
-    public void markBackgroundOperationStop() {
-        backgroundOperationCount--;
-        if (backgroundOperationCount == 0) {
-            operationInProgressIndicator.setVisible(false);
-            createRomButton.setDisable(getGameList().isEmpty());
-        }
-    }
-
-    public void setRomUsage(double usage) {
-        LOGGER.debug("Setting rom usage as " + usage);
-        romUsage.setProgress(usage);
+     public ApplicationContext getApplicationContext() {
+        return applicationContext;
     }
 
     private void addSnapshotFiles(List<File> files) {
@@ -173,7 +146,7 @@ public class MainAppController {
                     .map(GameUtil::createGameFromFile)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
-                    .forEach(g -> romSetHandler.addGame(g));
+                    .forEach(g -> romSetHandler.get().addGame(g));
     }
 
     private void updateRomSetHandler() {
@@ -181,19 +154,29 @@ public class MainAppController {
             romSetHandler.unbind();
         }
         LOGGER.debug("Changing RomSetHandler to " + Configuration.getInstance().getMode());
-        romSetHandler = RomSetHandlerFactory.getHandler(Configuration.getInstance().getMode());
-        romSetHandler.bind(this);
+        romSetHandler.set(RomSetHandlerFactory.getHandler(Configuration.getInstance().getMode()));
+        romSetHandler.get().bind(getApplicationContext());
     }
 
 	@FXML
 	private void initialize() throws IOException {
+	    romSetHandler = new SimpleObjectProperty<>();
+        applicationContext = new ApplicationContext(menuPreviewImage);
 
 	    gameRenderer = GameRendererFactory.getDefaultRenderer();
-        gameRenderer.setTarget(getGamePreviewImage());
+        gameRenderer.setTarget(gamePreviewImage);
         updateRomSetHandler();
 
-		gameTable.setItems(getGameList());
+        clearRomsetButton.disableProperty()
+                .bind(Bindings.size(applicationContext.getGameList())
+                        .isEqualTo(0));
+
+		gameTable.setItems(applicationContext.getGameList());
 		gameTable.setPlaceholder(new Label(LocaleUtil.i18n("dropGamesMessage")));
+
+        romUsage.progressProperty().bind(applicationContext.romUsageProperty());
+        operationInProgressIndicator.visibleProperty().bind(
+                applicationContext.backgroundTaskCountProperty().greaterThan(0));
 
         onGameSelection(null, null);
 
@@ -290,13 +273,12 @@ public class MainAppController {
                     }
                 });
 
-		getGameList().addListener((ListChangeListener.Change<? extends Game> cl) -> {
-			onGameListChange();
-		});
-
         gameTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> onGameSelection(oldValue, newValue));
-        
+
+        applicationContext.gameSelectedProperty().bind(
+                gameTable.getSelectionModel().selectedItemProperty().isNotNull());
+
         gameTable.setOnDragOver(event -> {
         	if (event.getGestureSource() != gameTable &&
         			event.getDragboard().hasFiles()) {
@@ -332,12 +314,16 @@ public class MainAppController {
                 event.consume();
             });
 
+        createRomButton.disableProperty()
+                .bind(applicationContext.backgroundTaskCountProperty().greaterThan(0)
+                .or(romSetHandler.get().generationAllowedProperty().not()));
+
         createRomButton.setOnAction(c -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("saveRomSet"));
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
             try (FileOutputStream fos = new FileOutputStream(saveFile)) {
-                romSetHandler.exportRomSet(fos);
+                romSetHandler.get().exportRomSet(fos);
             } catch (IOException e) {
                 LOGGER.error("Creating ROM Set", e);
             }
@@ -358,7 +344,7 @@ public class MainAppController {
 
         removeSelectedRomButton.setOnAction(c -> {
             Optional<Integer> selectedIndex = Optional.of(gameTable.getSelectionModel().getSelectedIndex());
-            selectedIndex.ifPresent(index -> getGameList().remove(index.intValue()));
+            selectedIndex.ifPresent(index -> applicationContext.getGameList().remove(index.intValue()));
         });
 
         clearRomsetButton.setOnAction(c -> {
@@ -369,7 +355,7 @@ public class MainAppController {
                     .showAndWait();
 
             if (result.get() == ButtonType.OK){
-                getGameList().clear();
+                applicationContext.getGameList().clear();
             }
         });
 
@@ -462,10 +448,12 @@ public class MainAppController {
         });
 
          Configuration.getInstance().modeProperty().addListener(
-                (observable, oldValue, newValue) -> updateRomSetHandler());
+                (observable, oldValue, newValue) -> {
+                    updateRomSetHandler();
+                });
 
         //Update poke usage while adding or removing games from the list
-        getGameList().addListener((ListChangeListener.Change<? extends Game> c) -> {
+        applicationContext.getGameList().addListener((ListChangeListener.Change<? extends Game> c) -> {
             boolean gamesAddedOrRemoved = false;
             boolean gamesUpdated = false;
             while (c.next()) {
@@ -481,7 +469,7 @@ public class MainAppController {
                 }
             }
             if (gamesAddedOrRemoved) {
-                pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(getGameList()));
+                pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(applicationContext.getGameList()));
             }
             if (gamesUpdated) {
                 Game game = gameTable.getSelectionModel().getSelectedItem();
@@ -577,26 +565,26 @@ public class MainAppController {
 	}
 
     private void computePokeChange(PokeViewable f) {
-        LOGGER.debug("New poke ocupation is " + GameUtil.getOverallPokeUsage(getGameList()));
-        pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(getGameList()));
+        LOGGER.debug("New poke ocupation is " + GameUtil.getOverallPokeUsage(applicationContext.getGameList()));
+        pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(applicationContext.getGameList()));
         if (gameTable.getSelectionModel().getSelectedItem() == f.getOwner()) {
             removeAllGamePokesButton.setDisable(!GameUtil.gameHasPokes(f.getOwner()));
         }
     }
 
     public void importRomSet(File romSetFile) throws IOException {
-        if (getGameList().size() > 0) {
+        if (applicationContext.getGameList().size() > 0) {
             Optional<ButtonType> result = DialogUtil
                     .buildAlert(LocaleUtil.i18n("gameDeletionConfirmTitle"),
                             LocaleUtil.i18n("gameDeletionConfirmHeader"),
                             LocaleUtil.i18n("gameDeletionConfirmContent"))
                     .showAndWait();
             if (result.get() == ButtonType.OK){
-                getGameList().clear();
+                applicationContext.getGameList().clear();
             }
         }
         InputStream is = new FileInputStream(romSetFile);
-        romSetHandler.importRomSet(is);
+        romSetHandler.get().importRomSet(is);
     }
 
     public void exportCurrentGamePokes() {
