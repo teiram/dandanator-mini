@@ -85,12 +85,12 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     private static int attr2pixelOffset(int attrOffset) {
-        int x = attrOffset % 0x20;
-        int y = (attrOffset - x) >> 2;
-        return ((((y >> 3) & 0x18) + y & 0x07) << 8)
-                + ((y << 2) & 0xe0) + x;
-
+        int col = attrOffset % 0x20;
+        int line = attrOffset >> 5;
+        LOGGER.debug("col = " + col + ", line = " + line);
+        return ((line & 0x18) << 8) | ((line << 5) & 0xe0) | (col & 0x1f);
     }
+
 
     private void dumpGameRamCodeLocation(OutputStream os, Game game, int requiredSize) throws IOException {
         byte[] gameData = game.getData();
