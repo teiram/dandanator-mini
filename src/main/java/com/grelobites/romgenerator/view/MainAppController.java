@@ -354,7 +354,7 @@ public class MainAppController {
                             LocaleUtil.i18n("gameDeletionConfirmContent"))
                     .showAndWait();
 
-            if (result.get() == ButtonType.OK){
+            if (result.orElse(ButtonType.CANCEL) == ButtonType.OK){
                 applicationContext.getGameList().clear();
             }
         });
@@ -392,7 +392,7 @@ public class MainAppController {
                                 LocaleUtil.i18n("pokeSetDeletionConfirmContent"))
                         .showAndWait();
 
-                if (result.get() == ButtonType.OK) {
+                if (result.orElse(ButtonType.CANCEL) == ButtonType.OK) {
                     ((RamGame) game).getTrainerList().getChildren().clear();
                 }
             }
@@ -579,7 +579,7 @@ public class MainAppController {
                             LocaleUtil.i18n("gameDeletionConfirmHeader"),
                             LocaleUtil.i18n("gameDeletionConfirmContent"))
                     .showAndWait();
-            if (result.get() == ButtonType.OK){
+            if (result.orElse(ButtonType.CLOSE) == ButtonType.OK){
                 applicationContext.getGameList().clear();
             }
         }
