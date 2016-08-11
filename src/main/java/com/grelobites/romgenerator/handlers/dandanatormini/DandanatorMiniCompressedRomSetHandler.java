@@ -194,12 +194,24 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         }
     }
 
+    private static GameChunk getUncompressedGameChunk(Game game, int cBlockOffset) throws IOException {
+        GameChunk gameChunk = new GameChunk();
+        gameChunk.addr = 0;
+        gameChunk.data = new byte[6];
+        LOGGER.warn("Using unimplemented getUncompressedChunk");
+        return gameChunk;
+    }
+
     private static GameChunk[] calculateGameChunkTable(Collection<Game> games, int cBlockOffset) throws IOException {
         List<GameChunk> chunkList = new ArrayList<>();
         for (Game game: games) {
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 GameChunk gameChunk = getCompressedGameChunk(ramGame, cBlockOffset);
+                cBlockOffset += gameChunk.data.length;
+                chunkList.add(gameChunk);
+            } else {
+                GameChunk gameChunk = getUncompressedGameChunk(game, cBlockOffset);
                 cBlockOffset += gameChunk.data.length;
                 chunkList.add(gameChunk);
             }
@@ -258,6 +270,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             cBlockOffset += compressedPokeData.length;
 
             byte[] compressedCharSetAndFirmware = compress(configuration.getCharSet(),
+                    DandanatorMiniConstants.DANDANATOR_PIC_FW_HEADER.getBytes(),
                     dmConfiguration.getDandanatorPicFirmware());
             cBlocksTable.write(asLittleEndianWord(cBlockOffset));
             cBlocksTable.write(asLittleEndianWord(compressedCharSetAndFirmware.length));
