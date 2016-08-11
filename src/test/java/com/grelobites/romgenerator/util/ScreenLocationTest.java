@@ -1,11 +1,7 @@
-package com.grelobites.dandanator.util.romset.romsethandler;
+package com.grelobites.romgenerator.util;
 
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.util.GameUtil;
-import com.grelobites.romgenerator.util.ImageUtil;
-import com.grelobites.romgenerator.util.SNAHeader;
-import com.grelobites.romgenerator.util.Z80Opcode;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
@@ -42,15 +38,15 @@ public class ScreenLocationTest {
     @Test
     public void testHiddenScreenLocation() throws Exception {
         final int zoneLength = 6;
-        RamGame game = (RamGame) GameUtil.createGameFromFile(new File("/Users/mteira/Desktop/pingpong.sna")).get();
-        byte[] screenData = game.getSlot(0);
+        byte[] screenData = Util.fromInputStream(ScreenLocationTest.class.getResourceAsStream("/image/pingpong.scr"),
+                Constants.SPECTRUM_FULLSCREEN_SIZE);
         WritableImage originalImage = ImageUtil
                 .scrLoader(ImageUtil.newScreenshot(),
                         new ByteArrayInputStream(screenData,
                                 0,
                                 Constants.SPECTRUM_FULLSCREEN_SIZE));
 
-        Optional<Integer> offset = ImageUtil.getHiddenDisplayOffset(game.getSlot(0), zoneLength);
+        Optional<Integer> offset = ImageUtil.getHiddenDisplayOffset(screenData, zoneLength);
         if (offset.isPresent()) {
             LOGGER.debug("Calculated offset is " + offset);
             int i = 0;
@@ -59,8 +55,7 @@ public class ScreenLocationTest {
             screenData[base + 1] = Z80Opcode.POP_HL;
             screenData[base + 2] = Z80Opcode.PUSH_HL;
             screenData[base + 3] = Z80Opcode.POP_HL;
-            screenData[base + 4] = (game.getSnaHeader().getByte(SNAHeader.INTERRUPT_ENABLE) & 0x04) == 0 ?
-                    Z80Opcode.DI : Z80Opcode.EI;
+            screenData[base + 4] = Z80Opcode.DI;
             screenData[base + 5] = Z80Opcode.RET;
 
         } else {
