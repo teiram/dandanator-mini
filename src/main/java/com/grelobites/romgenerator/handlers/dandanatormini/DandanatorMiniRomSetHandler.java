@@ -53,7 +53,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     protected static final int SCREEN_THIRD_ATTRINFO_SIZE = 256;
 
     private ZxScreen menuImage;
-    private BooleanProperty generationAllowedProperty;
+    private BooleanProperty generationAllowedProperty = new SimpleBooleanProperty(false);
     protected ApplicationContext applicationContext;
     private InvalidationListener updateImageListener =
             (c) -> updateMenuPreview();
@@ -63,11 +63,10 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
     public DandanatorMiniRomSetHandler() throws IOException {
         menuImage = new ZxScreen();
-        generationAllowedProperty = new SimpleBooleanProperty(false);
         updateBackgroundImage(menuImage);
     }
 
-    private static void updateBackgroundImage(WritableImage image) throws IOException {
+    protected static void updateBackgroundImage(WritableImage image) throws IOException {
         ImageUtil.scrLoader(image,
                 new ByteArrayInputStream(Configuration.getInstance()
                         .getBackgroundImage()));
@@ -210,7 +209,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         }
     }
 
-    private String getVersionInfo() {
+    protected static String getVersionInfo() {
         return String.format("v%s", Util.stripSnapshotVersion(Constants.currentVersion()));
     }
 
@@ -453,6 +452,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     public void bind(ApplicationContext applicationContext) {
+        LOGGER.debug("Binding RomSetHandler to ApplicationContext");
         this.applicationContext = applicationContext;
         generationAllowedProperty.bind(getGenerationAllowedBinding(applicationContext));
 
@@ -473,6 +473,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     public void unbind() {
+        LOGGER.debug("Unbinding RomSetHandler from ApplicationContext");
         DandanatorMiniConfiguration.getInstance().togglePokesMessageProperty()
                 .removeListener(updateImageListener);
         DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()

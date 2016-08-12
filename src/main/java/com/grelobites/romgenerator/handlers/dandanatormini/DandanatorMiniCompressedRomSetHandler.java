@@ -5,11 +5,10 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.util.SNAHeader;
-import com.grelobites.romgenerator.util.Util;
-import com.grelobites.romgenerator.util.Z80Opcode;
+import com.grelobites.romgenerator.util.*;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.view.ApplicationContext;
+import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
@@ -30,11 +29,46 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
 
     private static final int CBLOCKS_TABLE_OFFSET = 6642;
     private static final int CBLOCKS_TABLE_SIZE = 20;
+    private static final int MAX_MENU_PAGES = 3;
+    private ZxScreen[] menuImages;
+    private AnimationTimer previewUpdateTimer;
+    private static final long SCREEN_UPDATE_PERIOD_NANOS = 3 * 1000000000L;
 
-    private int currentSize = 0;
+    private static void initializeMenuImages(ZxScreen[] menuImages) throws IOException {
+        for (int i = 0; i < menuImages.length; i++) {
+            menuImages[i] = new ZxScreen();
+            updateBackgroundImage(menuImages[i]);
+        }
+    }
 
     public DandanatorMiniCompressedRomSetHandler() throws IOException {
-        super();
+        menuImages = new ZxScreen[MAX_MENU_PAGES];
+        initializeMenuImages(menuImages);
+        previewUpdateTimer = new AnimationTimer() {
+            int currentFrame = 0;
+            long lastUpdate = 0;
+            @Override
+            public void handle(long now) {
+                if (now - lastUpdate > SCREEN_UPDATE_PERIOD_NANOS) {
+                    if (applicationContext != null) {
+                        int nextFrame;
+                        int gameCount = applicationContext.getGameList().size();
+                        if (gameCount > ((currentFrame + 1) * DandanatorMiniConstants.SLOT_COUNT)) {
+                            nextFrame = currentFrame + 1;
+                        } else {
+                            nextFrame = 0;
+                        }
+                        if (nextFrame >= menuImages.length) {
+                            LOGGER.warn("Out of bounds calculated next frame " + nextFrame);
+                            nextFrame = 0;
+                        }
+                        applicationContext.getMenuPreviewImage().setImage(menuImages[nextFrame]);
+                        currentFrame = nextFrame;
+                        lastUpdate = now;
+                    }
+                }
+            }
+        };
     }
 
     private static Compressor getCompressor() {
@@ -137,6 +171,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
     private void dumpGameHeaders(OutputStream os, GameChunk[] gameChunkTable) throws IOException {
         int index = 0;
         int forwardOffset = 0;
+        //backwardsOffset starts before the test ROM
         int backwardsOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1);
         for (Game game: getApplicationContext().getGameList()) {
             if (isGameCompressed(game)) {
@@ -309,15 +344,24 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                 }
             }
 
-            fillWithValue(os, Constants.B_00, os.size() % Constants.SLOT_SIZE);
-            LOGGER.debug("Dumped alignment zone. Offset: " + os.size());
-
+            //TODO. Compressed games shall be dumped backwards
+            ByteArrayOutputStream uncompressedStream = new ByteArrayOutputStream();
             for (Game game : games) {
                 if (!isGameCompressed(game)) {
-                    dumpUncompressedGameData(os, game);
-                    LOGGER.debug("Dumped uncompressed game. Offset: " + os.size());
+                    dumpUncompressedGameData(uncompressedStream, game);
+                    LOGGER.debug("Dumped uncompressed game. Offset in uncompressed stream: "
+                            + uncompressedStream.size());
                 }
             }
+            //Uncompressed data goes at the end minus the extra ROM size
+            int uncompressedOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1)
+                    - uncompressedStream.size();
+            int gapSize = uncompressedOffset - os.size();
+            LOGGER.debug("Gap to uncompressed zone: " + gapSize);
+            fillWithValue(os, Constants.B_00, gapSize);
+
+            os.write(uncompressedStream.toByteArray());
+            LOGGER.debug("Dumped uncompressed game data. Offset: " + os.size());
 
             os.write(dmConfiguration.getExtraRom());
             LOGGER.debug("Dumped custom rom. Offset: " + os.size());
@@ -331,7 +375,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         }
     }
 
-    private int getGameSize(Game game) throws IOException {
+    private static int getGameSize(Game game) throws IOException {
         if (game.getType() == GameType.ROM) {
             return game.getSlotCount() * Constants.SLOT_SIZE;
         } else {
@@ -369,6 +413,14 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         return ((double) size / (DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE));
     }
 
+    private static int getCurrentSize(List<Game> gameList) throws IOException {
+        int currentSize = 0;
+        for (Game game: gameList) {
+            currentSize += getGameSize(game);
+        }
+        return currentSize;
+    }
+
     @Override
     public boolean addGame(Game game) {
         getApplicationContext().addBackgroundTask(() -> {
@@ -376,11 +428,9 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                 try {
                     int gameSize = getGameSize(game);
                     final int maxSize = DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE;
+                    final int currentSize = getCurrentSize(getApplicationContext().getGameList());
                     if ((currentSize + gameSize) < maxSize) {
-                        currentSize += gameSize;
-                        Platform.runLater(() -> {
-                            getApplicationContext().getGameList().add(game);
-                        });
+                        Platform.runLater(() -> getApplicationContext().getGameList().add(game));
                         LOGGER.debug("After adding game " + game.getName() + ", used size: " + currentSize);
                         //return true;
                     } else {
@@ -390,11 +440,81 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                     LOGGER.error("Calculating game size", e);
                 }
             } else {
-                LOGGER.warn("Unable to add game. Game limit reached. Currently used size: " + currentSize);
+                LOGGER.warn("Unable to add game. Game limit reached.");
             }
             return null;
         });
         return true;
+    }
+
+    private static String getVersionAndPageInfo(ZxScreen screen, int page) {
+        String pageInfo = String.format("%d/%d", page, MAX_MENU_PAGES);
+        String versionInfo = getVersionInfo();
+        int gapSize = screen.getColumns() - versionInfo.length();
+        String formatter = String.format("%%s%%%ds", gapSize);
+        return String.format(formatter, versionInfo, pageInfo);
+    }
+
+    private void updateMenuPage(int index) throws IOException {
+        DandanatorMiniConfiguration configuration = DandanatorMiniConfiguration.getInstance();
+        ZxScreen page = menuImages[index];
+        updateBackgroundImage(page);
+        page.setCharSet(Configuration.getInstance().getCharSet());
+
+        page.setInk(ZxColor.BLACK);
+        page.setPen(ZxColor.BRIGHTMAGENTA);
+        for (int line = page.getLines() - 1; line >= 8; line--) {
+            page.deleteLine(line);
+        }
+
+        page.printLine(getVersionAndPageInfo(page, index + 1), 8, 0);
+
+        int line = 10;
+        int gameIndex = index * DandanatorMiniConstants.SLOT_COUNT;
+        List<Game> gameList = getApplicationContext().getGameList();
+        int gameCount = 0;
+        while (gameIndex < gameList.size() && gameCount < DandanatorMiniConstants.SLOT_COUNT) {
+            Game game = gameList.get(gameIndex);
+            page.setPen(
+                    isGameScreenHold(game) ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
+            page.deleteLine(line);
+            page.printLine(
+                    String.format("%d%c %s", (gameCount + 1) % DandanatorMiniConstants.SLOT_COUNT,
+                            isGameRom(game) ? 'r' : '.',
+                            game.getName()),
+                    line++, 0);
+            gameIndex++;
+            gameCount++;
+        }
+
+        page.setPen(ZxColor.BRIGHTBLUE);
+        page.printLine(String.format("P. %s", configuration.getTogglePokesMessage()), 21, 0);
+        page.setPen(ZxColor.BRIGHTRED);
+        page.printLine(String.format("R. %s", configuration.getExtraRomMessage()), 23, 0);
+    }
+
+    @Override
+    public void updateMenuPreview() {
+        LOGGER.debug("updateMenuPreview");
+        try {
+            for (int i = 0; i < MAX_MENU_PAGES; i++) {
+                updateMenuPage(i);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Updating background screen", e);
+        }
+    }
+
+    @Override
+    public void bind(ApplicationContext context) {
+        super.bind(context);
+        previewUpdateTimer.start();
+    }
+
+    @Override
+    public void unbind() {
+        super.unbind();
+        previewUpdateTimer.stop();
     }
 
     @Override

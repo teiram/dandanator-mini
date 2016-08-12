@@ -10,7 +10,7 @@ import java.io.IOException;
 public class DandanatorMiniConstants {
     public static final int SLOT_COUNT = 10;
     public static final int MAX_GAMES = 30;
-    public static final int GAME_SLOTS = 31;
+    public static final int GAME_SLOTS = 30; //Total ROM Size is 32 slots (minus 1 slot (code) and last (test rom))
     public static final int POKE_HEADER_SIZE = 3 * SLOT_COUNT;
     public static final int GAMENAME_SIZE = 33;
     public static final int POKE_ENTRY_SIZE = 3;

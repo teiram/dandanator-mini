@@ -62,7 +62,7 @@ public class MainAppController {
     private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
     private ApplicationContext applicationContext;
 
-    private ObjectProperty<RomSetHandler> romSetHandler;
+    private RomSetHandler romSetHandler;
     private GameRenderer gameRenderer;
 
     @FXML
@@ -146,7 +146,7 @@ public class MainAppController {
                     .map(GameUtil::createGameFromFile)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
-                    .forEach(g -> romSetHandler.get().addGame(g));
+                    .forEach(g -> romSetHandler.addGame(g));
     }
 
     private void updateRomSetHandler() {
@@ -154,13 +154,15 @@ public class MainAppController {
             romSetHandler.unbind();
         }
         LOGGER.debug("Changing RomSetHandler to " + Configuration.getInstance().getMode());
-        romSetHandler.set(RomSetHandlerFactory.getHandler(Configuration.getInstance().getMode()));
-        romSetHandler.get().bind(getApplicationContext());
+        romSetHandler = RomSetHandlerFactory.getHandler(Configuration.getInstance().getMode());
+        romSetHandler.bind(getApplicationContext());
+        createRomButton.disableProperty()
+                .bind(applicationContext.backgroundTaskCountProperty().greaterThan(0)
+                        .or(romSetHandler.generationAllowedProperty().not()));
     }
 
 	@FXML
 	private void initialize() throws IOException {
-	    romSetHandler = new SimpleObjectProperty<>();
         applicationContext = new ApplicationContext(menuPreviewImage);
 
 	    gameRenderer = GameRendererFactory.getDefaultRenderer();
@@ -314,17 +316,13 @@ public class MainAppController {
                 event.consume();
             });
 
-        createRomButton.disableProperty()
-                .bind(applicationContext.backgroundTaskCountProperty().greaterThan(0)
-                .or(romSetHandler.get().generationAllowedProperty().not()));
-
         createRomButton.setOnAction(c -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("saveRomSet"));
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
             if (saveFile != null) {
                 try (FileOutputStream fos = new FileOutputStream(saveFile)) {
-                    romSetHandler.get().exportRomSet(fos);
+                    romSetHandler.exportRomSet(fos);
                 } catch (IOException e) {
                     LOGGER.error("Creating ROM Set", e);
                 }
@@ -586,7 +584,7 @@ public class MainAppController {
             }
         }
         InputStream is = new FileInputStream(romSetFile);
-        romSetHandler.get().importRomSet(is);
+        romSetHandler.importRomSet(is);
     }
 
     public void exportCurrentGamePokes() {
