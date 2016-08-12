@@ -84,14 +84,16 @@ public class Util {
     }
 
     public static byte[] fromInputStream(InputStream is) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buffer = new byte[2048];
-        int nread;
-        while ((nread = is.read(buffer)) != -1) {
-            out.write(buffer, 0, nread);
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[2048];
+            int nread;
+            while ((nread = is.read(buffer)) != -1) {
+                out.write(buffer, 0, nread);
+            }
+            out.flush();
+            out.close();
+            return out.toByteArray();
         }
-        out.flush();
-        return out.toByteArray();
     }
 
     public static byte[] reverseByteArray(byte[] array) {
