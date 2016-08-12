@@ -110,6 +110,7 @@ public class SNAGameImageLoader implements GameImageLoader {
         int offset = SNA_48K_SIZE + 4; //4 bytes for the extra header bits
         for (int i = 3; i < numSlots; i++) {
             slots.add(Arrays.copyOfRange(gameImage, offset, offset + Constants.SLOT_SIZE));
+            offset += Constants.SLOT_SIZE;
         }
         return slots;
     }
