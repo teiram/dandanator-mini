@@ -61,7 +61,8 @@ public class MainApp extends Application {
         exportPokes.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+P")
         );
-
+        exportPokes.disableProperty().bind(controller.getApplicationContext()
+                .gameSelectedProperty().not());
         exportPokes.setOnAction(f -> {
             try {
                 controller.exportCurrentGamePokes();
@@ -73,19 +74,20 @@ public class MainApp extends Application {
     }
 
     private MenuItem exportGameMenuItem(Scene scene, MainAppController controller) {
-        MenuItem exportPokes = new MenuItem(LocaleUtil.i18n("exportGameMenuEntry"));
-        exportPokes.setAccelerator(
+        MenuItem exportGame = new MenuItem(LocaleUtil.i18n("exportGameMenuEntry"));
+        exportGame.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+G")
         );
-        exportPokes.disableProperty().bind(controller.getApplicationContext().gameSelectedProperty().not());
-        exportPokes.setOnAction(f -> {
+        exportGame.disableProperty().bind(controller.getApplicationContext()
+                .gameSelectedProperty().not());
+        exportGame.setOnAction(f -> {
             try {
                 controller.exportCurrentGame();
             } catch (Exception e) {
                 LOGGER.error("Exporting current game", e);
             }
         });
-        return exportPokes;
+        return exportGame;
     }
 
     private MenuItem importRomSetMenuItem(Scene scene, MainAppController controller) {
@@ -93,7 +95,8 @@ public class MainApp extends Application {
         importRomSet.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+I")
         );
-
+        importRomSet.disableProperty().bind(controller.getApplicationContext()
+                .backgroundTaskCountProperty().greaterThan(0));
         importRomSet.setOnAction(f -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("importRomSetChooser"));
