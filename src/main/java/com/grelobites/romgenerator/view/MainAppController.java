@@ -322,10 +322,12 @@ public class MainAppController {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("saveRomSet"));
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
-            try (FileOutputStream fos = new FileOutputStream(saveFile)) {
-                romSetHandler.get().exportRomSet(fos);
-            } catch (IOException e) {
-                LOGGER.error("Creating ROM Set", e);
+            if (saveFile != null) {
+                try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+                    romSetHandler.get().exportRomSet(fos);
+                } catch (IOException e) {
+                    LOGGER.error("Creating ROM Set", e);
+                }
             }
         });
 
