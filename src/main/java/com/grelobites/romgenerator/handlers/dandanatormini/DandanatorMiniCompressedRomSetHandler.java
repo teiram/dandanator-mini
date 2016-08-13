@@ -434,17 +434,17 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                         LOGGER.debug("After adding game " + game.getName() + ", used size: " + currentSize);
                     } else {
                         LOGGER.warn("Unable to add game of size " + gameSize + ". Currently used: " + currentSize);
-                        return OperationResult.errorWithDetailResult("Adding game",
-                                "No enough space to add game " + game.getName(),
-                                "Currently used " + currentSize);
+                        return OperationResult.errorWithDetailResult(LocaleUtil.i18n("gameImportError"),
+                                String.format(LocaleUtil.i18n("gameImportErrorNoSpaceHeader"), game.getName()),
+                                String.format(LocaleUtil.i18n("gameImportErrorNoSpaceContext"), currentSize));
                     }
                 } catch (Exception e) {
                     LOGGER.error("Calculating game size", e);
                 }
             } else {
                 LOGGER.warn("Unable to add game. Game limit reached.");
-                return OperationResult.errorResult("Adding game",
-                        "Limit of games reached");
+                return OperationResult.errorResult(LocaleUtil.i18n("gameImportError"),
+                        LocaleUtil.i18n("gameImportErrorNoSlotHeader"));
             }
             return OperationResult.successResult();
         });
