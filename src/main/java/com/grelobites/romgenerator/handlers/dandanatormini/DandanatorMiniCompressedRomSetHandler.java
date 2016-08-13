@@ -432,32 +432,37 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                     if ((currentSize + gameSize) < maxSize) {
                         Platform.runLater(() -> getApplicationContext().getGameList().add(game));
                         LOGGER.debug("After adding game " + game.getName() + ", used size: " + currentSize);
-                        //return true;
                     } else {
                         LOGGER.warn("Unable to add game of size " + gameSize + ". Currently used: " + currentSize);
+                        return OperationResult.errorWithDetailResult("Adding game",
+                                "No enough space to add game " + game.getName(),
+                                "Currently used " + currentSize);
                     }
                 } catch (Exception e) {
                     LOGGER.error("Calculating game size", e);
                 }
             } else {
                 LOGGER.warn("Unable to add game. Game limit reached.");
+                return OperationResult.errorResult("Adding game",
+                        "Limit of games reached");
             }
-            return null;
+            return OperationResult.successResult();
         });
         return true;
     }
 
-    private static String getVersionAndPageInfo(ZxScreen screen, int page) {
-        String pageInfo = String.format("%d/%d", page, MAX_MENU_PAGES);
+    private static String getVersionAndPageInfo(ZxScreen screen, int page, int numPages) {
+        String pageInfo = numPages > 1 ?
+                String.format("%d/%d", page, numPages) : "";
         String versionInfo = getVersionInfo();
         int gapSize = screen.getColumns() - versionInfo.length();
         String formatter = String.format("%%s%%%ds", gapSize);
         return String.format(formatter, versionInfo, pageInfo);
     }
 
-    private void updateMenuPage(int index) throws IOException {
+    private void updateMenuPage(List<Game> gameList, int pageIndex, int numPages) throws IOException {
         DandanatorMiniConfiguration configuration = DandanatorMiniConfiguration.getInstance();
-        ZxScreen page = menuImages[index];
+        ZxScreen page = menuImages[pageIndex];
         updateBackgroundImage(page);
         page.setCharSet(Configuration.getInstance().getCharSet());
 
@@ -467,11 +472,10 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             page.deleteLine(line);
         }
 
-        page.printLine(getVersionAndPageInfo(page, index + 1), 8, 0);
+        page.printLine(getVersionAndPageInfo(page, pageIndex + 1, numPages), 8, 0);
 
         int line = 10;
-        int gameIndex = index * DandanatorMiniConstants.SLOT_COUNT;
-        List<Game> gameList = getApplicationContext().getGameList();
+        int gameIndex = pageIndex * DandanatorMiniConstants.SLOT_COUNT;
         int gameCount = 0;
         while (gameIndex < gameList.size() && gameCount < DandanatorMiniConstants.SLOT_COUNT) {
             Game game = gameList.get(gameIndex);
@@ -497,8 +501,10 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
     public void updateMenuPreview() {
         LOGGER.debug("updateMenuPreview");
         try {
-            for (int i = 0; i < MAX_MENU_PAGES; i++) {
-                updateMenuPage(i);
+            List<Game> gameList = getApplicationContext().getGameList();
+            int numPages = 1 + gameList.size() / (DandanatorMiniConstants.SLOT_COUNT + 1);
+            for (int i = 0; i < numPages; i++) {
+                updateMenuPage(gameList, i, numPages);
             }
         } catch (Exception e) {
             LOGGER.error("Updating background screen", e);
