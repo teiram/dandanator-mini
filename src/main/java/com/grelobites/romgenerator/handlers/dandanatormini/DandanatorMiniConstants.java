@@ -13,8 +13,10 @@ public class DandanatorMiniConstants {
     public static final int GAME_SLOTS = 30; //Total ROM Size is 32 slots (minus 1 slot (code) and last (test rom))
     public static final int POKE_HEADER_SIZE = 3 * SLOT_COUNT;
     public static final int GAMENAME_SIZE = 33;
+    public static final int GAMENAME_EFFECTIVE_SIZE = 29;
     public static final int POKE_ENTRY_SIZE = 3;
     public static final int POKE_NAME_SIZE = 24;
+    public static final int POKE_EFFECTIVE_NAME_SIZE = 20;
     public static final int POKE_ZONE_SIZE = 3200;
     public static final int BASEROM_SIZE = 2560;
     public static final int DANDANATOR_PIC_FW_SIZE = 3072;

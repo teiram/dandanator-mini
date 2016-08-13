@@ -16,8 +16,6 @@ import com.grelobites.romgenerator.view.util.DialogUtil;
 import com.grelobites.romgenerator.view.util.PokeEntityTreeCell;
 import com.grelobites.romgenerator.view.util.RecursiveTreeItem;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.event.Event;
 import javafx.fxml.FXML;

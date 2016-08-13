@@ -7,6 +7,7 @@ import com.grelobites.romgenerator.model.PokeViewable;
 import com.grelobites.romgenerator.model.Trainer;
 import com.grelobites.romgenerator.model.TrainerList;
 import com.grelobites.romgenerator.util.LocaleUtil;
+import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.pokeimporter.ImportContext;
 import com.grelobites.romgenerator.util.pokeimporter.PokeImporter;
 import org.slf4j.Logger;
@@ -55,7 +56,8 @@ public class PoKPokeImporter implements PokeImporter {
                 ctx.addImportError(LocaleUtil.i18n("maximumTrainersPerGameExhausted"));
                 break;
             }
-            trainerList.addTrainerNode(pokTrainer.getName()).map(trainer -> {
+            trainerList.addTrainerNode(Util.substring(pokTrainer.getName(),
+                    DandanatorMiniConstants.POKE_EFFECTIVE_NAME_SIZE)).map(trainer -> {
                 pokTrainer.getPokeValues().stream()
                         .filter(pokeValue -> isCompatibleSpectrum48K(ctx, pokeValue))
                         .filter(pokeValue -> isInteractive(ctx, pokeValue))
@@ -80,7 +82,8 @@ public class PoKPokeImporter implements PokeImporter {
                 }
                 if (pokeViewableList.size() > 0) {
                     Poke poke = (Poke) pokeViewableList.get(pokeViewableList.size() - 1);
-                    writer.format("%s  8 %d %d 0\r\n", PokPoke.LAST_POKE_MARKER, poke.getAddress(), poke.getValue());
+                    writer.format("%s  8 %d %d %d\r\n", PokPoke.LAST_POKE_MARKER, poke.getAddress(),
+                            poke.getValue(), poke.getOriginalValue());
                 }
             }
             writer.print(PokPoke.LAST_LINE_MARKER);

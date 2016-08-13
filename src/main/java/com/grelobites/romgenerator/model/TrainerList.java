@@ -18,7 +18,7 @@ public class TrainerList implements PokeViewable {
     public static final TrainerList EMPTY_LIST = new TrainerList(null);
 
     private ObservableList<PokeViewable> children = FXCollections.observableArrayList();
-    private Game owner;
+    private RamGame owner;
 
     @Override
     public ObservableList<PokeViewable> getChildren() {
@@ -31,7 +31,7 @@ public class TrainerList implements PokeViewable {
     }
 
     @Override
-    public Game getOwner() {
+    public RamGame getOwner() {
         return owner;
     }
 
@@ -59,11 +59,11 @@ public class TrainerList implements PokeViewable {
         throw new IllegalArgumentException("Cannot update the root entity");
     }
 
-    public TrainerList(Game owner) {
+    public TrainerList(RamGame owner) {
         this.owner = owner;
     }
 
-    public void setOwner(Game owner) {
+    public void setOwner(RamGame owner) {
         this.owner = owner;
     }
 

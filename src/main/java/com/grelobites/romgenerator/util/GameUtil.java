@@ -1,5 +1,6 @@
 package com.grelobites.romgenerator.util;
 
+import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
@@ -61,7 +62,7 @@ public class GameUtil {
 
     public static String filterGameName(String name) {
         return name.codePoints().map(c -> allowedGameNameChar(c) ? c : '_')
-                .limit(DandanatorMiniConstants.GAMENAME_SIZE)
+                .limit(DandanatorMiniConstants.GAMENAME_EFFECTIVE_SIZE)
                 .collect(StringBuilder::new,
                         StringBuilder::appendCodePoint,
                         StringBuilder::append)
@@ -118,6 +119,16 @@ public class GameUtil {
             return ((RamGame) game).hasPokes();
         } else {
             return false;
+        }
+    }
+
+    public static int getGameAddressValue(Game game, int address) {
+        int slot = address / Constants.SLOT_SIZE;
+        int offset = address % Constants.SLOT_SIZE;
+        if (slot < game.getSlotCount()) {
+            return Byte.toUnsignedInt(game.getSlot(slot)[offset]);
+        } else {
+            throw new IllegalArgumentException("Requesting past end address for game " + game.getName());
         }
     }
 }

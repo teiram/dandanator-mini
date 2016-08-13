@@ -38,7 +38,7 @@ public class Trainer implements PokeViewable {
     }
 
     @Override
-    public Game getOwner() {
+    public RamGame getOwner() {
         return parent.getOwner();
     }
 
@@ -68,7 +68,6 @@ public class Trainer implements PokeViewable {
     public void setName(String name) {
         this.nameProperty.set(name);
     }
-
 
     public void addPoke(Integer address, Integer value) {
         if (pokeList.size() < MAX_POKES_PER_TRAINER) {

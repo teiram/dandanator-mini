@@ -1,5 +1,6 @@
 package com.grelobites.romgenerator.model;
 
+import com.grelobites.romgenerator.util.GameUtil;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
@@ -18,6 +19,7 @@ public class Poke implements PokeViewable {
 
     private final IntegerProperty addressProperty;
     private final IntegerProperty valueProperty;
+    private final Integer originalValue;
 
     private static final ObservableList<PokeViewable> children = FXCollections.emptyObservableList();
     private final PokeViewable parent;
@@ -71,16 +73,31 @@ public class Poke implements PokeViewable {
     }
 
     @Override
-    public Game getOwner() {
+    public RamGame getOwner() {
         return parent.getOwner();
     }
 
     private static void checkAddressRange(Integer address) {
-        checkInRange(address, LOWEST_ADDRESS, HIGHEST_ADDRESS);
+        if (address != null) {
+            checkInRange(address, LOWEST_ADDRESS, HIGHEST_ADDRESS);
+        }
     }
 
     private static void checkValueRange(Integer value) {
-        checkInRange(value, LOWEST_VALUE, HIGHEST_VALUE);
+        if (value != null) {
+            checkInRange(value, LOWEST_VALUE, HIGHEST_VALUE);
+        }
+    }
+
+    private Integer getOriginalValue(Integer address) {
+        Integer originalValue = null;
+        LOGGER.debug("Original value for " + address);
+        try {
+            originalValue = (int) GameUtil.getGameAddressValue(getOwner(), address);
+        } catch (Exception e) {
+            LOGGER.warn("Unable to get original value from game address", e);
+        }
+        return originalValue;
     }
 
     public Poke(Integer address, Integer value, Trainer parent) {
@@ -89,6 +106,7 @@ public class Poke implements PokeViewable {
         checkValueRange(value);
         this.addressProperty = new SimpleIntegerProperty(address);
         this.valueProperty = new SimpleIntegerProperty(value);
+        this.originalValue = getOriginalValue(address);
     }
 
     public IntegerProperty addressProperty() {
@@ -115,6 +133,10 @@ public class Poke implements PokeViewable {
         this.valueProperty.set(value);
     }
 
+    public Integer getOriginalValue() {
+        return originalValue;
+    }
+
     public byte[] addressBytes() {
         byte[] address = new byte[2];
         address[0] = (byte) (getAddress() & 0xff);
@@ -131,6 +153,7 @@ public class Poke implements PokeViewable {
         return "Poke{" +
                 "addressProperty=" + addressProperty +
                 ", valueProperty=" + valueProperty +
+                ", originalValue=" + originalValue +
                 '}';
     }
 }
