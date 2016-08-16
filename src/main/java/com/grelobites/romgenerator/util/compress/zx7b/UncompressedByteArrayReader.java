@@ -13,7 +13,6 @@ public class UncompressedByteArrayReader {
     private int inputIndex;
     private int outputIndex;
     private int inputSize;
-    private int partialCounter;
     private int bitMask;
     private int bitValue;
 
