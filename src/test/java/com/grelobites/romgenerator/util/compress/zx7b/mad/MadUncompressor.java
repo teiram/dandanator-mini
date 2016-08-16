@@ -10,7 +10,7 @@ public class MadUncompressor
 {
 
 
-    public static byte[] compress(byte[] fileArray) throws Exception {
+    public static byte[] uncompress(byte[] fileArray) throws Exception {
         int InputLen=-1;	// will contain len of input file
         int FinalDE=-1;		// will contain size of uncompressed file (max=65535)
 

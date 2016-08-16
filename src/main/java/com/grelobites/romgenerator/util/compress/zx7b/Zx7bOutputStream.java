@@ -20,6 +20,12 @@ public class Zx7bOutputStream extends FilterOutputStream {
     private static final Integer MAX_LEN = 65536;   // Range 2..65536
 
     private ByteArrayOutputStream inputData;
+    private boolean backwards = Zx7bCompressor.BACKWARDS_DEFAULT;
+
+    public Zx7bOutputStream(OutputStream out, boolean backwards) {
+        this(out);
+        this.backwards = backwards;
+    }
 
     public Zx7bOutputStream(OutputStream out) {
         super(out);
@@ -44,10 +50,11 @@ public class Zx7bOutputStream extends FilterOutputStream {
     @Override
     public void flush() throws IOException {
         inputData.flush();
-        byte[] data = Util.reverseByteArray(inputData.toByteArray());
+        byte[] data = backwards ? Util.reverseByteArray(inputData.toByteArray()) :
+                inputData.toByteArray();
         Optimal[] optimals = optimize(data);
         byte[] result = compress(optimals, data);
-        this.out.write(Util.reverseByteArray(result));
+        this.out.write(backwards ? Util.reverseByteArray(result) : result);
     }
 
     private static Optimal[] optimize(byte[] data) {
@@ -63,6 +70,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
         for (int i = 0; i < optimals.length; i++) {
             optimals[i] = new Optimal();
         }
+
         for (int i = 0; i < matches.length; i++) {
             matches[i] = new Match();
         }
@@ -70,29 +78,26 @@ public class Zx7bOutputStream extends FilterOutputStream {
             matchSlots[i] = new Match();
         }
 
+
         //First byte is always literal
         optimals[0].bits = 8;
 
 		//Process remaining bytes
         for (int i = 1; i < inputSize; i++) {
             optimals[i].bits = optimals[i - 1].bits + 9;
-            int matchIndex = (data[i - 1] < 0 ?
-                    data[i - 1] + 256 :
-                    data[i - 1]) << 8 | (data[i] < 0 ?
-                    data[i] + 256 :
-                    data[i]);
+            int matchIndex = ((data[i - 1] & 0xff) << 8) | (data[i] & 0xff);
             int best_len = 1;
             for (Match match = matches[matchIndex];
-                 match.next != null && best_len < MAX_LEN;
-                 match = match.next) {
-                int offset = i - match.next.index;
+                 match.index != 0 && best_len < MAX_LEN;
+                 match = matchSlots[match.index]) {
+                int offset = i - match.index;
                 if (offset > MAX_OFFSET) {
-                    match.next = null;
+                    match.index = 0;
                     break;
                 }
                 int len;
-                for (len = 2; len <= MAX_LEN; len++) {
-                    if ((len > best_len) && (len & 0xff) != 0) {
+                for (len = 2; len <= MAX_LEN && i >= len; len++) {
+                    if (len > best_len) {
                         best_len = len;
                         int bits = optimals[i - len].bits + bitsCount(offset, len);
                         if (optimals[i].bits > bits) {
@@ -113,30 +118,24 @@ public class Zx7bOutputStream extends FilterOutputStream {
                 min[offset] = i + 1 - len;
                 max[offset] = i;
             }
-            matchSlots[i].index = i;
-            matchSlots[i].next = matches[matchIndex].next;
-            matches[matchIndex].next = matchSlots[i];
+            matchSlots[i].index = matches[matchIndex].index;
+            matches[matchIndex].index = i;
         }
         return optimals;
     }
 
     public byte[] compress(Optimal[] optimals, byte[] data) throws IOException {
         int inputSize = data.length;
-        int outputSize = (optimals[inputSize - 1].bits + 16 + 7) / 8;
-        LOGGER.debug("Compressed size will be " + outputSize);
-        OutputByteArrayWriter output = new OutputByteArrayWriter(outputSize);
-
-        int offset;
         int inputIndex = inputSize - 1;
+        int outputSize = (optimals[inputIndex].bits + 18 + 7) / 8;
+        LOGGER.debug("Compressed size will be " + outputSize);
+        CompressedByteArrayWriter output = new CompressedByteArrayWriter(outputSize);
+
         int previousInputIndex;
 
         optimals[inputIndex].bits = 0;
-        while (inputIndex > 0) {
-            if (optimals[inputIndex].len == null) {
-                previousInputIndex = inputIndex - 1;
-            } else {
-                previousInputIndex = inputIndex - optimals[inputIndex].len;
-            }
+        while (inputIndex != 0) {
+            previousInputIndex = inputIndex - (optimals[inputIndex].len > 0 ? optimals[inputIndex].len : 1);
             optimals[previousInputIndex].bits = inputIndex;
             inputIndex = previousInputIndex;
         }
@@ -146,10 +145,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
 
 	    //Process remaining bytes */
         while ((inputIndex = optimals[inputIndex].bits) > 0) {
-            if (optimals[inputIndex].len == null) {
-                output.writeBit(0);
-                output.write(data[inputIndex]);
-            } else if (optimals[inputIndex].len == 0) {
+            if (optimals[inputIndex].len == 0) {
                 output.writeBit(0);
                 output.write(data[inputIndex]);
             } else {
@@ -158,7 +154,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
                 //Sequence length
                 output.writeEliasGamma(optimals[inputIndex].len - 1);
                 //Sequence offset
-                offset = optimals[inputIndex].offset - 1;
+                int offset = optimals[inputIndex].offset - 1;
                 if (offset < 128) {
                     output.write((byte) offset);
                 } else {
@@ -173,7 +169,10 @@ public class Zx7bOutputStream extends FilterOutputStream {
 
         //End mark
         output.writeBit(1);
-        output.writeEliasGamma(0xff);
+        for (int i = 0; i < 16; i++) {
+            output.writeBit(0);
+        }
+        output.writeBit(1);
 
         return output.asByteArray();
     }

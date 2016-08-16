@@ -8,6 +8,9 @@ import java.io.OutputStream;
 
 public class Zx7bCompressor implements Compressor {
 
+    public static final int MAX_SIZE = 16384;
+    public static final boolean BACKWARDS_DEFAULT = false;
+
     @Override
     public CompressorType getCompressorType() {
         return CompressorType.ZX7B;
@@ -20,6 +23,6 @@ public class Zx7bCompressor implements Compressor {
 
     @Override
     public InputStream getUncompressingInputStream(InputStream source) {
-        throw new UnsupportedOperationException("Still not implemented");
+        return new Zx7bInputStream(source);
     }
 }

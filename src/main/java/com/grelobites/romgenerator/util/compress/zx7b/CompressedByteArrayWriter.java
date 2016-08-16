@@ -1,12 +1,12 @@
 package com.grelobites.romgenerator.util.compress.zx7b;
 
-public class OutputByteArrayWriter {
+public class CompressedByteArrayWriter {
     private byte[] output;
     private int bitMask;
     private int currentPos;
     private int bitIndex;
 
-    public OutputByteArrayWriter(int outputSize) {
+    public CompressedByteArrayWriter(int outputSize) {
         output = new byte[outputSize];
         bitMask = 0;
         currentPos = 0;
@@ -38,20 +38,13 @@ public class OutputByteArrayWriter {
     }
 
     public void writeEliasGamma(int value) {
-        int bits = 0;
-        int rvalue = 0;
-        while (value > 1) {
-            ++bits;
-            rvalue <<= 1;
-            rvalue |= value & 1;
-            value >>= 1;
-        }
-        while (bits-- != 0) {
-            writeBit(0);
-            writeBit(rvalue & 1);
-            rvalue >>= 1;
-        }
-        writeBit(1);
-    }
+        int i;
 
+        for (i = 2; i <= value; i <<= 1) {
+            writeBit(0);
+        }
+        while ((i >>= 1) > 0) {
+            writeBit(value & i);
+        }
+    }
 }
