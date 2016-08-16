@@ -52,13 +52,13 @@ public class Zx7bOutputStream extends FilterOutputStream {
         inputData.flush();
         byte[] data = backwards ? Util.reverseByteArray(inputData.toByteArray()) :
                 inputData.toByteArray();
+        LOGGER.debug("Compressing byte array of size " + data.length + ", backwards: " + backwards);
         Optimal[] optimals = optimize(data);
         byte[] result = compress(optimals, data);
         this.out.write(backwards ? Util.reverseByteArray(result) : result);
     }
 
     private static Optimal[] optimize(byte[] data) {
-        LOGGER.debug("Optimizing for input size " + data.length);
         int inputSize = data.length;
 
         int min[] = new int[MAX_OFFSET + 1];
@@ -124,7 +124,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
         return optimals;
     }
 
-    public byte[] compress(Optimal[] optimals, byte[] data) throws IOException {
+    private byte[] compress(Optimal[] optimals, byte[] data) throws IOException {
         int inputSize = data.length;
         int inputIndex = inputSize - 1;
         int outputSize = (optimals[inputIndex].bits + 18 + 7) / 8;
@@ -183,7 +183,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
         out.close();
     }
 
-    public static int eliasGammaBits(int value) {
+    private static int eliasGammaBits(int value) {
         int bits = 1;
         while (value > 1) {
             bits += 2;
@@ -192,7 +192,7 @@ public class Zx7bOutputStream extends FilterOutputStream {
         return bits;
     }
 
-    public static int bitsCount(int offset, int len) {
+    private static int bitsCount(int offset, int len) {
         return 1 + (offset > 128 ? 12 : 8) + eliasGammaBits(len - 1);
     }
 

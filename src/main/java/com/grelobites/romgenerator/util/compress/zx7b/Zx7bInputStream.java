@@ -2,6 +2,8 @@ package com.grelobites.romgenerator.util.compress.zx7b;
 
 
 import com.grelobites.romgenerator.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
@@ -9,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class Zx7bInputStream extends FilterInputStream {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Zx7bInputStream.class);
 
     private boolean backwards = Zx7bCompressor.BACKWARDS_DEFAULT;
     private ByteArrayInputStream uncompressedStream;
@@ -74,7 +77,8 @@ public class Zx7bInputStream extends FilterInputStream {
                         backwards ?
                             Util.reverseByteArray(Util.fromInputStream(in)) :
                             Util.fromInputStream(in));
-
+                LOGGER.debug("Uncompressing byte array of size " + uncompressedByteArray.length
+                    + ", backwards: " + backwards);
                 uncompressedStream = new ByteArrayInputStream(
                         backwards ?
                                 Util.reverseByteArray(uncompressedByteArray) :
