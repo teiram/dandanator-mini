@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * ZX7 Backwards compressor v1.01 by Einar Saukas/Antonio Villena, 28 Dec 2013
- * Ported to Java by Mad3001 28Jul2016
+ * ZX7 compressor by Einar Saukas
+ * Ported to Java by Mad3001
  */
 public class Zx7bOutputStream extends FilterOutputStream {
     private static final Logger LOGGER = LoggerFactory.getLogger(Zx7bOutputStream.class);
@@ -78,11 +78,10 @@ public class Zx7bOutputStream extends FilterOutputStream {
             matchSlots[i] = new Match();
         }
 
-
         //First byte is always literal
         optimals[0].bits = 8;
 
-		//Process remaining bytes
+        //Process remaining bytes
         for (int i = 1; i < inputSize; i++) {
             optimals[i].bits = optimals[i - 1].bits + 9;
             int matchIndex = ((data[i - 1] & 0xff) << 8) | (data[i] & 0xff);
@@ -140,10 +139,10 @@ public class Zx7bOutputStream extends FilterOutputStream {
             inputIndex = previousInputIndex;
         }
 
-	    //First byte is always literal */
+        //First byte is always literal */
         output.write(data[0]);
 
-	    //Process remaining bytes */
+        //Process remaining bytes */
         while ((inputIndex = optimals[inputIndex].bits) > 0) {
             if (optimals[inputIndex].len == 0) {
                 output.writeBit(0);

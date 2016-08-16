@@ -75,10 +75,10 @@ public class Zx7bInputStream extends FilterInputStream {
             try {
                 byte[] uncompressedByteArray = uncompress(
                         backwards ?
-                            Util.reverseByteArray(Util.fromInputStream(in)) :
-                            Util.fromInputStream(in));
+                                Util.reverseByteArray(Util.fromInputStream(in)) :
+                                Util.fromInputStream(in));
                 LOGGER.debug("Uncompressing byte array of size " + uncompressedByteArray.length
-                    + ", backwards: " + backwards);
+                        + ", backwards: " + backwards);
                 uncompressedStream = new ByteArrayInputStream(
                         backwards ?
                                 Util.reverseByteArray(uncompressedByteArray) :
