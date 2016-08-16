@@ -29,6 +29,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
 
     private static final int CBLOCKS_TABLE_OFFSET = 6642;
     private static final int CBLOCKS_TABLE_SIZE = 20;
+    private static final int GAME_STRUCT_SIZE = 136;
     private static final int MAX_MENU_PAGES = 3;
     private ZxScreen[] menuImages;
     private AnimationTimer previewUpdateTimer;
@@ -168,7 +169,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                 dumpUncompressedGameCBlocks(os, game, offset);
     }
 
-    private void dumpGameHeaders(OutputStream os, GameChunk[] gameChunkTable) throws IOException {
+    private void dumpGameHeaders(ByteArrayOutputStream os, GameChunk[] gameChunkTable) throws IOException {
         int index = 0;
         int forwardOffset = 0;
         //backwardsOffset starts before the test ROM
@@ -179,9 +180,11 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             } else {
                 backwardsOffset = dumpGameHeader(os, index, game, gameChunkTable[index], backwardsOffset);
             }
+            LOGGER.debug("Dumped gamestruct for " + game.getName() + ". Offset: " + os.size());
             index++;
         }
-        os.write(DandanatorMiniConstants.MAX_GAMES);
+        fillWithValue(os, (byte) 0, GAME_STRUCT_SIZE * (DandanatorMiniConstants.MAX_GAMES - index));
+        LOGGER.debug("Filled to end of gamestruct. Offset: " + os.size());
     }
 
     private static byte[] getScreenThirdSection(byte[] fullScreen) {
