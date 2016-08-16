@@ -4,10 +4,11 @@ package com.grelobites.romgenerator.util.compress.zx7;
 import com.grelobites.romgenerator.util.Util;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 public class Zx7CompressTest {
 
