@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.util.compress.zx7b;
+package com.grelobites.romgenerator.util.compress.zx7;
 
 
 import com.grelobites.romgenerator.util.Util;
@@ -10,18 +10,18 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Zx7bInputStream extends FilterInputStream {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Zx7bInputStream.class);
+public class Zx7InputStream extends FilterInputStream {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Zx7InputStream.class);
 
-    private boolean backwards = Zx7bCompressor.BACKWARDS_DEFAULT;
+    private boolean backwards = Zx7Compressor.BACKWARDS_DEFAULT;
     private ByteArrayInputStream uncompressedStream;
 
-    public Zx7bInputStream(InputStream in, boolean backwards) {
+    public Zx7InputStream(InputStream in, boolean backwards) {
         this(in);
         this.backwards = backwards;
     }
 
-    public Zx7bInputStream(InputStream in) {
+    public Zx7InputStream(InputStream in) {
         super(in);
     }
 

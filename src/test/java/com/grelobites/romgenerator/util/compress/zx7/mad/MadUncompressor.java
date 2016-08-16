@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.util.compress.zx7b.mad;
+package com.grelobites.romgenerator.util.compress.zx7.mad;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,7 +19,7 @@ public class MadUncompressor
             throw new IllegalArgumentException("Maximum file lenght aprox 64K=65535 bytes");
         }
 
-        byte[] OutRevArray = new byte[65536]; // maximum zx7b size (really for ZX Spect should be 49152)
+        byte[] OutRevArray = new byte[65536]; // maximum zx7 size (really for ZX Spect should be 49152)
         StatusZ80 status = new StatusZ80();
         FinalDE=Process(status,fileArray,OutRevArray);
 
@@ -65,7 +65,7 @@ public class MadUncompressor
 
 		}
 
-		byte[] OutRevArray = new byte[65536]; // maximum zx7b size (really for ZX Spect should be 49152)
+		byte[] OutRevArray = new byte[65536]; // maximum zx7 size (really for ZX Spect should be 49152)
 		StatusZ80 status = new StatusZ80();
 		FinalDE=Process(status,fileArray,OutRevArray);
 

@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.util.compress.zx7b;
+package com.grelobites.romgenerator.util.compress.zx7;
 
 public class CompressedByteArrayWriter {
     private byte[] output;

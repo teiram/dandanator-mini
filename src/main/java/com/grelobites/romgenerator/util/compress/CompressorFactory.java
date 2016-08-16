@@ -25,6 +25,6 @@ public class CompressorFactory {
     }
 
     public static Compressor getDefaultCompressor() {
-        return getCompressor(CompressorType.ZX7B);
+        return getCompressor(CompressorType.ZX7);
     }
 }

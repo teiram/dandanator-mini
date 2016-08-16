@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.util.compress.zx7b;
+package com.grelobites.romgenerator.util.compress.zx7;
 
 import com.grelobites.romgenerator.util.Util;
 import org.slf4j.Logger;
@@ -13,21 +13,21 @@ import java.io.OutputStream;
  * ZX7 compressor by Einar Saukas
  * Ported to Java by Mad3001
  */
-public class Zx7bOutputStream extends FilterOutputStream {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Zx7bOutputStream.class);
+public class Zx7OutputStream extends FilterOutputStream {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Zx7OutputStream.class);
 
     private static final Integer MAX_OFFSET = 2176; // Range 1..2176
     private static final Integer MAX_LEN = 65536;   // Range 2..65536
 
     private ByteArrayOutputStream inputData;
-    private boolean backwards = Zx7bCompressor.BACKWARDS_DEFAULT;
+    private boolean backwards = Zx7Compressor.BACKWARDS_DEFAULT;
 
-    public Zx7bOutputStream(OutputStream out, boolean backwards) {
+    public Zx7OutputStream(OutputStream out, boolean backwards) {
         this(out);
         this.backwards = backwards;
     }
 
-    public Zx7bOutputStream(OutputStream out) {
+    public Zx7OutputStream(OutputStream out) {
         super(out);
         this.inputData = new ByteArrayOutputStream();
     }

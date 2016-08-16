@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.util.compress.zx7b;
+package com.grelobites.romgenerator.util.compress.zx7;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ public class UncompressedByteArrayReader {
     }
 
     public byte[] uncompress() {
-        outputData = new byte[Zx7bCompressor.MAX_SIZE];
+        outputData = new byte[Zx7Compressor.MAX_SIZE];
         inputIndex = outputIndex = bitMask = 0;
         writeByte(readByte());
         while (true) {
@@ -90,7 +90,7 @@ public class UncompressedByteArrayReader {
         }
         while (length-- > 0) {
             int i = outputIndex - offset;
-            writeByte(outputData[i >= 0 ? i : Zx7bCompressor.MAX_SIZE + i]);
+            writeByte(outputData[i >= 0 ? i : Zx7Compressor.MAX_SIZE + i]);
         }
     }
 }

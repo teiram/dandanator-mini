@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.util.compress.zx7b.mad;
+package com.grelobites.romgenerator.util.compress.zx7.mad;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,10 +54,10 @@ public class MadCompressor
 	  {
 		System.out.println("ZX7 Backwards compressor v1.01 by Einar Saukas/AntonioVillena, 28 Dec 2013");
 		System.out.println("  ported to Java by Mad3001 28Jul2016");
-		System.out.println("  zx7b <input_file> <output_file>");
+		System.out.println("  zx7 <input_file> <output_file>");
 		System.out.println("  <input_file>    Raw input file");
 		System.out.println("  <output_file>   Compressed output file");
-		System.out.println("Example: zx7b Cobra.scr Cobra.zx7b\n");
+		System.out.println("Example: zx7 Cobra.scr Cobra.zx7\n");
 		System.exit(0);
 	  }
 

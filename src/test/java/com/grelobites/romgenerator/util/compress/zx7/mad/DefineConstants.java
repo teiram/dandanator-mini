@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.util.compress.zx7b.mad;
+package com.grelobites.romgenerator.util.compress.zx7.mad;
 
 final class DefineConstants
 {

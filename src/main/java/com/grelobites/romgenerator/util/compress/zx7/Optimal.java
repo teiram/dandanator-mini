@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.util.compress.zx7b;
+package com.grelobites.romgenerator.util.compress.zx7;
 
 class Optimal {
     public int bits = 0;

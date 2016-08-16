@@ -1,10 +1,10 @@
 package com.grelobites.romgenerator.util.compress;
 
 
-import com.grelobites.romgenerator.util.compress.zx7b.Zx7bCompressor;
+import com.grelobites.romgenerator.util.compress.zx7.Zx7Compressor;
 
 public enum CompressorType {
-    ZX7B(Zx7bCompressor.class);
+    ZX7(Zx7Compressor.class);
 
     private Class<? extends Compressor> compressor;
 

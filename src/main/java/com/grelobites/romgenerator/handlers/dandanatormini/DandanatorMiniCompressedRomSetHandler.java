@@ -5,7 +5,11 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.util.*;
+import com.grelobites.romgenerator.util.LocaleUtil;
+import com.grelobites.romgenerator.util.OperationResult;
+import com.grelobites.romgenerator.util.Util;
+import com.grelobites.romgenerator.util.ZxColor;
+import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.view.ApplicationContext;
 import javafx.animation.AnimationTimer;
@@ -347,7 +351,6 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                 }
             }
 
-            //TODO. Compressed games shall be dumped backwards
             ByteArrayOutputStream uncompressedStream = new ByteArrayOutputStream();
             for (Game game : games) {
                 if (!isGameCompressed(game)) {
