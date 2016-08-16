@@ -91,11 +91,13 @@ public class Poke implements PokeViewable {
 
     private Integer getOriginalValue(Integer address) {
         Integer originalValue = null;
-        LOGGER.debug("Original value for " + address);
-        try {
-            originalValue = (int) GameUtil.getGameAddressValue(getOwner(), address);
-        } catch (Exception e) {
-            LOGGER.warn("Unable to get original value from game address", e);
+        if (getOwner() != null) {
+            LOGGER.debug("Original value for " + address);
+            try {
+                originalValue = (int) GameUtil.getGameAddressValue(getOwner(), address);
+            } catch (Exception e) {
+                LOGGER.warn("Unable to get original value from game address", e);
+            }
         }
         return originalValue;
     }
