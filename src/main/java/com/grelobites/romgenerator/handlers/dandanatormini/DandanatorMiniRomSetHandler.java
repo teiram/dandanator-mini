@@ -408,6 +408,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                 game.setName(holder.name);
                 game.setHoldScreen(holder.holdScreen);
                 game.setRom(holder.activeRom);
+                game.setSnaHeader(SNAHeader.from48kSNAGameByteArray(holder.getSnaHeader()));
                 holder.exportTrainers(game);
                 games.add(game);
             });
