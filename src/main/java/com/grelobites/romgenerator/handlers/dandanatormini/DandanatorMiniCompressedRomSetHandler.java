@@ -102,6 +102,8 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
     }
 
     private static byte[] uncompress(TrackeableInputStream is, int offset, int size) throws IOException {
+        LOGGER.debug("Uncompress with offset " + offset + " and size " + size);
+        LOGGER.debug("Skipping " + (offset - is.position()));
         is.skip(offset - is.position());
         byte[] compressedData = Util.fromInputStream(is, size);
         InputStream uncompressedStream = getCompressor().getUncompressingInputStream(
@@ -234,16 +236,23 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             for (Game game : games) {
                 os.write(getGamePokeCount(game));
             }
-            int basePokeAddress = DandanatorMiniConstants.POKE_TARGET_ADDRESS + 30 + 60;
+            fillWithValue(os, Constants.B_00, DandanatorMiniConstants.MAX_GAMES - games.size());
+
+            int basePokeAddress = DandanatorMiniConstants.POKE_TARGET_ADDRESS +
+                    DandanatorMiniConstants.MAX_GAMES * 3;
 
             for (Game game : games) {
                 os.write(asLittleEndianWord(basePokeAddress));
                 basePokeAddress += pokeRequiredSize(game);
             }
+            fillWithValue(os, Constants.B_00, (DandanatorMiniConstants.MAX_GAMES - games.size()) * 2);
+
             for (Game game : games) {
                 dumpGamePokeData(os, game);
             }
+            LOGGER.debug("Poke Structure before compressing: " + Util.dumpAsHexString(os.toByteArray()));
             return os.toByteArray();
+
         }
     }
 
@@ -480,6 +489,23 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         return true;
     }
 
+    private static void printVersionAndPageInfo(ZxScreen screen, int line, int page, int numPages) {
+        String versionInfo = getVersionInfo();
+        screen.setInk(ZxColor.BLACK);
+        screen.setPen(ZxColor.BRIGHTMAGENTA);
+        screen.printLine(versionInfo, line, 0);
+        if (numPages > 1) {
+            screen.setPen(ZxColor.WHITE);
+            String pageInfo = numPages > 1 ?
+                    String.format("%d/%d", page, numPages) : "";
+            String keyInfo = "SPC - ";
+            int size = pageInfo.length() + keyInfo.length();
+            screen.printLine(keyInfo, line, screen.getColumns() - pageInfo.length() - keyInfo.length());
+            screen.setPen(ZxColor.YELLOW);
+            screen.printLine(pageInfo, line, screen.getColumns() - pageInfo.length());
+        }
+    }
+
     private static String getVersionAndPageInfo(ZxScreen screen, int page, int numPages) {
         String pageInfo = numPages > 1 ?
                 String.format("%d/%d", page, numPages) : "";
@@ -501,8 +527,8 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             page.deleteLine(line);
         }
 
-        page.printLine(getVersionAndPageInfo(page, pageIndex + 1, numPages), 8, 0);
-
+        //page.printLine(getVersionAndPageInfo(page, pageIndex + 1, numPages), 8, 0);
+        printVersionAndPageInfo(page, 8, pageIndex + 1, numPages);
         int line = 10;
         int gameIndex = pageIndex * DandanatorMiniConstants.SLOT_COUNT;
         int gameCount = 0;
@@ -558,22 +584,33 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             TrackeableInputStream is = new TrackeableInputStream(stream);
             is.skip(DandanatorMiniConstants.BASEROM_SIZE);
             int gameCount = is.read();
+            LOGGER.debug("Read number of games: " + gameCount);
             List<GameDataHolder> recoveredGames = new ArrayList<>();
             List<GameCBlock> gameCBlocks = new ArrayList<>();
             for (int i = 0; i < gameCount; i++) {
                 GameDataHolder gameDataHolder = GameDataHolder.fromRomSet(is);
                 gameCBlocks.addAll(gameDataHolder.getCBlocks());
-                recoveredGames.add(GameDataHolder.fromRomSet(is));
+                recoveredGames.add(gameDataHolder);
             }
+
+            is.skip(GAME_STRUCT_SIZE * (DandanatorMiniConstants.MAX_GAMES - gameCount));
 
             int compressedScreenOffset = is.getAsLittleEndian();
             int compressedScreenBlocks = is.getAsLittleEndian();
+            LOGGER.debug("Compressed screen located at " + compressedScreenOffset + ", blocks "
+                + compressedScreenBlocks);
             int compressedTextDataOffset = is.getAsLittleEndian();
             int compressedTextDataBlocks = is.getAsLittleEndian();
+            LOGGER.debug("Compressed text data located at " + compressedTextDataOffset + ", blocks "
+                + compressedTextDataBlocks);
             int compressedPokeStructOffset = is.getAsLittleEndian();
             int compressedPokeStructBlocks = is.getAsLittleEndian();
+            LOGGER.debug("Compressed poke data located at " + compressedPokeStructOffset + ", blocks "
+                + compressedPokeStructBlocks);
             int compressedPicFwAndCharsetOffset = is.getAsLittleEndian();
             int compressedPicFwAndCharsetBlocks = is.getAsLittleEndian();
+            LOGGER.debug("Compressed PIC FW and Charset located at " + compressedPicFwAndCharsetOffset
+                + ", blocks " + compressedPicFwAndCharsetBlocks);
 
             byte[] screen = uncompress(is, compressedScreenOffset, compressedScreenBlocks);
             byte[] textData = uncompress(is, compressedTextDataOffset, compressedTextDataBlocks);
@@ -584,22 +621,22 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             String extraRomMessage = Util.getNullTerminatedString(textDataStream, 3, DandanatorMiniConstants.GAMENAME_SIZE);
             String togglePokesMessage = Util.getNullTerminatedString(textDataStream, 3, DandanatorMiniConstants.GAMENAME_SIZE);
             String launchGameMessage = Util.getNullTerminatedString(textDataStream, 3, DandanatorMiniConstants.GAMENAME_SIZE);
-            String selectPokesMessage = Util.getNullTerminatedString(textDataStream, 3, DandanatorMiniConstants.GAMENAME_SIZE);
+            String selectPokesMessage = Util.getNullTerminatedString(textDataStream, DandanatorMiniConstants.GAMENAME_SIZE);
 
-            byte[] charSet = Arrays.copyOfRange(picFwAndCharset,
-                    DandanatorMiniConstants.DANDANATOR_PIC_FW_SIZE +
-                            DandanatorMiniConstants.DANDANATOR_PIC_FW_HEADER.length(),
-                    Constants.CHARSET_SIZE);
-
+            int charsetOffset = DandanatorMiniConstants.DANDANATOR_PIC_FW_SIZE +
+                    DandanatorMiniConstants.DANDANATOR_PIC_FW_HEADER.length();
+            byte[] charSet = Arrays.copyOfRange(picFwAndCharset, charsetOffset,
+                    charsetOffset + Constants.CHARSET_SIZE);
 
             //Poke data
             ByteArrayInputStream pokeDataStream = new ByteArrayInputStream(pokeData);
             for (int i = 0; i < gameCount; i++) {
-                LOGGER.debug("Reading poke data for game " + i + " from position " + is.position());
+                LOGGER.debug("Reading poke data for game " + i);
                 GameDataHolder holder = recoveredGames.get(i);
                 holder.setTrainerCount(pokeDataStream.read());
             }
-            pokeDataStream.skip((DandanatorMiniConstants.MAX_GAMES * 3) - gameCount);
+            pokeDataStream.skip(DandanatorMiniConstants.MAX_GAMES - gameCount);
+            pokeDataStream.skip(DandanatorMiniConstants.MAX_GAMES * 2);
 
             for (int i = 0; i < gameCount; i++) {
                 GameDataHolder holder = recoveredGames.get(i);
@@ -608,7 +645,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                     LOGGER.debug("Importing " + trainerCount + " trainers");
                     for (int j = 0; j < trainerCount; j++) {
                         int pokeCount = pokeDataStream.read();
-                        String trainerName = Util.getNullTerminatedString(is, 3, 24);
+                        String trainerName = Util.getNullTerminatedString(pokeDataStream, 3, 24);
                         Optional<Trainer> trainer = holder.getTrainerList().addTrainerNode(trainerName);
                         if (trainer.isPresent() && pokeCount > 0) {
                             LOGGER.debug("Importing " + pokeCount + " pokes on trainer " + trainerName);
@@ -632,10 +669,15 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             gameCBlocks.sort(Comparator.comparingInt(GameCBlock::getInitSlot)
                     .thenComparingInt(GameCBlock::getStart));
             for (GameCBlock block : gameCBlocks) {
-                if (block.compressed) {
-                    block.data = uncompress(is, block.getInitSlot() * Constants.SLOT_SIZE, block.size);
-                } else {
-                    block.data = copy(is, block.getInitSlot() * Constants.SLOT_SIZE, block.size);
+                if (block.getInitSlot() < 0xff) {
+                    if (block.compressed) {
+                        LOGGER.debug("Uncompressing GameCBlock with initSlot "
+                                + block.getInitSlot() + ", start " + block.getStart()
+                                + ", size " + block.size);
+                        block.data = uncompress(is, block.getInitSlot() * Constants.SLOT_SIZE + block.getStart(), block.size);
+                    } else {
+                        block.data = copy(is, block.getInitSlot() * Constants.SLOT_SIZE + block.getStart(), block.size);
+                    }
                 }
             }
 
@@ -644,13 +686,14 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             Collection<Game> games = getApplicationContext().getGameList();
             games.clear();
             recoveredGames.forEach(holder -> {
+                //TODO: Create Game depending on the type
                 final RamGame game = new RamGame(GameType.RAM48, holder.getGameSlots());
                 game.setName(holder.name);
                 game.setHoldScreen(holder.screenHold);
                 game.setRom(holder.activeRom);
                 game.setSnaHeader(holder.snaHeader);
                 holder.exportTrainers(game);
-                games.add(game);
+                addGame(game);
             });
 
             LOGGER.debug("Added " + games.size() + " to the list of games");
@@ -719,9 +762,10 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         private int trainerCount;
 
         public static GameDataHolder fromRomSet(TrackeableInputStream is) throws IOException {
+            LOGGER.debug("About to read game data. Offset is " + is.position());
             GameDataHolder holder = new GameDataHolder();
             holder.snaHeader = SNAHeader.fromInputStream(is, DandanatorMiniCompressedRomSetHandler.SNA_HEADER_SIZE);
-            holder.name = is.getNullTerminatedString(33);
+            holder.name = Util.getNullTerminatedString(is, 3, DandanatorMiniConstants.GAMENAME_SIZE);
             holder.isGameCompressed = is.read() != 0;
             holder.gameType = is.read();
             holder.screenHold = is.read() != 0;
@@ -737,8 +781,11 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                 cblock.start = is.getAsLittleEndian();
                 cblock.size = is.getAsLittleEndian();
                 cblock.compressed = holder.isGameCompressed;
-                holder.getCBlocks().add(cblock);
+                if (cblock.initSlot < 0xFF) {
+                    holder.getCBlocks().add(cblock);
+                }
             }
+            LOGGER.debug("Read game data. Offset is " + is.position());
             return holder;
         }
 

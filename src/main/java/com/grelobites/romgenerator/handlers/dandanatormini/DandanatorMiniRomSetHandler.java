@@ -213,7 +213,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         return String.format("v%s", Util.stripSnapshotVersion(Constants.currentVersion()));
     }
 
-    protected void fillWithValue(OutputStream os, byte value, int size) throws IOException {
+    protected static void fillWithValue(OutputStream os, byte value, int size) throws IOException {
         for (int i = 0; i < size; i++) {
             os.write(value);
         }

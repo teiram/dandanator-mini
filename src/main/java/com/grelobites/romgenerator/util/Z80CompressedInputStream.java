@@ -28,6 +28,9 @@ public class Z80CompressedInputStream extends InputStream {
                 int nextValue = readNextValue();
                 if (nextValue == COMPRESS_MARK) {
                     cachedCount = readNextValue() - 1;
+                    if (cachedCount < 0) {
+                        return -1;
+                    }
                     cachedValue = readNextValue();
                     return cachedValue;
                 } else {

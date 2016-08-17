@@ -135,6 +135,7 @@ public class RamGame extends BaseGame implements Game {
 	    if (compressedData == null || lastCompressor != compressor.getCompressorType()) {
             compressedData = new ArrayList<>();
             for (int i = 0; i < getSlotCount(); i++) {
+                LOGGER.debug("Compressing game slot " + i);
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                 OutputStream compressingStream = compressor.getCompressingOutputStream(os);
                 compressingStream.write(getSlot(i));
