@@ -45,6 +45,12 @@ public class TrackeableInputStream extends InputStream {
         return result;
     }
 
+    public int getAsLittleEndian() throws IOException {
+        byte[] address = new byte[2];
+        this.read(address);
+        return (address[0] & 0xff) | ((address[1] & 0xff) << 8);
+    }
+
     public String getNullTerminatedString(int maxLength) throws IOException {
         StringBuilder sb = new StringBuilder();
         int b;

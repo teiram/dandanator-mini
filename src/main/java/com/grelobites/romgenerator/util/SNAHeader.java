@@ -4,6 +4,8 @@ import com.grelobites.romgenerator.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -63,6 +65,12 @@ public class SNAHeader {
         header.setWord(REG_PC, in[extendedHeaderOffset], in[extendedHeaderOffset + 1]);
         header.setByte(PORT_7FFD, in[extendedHeaderOffset + 2]);
         header.setByte(TRDOS_ROM_MAPPED, in[extendedHeaderOffset + 3]);
+        return header;
+    }
+
+    public static SNAHeader fromInputStream(InputStream is, int size) throws IOException {
+        SNAHeader header = new SNAHeader(size);
+        is.read(header.data);
         return header;
     }
 
