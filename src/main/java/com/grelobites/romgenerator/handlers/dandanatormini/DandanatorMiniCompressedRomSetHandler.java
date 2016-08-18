@@ -211,7 +211,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
     private static byte[] getScreenThirdSection(byte[] fullScreen) {
         byte[] result = new byte[Constants.SPECTRUM_FULLSCREEN_SIZE];
         System.arraycopy(fullScreen, 0, result, 0, SCREEN_THIRD_PIXEL_SIZE);
-        System.arraycopy(fullScreen, Constants.SPECTRUM_SCREEN_SIZE, result, SCREEN_THIRD_PIXEL_SIZE,
+        System.arraycopy(fullScreen, Constants.SPECTRUM_SCREEN_SIZE, result, Constants.SPECTRUM_SCREEN_SIZE,
                 SCREEN_THIRD_ATTRINFO_SIZE);
         return result;
     }
@@ -617,10 +617,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             String launchGameMessage = Util.getNullTerminatedString(textDataStream, 3, DandanatorMiniConstants.GAMENAME_SIZE);
             String selectPokesMessage = Util.getNullTerminatedString(textDataStream, DandanatorMiniConstants.GAMENAME_SIZE);
 
-            int charsetOffset = DandanatorMiniConstants.DANDANATOR_PIC_FW_SIZE +
-                    DandanatorMiniConstants.DANDANATOR_PIC_FW_HEADER.length();
-            byte[] charSet = Arrays.copyOfRange(picFwAndCharset, charsetOffset,
-                    charsetOffset + Constants.CHARSET_SIZE);
+            byte[] charSet = Arrays.copyOfRange(picFwAndCharset, 0, Constants.CHARSET_SIZE);
 
             //Poke data
             ByteArrayInputStream pokeDataStream = new ByteArrayInputStream(pokeData);
