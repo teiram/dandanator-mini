@@ -2,8 +2,20 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.model.*;
-import com.grelobites.romgenerator.util.*;
+import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameType;
+import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.RomGame;
+import com.grelobites.romgenerator.model.Trainer;
+import com.grelobites.romgenerator.model.TrainerList;
+import com.grelobites.romgenerator.util.LocaleUtil;
+import com.grelobites.romgenerator.util.OperationResult;
+import com.grelobites.romgenerator.util.RamGameCompressor;
+import com.grelobites.romgenerator.util.SNAHeader;
+import com.grelobites.romgenerator.util.TrackeableInputStream;
+import com.grelobites.romgenerator.util.Util;
+import com.grelobites.romgenerator.util.ZxColor;
+import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.view.ApplicationContext;
 import javafx.animation.AnimationTimer;
@@ -521,7 +533,6 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             page.deleteLine(line);
         }
 
-        //page.printLine(getVersionAndPageInfo(page, pageIndex + 1, numPages), 8, 0);
         printVersionAndPageInfo(page, 8, pageIndex + 1, numPages);
         int line = 10;
         int gameIndex = pageIndex * DandanatorMiniConstants.SLOT_COUNT;
@@ -684,12 +695,14 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             recoveredGames.forEach(holder -> {
                 final Game game = holder.createGame();
                 getApplicationContext().getGameList().add(game);
+                /*
                 getApplicationContext().addBackgroundTask(() -> {
                     //Calculate compression in a background thread but add games in this
                     //thread to avoid reordering
                     getGameSize(game);
                     return OperationResult.successResult();
                 });
+                */
             });
 
             LOGGER.debug("Added " + games.size() + " to the list of games");
