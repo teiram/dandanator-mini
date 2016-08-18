@@ -80,14 +80,17 @@
                                  <content>
                                     <AnchorPane fx:id="gameInfoPane" prefHeight="200.0" prefWidth="200.0">
                                        <children>
-                                          <Label layoutX="10.0" layoutY="14.0" text="Name" textFill="WHITE" />
-                                          <Label layoutX="10.0" layoutY="45.0" text="Type" textFill="WHITE" />
-                                          <Label layoutX="10.0" layoutY="138.0" text="Compressed Size" textFill="WHITE" />
-                                          <Label fx:id="compressedSize" layoutX="140.0" layoutY="138.0" prefHeight="17.0" prefWidth="90.0" text="0" textFill="WHITE" />
-                                          <CheckBox fx:id="gameHoldScreenAttribute" layoutX="10.0" layoutY="108.0" mnemonicParsing="false" text="Hold Screen" textFill="WHITE" />
+                                          <Label layoutX="10.0" layoutY="14.0" text="%gameNameProperty" textFill="WHITE" />
+                                          <Label layoutX="10.0" layoutY="45.0" text="%gameTypeProperty" textFill="WHITE" />
+                                          <Label layoutX="10.0" layoutY="138.0" text="%compressedSizeProperty" textFill="WHITE" />
+                                          <Label fx:id="compressedSize" layoutX="148.0" layoutY="138.0" prefHeight="17.0" prefWidth="83.0" text="0" textAlignment="RIGHT" textFill="WHITE" />
+                                          <CheckBox fx:id="gameHoldScreenAttribute" layoutX="10.0" layoutY="108.0" mnemonicParsing="false" text="%holdScreenProperty" textFill="WHITE" />
                                           <CheckBox fx:id="gameRomAttribute" layoutX="10.0" layoutY="76.0" mnemonicParsing="false" text="ROM" textFill="WHITE" />
-                                          <TextField fx:id="gameName" layoutX="58.0" layoutY="9.0" prefHeight="27.0" prefWidth="194.0" />
-                                          <Label fx:id="gameType" layoutX="58.0" layoutY="45.0" text="RAM" textFill="WHITE" />
+                                          <TextField fx:id="gameName" layoutX="72.0" layoutY="9.0" prefHeight="27.0" prefWidth="180.0">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font></TextField>
+                                          <Label fx:id="gameType" layoutX="74.0" layoutY="45.0" text="RAM" textFill="WHITE" />
                                        </children>
                                     </AnchorPane>
                                  </content>
