@@ -37,6 +37,8 @@ public class DandanatorMiniConstants {
     private static final String DANDANATOR_PIC_FW_RESOURCE = "dandanator-mini/dandanator-pic-fw.bin";
     private static final String EXTRA_ROM_RESOURCE = "dandanator-mini/test.rom";
     public static final int POKE_TARGET_ADDRESS = 49284;
+    public static final int GAME_CHUNK_SIZE = 256;
+    public static final int GAME_CHUNK_SLOT = 2;
     private static byte[] DANDANATOR_ROM;
     private static byte[] EXTRA_ROM;
     private static byte[] DEFAULT_DANDANATOR_PIC_FW;

@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.model;
 
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.util.ImageUtil;
+import com.grelobites.romgenerator.util.RamGameCompressor;
 import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.compress.CompressorType;
@@ -28,7 +29,7 @@ public class RamGame extends BaseGame implements Game {
 	private Image screenshot;
     private SNAHeader snaHeader;
 	private TrainerList trainerList;
-    private CompressorType lastCompressor;
+    private Class<? extends RamGameCompressor> lastCompressorClass;
     private List<byte[]> compressedData;
     private Integer compressedSize;
 
@@ -131,18 +132,14 @@ public class RamGame extends BaseGame implements Game {
 	    return new Observable[]{name, rom, holdScreen, compressed};
     }
 
-	public List<byte[]> getCompressedData(Compressor compressor) throws IOException {
-	    if (compressedData == null || lastCompressor != compressor.getCompressorType()) {
+	public List<byte[]> getCompressedData(RamGameCompressor compressor) throws IOException {
+	    if (compressedData == null || lastCompressorClass != compressor.getClass()) {
             compressedData = new ArrayList<>();
             for (int i = 0; i < getSlotCount(); i++) {
-                LOGGER.debug("Compressing game slot " + i);
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                OutputStream compressingStream = compressor.getCompressingOutputStream(os);
-                compressingStream.write(getSlot(i));
-                compressingStream.flush();
-                compressedData.add(os.toByteArray());
+
+                compressedData.add(compressor.compressSlot(i, getSlot(i)));
             }
-            lastCompressor = compressor.getCompressorType();
+            lastCompressorClass = compressor.getClass();
         }
         return compressedData;
     }
@@ -151,7 +148,7 @@ public class RamGame extends BaseGame implements Game {
         return getCompressedSize(null);
     }
 
-    public int getCompressedSize(Compressor compressor) throws IOException {
+    public int getCompressedSize(RamGameCompressor compressor) throws IOException {
         if (compressedSize == null) {
             if (compressor != null) {
                 int size = 0;

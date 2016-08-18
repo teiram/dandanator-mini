@@ -287,18 +287,9 @@ public class MainAppController {
         	event.consume();
         });
 
-        gameTable.setOnDragEntered(event -> {
-        	if (event.getGestureSource() != gameTable &&
-        			event.getDragboard().hasFiles()) {
-        		//TODO: Give feedback
-        	}
-        	event.consume();
-        });
+        gameTable.setOnDragEntered(Event::consume);
         
-        gameTable.setOnDragExited(event -> {
-        	//TODO: Remove feedback
-        	event.consume();
-        });
+        gameTable.setOnDragExited(Event::consume);
         
         gameTable.setOnDragDropped(event -> {
                 LOGGER.debug("onDragDropped");
@@ -406,14 +397,7 @@ public class MainAppController {
             event.consume();
         });
 
-        pokeView.setOnDragEntered(event -> {
-            if (event.getGestureSource() != pokeView &&
-                    event.getDragboard().hasFiles() &&
-                    event.getDragboard().getFiles().size() == 1) {
-                //TODO: Give feedback
-            }
-            event.consume();
-        });
+        pokeView.setOnDragEntered(Event::consume);
 
         pokeView.setOnDragExited(Event::consume);
 
@@ -446,9 +430,7 @@ public class MainAppController {
         });
 
          Configuration.getInstance().modeProperty().addListener(
-                (observable, oldValue, newValue) -> {
-                    updateRomSetHandler();
-                });
+                (observable, oldValue, newValue) -> updateRomSetHandler());
 
         //Update poke usage while adding or removing games from the list
         applicationContext.getGameList().addListener((ListChangeListener.Change<? extends Game> c) -> {
