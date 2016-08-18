@@ -136,8 +136,6 @@ public class Configuration {
         if (!Constants.ROMSET_PROVIDED.equals(charSetPath)) {
             charSet = null;
         }
-
-        charSet = null;
         this.charSetPath.set(charSetPath);
         persistConfigurationValue(CHARSETPATH_PROPERTY, this.charSetPath.get());
     }
