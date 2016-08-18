@@ -8,18 +8,6 @@
     -fx-background-color: white;
 }
 
-.table-view .column-header-background {
-    -fx-background-color: #e0e0e0;
-}
-
-.table-view .column-header-background .label {
-    -fx-background-color: transparent;
-    -fx-text-fill: black;
-    -fx-font-size: 11px;
-    -fx-font-weight: normal;
-    -fx-alignment: center-left;
-}
-
 .table-view .column-header {
     -fx-background-color: transparent;
     -fx-size: 1.1em;
@@ -31,21 +19,12 @@
    -fx-table-cell-border-color: transparent;
 }
 
-.table-view .column-header-background {
-    -fx-background-color: #e0e0e0;
-}
-
 .table-view .column-header-background .label {
     -fx-background-color: transparent;
-    -fx-text-fill: black;
-    -fx-font-size: 11px;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
     -fx-font-weight: normal;
     -fx-alignment: center-left;
-}
-
-.table-view .column-header {
-    -fx-background-color: transparent;
-    -fx-size: 1.1em;
 }
 
 .table-view .table-cell {
@@ -72,10 +51,6 @@
 .table-row-cell:selected {
     -fx-background-color: -fx-accent;
     -fx-table-cell-border-color: transparent;
-}
-
-.table-view .arrow {
-    -fx-background-color: black;
 }
 
 .tab > .tab-label {
@@ -130,86 +105,14 @@
   -fx-background-color: black;
 }
 
-
-/*
-
-
-
-.check-box-table-cell {
-    -fx-alignment: center;
-    -fx-padding: 0;
+.scroll-bar:vertical .thumb {
+     -fx-background-color: #616161;
+     -fx-border-color: transparent;
+     -fx-background-radius: 0.8em;
 }
 
-.check-box-table-cell > .check-box {
-    -fx-font-size: 9px;
+.increment-button ,.decrement-button {
+    -fx-background-color: #616161;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0.8em;
 }
-
-.separator .line {
-    -fx-border-color: transparent transparent transparent transparent;
-}
-
-.tool-bar {
-	-fx-background-color: black;
-}
-
-.tree-view {
-	-fx-background-color: black;
-}
-
-.progress-bar {
-	-fx-background-color: black;
-}
-
-.button {
-	-fx-background-color: white;
-}
-
-
-
-.pokesBox {
-    -fx-border-color: white;
-}
-
-.pokesBox .tree-view:focused {
-    -fx-border-color: white;
-    -fx-border-width: 1;
-}
-
-.pokesBox .tree-view {
-    -fx-border-color: white;
-    -fx-border-width: 1;
-}
-
-.pokesBox .tree-cell {
-    -fx-background-color: #2a2a2a;
-    -fx-text-fill: white;
-    -fx-cell-size: 18px;
-    -fx-font-size: 12px;
-}
-
-
-.pokesBox .tree-cell:selected {
-  -fx-background-color: #e0e0e0;
-  -fx-text-fill: black;
-}
-
-.pokesBox .tree-cell .tree-disclosure-node .arrow {
-  -fx-background-color: white;
-}
-
-.pokesBox .tree-cell:selected .tree-disclosure-node .arrow {
-  -fx-background-color: black;
-}
-
-
-.pokesTitle {
-    -fx-background-color: #e0e0e0;
-    -fx-border-color: black;
-    -fx-text-fill: black;
-    -fx-font-size: 11px;
-    -fx-font-weight: normal;
-    -fx-alignment: center-left;
-}
-
-
-*/
