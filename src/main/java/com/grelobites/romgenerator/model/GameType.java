@@ -23,4 +23,13 @@ public enum GameType {
     public String screenName() {
         return screenName;
     }
+
+    public static GameType byTypeId(int id) {
+        for (GameType type: GameType.values()) {
+            if (type.typeId() == id) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown typeid " + id);
+    }
 }

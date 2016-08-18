@@ -76,7 +76,9 @@ public class Configuration {
     public void setBackgroundImagePath(String backgroundImagePath) {
         //Invalidate the background image in advance, to avoid the listeners to
         //enter before the property is set to null
-        backgroundImage = null;
+        if (!Constants.ROMSET_PROVIDED.equals(backgroundImagePath)) {
+            backgroundImage = null;
+        }
 
         this.backgroundImagePath.set(backgroundImagePath);
         persistConfigurationValue(BACKGROUNDIMAGEPATH_PROPERTY, this.backgroundImagePath.get());
@@ -131,6 +133,10 @@ public class Configuration {
     }
 
     public void setCharSetPath(String charSetPath) {
+        if (!Constants.ROMSET_PROVIDED.equals(charSetPath)) {
+            charSet = null;
+        }
+
         charSet = null;
         this.charSetPath.set(charSetPath);
         persistConfigurationValue(CHARSETPATH_PROPERTY, this.charSetPath.get());

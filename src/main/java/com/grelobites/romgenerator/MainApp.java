@@ -6,13 +6,19 @@ import java.util.Locale;
 
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.PreferencesProvider;
+import com.grelobites.romgenerator.view.ApplicationContext;
 import com.grelobites.romgenerator.view.MainAppController;
 import de.codecentric.centerdevice.MenuToolkit;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
@@ -34,13 +40,13 @@ public class MainApp extends Application {
     private AnchorPane aboutPane;
     private MenuToolkit menuToolkit;
 
-    private void populateMenuBar(MenuBar menuBar, Scene scene, MainAppController controller) {
+    private void populateMenuBar(MenuBar menuBar, Scene scene, ApplicationContext applicationContext) {
         Menu fileMenu = new Menu(LocaleUtil.i18n("fileMenuTitle"));
 
         fileMenu.getItems().addAll(
-                importRomSetMenuItem(scene, controller),
-                exportPokesMenuItem(scene, controller),
-                exportGameMenuItem(scene, controller));
+                importRomSetMenuItem(scene, applicationContext),
+                exportPokesMenuItem(scene, applicationContext),
+                exportGameMenuItem(scene, applicationContext));
 
         if (menuToolkit == null) {
             fileMenu.getItems().add(new SeparatorMenuItem());
@@ -56,16 +62,16 @@ public class MainApp extends Application {
         }
     }
 
-    private MenuItem exportPokesMenuItem(Scene scene, MainAppController controller) {
+    private MenuItem exportPokesMenuItem(Scene scene, ApplicationContext applicationContext) {
         MenuItem exportPokes = new MenuItem(LocaleUtil.i18n("exportPokesMenuEntry"));
         exportPokes.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+P")
         );
-        exportPokes.disableProperty().bind(controller.getApplicationContext()
+        exportPokes.disableProperty().bind(applicationContext
                 .gameSelectedProperty().not());
         exportPokes.setOnAction(f -> {
             try {
-                controller.exportCurrentGamePokes();
+                applicationContext.exportCurrentGamePokes();
             } catch (Exception e) {
                 LOGGER.error("Exporting current game pokes", e);
             }
@@ -73,16 +79,16 @@ public class MainApp extends Application {
         return exportPokes;
     }
 
-    private MenuItem exportGameMenuItem(Scene scene, MainAppController controller) {
+    private MenuItem exportGameMenuItem(Scene scene, ApplicationContext applicationContext) {
         MenuItem exportGame = new MenuItem(LocaleUtil.i18n("exportGameMenuEntry"));
         exportGame.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+G")
         );
-        exportGame.disableProperty().bind(controller.getApplicationContext()
+        exportGame.disableProperty().bind(applicationContext
                 .gameSelectedProperty().not());
         exportGame.setOnAction(f -> {
             try {
-                controller.exportCurrentGame();
+                applicationContext.exportCurrentGame();
             } catch (Exception e) {
                 LOGGER.error("Exporting current game", e);
             }
@@ -90,12 +96,12 @@ public class MainApp extends Application {
         return exportGame;
     }
 
-    private MenuItem importRomSetMenuItem(Scene scene, MainAppController controller) {
+    private MenuItem importRomSetMenuItem(Scene scene, ApplicationContext applicationContext) {
         MenuItem importRomSet = new MenuItem(LocaleUtil.i18n("importRomSetMenuEntry"));
         importRomSet.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+I")
         );
-        importRomSet.disableProperty().bind(controller.getApplicationContext()
+        importRomSet.disableProperty().bind(applicationContext
                 .backgroundTaskCountProperty().greaterThan(0));
         importRomSet.setOnAction(f -> {
             FileChooser chooser = new FileChooser();
@@ -103,7 +109,7 @@ public class MainApp extends Application {
             final File romSetFile = chooser.showOpenDialog(scene.getWindow());
             try {
                 if (romSetFile != null) {
-                    controller.importRomSet(romSetFile);
+                    applicationContext.importRomSet(romSetFile);
                 }
             } catch (Exception e) {
                 LOGGER.error("Importing ROM Set from file " +  romSetFile, e);
@@ -255,7 +261,9 @@ public class MainApp extends Application {
                 menuToolkit.setGlobalMenuBar(menuBar);
             }
             Scene scene = new Scene(applicationPane);
-            populateMenuBar(menuBar, scene, loader.getController());
+            ApplicationContext applicationContext = loader.<MainAppController>getController()
+                    .getApplicationContext();
+            populateMenuBar(menuBar, scene, applicationContext);
  			primaryStage.setScene(scene);
 
             if (menuToolkit != null) {

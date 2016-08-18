@@ -112,6 +112,7 @@ public class RamGame extends BaseGame implements Game {
 
 	public void setTrainerList(TrainerList trainerList) {
 		this.trainerList = trainerList;
+        trainerList.setOwner(this);
 	}
 
 	public void addTrainer(String pokeName) {

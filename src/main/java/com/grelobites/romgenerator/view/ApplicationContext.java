@@ -1,8 +1,12 @@
 package com.grelobites.romgenerator.view;
 
+import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.OperationResult;
+import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -14,10 +18,16 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.TableView;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -28,10 +38,12 @@ public class ApplicationContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationContext.class);
 
     private final ObservableList<Game> gameList;
+    private TableView<Game> gameTable;
     private final BooleanProperty gameSelected;
     private final ImageView menuPreviewImage;
     private DoubleProperty romUsage;
     private IntegerProperty backgroundTaskCount;
+    private RomSetHandler romSetHandler;
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(5, r -> {
         Thread t = new Thread(r);
@@ -40,8 +52,9 @@ public class ApplicationContext {
         return t ;
     });
 
-    public ApplicationContext(ImageView menuPreviewImage) {
+    public ApplicationContext(ImageView menuPreviewImage, TableView<Game> gameTable) {
         this.gameList = FXCollections.observableArrayList(Game::getObservable);
+        this.gameTable = gameTable;
         this.gameSelected = new SimpleBooleanProperty(false);
         this.menuPreviewImage = menuPreviewImage;
         this.romUsage = new SimpleDoubleProperty();
@@ -87,6 +100,80 @@ public class ApplicationContext {
     public void addBackgroundTask(Callable<OperationResult> task) {
         backgroundTaskCount.set(backgroundTaskCount.get() + 1);
         executorService.submit(new BackgroundTask(task, backgroundTaskCount));
+    }
+
+    public RomSetHandler getRomSetHandler() {
+        return romSetHandler;
+    }
+
+    public void setRomSetHandler(RomSetHandler romSetHandler) {
+        LOGGER.debug("Changing RomSetHandler to " + Configuration.getInstance().getMode());
+        if (this.romSetHandler != null) {
+            this.romSetHandler.unbind();
+        }
+        romSetHandler.bind(this);
+        this.romSetHandler = romSetHandler;
+    }
+
+    public void exportCurrentGame() {
+        Game selectedGame = gameTable.getSelectionModel().getSelectedItem();
+        if (selectedGame != null) {
+            FileChooser chooser = new FileChooser();
+            chooser.setTitle(LocaleUtil.i18n("exportCurrentGame"));
+            final File saveFile = chooser.showSaveDialog(gameTable.getScene().getWindow());
+            if (saveFile != null) {
+                try {
+                    GameUtil.exportGameAsSNA(selectedGame, saveFile);
+                } catch (IOException e) {
+                    LOGGER.error("Exporting Game", e);
+                }
+            }
+        } else {
+            DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGameErrorTitle"),
+                    LocaleUtil.i18n("exportCurrentGameErrorHeader"),
+                    LocaleUtil.i18n("exportCurrentGameErrorContentNoGameSelected")).showAndWait();
+        }
+    }
+
+    public void exportCurrentGamePokes() {
+        Game selectedGame = gameTable.getSelectionModel().getSelectedItem();
+        if (selectedGame != null && selectedGame instanceof RamGame) {
+            if (GameUtil.gameHasPokes(selectedGame)) {
+                FileChooser chooser = new FileChooser();
+                chooser.setTitle(LocaleUtil.i18n("exportCurrentGamePokes"));
+                final File saveFile = chooser.showSaveDialog(gameTable.getScene().getWindow());
+                if (saveFile != null) {
+                    try {
+                        GameUtil.exportPokesToFile((RamGame) selectedGame, saveFile);
+                    } catch (IOException e) {
+                        LOGGER.error("Exporting Game Pokes", e);
+                    }
+                }
+            } else {
+                DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGamePokesErrorTitle"),
+                        LocaleUtil.i18n("exportCurrentGamePokesErrorHeader"),
+                        LocaleUtil.i18n("exportCurrentGamePokesErrorContentNoPokesInGame")).showAndWait();
+            }
+        } else {
+            DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGamePokesErrorTitle"),
+                    LocaleUtil.i18n("exportCurrentGamePokesErrorHeader"),
+                    LocaleUtil.i18n("exportCurrentGamePokesErrorContentNoGameSelected")).showAndWait();
+        }
+    }
+
+    public void importRomSet(File romSetFile) throws IOException {
+        if (getGameList().size() > 0) {
+            Optional<ButtonType> result = DialogUtil
+                    .buildAlert(LocaleUtil.i18n("gameDeletionConfirmTitle"),
+                            LocaleUtil.i18n("gameDeletionConfirmHeader"),
+                            LocaleUtil.i18n("gameDeletionConfirmContent"))
+                    .showAndWait();
+            if (result.orElse(ButtonType.CLOSE) == ButtonType.OK){
+                getGameList().clear();
+            }
+        }
+        InputStream is = new FileInputStream(romSetFile);
+        romSetHandler.importRomSet(is);
     }
 
     class BackgroundTask extends FutureTask<OperationResult> {

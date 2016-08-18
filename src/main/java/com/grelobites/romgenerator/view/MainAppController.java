@@ -47,10 +47,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,9 +56,8 @@ import java.util.stream.Collectors;
 public class MainAppController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainAppController.class);
     private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
-    private ApplicationContext applicationContext;
 
-    private RomSetHandler romSetHandler;
+    private ApplicationContext applicationContext;
     private GameRenderer gameRenderer;
 
     @FXML
@@ -135,8 +132,12 @@ public class MainAppController {
     @FXML
     private ProgressIndicator operationInProgressIndicator;
 
-     public ApplicationContext getApplicationContext() {
+    public ApplicationContext getApplicationContext() {
         return applicationContext;
+    }
+
+    private RomSetHandler getRomSetHandler() {
+        return getApplicationContext().getRomSetHandler();
     }
 
     private void addSnapshotFiles(List<File> files) {
@@ -144,24 +145,20 @@ public class MainAppController {
                     .map(GameUtil::createGameFromFile)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
-                    .forEach(g -> romSetHandler.addGame(g));
+                    .forEach(g -> getRomSetHandler().addGame(g));
     }
 
     private void updateRomSetHandler() {
-        if (romSetHandler != null) {
-            romSetHandler.unbind();
-        }
-        LOGGER.debug("Changing RomSetHandler to " + Configuration.getInstance().getMode());
-        romSetHandler = RomSetHandlerFactory.getHandler(Configuration.getInstance().getMode());
-        romSetHandler.bind(getApplicationContext());
+        applicationContext.setRomSetHandler(
+                RomSetHandlerFactory.getHandler(Configuration.getInstance().getMode()));
         createRomButton.disableProperty()
                 .bind(applicationContext.backgroundTaskCountProperty().greaterThan(0)
-                        .or(romSetHandler.generationAllowedProperty().not()));
+                        .or(applicationContext.getRomSetHandler().generationAllowedProperty().not()));
     }
 
 	@FXML
 	private void initialize() throws IOException {
-        applicationContext = new ApplicationContext(menuPreviewImage);
+        applicationContext = new ApplicationContext(menuPreviewImage, gameTable);
 
 	    gameRenderer = GameRendererFactory.getDefaultRenderer();
         gameRenderer.setTarget(gamePreviewImage);
@@ -311,7 +308,7 @@ public class MainAppController {
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
             if (saveFile != null) {
                 try (FileOutputStream fos = new FileOutputStream(saveFile)) {
-                    romSetHandler.exportRomSet(fos);
+                    getApplicationContext().getRomSetHandler().exportRomSet(fos);
                 } catch (IOException e) {
                     LOGGER.error("Creating ROM Set", e);
                 }
@@ -551,66 +548,4 @@ public class MainAppController {
             removeAllGamePokesButton.setDisable(!GameUtil.gameHasPokes(f.getOwner()));
         }
     }
-
-    public void importRomSet(File romSetFile) throws IOException {
-        if (applicationContext.getGameList().size() > 0) {
-            Optional<ButtonType> result = DialogUtil
-                    .buildAlert(LocaleUtil.i18n("gameDeletionConfirmTitle"),
-                            LocaleUtil.i18n("gameDeletionConfirmHeader"),
-                            LocaleUtil.i18n("gameDeletionConfirmContent"))
-                    .showAndWait();
-            if (result.orElse(ButtonType.CLOSE) == ButtonType.OK){
-                applicationContext.getGameList().clear();
-            }
-        }
-        InputStream is = new FileInputStream(romSetFile);
-        romSetHandler.importRomSet(is);
-    }
-
-    public void exportCurrentGamePokes() {
-        Game selectedGame = gameTable.getSelectionModel().getSelectedItem();
-        if (selectedGame != null && selectedGame instanceof RamGame) {
-            if (GameUtil.gameHasPokes(selectedGame)) {
-                FileChooser chooser = new FileChooser();
-                chooser.setTitle(LocaleUtil.i18n("exportCurrentGamePokes"));
-                final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
-                if (saveFile != null) {
-                    try {
-                        GameUtil.exportPokesToFile((RamGame) selectedGame, saveFile);
-                    } catch (IOException e) {
-                        LOGGER.error("Exporting Game Pokes", e);
-                    }
-                }
-            } else {
-                DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGamePokesErrorTitle"),
-                        LocaleUtil.i18n("exportCurrentGamePokesErrorHeader"),
-                        LocaleUtil.i18n("exportCurrentGamePokesErrorContentNoPokesInGame")).showAndWait();
-            }
-        } else {
-            DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGamePokesErrorTitle"),
-                    LocaleUtil.i18n("exportCurrentGamePokesErrorHeader"),
-                    LocaleUtil.i18n("exportCurrentGamePokesErrorContentNoGameSelected")).showAndWait();
-        }
-    }
-
-    public void exportCurrentGame() {
-        Game selectedGame = gameTable.getSelectionModel().getSelectedItem();
-        if (selectedGame != null) {
-            FileChooser chooser = new FileChooser();
-            chooser.setTitle(LocaleUtil.i18n("exportCurrentGame"));
-            final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
-            if (saveFile != null) {
-                try {
-                    GameUtil.exportGameAsSNA(selectedGame, saveFile);
-                } catch (IOException e) {
-                    LOGGER.error("Exporting Game", e);
-                }
-            }
-        } else {
-            DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGameErrorTitle"),
-                    LocaleUtil.i18n("exportCurrentGameErrorHeader"),
-                    LocaleUtil.i18n("exportCurrentGameErrorContentNoGameSelected")).showAndWait();
-        }
-    }
-
 }

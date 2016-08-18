@@ -2,11 +2,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.model.Trainer;
-import com.grelobites.romgenerator.model.TrainerList;
+import com.grelobites.romgenerator.model.*;
 import com.grelobites.romgenerator.util.*;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.view.ApplicationContext;
@@ -213,7 +209,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
     }
 
     private static byte[] getScreenThirdSection(byte[] fullScreen) {
-        byte[] result = new byte[SCREEN_THIRD_PIXEL_SIZE + SCREEN_THIRD_ATTRINFO_SIZE];
+        byte[] result = new byte[Constants.SPECTRUM_FULLSCREEN_SIZE];
         System.arraycopy(fullScreen, 0, result, 0, SCREEN_THIRD_PIXEL_SIZE);
         System.arraycopy(fullScreen, Constants.SPECTRUM_SCREEN_SIZE, result, SCREEN_THIRD_PIXEL_SIZE,
                 SCREEN_THIRD_ATTRINFO_SIZE);
@@ -326,7 +322,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             ByteArrayOutputStream cBlocksTable = new ByteArrayOutputStream();
             int cBlockOffset = CBLOCKS_TABLE_OFFSET + CBLOCKS_TABLE_SIZE;
 
-            byte[] compressedScreen = compress(configuration.getBackgroundImage());
+            byte[] compressedScreen = compress(getScreenThirdSection(configuration.getBackgroundImage()));
             cBlocksTable.write(asLittleEndianWord(cBlockOffset));
             cBlocksTable.write(asLittleEndianWord(compressedScreen.length));
             cBlockOffset += compressedScreen.length;
@@ -660,6 +656,11 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                 }
             }
 
+            for (int i = 0; i < gameCount; i++) {
+                GameDataHolder holder = recoveredGames.get(i);
+                holder.gameChunk.data = uncompress(is, holder.gameChunk.addr, holder.gameChunk.length);
+            }
+
             is.skip(Constants.SLOT_SIZE - is.position());
             LOGGER.debug("After version. Position " + is.position());
 
@@ -684,14 +685,14 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             Collection<Game> games = getApplicationContext().getGameList();
             games.clear();
             recoveredGames.forEach(holder -> {
-                //TODO: Create Game depending on the type
-                final RamGame game = new RamGame(GameType.RAM48, holder.getGameSlots());
-                game.setName(holder.name);
-                game.setHoldScreen(holder.screenHold);
-                game.setRom(holder.activeRom);
-                game.setSnaHeader(holder.snaHeader);
-                holder.exportTrainers(game);
-                addGame(game);
+                final Game game = holder.createGame();
+                getApplicationContext().getGameList().add(game);
+                getApplicationContext().addBackgroundTask(() -> {
+                    //Calculate compression in a background thread but add games in this
+                    //thread to avoid reordering
+                    getGameSize(game);
+                    return OperationResult.successResult();
+                });
             });
 
             LOGGER.debug("Added " + games.size() + " to the list of games");
@@ -727,6 +728,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
 
     static class GameChunk {
         public int addr;
+        public int length;
         public byte[] data;
     }
 
@@ -772,7 +774,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             holder.ramAddr = is.getAsLittleEndian();
             holder.gameChunk = new GameChunk();
             holder.gameChunk.addr = is.getAsLittleEndian();
-            holder.gameChunk.data = new byte[is.getAsLittleEndian()];
+            holder.gameChunk.length = is.getAsLittleEndian();
             for (int i = 0; i < 9; i++) {
                 GameCBlock cblock = new GameCBlock();
                 cblock.initSlot = is.read();
@@ -801,8 +803,14 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
 
         public List<byte[]> getGameSlots() {
             List<byte[]> gameSlots = new ArrayList<>();
+            int index = 0;
             for (GameCBlock cBlock: cBlocks) {
-                gameSlots.add(cBlock.data);
+                if (index == DandanatorMiniConstants.GAME_CHUNK_SLOT) {
+                    gameSlots.add(Util.concatArrays(cBlock.data, gameChunk.data));
+                } else {
+                    gameSlots.add(cBlock.data);
+                }
+                index++;
             }
             return gameSlots;
         }
@@ -814,6 +822,32 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         public void exportTrainers(RamGame game) {
             trainerList.setOwner(game);
             game.setTrainerList(trainerList);
+        }
+
+        public Game createGame() {
+            GameType type = GameType.byTypeId(gameType);
+            Game game;
+            switch (type) {
+                case ROM:
+                    game = new RomGame(getGameSlots().get(0));
+                    break;
+                case RAM16:
+                case RAM48:
+                case RAM128_LO:
+                case RAM128_HI:
+                    RamGame ramGame = new RamGame(type, getGameSlots());
+                    ramGame.setHoldScreen(screenHold);
+                    ramGame.setRom(activeRom);
+                    ramGame.setSnaHeader(snaHeader);
+                    ramGame.setTrainerList(trainerList);
+                    game = ramGame;
+                    break;
+                default:
+                    LOGGER.error("Unsupported type of game " + type.screenName());
+                    throw new IllegalArgumentException("Unsupported game type");
+            }
+            game.setName(name);
+            return game;
         }
 
     }
