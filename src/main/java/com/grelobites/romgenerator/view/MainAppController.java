@@ -1,49 +1,31 @@
 package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.Configuration;
-import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.PokeViewable;
-import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.gamerenderer.GameRenderer;
 import com.grelobites.romgenerator.util.gamerenderer.GameRendererFactory;
-import com.grelobites.romgenerator.util.pokeimporter.ImportContext;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerFactory;
 import com.grelobites.romgenerator.view.util.DialogUtil;
-import com.grelobites.romgenerator.view.util.PokeEntityTreeCell;
-import com.grelobites.romgenerator.view.util.RecursiveTreeItem;
-import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
-import javafx.collections.ListChangeListener;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
-import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
@@ -54,7 +36,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class MainAppController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MainAppController.class);
@@ -88,56 +69,10 @@ public class MainAppController {
     private Button clearRomsetButton;
 
     @FXML
-    private TreeView<PokeViewable> pokeView;
-
-    @FXML
-    private Button addPokeButton;
-
-    @FXML
-    private Button removeSelectedPokeButton;
-
-    @FXML
-    private Button removeAllGamePokesButton;
-
-    @FXML
-    private ProgressBar pokesCurrentSizeBar;
-
-    private Tooltip pokeUsageDetail;
-
-    @FXML
-    private TabPane gameInfoTabPane;
-
-    @FXML
-    private Tab gameInfoTab;
-
-    @FXML
-    private Tab pokesTab;
-
-    @FXML
-    private AnchorPane gameInfoPane;
-
-    @FXML
-    private TextField gameName;
-
-    @FXML
-    private Label gameType;
-
-    @FXML
-    private CheckBox gameRomAttribute;
-
-    @FXML
-    private CheckBox gameHoldScreenAttribute;
-
-    @FXML
-    private Label compressedSize;
-
-    @FXML
-    private ProgressBar romUsage;
-
-    private Tooltip romUsageDetail;
-
-    @FXML
     private ProgressIndicator operationInProgressIndicator;
+
+    @FXML
+    private Pane handlerInfoPane;
 
     public ApplicationContext getApplicationContext() {
         return applicationContext;
@@ -165,7 +100,9 @@ public class MainAppController {
 
 	@FXML
 	private void initialize() throws IOException {
-        applicationContext = new ApplicationContext(menuPreviewImage, gameTable);
+        applicationContext = new ApplicationContext(handlerInfoPane,
+                menuPreviewImage,
+                gameTable.getSelectionModel().selectedItemProperty());
 
 	    gameRenderer = GameRendererFactory.getDefaultRenderer();
         gameRenderer.setTarget(gamePreviewImage);
@@ -177,11 +114,6 @@ public class MainAppController {
 
 		gameTable.setItems(applicationContext.getGameList());
 		gameTable.setPlaceholder(new Label(LocaleUtil.i18n("dropGamesMessage")));
-
-        romUsage.progressProperty().bind(applicationContext.romUsageProperty());
-        romUsageDetail = new Tooltip();
-        romUsage.setTooltip(romUsageDetail);
-        romUsageDetail.textProperty().bind(applicationContext.romUsageDetailProperty());
 
         operationInProgressIndicator.visibleProperty().bind(
                 applicationContext.backgroundTaskCountProperty().greaterThan(0));
@@ -261,31 +193,10 @@ public class MainAppController {
                     }
                 }));
 
-        pokeView.setEditable(true);
-        pokeView.setCellFactory(p -> {
-            TreeCell<PokeViewable> cell = new PokeEntityTreeCell();
-            cell.setOnMouseClicked(e -> {
-                if (cell.isEmpty()) {
-                    pokeView.getSelectionModel().clearSelection();
-                }
-            });
-            return cell;
-        });
-
-        pokeView.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> {
-                    if (newValue != null) {
-                        removeSelectedPokeButton.setDisable(false);
-                    } else {
-                        removeSelectedPokeButton.setDisable(true);
-                    }
-                });
 
         gameTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> onGameSelection(oldValue, newValue));
 
-        applicationContext.gameSelectedProperty().bind(
-                gameTable.getSelectionModel().selectedItemProperty().isNotNull());
 
         gameTable.setOnDragOver(event -> {
         	if (event.getGestureSource() != gameTable &&
@@ -356,226 +267,23 @@ public class MainAppController {
             }
         });
 
-        addPokeButton.setOnAction(c -> {
-            if (pokeView.getSelectionModel().getSelectedItem() != null) {
-                pokeView.getSelectionModel().getSelectedItem().getValue()
-                        .addNewChild();
-            } else {
-                pokeView.getRoot().getValue().addNewChild();
-            }
-        });
-
-        removeSelectedPokeButton.setOnAction(c -> {
-           if (pokeView.getSelectionModel().getSelectedItem() != null) {
-               TreeItem<PokeViewable> selected = pokeView.getSelectionModel().getSelectedItem();
-               if (selected != null) {
-                   int selectedIndex = pokeView.getSelectionModel().getSelectedIndex();
-                   if (selectedIndex >= 0) {
-                       pokeView.getSelectionModel().select(selectedIndex - 1);
-                   } else {
-                       pokeView.getSelectionModel().select(pokeView.getRoot());
-                   }
-                   selected.getValue().getParent().removeChild(selected.getValue());
-               }
-           }
-        });
-
-        removeAllGamePokesButton.setOnAction(c -> {
-            Game game = gameTable.getSelectionModel().getSelectedItem();
-            if (game != null) {
-                Optional<ButtonType> result = DialogUtil
-                        .buildAlert(LocaleUtil.i18n("pokeSetDeletionConfirmTitle"),
-                                LocaleUtil.i18n("pokeSetDeletionConfirmHeader"),
-                                LocaleUtil.i18n("pokeSetDeletionConfirmContent"))
-                        .showAndWait();
-
-                if (result.orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                    ((RamGame) game).getTrainerList().getChildren().clear();
-                }
-            }
-        });
-
-        pokeView.setDisable(true);
-        pokeView.setOnDragOver(event -> {
-            if (event.getGestureSource() != pokeView &&
-                    event.getDragboard().hasFiles() &&
-                    event.getDragboard().getFiles().size() == 1) {
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
-            event.consume();
-        });
-
-        pokeView.setOnDragEntered(Event::consume);
-
-        pokeView.setOnDragExited(Event::consume);
-
-        pokeView.setOnDragDropped(event -> {
-            LOGGER.debug("onDragDropped");
-            Dragboard db = event.getDragboard();
-            boolean success = false;
-            if (db.hasFiles() && db.getFiles().size() == 1) {
-                try {
-                    Game game = gameTable.getSelectionModel().getSelectedItem();
-                    ImportContext ctx = new ImportContext(db.getFiles().get(0));
-                    GameUtil.importPokesFromFile((RamGame) game, ctx);
-                    if (ctx.hasErrors()) {
-                        LOGGER.debug("Detected errors in pokes import operation");
-                        DialogUtil.buildWarningAlert(LocaleUtil.i18n("importPokesWarning"),
-                                LocaleUtil.i18n("importPokesWarningHeader"),
-                                ctx.getImportErrors().stream()
-                                        .distinct()
-                                        .collect(Collectors.joining("\n"))).showAndWait();
-                    }
-                    success = true;
-                } catch (IOException ioe) {
-                    LOGGER.warn("Adding poke files", ioe);
-                }
-            }
-            /* let the source know whether the files were successfully
-             * transferred and used */
-            event.setDropCompleted(success);
-            event.consume();
-        });
 
          Configuration.getInstance().modeProperty().addListener(
                 (observable, oldValue, newValue) -> updateRomSetHandler());
 
-        //Update poke usage while adding or removing games from the list
-        /*
-        applicationContext.getGameList().addListener((ListChangeListener.Change<? extends Game> c) -> {
-            boolean gamesAddedOrRemoved = false;
-            boolean gamesUpdated = false;
-            while (c.next()) {
-                if (c.wasRemoved() || c.wasAdded()) {
-                    gamesAddedOrRemoved = true;
-                }
-                if (c.wasUpdated()) {
-                    gamesUpdated = true;
-                }
-                if (gamesAddedOrRemoved && gamesUpdated) {
-                    //Don't search anymore. We know enough
-                    break;
-                }
-            }
-            if (gamesAddedOrRemoved) {
-                pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(applicationContext.getGameList()));
-            }
-            if (gamesUpdated) {
-                Game game = gameTable.getSelectionModel().getSelectedItem();
-            }
-        });
-        */
-        pokeUsageDetail = new Tooltip();
-        pokesCurrentSizeBar.setTooltip(pokeUsageDetail);
-        applicationContext.getGameList().addListener((InvalidationListener) c -> {
-            double pokeUsage = GameUtil.getOverallPokeUsage(applicationContext.getGameList());
-            pokesCurrentSizeBar.setProgress(pokeUsage);
-            //TODO: Avoid references to RomSetHandler stuff
-            String pokeUsageDetailString = String.format(LocaleUtil.i18n("pokeUsageDetail"),
-                    pokeUsage * 100,
-                    DandanatorMiniConstants.POKE_ZONE_SIZE);
-            pokeUsageDetail.setText(pokeUsageDetailString);
-        });
+
     }
 
-    private void unbindInfoPropertiesFromGame(Game game) {
-        if (game != null) {
-            LOGGER.debug("Unbinding bidirectionally name property from game " + game);
-            gameName.textProperty().unbindBidirectional(game.nameProperty());
-            if (game instanceof RamGame) {
-                RamGame ramGame = (RamGame) game;
-                gameHoldScreenAttribute.selectedProperty().unbindBidirectional(ramGame.holdScreenProperty());
-                gameRomAttribute.selectedProperty().unbindBidirectional(ramGame.romProperty());
-                pokeView.setRoot(null);
-            }
-        }
-    }
 
-    private String getGameCompressedSize(Game game) {
-        try {
-            if (game instanceof RamGame) {
-                RamGame ramGame = (RamGame) game;
-                if (ramGame.getCompressed()) {
-                    return Integer.toString(ramGame.getCompressedSize());
-                } else {
-                    return Integer.toString(ramGame.getSlotCount() * Constants.SLOT_SIZE);
-                }
-            } else {
-                return Integer.toString(game.getSlotCount() * Constants.SLOT_SIZE);
-            }
-        } catch (Exception e) {
-            LOGGER.error("Calculating game compressed size", e);
-        }
-        return "-";
-    }
-
-    private void bindInfoPropertiesToGame(Game game) {
-        if (game != null) {
-            LOGGER.debug("Binding bidirectionally name property to game " + game);
-            gameName.textProperty().bindBidirectional(game.nameProperty());
-            gameType.textProperty().set(game.getType().screenName());
-            compressedSize.textProperty().set(getGameCompressedSize(game));
-            if (game instanceof RamGame) {
-                RamGame ramGame = (RamGame) game;
-                gameHoldScreenAttribute.selectedProperty().bindBidirectional(ramGame.holdScreenProperty());
-                gameRomAttribute.selectedProperty().bindBidirectional(ramGame.romProperty());
-                pokeView.setRoot(new RecursiveTreeItem<>(ramGame.getTrainerList(), PokeViewable::getChildren,
-                        this::computePokeChange));
-            }
-        }
-    }
 
 	private void onGameSelection(Game oldGame, Game newGame) {
 	    LOGGER.debug("onGameSelection oldGame=" + oldGame+ ", newGame=" + newGame);
-	    unbindInfoPropertiesFromGame(oldGame);
 	    gameRenderer.previewGame(newGame);
-        bindInfoPropertiesToGame(newGame);
 		if (newGame == null) {
             removeSelectedRomButton.setDisable(true);
-            addPokeButton.setDisable(true);
-            removeAllGamePokesButton.setDisable(true);
-            removeSelectedPokeButton.setDisable(true);
-            pokeView.setDisable(true);
-            gameInfoTabPane.setDisable(true);
-            gameInfoTabPane.setVisible(false);
 		} else {
             removeSelectedRomButton.setDisable(false);
-
-            if (newGame instanceof RamGame) {
-                RamGame ramGame = (RamGame) newGame;
-                addPokeButton.setDisable(false);
-                pokeView.setDisable(false);
-                pokesTab.setDisable(false);
-                gameRomAttribute.setVisible(true);
-                gameHoldScreenAttribute.setVisible(true);
-                if (ramGame.getTrainerList().getChildren().size() > 0) {
-                    removeAllGamePokesButton.setDisable(false);
-                } else {
-                    removeAllGamePokesButton.setDisable(true);
-                }
-            } else {
-                pokeView.setDisable(true);
-                pokesTab.setDisable(true);
-                gameRomAttribute.setVisible(false);
-                gameHoldScreenAttribute.setVisible(false);
-            }
-            gameInfoTab.setDisable(false);
-            gameInfoTabPane.setDisable(false);
-            gameInfoTabPane.setVisible(true);
-		}
+        }
 	}
 
-    private void computePokeChange(PokeViewable f) {
-        LOGGER.debug("New poke ocupation is " + GameUtil.getOverallPokeUsage(applicationContext.getGameList()));
-        double pokeUsage = GameUtil.getOverallPokeUsage(applicationContext.getGameList());
-        pokesCurrentSizeBar.setProgress(pokeUsage);
-        //TODO: Avoid references to RomSetHandler stuff
-        String pokeUsageDetailString = String.format(LocaleUtil.i18n("pokeUsageDetail"),
-                pokeUsage * 100,
-                DandanatorMiniConstants.POKE_ZONE_SIZE);
-        pokeUsageDetail.setText(pokeUsageDetailString);
-        if (gameTable.getSelectionModel().getSelectedItem() == f.getOwner()) {
-            removeAllGamePokesButton.setDisable(!GameUtil.gameHasPokes(f.getOwner()));
-        }
-    }
 }

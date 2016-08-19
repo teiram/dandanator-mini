@@ -57,6 +57,11 @@
     -fx-font-size: 10px;
 }
 
+.pane-with-border {
+    -fx-background-radius: 5;
+    -fx-background-color: #a0a0a0;
+}
+
 .dialog-pane {
     -fx-background-color: #2a2a2a;
 }

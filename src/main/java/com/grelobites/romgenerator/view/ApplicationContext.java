@@ -12,6 +12,7 @@ import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -20,8 +21,8 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.TableView;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +40,9 @@ import java.util.concurrent.FutureTask;
 public class ApplicationContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationContext.class);
 
+    private Pane handlerInfoPane;
     private final ObservableList<Game> gameList;
-    private TableView<Game> gameTable;
+    private ReadOnlyObjectProperty<Game> selectedGame;
     private final BooleanProperty gameSelected;
     private final ImageView menuPreviewImage;
     private StringProperty romUsageDetail;
@@ -52,17 +54,22 @@ public class ApplicationContext {
         Thread t = new Thread(r);
         t.setDaemon(true);
         t.setName("RomGenerator executor service");
-        return t ;
+        return t;
     });
 
-    public ApplicationContext(ImageView menuPreviewImage, TableView<Game> gameTable) {
+    public ApplicationContext(Pane handlerInfoPane,
+                              ImageView menuPreviewImage,
+                              ReadOnlyObjectProperty<Game> selectedGame) {
         this.gameList = FXCollections.observableArrayList(Game::getObservable);
-        this.gameTable = gameTable;
+        this.selectedGame = selectedGame;
         this.gameSelected = new SimpleBooleanProperty(false);
         this.menuPreviewImage = menuPreviewImage;
         this.romUsage = new SimpleDoubleProperty();
         this.romUsageDetail = new SimpleStringProperty();
         this.backgroundTaskCount = new SimpleIntegerProperty();
+        this.handlerInfoPane = handlerInfoPane;
+        this.gameSelected.bind(selectedGame.isNotNull());
+
     }
 
     public ObservableList<Game> getGameList() {
@@ -113,9 +120,17 @@ public class ApplicationContext {
         return menuPreviewImage;
     }
 
+    public Pane getHandlerInfoPane() {
+        return handlerInfoPane;
+    }
+
     public void addBackgroundTask(Callable<OperationResult> task) {
         backgroundTaskCount.set(backgroundTaskCount.get() + 1);
         executorService.submit(new BackgroundTask(task, backgroundTaskCount));
+    }
+
+    public ReadOnlyObjectProperty<Game> selectedGameProperty() {
+        return selectedGame;
     }
 
     public RomSetHandler getRomSetHandler() {
@@ -132,14 +147,14 @@ public class ApplicationContext {
     }
 
     public void exportCurrentGame() {
-        Game selectedGame = gameTable.getSelectionModel().getSelectedItem();
-        if (selectedGame != null) {
+        Game game = selectedGame.get();
+        if (game != null) {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("exportCurrentGame"));
-            final File saveFile = chooser.showSaveDialog(gameTable.getScene().getWindow());
+            final File saveFile = chooser.showSaveDialog(menuPreviewImage.getScene().getWindow());
             if (saveFile != null) {
                 try {
-                    GameUtil.exportGameAsSNA(selectedGame, saveFile);
+                    GameUtil.exportGameAsSNA(game, saveFile);
                 } catch (IOException e) {
                     LOGGER.error("Exporting Game", e);
                 }
@@ -152,15 +167,15 @@ public class ApplicationContext {
     }
 
     public void exportCurrentGamePokes() {
-        Game selectedGame = gameTable.getSelectionModel().getSelectedItem();
-        if (selectedGame != null && selectedGame instanceof RamGame) {
-            if (GameUtil.gameHasPokes(selectedGame)) {
+        Game game = selectedGame.get();
+        if (game != null && game instanceof RamGame) {
+            if (GameUtil.gameHasPokes(game)) {
                 FileChooser chooser = new FileChooser();
                 chooser.setTitle(LocaleUtil.i18n("exportCurrentGamePokes"));
-                final File saveFile = chooser.showSaveDialog(gameTable.getScene().getWindow());
+                final File saveFile = chooser.showSaveDialog(menuPreviewImage.getScene().getWindow());
                 if (saveFile != null) {
                     try {
-                        GameUtil.exportPokesToFile((RamGame) selectedGame, saveFile);
+                        GameUtil.exportPokesToFile((RamGame) game, saveFile);
                     } catch (IOException e) {
                         LOGGER.error("Exporting Game Pokes", e);
                     }

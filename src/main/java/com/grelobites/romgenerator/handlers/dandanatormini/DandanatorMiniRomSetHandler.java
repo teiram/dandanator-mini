@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.MainApp;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.Poke;
@@ -24,7 +25,9 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.Pane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +59,9 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     private ZxScreen menuImage;
     private BooleanProperty generationAllowedProperty = new SimpleBooleanProperty(false);
     protected ApplicationContext applicationContext;
+    protected DandanatorMiniFrameController dandanatorMiniFrameController;
+    protected Pane dandanatorMiniFrame;
+
     private InvalidationListener updateImageListener =
             (c) -> updateMenuPreview();
 
@@ -455,6 +461,32 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         }
     }
 
+    protected DandanatorMiniFrameController getDandanatorMiniFrameController(ApplicationContext applicationContext) {
+        if (dandanatorMiniFrameController == null) {
+            dandanatorMiniFrameController = new DandanatorMiniFrameController();
+        }
+        dandanatorMiniFrameController.setApplicationContext(applicationContext);
+        return dandanatorMiniFrameController;
+    }
+
+    protected Pane getDandanatorMiniFrame(ApplicationContext applicationContext) {
+        try {
+            if (dandanatorMiniFrame == null) {
+                FXMLLoader loader = new FXMLLoader();
+                loader.setLocation(getClass().getResource("dandanatorminiframe.fxml"));
+                loader.setController(getDandanatorMiniFrameController(applicationContext));
+                loader.setResources(LocaleUtil.getBundle());
+                dandanatorMiniFrame = loader.load();
+            } else {
+                dandanatorMiniFrameController.setApplicationContext(applicationContext);
+            }
+            return dandanatorMiniFrame;
+        } catch (Exception e) {
+            LOGGER.error("Creating DandanatorMini frame", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     protected BooleanBinding getGenerationAllowedBinding(ApplicationContext context) {
         return Bindings.size(applicationContext.getGameList())
                 .isEqualTo(DandanatorMiniConstants.SLOT_COUNT);
@@ -465,6 +497,8 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         this.applicationContext = applicationContext;
         generationAllowedProperty.bind(getGenerationAllowedBinding(applicationContext));
 
+        applicationContext.getHandlerInfoPane().getChildren()
+                .add(getDandanatorMiniFrame(applicationContext));
         updateMenuPreview();
         applicationContext.getMenuPreviewImage().setImage(menuImage);
 
@@ -489,6 +523,8 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                 .removeListener(updateImageListener);
         generationAllowedProperty.unbind();
         generationAllowedProperty.set(false);
+        applicationContext.getHandlerInfoPane().getChildren().clear();
+
         applicationContext.getGameList().removeListener(updateImageListener);
         applicationContext.getGameList().removeListener(updateRomUsage);
         applicationContext = null;
