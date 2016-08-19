@@ -153,7 +153,7 @@
                       <Button fx:id="createRomButton" disable="true" layoutX="134.0" layoutY="8.0" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="125.0" text="%createRomSetButton" />
                         <ProgressBar fx:id="romUsage" layoutX="295.0" layoutY="5.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="15.0" prefWidth="200.0" progress="0.0" />
                         <ProgressIndicator fx:id="operationInProgressIndicator" layoutX="510.0" layoutY="8.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="25.0" visible="false" />
-                        <ProgressBar fx:id="pokesCurrentSizeBar" layoutX="295.0" layoutY="23.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="15.0" prefWidth="200.0" progress="0.0" />
+                        <ProgressBar fx:id="pokesCurrentSizeBar" layoutX="295.0" layoutY="23.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="15.0" prefWidth="200.0" progress="0.0" styleClass="green-bar" />
                         <Label layoutX="280.0" layoutY="4.0" text="R" />
                         <Label layoutX="280.0" layoutY="20.0" text="P" />
                      </children>
