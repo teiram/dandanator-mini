@@ -84,10 +84,10 @@ public class GameUtil {
     }
 
     public static double getOverallPokeUsage(ObservableList<Game> gameList) {
-        int usedSize = DandanatorMiniConstants.POKE_HEADER_SIZE
-                + gameList.stream().mapToInt(GameUtil::getGamePokeSizeUsage).sum();
-        LOGGER.debug("Used size is " + usedSize + " from " + DandanatorMiniConstants.POKE_ZONE_SIZE);
-        return ((double) usedSize) / DandanatorMiniConstants.POKE_ZONE_SIZE;
+        int usedSize = gameList.stream().mapToInt(GameUtil::getGamePokeSizeUsage).sum();
+        int totalSize = DandanatorMiniConstants.POKE_ZONE_SIZE - DandanatorMiniConstants.POKE_HEADER_SIZE;
+        LOGGER.debug("Used size is " + usedSize + " from " + totalSize);
+        return ((double) usedSize) / totalSize;
     }
 
     public static void importPokesFromFile(RamGame game, ImportContext ctx) throws IOException {
@@ -131,4 +131,6 @@ public class GameUtil {
             throw new IllegalArgumentException("Requesting past end address for game " + game.getName());
         }
     }
+
+
 }
