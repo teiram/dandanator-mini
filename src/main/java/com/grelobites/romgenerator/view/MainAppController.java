@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.PokeViewable;
 import com.grelobites.romgenerator.model.RamGame;
@@ -15,6 +16,7 @@ import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerFactory;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import com.grelobites.romgenerator.view.util.PokeEntityTreeCell;
 import com.grelobites.romgenerator.view.util.RecursiveTreeItem;
+import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.event.Event;
@@ -31,6 +33,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -99,6 +102,8 @@ public class MainAppController {
     @FXML
     private ProgressBar pokesCurrentSizeBar;
 
+    private Tooltip pokeUsageDetail;
+
     @FXML
     private TabPane gameInfoTabPane;
 
@@ -128,6 +133,8 @@ public class MainAppController {
 
     @FXML
     private ProgressBar romUsage;
+
+    private Tooltip romUsageDetail;
 
     @FXML
     private ProgressIndicator operationInProgressIndicator;
@@ -172,6 +179,10 @@ public class MainAppController {
 		gameTable.setPlaceholder(new Label(LocaleUtil.i18n("dropGamesMessage")));
 
         romUsage.progressProperty().bind(applicationContext.romUsageProperty());
+        romUsageDetail = new Tooltip();
+        romUsage.setTooltip(romUsageDetail);
+        romUsageDetail.textProperty().bind(applicationContext.romUsageDetailProperty());
+
         operationInProgressIndicator.visibleProperty().bind(
                 applicationContext.backgroundTaskCountProperty().greaterThan(0));
 
@@ -430,6 +441,7 @@ public class MainAppController {
                 (observable, oldValue, newValue) -> updateRomSetHandler());
 
         //Update poke usage while adding or removing games from the list
+        /*
         applicationContext.getGameList().addListener((ListChangeListener.Change<? extends Game> c) -> {
             boolean gamesAddedOrRemoved = false;
             boolean gamesUpdated = false;
@@ -451,6 +463,18 @@ public class MainAppController {
             if (gamesUpdated) {
                 Game game = gameTable.getSelectionModel().getSelectedItem();
             }
+        });
+        */
+        pokeUsageDetail = new Tooltip();
+        pokesCurrentSizeBar.setTooltip(pokeUsageDetail);
+        applicationContext.getGameList().addListener((InvalidationListener) c -> {
+            double pokeUsage = GameUtil.getOverallPokeUsage(applicationContext.getGameList());
+            pokesCurrentSizeBar.setProgress(pokeUsage);
+            //TODO: Avoid references to RomSetHandler stuff
+            String pokeUsageDetailString = String.format(LocaleUtil.i18n("pokeUsageDetail"),
+                    pokeUsage * 100,
+                    DandanatorMiniConstants.POKE_ZONE_SIZE);
+            pokeUsageDetail.setText(pokeUsageDetailString);
         });
     }
 
@@ -543,7 +567,13 @@ public class MainAppController {
 
     private void computePokeChange(PokeViewable f) {
         LOGGER.debug("New poke ocupation is " + GameUtil.getOverallPokeUsage(applicationContext.getGameList()));
-        pokesCurrentSizeBar.setProgress(GameUtil.getOverallPokeUsage(applicationContext.getGameList()));
+        double pokeUsage = GameUtil.getOverallPokeUsage(applicationContext.getGameList());
+        pokesCurrentSizeBar.setProgress(pokeUsage);
+        //TODO: Avoid references to RomSetHandler stuff
+        String pokeUsageDetailString = String.format(LocaleUtil.i18n("pokeUsageDetail"),
+                pokeUsage * 100,
+                DandanatorMiniConstants.POKE_ZONE_SIZE);
+        pokeUsageDetail.setText(pokeUsageDetailString);
         if (gameTable.getSelectionModel().getSelectedItem() == f.getOwner()) {
             removeAllGamePokesButton.setDisable(!GameUtil.gameHasPokes(f.getOwner()));
         }
