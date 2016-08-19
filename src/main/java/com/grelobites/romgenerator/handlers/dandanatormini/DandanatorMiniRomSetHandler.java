@@ -10,6 +10,7 @@ import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.Trainer;
 import com.grelobites.romgenerator.model.TrainerList;
 import com.grelobites.romgenerator.util.ImageUtil;
+import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.TrackeableInputStream;
 import com.grelobites.romgenerator.util.Util;
@@ -76,8 +77,15 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         return (double) getApplicationContext().getGameList().size() / DandanatorMiniConstants.SLOT_COUNT;
     }
 
+    protected String generateRomUsageDetail() {
+        return String.format(LocaleUtil.i18n("romUsageV4Detail"),
+                getApplicationContext().getGameList().size(),
+                DandanatorMiniConstants.SLOT_COUNT);
+    }
+
     private void updateRomUsage() {
         getApplicationContext().setRomUsage(calculateRomUsage());
+        getApplicationContext().setRomUsageDetail(generateRomUsageDetail());
     }
 
     protected ApplicationContext getApplicationContext() {

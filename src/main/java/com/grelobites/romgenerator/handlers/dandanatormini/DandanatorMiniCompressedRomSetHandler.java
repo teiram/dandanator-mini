@@ -457,6 +457,12 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         return ((double) size / (DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE));
     }
 
+    protected String generateRomUsageDetail() {
+        return String.format(LocaleUtil.i18n("romUsageV5Detail"),
+                getApplicationContext().getGameList().size(),
+                DandanatorMiniConstants.MAX_GAMES,
+                calculateRomUsage() * 100);
+    }
     private static int getCurrentSize(List<Game> gameList) throws IOException {
         int currentSize = 0;
         for (Game game : gameList) {
