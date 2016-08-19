@@ -15,6 +15,8 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ButtonType;
@@ -41,6 +43,7 @@ public class ApplicationContext {
     private TableView<Game> gameTable;
     private final BooleanProperty gameSelected;
     private final ImageView menuPreviewImage;
+    private StringProperty romUsageDetail;
     private DoubleProperty romUsage;
     private IntegerProperty backgroundTaskCount;
     private RomSetHandler romSetHandler;
@@ -58,6 +61,7 @@ public class ApplicationContext {
         this.gameSelected = new SimpleBooleanProperty(false);
         this.menuPreviewImage = menuPreviewImage;
         this.romUsage = new SimpleDoubleProperty();
+        this.romUsageDetail = new SimpleStringProperty();
         this.backgroundTaskCount = new SimpleIntegerProperty();
     }
 
@@ -87,6 +91,18 @@ public class ApplicationContext {
 
     public DoubleProperty romUsageProperty() {
         return romUsage;
+    }
+
+    public void setRomUsageDetail(String romUsageDetail) {
+        this.romUsageDetail.set(romUsageDetail);
+    }
+
+    public String getRomUsageDetail() {
+        return romUsageDetail.get();
+    }
+
+    public StringProperty romUsageDetailProperty() {
+        return romUsageDetail;
     }
 
     public IntegerProperty backgroundTaskCountProperty() {
