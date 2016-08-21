@@ -81,7 +81,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
                             LOGGER.warn("Out of bounds calculated next frame " + nextFrame);
                             nextFrame = 0;
                         }
-                        applicationContext.getMenuPreviewImage().setImage(menuImages[nextFrame]);
+                        applicationContext.getMenuPreview().setImage(menuImages[nextFrame]);
                         currentFrame = nextFrame;
                         lastUpdate = now;
                     }

@@ -45,10 +45,10 @@ public class MainAppController {
     private GameRenderer gameRenderer;
 
     @FXML
-	private ImageView menuPreviewImage;
+	private ImageView menuPreview;
 	
 	@FXML
-	private ImageView gamePreviewImage;
+	private ImageView gamePreview;
 	
 	@FXML
 	private TableView<Game> gameTable;
@@ -72,7 +72,11 @@ public class MainAppController {
     private ProgressIndicator operationInProgressIndicator;
 
     @FXML
-    private Pane handlerInfoPane;
+    private Pane romSetHandlerInfoPane;
+
+    public MainAppController(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     public ApplicationContext getApplicationContext() {
         return applicationContext;
@@ -100,12 +104,12 @@ public class MainAppController {
 
 	@FXML
 	private void initialize() throws IOException {
-        applicationContext = new ApplicationContext(handlerInfoPane,
-                menuPreviewImage,
-                gameTable.getSelectionModel().selectedItemProperty());
+	    applicationContext.setRomSetHandlerInfoPane(romSetHandlerInfoPane);
+        applicationContext.setMenuPreview(menuPreview);
+        applicationContext.setSelectedGameProperty(gameTable.getSelectionModel().selectedItemProperty());
 
 	    gameRenderer = GameRendererFactory.getDefaultRenderer();
-        gameRenderer.setTarget(gamePreviewImage);
+        gameRenderer.setTarget(gamePreview);
         updateRomSetHandler();
 
         clearRomsetButton.disableProperty()

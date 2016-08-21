@@ -2,7 +2,6 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.MainApp;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.Poke;
@@ -10,6 +9,7 @@ import com.grelobites.romgenerator.model.PokeViewable;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.Trainer;
 import com.grelobites.romgenerator.model.TrainerList;
+import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.SNAHeader;
@@ -20,19 +20,25 @@ import com.grelobites.romgenerator.util.ZxColor;
 import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.view.ApplicationContext;
+import com.grelobites.romgenerator.view.util.DialogUtil;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Pane;
+import javafx.stage.FileChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -61,6 +67,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     protected ApplicationContext applicationContext;
     protected DandanatorMiniFrameController dandanatorMiniFrameController;
     protected Pane dandanatorMiniFrame;
+    protected MenuItem exportPokesMenuItem;
 
     private InvalidationListener updateImageListener =
             (c) -> updateMenuPreview();
@@ -100,6 +107,52 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         } else {
             return applicationContext;
         }
+    }
+
+    public void exportCurrentGamePokes() {
+        Game game = getApplicationContext().selectedGameProperty().get();
+        if (game != null && game instanceof RamGame) {
+            if (GameUtil.gameHasPokes(game)) {
+                FileChooser chooser = new FileChooser();
+                chooser.setTitle(LocaleUtil.i18n("exportCurrentGamePokes"));
+                final File saveFile = chooser.showSaveDialog(dandanatorMiniFrame.getScene().getWindow());
+                if (saveFile != null) {
+                    try {
+                        GameUtil.exportPokesToFile((RamGame) game, saveFile);
+                    } catch (IOException e) {
+                        LOGGER.error("Exporting Game Pokes", e);
+                    }
+                }
+            } else {
+                DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGamePokesErrorTitle"),
+                        LocaleUtil.i18n("exportCurrentGamePokesErrorHeader"),
+                        LocaleUtil.i18n("exportCurrentGamePokesErrorContentNoPokesInGame")).showAndWait();
+            }
+        } else {
+            DialogUtil.buildWarningAlert(LocaleUtil.i18n("exportCurrentGamePokesErrorTitle"),
+                    LocaleUtil.i18n("exportCurrentGamePokesErrorHeader"),
+                    LocaleUtil.i18n("exportCurrentGamePokesErrorContentNoGameSelected")).showAndWait();
+        }
+    }
+
+    protected MenuItem getExportPokesMenuItem() {
+        if (exportPokesMenuItem == null) {
+            exportPokesMenuItem = new MenuItem(LocaleUtil.i18n("exportPokesMenuEntry"));
+
+            exportPokesMenuItem.setAccelerator(
+                    KeyCombination.keyCombination("SHORTCUT+P")
+            );
+            exportPokesMenuItem.disableProperty().bind(applicationContext
+                    .gameSelectedProperty().not());
+            exportPokesMenuItem.setOnAction(f -> {
+                try {
+                    exportCurrentGamePokes();
+                } catch (Exception e) {
+                    LOGGER.error("Exporting current game pokes", e);
+                }
+            });
+        }
+        return exportPokesMenuItem;
     }
 
     private static byte[] asNullTerminatedByteArray(String name, int arrayLength) {
@@ -497,10 +550,10 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         this.applicationContext = applicationContext;
         generationAllowedProperty.bind(getGenerationAllowedBinding(applicationContext));
 
-        applicationContext.getHandlerInfoPane().getChildren()
+        applicationContext.getRomSetHandlerInfoPane().getChildren()
                 .add(getDandanatorMiniFrame(applicationContext));
         updateMenuPreview();
-        applicationContext.getMenuPreviewImage().setImage(menuImage);
+        applicationContext.getMenuPreview().setImage(menuImage);
 
         DandanatorMiniConfiguration.getInstance().togglePokesMessageProperty()
                 .addListener(updateImageListener);
@@ -513,6 +566,8 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
         applicationContext.getGameList().addListener(updateImageListener);
         applicationContext.getGameList().addListener(updateRomUsage);
+
+        applicationContext.getExtraMenu().getItems().add(getExportPokesMenuItem());
     }
 
     public void unbind() {
@@ -523,8 +578,9 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
                 .removeListener(updateImageListener);
         generationAllowedProperty.unbind();
         generationAllowedProperty.set(false);
-        applicationContext.getHandlerInfoPane().getChildren().clear();
+        applicationContext.getRomSetHandlerInfoPane().getChildren().clear();
 
+        applicationContext.getExtraMenu().getItems().remove(getExportPokesMenuItem());
         applicationContext.getGameList().removeListener(updateImageListener);
         applicationContext.getGameList().removeListener(updateRomUsage);
         applicationContext = null;

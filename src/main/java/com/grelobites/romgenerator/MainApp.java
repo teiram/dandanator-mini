@@ -11,6 +11,7 @@ import com.grelobites.romgenerator.view.MainAppController;
 import de.codecentric.centerdevice.MenuToolkit;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
@@ -39,13 +40,13 @@ public class MainApp extends Application {
     private TabPane preferencesPane;
     private AnchorPane aboutPane;
     private MenuToolkit menuToolkit;
+    private ApplicationContext applicationContext;
 
     private void populateMenuBar(MenuBar menuBar, Scene scene, ApplicationContext applicationContext) {
         Menu fileMenu = new Menu(LocaleUtil.i18n("fileMenuTitle"));
 
         fileMenu.getItems().addAll(
                 importRomSetMenuItem(scene, applicationContext),
-                exportPokesMenuItem(scene, applicationContext),
                 exportGameMenuItem(scene, applicationContext));
 
         if (menuToolkit == null) {
@@ -54,7 +55,13 @@ public class MainApp extends Application {
             fileMenu.getItems().add(new SeparatorMenuItem());
             fileMenu.getItems().add(quitMenuItem());
         }
-        menuBar.getMenus().add(fileMenu);
+
+        Menu extraMenu = new Menu(LocaleUtil.i18n("extraMenuTitle"));
+        extraMenu.visibleProperty().bind(Bindings.size(extraMenu.getItems()).greaterThan(0));
+        applicationContext.setExtraMenu(extraMenu);
+
+        menuBar.getMenus().addAll(fileMenu, extraMenu);
+
         if (menuToolkit == null) {
             Menu helpMenu = new Menu(LocaleUtil.i18n("helpMenuTitle"));
             helpMenu.getItems().add(aboutMenuItem());
@@ -62,22 +69,6 @@ public class MainApp extends Application {
         }
     }
 
-    private MenuItem exportPokesMenuItem(Scene scene, ApplicationContext applicationContext) {
-        MenuItem exportPokes = new MenuItem(LocaleUtil.i18n("exportPokesMenuEntry"));
-        exportPokes.setAccelerator(
-                KeyCombination.keyCombination("SHORTCUT+P")
-        );
-        exportPokes.disableProperty().bind(applicationContext
-                .gameSelectedProperty().not());
-        exportPokes.setOnAction(f -> {
-            try {
-                applicationContext.exportCurrentGamePokes();
-            } catch (Exception e) {
-                LOGGER.error("Exporting current game pokes", e);
-            }
-        });
-        return exportPokes;
-    }
 
     private MenuItem exportGameMenuItem(Scene scene, ApplicationContext applicationContext) {
         MenuItem exportGame = new MenuItem(LocaleUtil.i18n("exportGameMenuEntry"));
@@ -245,26 +236,33 @@ public class MainApp extends Application {
         }
         return menuBar;
     }
-	
+
+    private AnchorPane getApplicationPane() throws IOException {
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(MainApp.class.getResource("view/mainapp.fxml"));
+        loader.setResources(LocaleUtil.getBundle());
+        loader.setController(new MainAppController(applicationContext));
+        return loader.load();
+    }
+
 	private void initRootLayout() {
 		try {
-			FXMLLoader loader = new FXMLLoader();
-			loader.setLocation(MainApp.class.getResource("view/mainapp.fxml"));
-            loader.setResources(LocaleUtil.getBundle());
-			BorderPane applicationPane = loader.load();
+		    applicationContext = new ApplicationContext();
+            BorderPane mainPane = new BorderPane();
+            Scene scene = new Scene(mainPane);
+            scene.getStylesheets().add(MainApp.class.getResource("view/theme.css").toExternalForm());
             menuToolkit = MenuToolkit.toolkit(Locale.getDefault());
             MenuBar menuBar = initMenuBar();
             if (menuToolkit == null) {
-                applicationPane.setTop(menuBar);
+                mainPane.setTop(menuBar);
             } else {
                 menuBar.setUseSystemMenuBar(true);
                 menuToolkit.setGlobalMenuBar(menuBar);
             }
-            Scene scene = new Scene(applicationPane);
-            ApplicationContext applicationContext = loader.<MainAppController>getController()
-                    .getApplicationContext();
             populateMenuBar(menuBar, scene, applicationContext);
- 			primaryStage.setScene(scene);
+            mainPane.setCenter(getApplicationPane());
+
+            primaryStage.setScene(scene);
 
             if (menuToolkit != null) {
                 menuToolkit.setMenuBar(primaryStage, menuBar);
