@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -12,6 +13,11 @@ public class TrackeableInputStream extends InputStream {
     private static final int EOF = -1;
     private InputStream delegate;
     private long position;
+
+    public TrackeableInputStream(byte[] byteArray) {
+        this.delegate = new ByteArrayInputStream(byteArray);
+        this.position = 0;
+    }
 
     public TrackeableInputStream(InputStream delegate) {
         this.delegate = delegate;

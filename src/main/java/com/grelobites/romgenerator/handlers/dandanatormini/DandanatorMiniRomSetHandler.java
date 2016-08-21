@@ -7,13 +7,11 @@ import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.Poke;
 import com.grelobites.romgenerator.model.PokeViewable;
 import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.model.Trainer;
 import com.grelobites.romgenerator.model.TrainerList;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.SNAHeader;
-import com.grelobites.romgenerator.util.TrackeableInputStream;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.Z80Opcode;
 import com.grelobites.romgenerator.util.ZxColor;
@@ -27,7 +25,6 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCombination;
@@ -42,10 +39,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 public class DandanatorMiniRomSetHandler implements RomSetHandler {
@@ -384,131 +379,11 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     @Override
     public void importRomSet(InputStream stream) {
         try {
-            byte[] dandanatorPicFirmware = new byte[DandanatorMiniConstants.DANDANATOR_PIC_FW_SIZE];
-            TrackeableInputStream is = new TrackeableInputStream(stream);
-            byte[] baseRom = is.getAsByteArray(DandanatorMiniConstants.BASEROM_SIZE);
-            LOGGER.debug("After reading the base rom. Offset " + is.position());
-            is.skip(DandanatorMiniConstants.DANDANATOR_PIC_FW_HEADER.length());
-            is.read(dandanatorPicFirmware, 0, DandanatorMiniConstants.DANDANATOR_PIC_FW_SIZE_0);
-            LOGGER.debug("After reading 1st section of PIC firmware. Offset " + is.position());
-
-            byte[] charSet = is.getAsByteArray(Constants.CHARSET_SIZE);
-            LOGGER.debug("After reading the charset. Offset " + is.position());
-            byte[] screen = is.getAsByteArray(SCREEN_THIRD_PIXEL_SIZE);
-            byte[] attributes = is.getAsByteArray(SCREEN_THIRD_ATTRINFO_SIZE);
-            LOGGER.debug("After reading the screen. Offset " + is.position());
-
-            String extraRomMessage = is.getNullTerminatedString(DandanatorMiniConstants.GAMENAME_SIZE)
-                    .substring(3);
-            String togglePokesMessage = is.getNullTerminatedString(DandanatorMiniConstants.GAMENAME_SIZE)
-                    .substring(3);
-            String launchGameMessage = is.getNullTerminatedString(DandanatorMiniConstants.GAMENAME_SIZE)
-                    .substring(3);
-            String selectPokesMessage = is.getNullTerminatedString(DandanatorMiniConstants.GAMENAME_SIZE);
-
-            is.skip(1);     //Game count
-            LOGGER.debug("Skipped head. Position is " + is.position());
-
-            ArrayList<GameDataHolder> recoveredGames = new ArrayList<>();
-            //SNA Headers and flags
-            for (int i = 0; i < DandanatorMiniConstants.SLOT_COUNT; i++) {
-                LOGGER.debug("Reading data from game " + i + " from position " + is.position());
-                GameDataHolder gameData = new GameDataHolder();
-                gameData.readName(is);
-                gameData.readHeader(is);
-                gameData.setHoldScreen(is.read());
-                gameData.setActiveRom(is.read());
-                recoveredGames.add(gameData);
-                is.skip(6 + 2 + 64 + 256); //Skip launchCode + RAMAddr + Reserved + Saved Chunk
+            Optional<SlotZero> slotZero = SlotZero.getImplementation(Util.fromInputStream(stream, Constants.SLOT_SIZE));
+            if (slotZero.isPresent()) {
+                DandanatorMiniImporter importer = slotZero.get().getImporter();
+                importer.importRomSet(slotZero.get(), stream, applicationContext);
             }
-            //Poke area
-            for (int i = 0; i < DandanatorMiniConstants.SLOT_COUNT; i++) {
-                LOGGER.debug("Reading poke data for game " + i + " from position " + is.position());
-                GameDataHolder holder = recoveredGames.get(i);
-                holder.setTrainerCount(is.read());
-            }
-            long beforePokesPosition = is.position();
-            is.skip(20); //Skip poke start addresses
-
-            for (int i = 0; i < DandanatorMiniConstants.SLOT_COUNT; i++) {
-                GameDataHolder holder = recoveredGames.get(i);
-                int trainerCount = holder.getTrainerCount();
-                if (trainerCount > 0) {
-                    LOGGER.debug("Importing " + trainerCount + " trainers");
-                    for (int j = 0; j < trainerCount; j++) {
-                        int pokeCount = is.read();
-                        String trainerName = Util.getNullTerminatedString(is, 3, 24);
-                        Optional<Trainer> trainer = holder.getTrainerList().addTrainerNode(trainerName);
-                        if (trainer.isPresent() && pokeCount > 0) {
-                            LOGGER.debug("Importing " + pokeCount + " pokes on trainer " + trainerName);
-                            for (int k = 0; k < pokeCount; k++) {
-                                int address = Util.asLittleEndian(is);
-                                int value = is.read();
-                                trainer.map(t -> {
-                                    t.addPoke(address, value);
-                                    return true;
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            is.skip(DandanatorMiniConstants.POKE_ZONE_SIZE - (is.position() - beforePokesPosition));
-            is.read(dandanatorPicFirmware, DandanatorMiniConstants.DANDANATOR_PIC_FW_SIZE_0, DandanatorMiniConstants.DANDANATOR_PIC_FW_SIZE_1);
-
-            LOGGER.debug("After pic firmware. Position " + is.position());
-
-            is.skip(Constants.SLOT_SIZE - is.position());
-            LOGGER.debug("After version. Position " + is.position());
-
-            for (int i = 0; i < DandanatorMiniConstants.SLOT_COUNT; i++) {
-                LOGGER.debug("Reading game " + i + " data from " + is.position());
-                GameDataHolder holder = recoveredGames.get(i);
-                holder.readGameSlots(is);
-            }
-            //If we reached this far, we have all the data and it's safe to replace the game list
-            LOGGER.debug("Clearing game list with recovered games count " + recoveredGames.size());
-            Collection<Game> games = getApplicationContext().getGameList();
-            games.clear();
-            recoveredGames.forEach(holder -> {
-                final RamGame game = new RamGame(GameType.RAM48, holder.getGameSlots());
-                game.setName(holder.name);
-                game.setHoldScreen(holder.holdScreen);
-                game.setRom(holder.activeRom);
-                game.setSnaHeader(SNAHeader.from48kSNAGameByteArray(holder.getSnaHeader()));
-                holder.exportTrainers(game);
-                games.add(game);
-            });
-
-            LOGGER.debug("Added " + games.size() + " to the list of games");
-
-            byte[] extraRom = is.getAsByteArray(Constants.SLOT_SIZE);
-
-            //Update preferences only if everything was OK
-            Configuration globalConfiguration = Configuration.getInstance();
-            DandanatorMiniConfiguration dandanatorMiniConfiguration = DandanatorMiniConfiguration.getInstance();
-
-            //Keep this order, first the image and then the path, to avoid listeners to
-            //enter before the image is set
-            dandanatorMiniConfiguration.setDandanatorRom(baseRom);
-            dandanatorMiniConfiguration.setDandanatorRomPath(Constants.ROMSET_PROVIDED);
-
-            globalConfiguration.setCharSet(charSet);
-            globalConfiguration.setCharSetPath(Constants.ROMSET_PROVIDED);
-
-            dandanatorMiniConfiguration.setDandanatorPicFirmware(dandanatorPicFirmware);
-            dandanatorMiniConfiguration.setDandanatorPicFirmwarePath(Constants.ROMSET_PROVIDED);
-
-            globalConfiguration.setBackgroundImage(ImageUtil.fillZxImage(screen, attributes));
-            globalConfiguration.setBackgroundImagePath(Constants.ROMSET_PROVIDED);
-
-            dandanatorMiniConfiguration.setExtraRom(extraRom);
-            dandanatorMiniConfiguration.setExtraRomPath(Constants.ROMSET_PROVIDED);
-
-            dandanatorMiniConfiguration.setExtraRomMessage(extraRomMessage);
-            dandanatorMiniConfiguration.setTogglePokesMessage(togglePokesMessage);
-            dandanatorMiniConfiguration.setLaunchGameMessage(launchGameMessage);
-            dandanatorMiniConfiguration.setSelectPokesMessage(selectPokesMessage);
         } catch (Exception e) {
             LOGGER.error("Importing RomSet", e);
         }
@@ -588,27 +463,15 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
 
 
     protected static boolean isGameScreenHold(Game game) {
-        if (game instanceof RamGame) {
-            return ((RamGame) game).getHoldScreen();
-        } else {
-            return false;
-        }
+        return game instanceof RamGame && ((RamGame) game).getHoldScreen();
     }
 
     protected static boolean isGameRom(Game game) {
-        if (game instanceof RamGame) {
-            return ((RamGame) game).getRom();
-        } else {
-            return false;
-        }
+        return game instanceof RamGame && ((RamGame) game).getRom();
     }
 
     protected static boolean isGameCompressed(Game game) {
-        if (game instanceof RamGame) {
-            return ((RamGame) game).getCompressed();
-        } else {
-            return false;
-        }
+        return game instanceof RamGame && ((RamGame) game).getCompressed();
     }
 
     protected static TrainerList gameTrainers(Game game) {
@@ -690,72 +553,6 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         return false;
     }
 
-    private static class GameDataHolder {
-        private boolean holdScreen;
-        private boolean activeRom;
-        private String name;
-        private byte[] snaHeader;
-        private List<byte[]> gameSlots;
-        private TrainerList trainerList = new TrainerList(null);
-        private int trainerCount = 0;
 
-        void setHoldScreen(int holdScreenByte) {
-            holdScreen = holdScreenByte != 0;
-        }
-
-        void setActiveRom(int activeRomByte) {
-            activeRom = activeRomByte != 0;
-        }
-
-        void readHeader(InputStream is) throws IOException {
-            this.snaHeader = new byte[Constants.SNA_HEADER_SIZE];
-            is.read(snaHeader);
-        }
-
-        void readGameSlots(InputStream is) throws IOException {
-            gameSlots = new ArrayList<>();
-            for (int i = 0; i < 3; i++) {
-                gameSlots.add(Util.fromInputStream(is, Constants.SLOT_SIZE));
-            }
-        }
-
-        void readName(InputStream is) throws IOException {
-            name = Util.getNullTerminatedString(is, 3, 33);
-            LOGGER.debug("Name read as " + name);
-        }
-
-        TrainerList getTrainerList() {
-            return trainerList;
-        }
-
-        public int getTrainerCount() {
-            return trainerCount;
-        }
-
-        public void setTrainerCount(int trainerCount) {
-            this.trainerCount = trainerCount;
-        }
-
-        public List<byte[]> getGameSlots() {
-            if (gameSlots != null) {
-                return gameSlots;
-            } else {
-                throw new IllegalStateException("Game slots not set");
-            }
-        }
-
-        public byte[] getSnaHeader() {
-            if (snaHeader != null) {
-                return snaHeader;
-            } else {
-                throw new IllegalStateException("SNA Header not set");
-            }
-        }
-
-        public void exportTrainers(RamGame game) {
-            trainerList.setOwner(game);
-            game.setTrainerList(trainerList);
-        }
-    }
 }
 

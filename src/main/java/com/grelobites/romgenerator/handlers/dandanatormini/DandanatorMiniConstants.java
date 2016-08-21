@@ -39,6 +39,7 @@ public class DandanatorMiniConstants {
     public static final int POKE_TARGET_ADDRESS = 49284;
     public static final int GAME_CHUNK_SIZE = 256;
     public static final int GAME_CHUNK_SLOT = 2;
+    public static final int VERSION_SIZE = 32;
     private static byte[] DANDANATOR_ROM;
     private static byte[] EXTRA_ROM;
     private static byte[] DEFAULT_DANDANATOR_PIC_FW;
