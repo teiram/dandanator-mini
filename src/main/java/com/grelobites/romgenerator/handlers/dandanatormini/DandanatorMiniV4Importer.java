@@ -8,6 +8,7 @@ import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.Trainer;
 import com.grelobites.romgenerator.model.TrainerList;
 import com.grelobites.romgenerator.util.ImageUtil;
+import com.grelobites.romgenerator.util.OperationResult;
 import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.TrackeableInputStream;
 import com.grelobites.romgenerator.util.Util;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Future;
 
 public class DandanatorMiniV4Importer implements DandanatorMiniImporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV4Importer.class);
@@ -120,17 +122,19 @@ public class DandanatorMiniV4Importer implements DandanatorMiniImporter {
             LOGGER.debug("Clearing game list with recovered games count " + recoveredGames.size());
             Collection<Game> games = applicationContext.getGameList();
             games.clear();
-            recoveredGames.forEach(holder -> {
-                final RamGame game = new RamGame(GameType.RAM48, holder.getGameSlots());
-                game.setName(holder.name);
-                game.setHoldScreen(holder.holdScreen);
-                game.setRom(holder.activeRom);
-                game.setSnaHeader(SNAHeader.from48kSNAGameByteArray(holder.getSnaHeader()));
-                holder.exportTrainers(game);
-                games.add(game);
-            });
 
-            LOGGER.debug("Added " + games.size() + " to the list of games");
+            applicationContext.addBackgroundTask(() -> {
+                recoveredGames.forEach(holder -> {
+                    Future<OperationResult> result = applicationContext.getRomSetHandler()
+                            .addGame(holder.createGame());
+                    try {
+                        result.get();
+                    } catch (Exception e) {
+                        LOGGER.warn("While waiting for background operation result", e);
+                    }
+                });
+                return OperationResult.successResult();
+            });
 
             byte[] extraRom = is.getAsByteArray(Constants.SLOT_SIZE);
 
@@ -229,6 +233,16 @@ public class DandanatorMiniV4Importer implements DandanatorMiniImporter {
         public void exportTrainers(RamGame game) {
             trainerList.setOwner(game);
             game.setTrainerList(trainerList);
+        }
+
+        public Game createGame() {
+            final RamGame game = new RamGame(GameType.RAM48, getGameSlots());
+            game.setName(name);
+            game.setHoldScreen(holdScreen);
+            game.setRom(activeRom);
+            game.setSnaHeader(SNAHeader.from48kSNAGameByteArray(getSnaHeader()));
+            exportTrainers(game);
+            return game;
         }
     }
 }

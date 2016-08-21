@@ -7,10 +7,10 @@ import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.Poke;
 import com.grelobites.romgenerator.model.PokeViewable;
 import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.model.TrainerList;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
+import com.grelobites.romgenerator.util.OperationResult;
 import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.Z80Opcode;
@@ -18,6 +18,7 @@ import com.grelobites.romgenerator.util.ZxColor;
 import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.view.ApplicationContext;
+import com.grelobites.romgenerator.view.CompletedTask;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -42,12 +43,11 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.concurrent.Future;
 
 public class DandanatorMiniRomSetHandler implements RomSetHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniRomSetHandler.class);
 
-    private static final int DANDANATOR_ROMSET_SIZE = 512 * 1024;
-    static final int GAME_SIZE = Constants.SLOT_SIZE * 3;
     protected static final int VERSION_SIZE = 32;
 
     private static final int SAVEDGAMECHUNK_SIZE = 256;
@@ -474,14 +474,6 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         return game instanceof RamGame && ((RamGame) game).getCompressed();
     }
 
-    protected static TrainerList gameTrainers(Game game) {
-        if (game instanceof RamGame) {
-            return ((RamGame) game).getTrainerList();
-        } else {
-            return TrainerList.EMPTY_LIST;
-        }
-    }
-
     @Override
     public void updateMenuPreview() {
         LOGGER.debug("updateMenuPreview");
@@ -536,23 +528,23 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     }
 
     @Override
-    public boolean addGame(Game game) {
+    public Future<OperationResult> addGame(Game game) {
+        Future<OperationResult> completedTask = CompletedTask.successTask();
         if (game.getType() == GameType.RAM48) {
             if (game instanceof RamGame) {
                 int numGames = getApplicationContext().getGameList().size();
                 if (numGames < DandanatorMiniConstants.SLOT_COUNT) {
                     getApplicationContext().getGameList().add(game);
-                    return true;
                 }
             } else {
                 LOGGER.warn("Non RAM games are not supported by this RomSethandler");
+                completedTask = new CompletedTask(OperationResult.errorResult("Adding Game", "Unsupported Game"));
             }
         } else {
             LOGGER.warn("Non RAM48 games are not supported by this RomSetHandler");
+            completedTask = new CompletedTask(OperationResult.errorResult("Adding Game", "Unsupported Game"));
         }
-        return false;
+        return completedTask;
     }
-
-
 }
 

@@ -1,11 +1,13 @@
 package com.grelobites.romgenerator.util.romsethandler;
 
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.util.OperationResult;
 import com.grelobites.romgenerator.view.ApplicationContext;
 import javafx.beans.property.BooleanProperty;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.Future;
 
 public interface RomSetHandler {
 
@@ -19,5 +21,5 @@ public interface RomSetHandler {
     void updateMenuPreview();
 
     BooleanProperty generationAllowedProperty();
-    boolean addGame(Game game);
+    Future<OperationResult> addGame(Game game);
 }

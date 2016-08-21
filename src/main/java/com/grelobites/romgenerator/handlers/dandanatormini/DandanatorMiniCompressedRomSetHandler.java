@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Future;
 
 public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniCompressedRomSetHandler.class);
@@ -472,8 +473,8 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
     }
 
     @Override
-    public boolean addGame(Game game) {
-        getApplicationContext().addBackgroundTask(() -> {
+    public Future<OperationResult> addGame(Game game) {
+        return getApplicationContext().addBackgroundTask(() -> {
             if (getApplicationContext().getGameList().size() < DandanatorMiniConstants.MAX_GAMES) {
                 try {
                     int gameSize = getGameSize(game);
@@ -498,7 +499,6 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             }
             return OperationResult.successResult();
         });
-        return true;
     }
 
     private static void printVersionAndPageInfo(ZxScreen screen, int line, int page, int numPages) {

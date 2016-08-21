@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Future;
 
 public class DandanatorMiniV5Importer implements DandanatorMiniImporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV5Importer.class);
@@ -54,7 +55,7 @@ public class DandanatorMiniV5Importer implements DandanatorMiniImporter {
 
     @Override
     public void importRomSet(SlotZero slotZero, InputStream payload, ApplicationContext applicationContext)
-    throws IOException {
+            throws IOException {
         TrackeableInputStream zis = new TrackeableInputStream(slotZero.data());
         zis.skip(DandanatorMiniConstants.BASEROM_SIZE);
         int gameCount = zis.read();
@@ -165,7 +166,12 @@ public class DandanatorMiniV5Importer implements DandanatorMiniImporter {
         applicationContext.addBackgroundTask(() -> {
             recoveredGames.forEach(holder -> {
                 final Game game = holder.createGame();
-                Platform.runLater(() -> applicationContext.getGameList().add(game));
+                Future<OperationResult> result = applicationContext.getRomSetHandler().addGame(game);
+                try {
+                    result.get();
+                } catch (Exception e) {
+                    LOGGER.warn("While waiting for background operation result", e);
+                }
             });
             return OperationResult.successResult();
         });

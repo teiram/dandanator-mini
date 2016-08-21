@@ -2,7 +2,6 @@ package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.OperationResult;
@@ -36,7 +35,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.Future;
 
 public class ApplicationContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationContext.class);
@@ -128,9 +127,9 @@ public class ApplicationContext {
         this.romSetHandlerInfoPane = romSetHandlerInfoPane;
     }
 
-    public void addBackgroundTask(Callable<OperationResult> task) {
-        backgroundTaskCount.set(backgroundTaskCount.get() + 1);
-        executorService.submit(new BackgroundTask(task, backgroundTaskCount));
+    public Future<OperationResult> addBackgroundTask(Callable<OperationResult> task) {
+        Platform.runLater(() -> backgroundTaskCount.set(backgroundTaskCount.get() + 1));
+        return executorService.submit(new BackgroundTask(task, backgroundTaskCount));
     }
 
     public ReadOnlyObjectProperty<Game> selectedGameProperty() {
@@ -199,30 +198,28 @@ public class ApplicationContext {
         romSetHandler.importRomSet(is);
     }
 
-    class BackgroundTask extends FutureTask<OperationResult> {
+    class BackgroundTask implements Callable<OperationResult> {
         private IntegerProperty backgroundTaskCount;
+        private Callable<OperationResult> task;
 
-        public BackgroundTask(Callable<OperationResult> callable, IntegerProperty backgroundTaskCount) {
-            super(callable);
+        public BackgroundTask(Callable<OperationResult> task, IntegerProperty backgroundTaskCount) {
             this.backgroundTaskCount = backgroundTaskCount;
+            this.task = task;
         }
 
-        protected void done() {
+        @Override
+        public OperationResult call() throws Exception {
+            final OperationResult result = task.call();
             Platform.runLater(() -> {
                 backgroundTaskCount.set(backgroundTaskCount.get() - 1);
-                try {
-                    OperationResult result = get();
-                    if (result.isError()) {
-                        DialogUtil.buildErrorAlert(result.getContext(),
-                                result.getMessage(),
-                                result.getDetail())
-                                .showAndWait();
-                    }
-                } catch (Exception e) {
-                    LOGGER.error("On background task completion", e);
+                if (result.isError()) {
+                    DialogUtil.buildErrorAlert(result.getContext(),
+                            result.getMessage(),
+                            result.getDetail())
+                            .showAndWait();
                 }
-
             });
+            return result;
         }
     }
 }
