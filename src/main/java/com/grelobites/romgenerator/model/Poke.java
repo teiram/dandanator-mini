@@ -90,7 +90,7 @@ public class Poke implements PokeViewable {
     }
 
     private Integer getOriginalValue(Integer address) {
-        Integer originalValue = null;
+        Integer originalValue = 0;
         if (getOwner() != null) {
             LOGGER.debug("Original value for " + address);
             try {
