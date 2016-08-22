@@ -49,7 +49,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
     private static byte[] uncompress(PositionAwareInputStream is, int offset, int size) throws IOException {
         LOGGER.debug("Uncompress with offset " + offset + " and size " + size);
         LOGGER.debug("Skipping " + (offset - is.position()) + " to start of compressed data");
-        is.skip(offset - is.position());
+        is.safeSkip(offset - is.position());
         byte[] compressedData = Util.fromInputStream(is, size);
         InputStream uncompressedStream = getCompressor().getUncompressingInputStream(
                 new ByteArrayInputStream(compressedData));
@@ -57,7 +57,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
     }
 
     private static byte[] copy(PositionAwareInputStream is, int offset, int size) throws IOException {
-        is.skip(offset - is.position());
+        is.safeSkip(offset - is.position());
         return Util.fromInputStream(is, size);
     }
 
@@ -74,7 +74,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
     @Override
     public void parse() throws IOException {
         PositionAwareInputStream zis = new PositionAwareInputStream(data());
-        zis.skip(DandanatorMiniConstants.BASEROM_SIZE);
+        zis.safeSkip(DandanatorMiniConstants.BASEROM_SIZE);
         int gameCount = zis.read();
         LOGGER.debug("Read number of games: " + gameCount);
         gameMappers = new ArrayList<>();
@@ -85,7 +85,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
             gameMappers.add(mapper);
         }
 
-        zis.skip(GAME_STRUCT_SIZE * (DandanatorMiniConstants.MAX_GAMES - gameCount));
+        zis.safeSkip(GAME_STRUCT_SIZE * (DandanatorMiniConstants.MAX_GAMES - gameCount));
 
         int compressedScreenOffset = zis.getAsLittleEndian();
         int compressedScreenBlocks = zis.getAsLittleEndian();
@@ -181,7 +181,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
 
     @Override
     public void populateGameSlots(PositionAwareInputStream is) throws IOException {
-        //Order gameBlocks from minor to major
+        //Order gameBlocks to read them in order from the stream
         gameBlocks.sort(Comparator.comparingInt(GameBlock::getInitSlot)
                 .thenComparingInt(GameBlock::getStart));
         for (GameBlock block : gameBlocks) {

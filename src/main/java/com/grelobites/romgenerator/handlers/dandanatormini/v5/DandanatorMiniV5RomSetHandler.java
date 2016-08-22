@@ -4,8 +4,6 @@ import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
-import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorMiniImporter;
-import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
 import com.grelobites.romgenerator.handlers.dandanatormini.v4.DandanatorMiniV4RomSetHandler;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
@@ -30,13 +28,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Future;
 
 public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler {
@@ -126,7 +122,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             int baseAddress = GAME_STRUCT_OFFSET + GAME_STRUCT_SIZE * index;
             os.write(Z80Opcode.LD_IX_NN(baseAddress + SNAHeader.REG_IX));
             os.write(Z80Opcode.LD_SP_NN(baseAddress + SNAHeader.REG_SP));
-            os.write(Z80Opcode.LD_NN_A(1));
+            os.write(Z80Opcode.LD_NN_A(0));
             os.write(Z80Opcode.NOP);
             os.write(Z80Opcode.NOP);
             os.write(Z80Opcode.NOP);
@@ -198,8 +194,8 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         os.write(isGameScreenHold(game) ? Constants.B_01 : Constants.B_00);
         os.write(isGameRom(game) ? Constants.B_10 : Constants.B_00);
         dumpGameLaunchCode(os, game, index);
-        os.write(asLittleEndianWord(gameChunk.addr));
-        os.write(asLittleEndianWord(gameChunk.data.length));
+        os.write(asLittleEndianWord(gameChunk.getAddress()));
+        os.write(asLittleEndianWord(gameChunk.getData().length));
         return isGameCompressed(game) ?
                 dumpCompressedGameCBlocks(os, game, offset) :
                 dumpUncompressedGameCBlocks(os, game, offset);
@@ -271,17 +267,17 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
                     DandanatorMiniConstants.GAME_CHUNK_SIZE);
             compressingOs.flush();
             GameChunk gameChunk = new GameChunk();
-            gameChunk.addr = cBlockOffset;
-            gameChunk.data = compressedChunk.toByteArray();
-            LOGGER.debug("Compressed chunk for game " + game.getName() + " calculated offset " + gameChunk.addr);
+            gameChunk.setAddress(cBlockOffset);
+            gameChunk.setData(compressedChunk.toByteArray());
+            LOGGER.debug("Compressed chunk for game " + game.getName() + " calculated offset " +
+                    gameChunk.getAddress());
             return gameChunk;
         }
     }
 
     private static GameChunk getUncompressedGameChunk(Game game, int cBlockOffset) throws IOException {
         GameChunk gameChunk = new GameChunk();
-        gameChunk.addr = 0;
-        gameChunk.data = new byte[6];
+        gameChunk.setData(new byte[6]);
         LOGGER.warn("Using unimplemented getUncompressedChunk");
         return gameChunk;
     }
@@ -292,11 +288,11 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 GameChunk gameChunk = getCompressedGameChunk(ramGame, cBlockOffset);
-                cBlockOffset += gameChunk.data.length;
+                cBlockOffset += gameChunk.getData().length;
                 chunkList.add(gameChunk);
             } else {
                 GameChunk gameChunk = getUncompressedGameChunk(game, cBlockOffset);
-                cBlockOffset += gameChunk.data.length;
+                cBlockOffset += gameChunk.getData().length;
                 chunkList.add(gameChunk);
             }
         }
@@ -374,7 +370,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             LOGGER.debug("Dumped compressed data. Offset: " + os.size());
 
             for (GameChunk gameChunk : gameChunkTable) {
-                os.write(gameChunk.data);
+                os.write(gameChunk.getData());
                 LOGGER.debug("Dumped game chunk. Offset: " + os.size());
             }
             LOGGER.debug("Dumped all game chunks. Offset: " + os.size());
@@ -520,7 +516,6 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             String pageInfo = numPages > 1 ?
                     String.format("%d/%d", page, numPages) : "";
             String keyInfo = "SPC - ";
-            int size = pageInfo.length() + keyInfo.length();
             screen.printLine(keyInfo, line, screen.getColumns() - pageInfo.length() - keyInfo.length());
             screen.setPen(ZxColor.YELLOW);
             screen.printLine(pageInfo, line, screen.getColumns() - pageInfo.length());
@@ -587,11 +582,5 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
     public void unbind() {
         super.unbind();
         previewUpdateTimer.stop();
-    }
-
-    static class GameChunk {
-        public int addr;
-        public int length;
-        public byte[] data;
     }
 }

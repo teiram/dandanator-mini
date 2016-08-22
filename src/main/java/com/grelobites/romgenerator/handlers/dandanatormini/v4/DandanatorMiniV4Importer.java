@@ -48,24 +48,17 @@ public class DandanatorMiniV4Importer implements DandanatorMiniImporter {
                 return OperationResult.successResult();
             });
 
+            //Since games have a fixed size and we always have all the slots, we can
+            //trust to find the extraRom in the current position
             byte[] extraRom = is.getAsByteArray(Constants.SLOT_SIZE);
 
             //Update preferences only if everything was OK
             Configuration globalConfiguration = Configuration.getInstance();
             DandanatorMiniConfiguration dandanatorMiniConfiguration = DandanatorMiniConfiguration.getInstance();
 
-            //Keep this order, first the image and then the path, to avoid listeners to
-            //enter before the image is set
-            //Initially we don't want to use the RomSet provided base ROM
-            //dandanatorMiniConfiguration.setDandanatorRom(baseRom);
-            //dandanatorMiniConfiguration.setDandanatorRomPath(Constants.ROMSET_PROVIDED);
-
             globalConfiguration.setCharSet(slotZero.getCharSet());
             globalConfiguration.setCharSetPath(Constants.ROMSET_PROVIDED);
 
-            //The PIC firmware is discarded so far
-            //dandanatorMiniConfiguration.setDandanatorPicFirmware(dandanatorPicFirmware);
-            //dandanatorMiniConfiguration.setDandanatorPicFirmwarePath(Constants.ROMSET_PROVIDED);
 
             globalConfiguration.setBackgroundImage(ImageUtil.fillZxImage(
                     slotZero.getScreen(),

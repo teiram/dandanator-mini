@@ -71,6 +71,10 @@ public class GameMapperV5 implements GameMapper {
         return gameChunk;
     }
 
+    public byte[] getLaunchCode() {
+        return launchCode;
+    }
+
     public void setTrainerCount(int trainerCount) {
         this.trainerCount = trainerCount;
     }
@@ -127,7 +131,8 @@ public class GameMapperV5 implements GameMapper {
 
     @Override
     public void populateGameSlots(PositionAwareInputStream is) throws IOException {
-        //Actually made in SlotZeroV5 since it keeps track of the GameBlocks
+        //Actually made in SlotZeroV5 since it keeps track of the GameBlocks and
+        //it needs to take them in order
         throw new IllegalStateException("Unsupported slot population method in V5");
 
     }
