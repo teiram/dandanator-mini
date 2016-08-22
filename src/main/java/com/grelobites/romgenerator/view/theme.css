@@ -80,7 +80,7 @@
 }
 
 .gameInfoPane {
-    -fx-border-color: white;
+   -fx-border-color: #c0c0c0;
 }
 
 .gameInfoPane .tree-cell {
