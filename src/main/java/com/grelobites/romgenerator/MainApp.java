@@ -41,13 +41,14 @@ public class MainApp extends Application {
     private AnchorPane aboutPane;
     private MenuToolkit menuToolkit;
     private ApplicationContext applicationContext;
+    private String themeResourceUrl;
 
     private void populateMenuBar(MenuBar menuBar, Scene scene, ApplicationContext applicationContext) {
         Menu fileMenu = new Menu(LocaleUtil.i18n("fileMenuTitle"));
 
         fileMenu.getItems().addAll(
                 importRomSetMenuItem(scene, applicationContext),
-                exportGameMenuItem(scene, applicationContext));
+                exportGameMenuItem(applicationContext));
 
         if (menuToolkit == null) {
             fileMenu.getItems().add(new SeparatorMenuItem());
@@ -70,7 +71,7 @@ public class MainApp extends Application {
     }
 
 
-    private MenuItem exportGameMenuItem(Scene scene, ApplicationContext applicationContext) {
+    private MenuItem exportGameMenuItem(ApplicationContext applicationContext) {
         MenuItem exportGame = new MenuItem(LocaleUtil.i18n("exportGameMenuEntry"));
         exportGame.setAccelerator(
                 KeyCombination.keyCombination("SHORTCUT+G")
@@ -113,10 +114,6 @@ public class MainApp extends Application {
 		launch(args);
 	}
 
-    private Configuration getConfiguration() {
-        return Configuration.getInstance();
-    }
-
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
@@ -139,10 +136,20 @@ public class MainApp extends Application {
         return preferencesPane;
     }
 
+    private String getThemeResourceUrl() {
+        if (themeResourceUrl == null) {
+            themeResourceUrl = MainApp.class.getResource("view/theme.css")
+                    .toExternalForm();
+        }
+        return themeResourceUrl;
+    }
+
     private Stage getPreferencesStage() throws IOException {
         if (preferencesStage == null) {
             preferencesStage = new Stage();
-            preferencesStage.setScene(new Scene(getPreferencesPane()));
+            Scene preferencesScene = new Scene(getPreferencesPane());
+            preferencesScene.getStylesheets().add(getThemeResourceUrl());
+            preferencesStage.setScene(preferencesScene);
             preferencesStage.setTitle(LocaleUtil.i18n("preferencesStageTitle"));
             preferencesStage.initModality(Modality.WINDOW_MODAL);
             preferencesStage.initOwner(primaryStage.getOwner());
@@ -250,7 +257,7 @@ public class MainApp extends Application {
 		    applicationContext = new ApplicationContext();
             BorderPane mainPane = new BorderPane();
             Scene scene = new Scene(mainPane);
-            scene.getStylesheets().add(MainApp.class.getResource("view/theme.css").toExternalForm());
+            scene.getStylesheets().add(getThemeResourceUrl());
             menuToolkit = MenuToolkit.toolkit(Locale.getDefault());
             MenuBar menuBar = initMenuBar();
             if (menuToolkit == null) {
