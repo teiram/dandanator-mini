@@ -1,18 +1,18 @@
-package com.grelobites.romgenerator.handlers.dandanatormini;
+package com.grelobites.romgenerator.handlers.dandanatormini.v5;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorMiniImporter;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
+import com.grelobites.romgenerator.handlers.dandanatormini.v4.DandanatorMiniV4RomSetHandler;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.model.RomGame;
-import com.grelobites.romgenerator.model.Trainer;
-import com.grelobites.romgenerator.model.TrainerList;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.OperationResult;
 import com.grelobites.romgenerator.util.RamGameCompressor;
-import com.grelobites.romgenerator.util.SNAHeader;
-import com.grelobites.romgenerator.util.TrackeableInputStream;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.ZxColor;
 import com.grelobites.romgenerator.util.ZxScreen;
@@ -25,7 +25,6 @@ import javafx.beans.binding.BooleanBinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,13 +32,12 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
-public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniCompressedRomSetHandler.class);
+public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV5RomSetHandler.class);
 
     private static final int CBLOCKS_TABLE_OFFSET = 6641;
     private static final int CBLOCKS_TABLE_SIZE = 16;
@@ -47,7 +45,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
     private static final int MAX_MENU_PAGES = 3;
     protected static final int GAME_LAUNCH_SIZE = 16;
     protected static final int SNA_HEADER_SIZE = 32;
-    private static RamGameCompressor ramGameCompressor = new DandanatorRamGameCompressor();
+    private static RamGameCompressor ramGameCompressor = new DandanatorMiniRamGameCompressor();
 
     private ZxScreen[] menuImages;
     private AnimationTimer previewUpdateTimer;
@@ -60,7 +58,7 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         }
     }
 
-    public DandanatorMiniCompressedRomSetHandler() throws IOException {
+    public DandanatorMiniV5RomSetHandler() throws IOException {
         menuImages = new ZxScreen[MAX_MENU_PAGES];
         initializeMenuImages(menuImages);
         previewUpdateTimer = new AnimationTimer() {
@@ -106,21 +104,6 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         return target.toByteArray();
     }
 
-    private static byte[] uncompress(TrackeableInputStream is, int offset, int size) throws IOException {
-        LOGGER.debug("Uncompress with offset " + offset + " and size " + size);
-        LOGGER.debug("Skipping " + (offset - is.position()) + " to start of compressed data");
-        is.skip(offset - is.position());
-        byte[] compressedData = Util.fromInputStream(is, size);
-        InputStream uncompressedStream = getCompressor().getUncompressingInputStream(
-                new ByteArrayInputStream(compressedData));
-        return Util.fromInputStream(uncompressedStream);
-    }
-
-    private static byte[] copy(TrackeableInputStream is, int offset, int size) throws IOException {
-        is.skip(offset - is.position());
-        return Util.fromInputStream(is, size);
-    }
-
     private static byte[] getGamePaddedSnaHeader(Game game) {
         byte[] paddedHeader = new byte[SNA_HEADER_SIZE];
         Arrays.fill(paddedHeader, (byte) 0xff);
@@ -130,6 +113,13 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
             System.arraycopy(snaHeader, 0, paddedHeader, 0, snaHeader.length);
         }
         return paddedHeader;
+    }
+
+    protected static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
+        byte[] header = new byte[GAME_LAUNCH_SIZE];
+        os.write(header);
+        LOGGER.warn("Adding empty game launch code!!");
+        return header.length;
     }
 
     private int dumpUncompressedGameCBlocks(OutputStream os, Game game, int offset)
@@ -151,13 +141,6 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         LOGGER.debug("CBlocks array calculated as " + Util.dumpAsHexString(cBlocksArray));
         os.write(cBlocksArray);
         return offset;
-    }
-
-    protected static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
-        byte[] header = new byte[GAME_LAUNCH_SIZE];
-        os.write(header);
-        LOGGER.warn("Adding empty game launch code!!");
-        return header.length;
     }
 
     private int dumpCompressedGameCBlocks(OutputStream os, Game game, int offset)
@@ -518,15 +501,6 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         }
     }
 
-    private static String getVersionAndPageInfo(ZxScreen screen, int page, int numPages) {
-        String pageInfo = numPages > 1 ?
-                String.format("%d/%d", page, numPages) : "";
-        String versionInfo = getVersionInfo();
-        int gapSize = screen.getColumns() - versionInfo.length();
-        String formatter = String.format("%%s%%%ds", gapSize);
-        return String.format(formatter, versionInfo, pageInfo);
-    }
-
     private void updateMenuPage(List<Game> gameList, int pageIndex, int numPages) throws IOException {
         DandanatorMiniConfiguration configuration = DandanatorMiniConfiguration.getInstance();
         ZxScreen page = menuImages[pageIndex];
@@ -606,19 +580,5 @@ public class DandanatorMiniCompressedRomSetHandler extends DandanatorMiniRomSetH
         public int addr;
         public int length;
         public byte[] data;
-    }
-
-    static class GameCBlock {
-        public int initSlot;
-        public int start;
-        public int size;
-        public boolean compressed;
-        public byte[] data;
-        public int getInitSlot() {
-            return initSlot;
-        }
-        public int getStart() {
-            return start;
-        }
     }
 }

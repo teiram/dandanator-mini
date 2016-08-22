@@ -1,7 +1,12 @@
-package com.grelobites.romgenerator.handlers.dandanatormini;
+package com.grelobites.romgenerator.handlers.dandanatormini.v4;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorMiniImporter;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
+import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.Poke;
@@ -45,8 +50,8 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
-public class DandanatorMiniRomSetHandler implements RomSetHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniRomSetHandler.class);
+public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV4RomSetHandler.class);
 
     protected static final int VERSION_SIZE = 32;
 
@@ -70,7 +75,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
     private InvalidationListener updateRomUsage =
             (c) -> updateRomUsage();
 
-    public DandanatorMiniRomSetHandler() throws IOException {
+    public DandanatorMiniV4RomSetHandler() throws IOException {
         menuImage = new ZxScreen();
         updateBackgroundImage(menuImage);
     }
@@ -401,7 +406,7 @@ public class DandanatorMiniRomSetHandler implements RomSetHandler {
         try {
             if (dandanatorMiniFrame == null) {
                 FXMLLoader loader = new FXMLLoader();
-                loader.setLocation(getClass().getResource("dandanatorminiframe.fxml"));
+                loader.setLocation(DandanatorMiniFrameController.class.getResource("dandanatorminiframe.fxml"));
                 loader.setController(getDandanatorMiniFrameController(applicationContext));
                 loader.setResources(LocaleUtil.getBundle());
                 dandanatorMiniFrame = loader.load();

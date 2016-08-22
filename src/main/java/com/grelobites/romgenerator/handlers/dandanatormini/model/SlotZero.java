@@ -1,5 +1,7 @@
-package com.grelobites.romgenerator.handlers.dandanatormini;
+package com.grelobites.romgenerator.handlers.dandanatormini.model;
 
+import com.grelobites.romgenerator.handlers.dandanatormini.v4.SlotZeroV4;
+import com.grelobites.romgenerator.handlers.dandanatormini.v5.SlotZeroV5;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

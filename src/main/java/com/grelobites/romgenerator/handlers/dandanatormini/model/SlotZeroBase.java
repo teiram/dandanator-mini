@@ -1,6 +1,7 @@
-package com.grelobites.romgenerator.handlers.dandanatormini;
+package com.grelobites.romgenerator.handlers.dandanatormini.model;
 
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

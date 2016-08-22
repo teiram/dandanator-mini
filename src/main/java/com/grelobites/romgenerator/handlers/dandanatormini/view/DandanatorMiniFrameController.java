@@ -1,6 +1,7 @@
-package com.grelobites.romgenerator.handlers.dandanatormini;
+package com.grelobites.romgenerator.handlers.dandanatormini.view;
 
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.PokeViewable;
 import com.grelobites.romgenerator.model.RamGame;

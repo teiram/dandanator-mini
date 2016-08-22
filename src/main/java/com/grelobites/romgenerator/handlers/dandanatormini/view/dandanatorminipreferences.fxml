@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0"
             prefWidth="550.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniPreferencesController">
+            fx:controller="com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniPreferencesController">
     <children>
         <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
             <children>

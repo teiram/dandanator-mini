@@ -1,7 +1,11 @@
-package com.grelobites.romgenerator.handlers.dandanatormini;
+package com.grelobites.romgenerator.handlers.dandanatormini.v5;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorMiniImporter;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
@@ -14,7 +18,6 @@ import com.grelobites.romgenerator.util.TrackeableInputStream;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.view.ApplicationContext;
-import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -240,13 +243,13 @@ public class DandanatorMiniV5Importer implements DandanatorMiniImporter {
         public static GameDataHolder fromRomSet(TrackeableInputStream is) throws IOException {
             LOGGER.debug("About to read game data. Offset is " + is.position());
             GameDataHolder holder = new GameDataHolder();
-            holder.snaHeader = SNAHeader.fromInputStream(is, DandanatorMiniCompressedRomSetHandler.SNA_HEADER_SIZE);
+            holder.snaHeader = SNAHeader.fromInputStream(is, DandanatorMiniV5RomSetHandler.SNA_HEADER_SIZE);
             holder.name = Util.getNullTerminatedString(is, 3, DandanatorMiniConstants.GAMENAME_SIZE);
             holder.isGameCompressed = is.read() != 0;
             holder.gameType = is.read();
             holder.screenHold = is.read() != 0;
             holder.activeRom = is.read() != 0;
-            holder.launchCode = Util.fromInputStream(is, DandanatorMiniCompressedRomSetHandler.GAME_LAUNCH_SIZE);
+            holder.launchCode = Util.fromInputStream(is, DandanatorMiniV5RomSetHandler.GAME_LAUNCH_SIZE);
             holder.ramAddr = is.getAsLittleEndian();
             holder.gameChunk = new GameChunk();
             holder.gameChunk.addr = is.getAsLittleEndian();

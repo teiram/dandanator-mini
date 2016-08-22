@@ -1,6 +1,8 @@
-package com.grelobites.romgenerator.handlers.dandanatormini;
+package com.grelobites.romgenerator.handlers.dandanatormini.v5;
 
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.util.RamGameCompressor;
 import com.grelobites.romgenerator.util.compress.Compressor;
 
@@ -9,7 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-public class DandanatorRamGameCompressor implements RamGameCompressor {
+public class DandanatorMiniRamGameCompressor implements RamGameCompressor {
 
     private Compressor compressor = DandanatorMiniConfiguration.getInstance().getCompressor();
 
