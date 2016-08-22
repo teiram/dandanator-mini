@@ -2,7 +2,7 @@ package com.grelobites.romgenerator.util.romsethandler;
 
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.util.OperationResult;
-import com.grelobites.romgenerator.view.ApplicationContext;
+import com.grelobites.romgenerator.ApplicationContext;
 import javafx.beans.property.BooleanProperty;
 
 import java.io.InputStream;

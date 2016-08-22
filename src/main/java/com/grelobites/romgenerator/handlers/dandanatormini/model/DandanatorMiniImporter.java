@@ -1,7 +1,6 @@
 package com.grelobites.romgenerator.handlers.dandanatormini.model;
 
-import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
-import com.grelobites.romgenerator.view.ApplicationContext;
+import com.grelobites.romgenerator.ApplicationContext;
 
 import java.io.IOException;
 import java.io.InputStream;

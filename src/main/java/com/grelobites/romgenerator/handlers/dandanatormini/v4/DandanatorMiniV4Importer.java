@@ -16,7 +16,7 @@ import com.grelobites.romgenerator.util.OperationResult;
 import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.TrackeableInputStream;
 import com.grelobites.romgenerator.util.Util;
-import com.grelobites.romgenerator.view.ApplicationContext;
+import com.grelobites.romgenerator.ApplicationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

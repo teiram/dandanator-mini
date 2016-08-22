@@ -6,7 +6,6 @@ import java.util.Locale;
 
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.PreferencesProvider;
-import com.grelobites.romgenerator.view.ApplicationContext;
 import com.grelobites.romgenerator.view.MainAppController;
 import de.codecentric.centerdevice.MenuToolkit;
 import javafx.application.Application;

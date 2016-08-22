@@ -17,7 +17,7 @@ import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.ZxColor;
 import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.compress.Compressor;
-import com.grelobites.romgenerator.view.ApplicationContext;
+import com.grelobites.romgenerator.ApplicationContext;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;

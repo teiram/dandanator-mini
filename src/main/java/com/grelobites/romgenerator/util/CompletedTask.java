@@ -1,7 +1,5 @@
-package com.grelobites.romgenerator.view;
+package com.grelobites.romgenerator.util;
 
-
-import com.grelobites.romgenerator.util.OperationResult;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;

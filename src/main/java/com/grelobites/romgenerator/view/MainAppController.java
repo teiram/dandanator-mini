@@ -1,5 +1,6 @@
 package com.grelobites.romgenerator.view;
 
+import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.util.GameUtil;
