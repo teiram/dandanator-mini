@@ -6,6 +6,7 @@ import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.OperationResult;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.view.util.DialogUtil;
+import com.grelobites.romgenerator.view.util.DirectoryAwareFileChooser;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
@@ -50,6 +51,7 @@ public class ApplicationContext {
     private RomSetHandler romSetHandler;
     private Menu extraMenu;
     private StringProperty applicationTitle;
+    private DirectoryAwareFileChooser fileChooser;
 
     private void updateApplicationTitle() {
         StringBuilder title = new StringBuilder(APPLICATION_TITLE);
@@ -97,6 +99,12 @@ public class ApplicationContext {
         return applicationTitle;
     }
 
+    public DirectoryAwareFileChooser getFileChooser() {
+        if (this.fileChooser == null) {
+            this.fileChooser = new DirectoryAwareFileChooser();
+        }
+        return fileChooser;
+    }
     public void setRomUsage(double romUsage) {
         this.romUsage.set(romUsage);
     }
@@ -173,7 +181,7 @@ public class ApplicationContext {
     public void exportCurrentGame() {
         Game game = selectedGame.get();
         if (game != null) {
-            FileChooser chooser = new FileChooser();
+            DirectoryAwareFileChooser chooser = getFileChooser();
             chooser.setTitle(LocaleUtil.i18n("exportCurrentGame"));
             final File saveFile = chooser.showSaveDialog(menuPreview.getScene().getWindow());
             if (saveFile != null) {

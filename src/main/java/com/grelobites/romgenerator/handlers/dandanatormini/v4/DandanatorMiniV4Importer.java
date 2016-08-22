@@ -148,14 +148,16 @@ public class DandanatorMiniV4Importer implements DandanatorMiniImporter {
 
             //Keep this order, first the image and then the path, to avoid listeners to
             //enter before the image is set
-            dandanatorMiniConfiguration.setDandanatorRom(baseRom);
-            dandanatorMiniConfiguration.setDandanatorRomPath(Constants.ROMSET_PROVIDED);
+            //Initially we don't want to use the RomSet provided base ROM
+            //dandanatorMiniConfiguration.setDandanatorRom(baseRom);
+            //dandanatorMiniConfiguration.setDandanatorRomPath(Constants.ROMSET_PROVIDED);
 
             globalConfiguration.setCharSet(charSet);
             globalConfiguration.setCharSetPath(Constants.ROMSET_PROVIDED);
 
-            dandanatorMiniConfiguration.setDandanatorPicFirmware(dandanatorPicFirmware);
-            dandanatorMiniConfiguration.setDandanatorPicFirmwarePath(Constants.ROMSET_PROVIDED);
+            //The PIC firmware is discarded so far
+            //dandanatorMiniConfiguration.setDandanatorPicFirmware(dandanatorPicFirmware);
+            //dandanatorMiniConfiguration.setDandanatorPicFirmwarePath(Constants.ROMSET_PROVIDED);
 
             globalConfiguration.setBackgroundImage(ImageUtil.fillZxImage(screen, attributes));
             globalConfiguration.setBackgroundImagePath(Constants.ROMSET_PROVIDED);

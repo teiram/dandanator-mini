@@ -7,6 +7,7 @@ import java.util.Locale;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.PreferencesProvider;
 import com.grelobites.romgenerator.view.MainAppController;
+import com.grelobites.romgenerator.view.util.DirectoryAwareFileChooser;
 import de.codecentric.centerdevice.MenuToolkit;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -95,7 +96,7 @@ public class MainApp extends Application {
         importRomSet.disableProperty().bind(applicationContext
                 .backgroundTaskCountProperty().greaterThan(0));
         importRomSet.setOnAction(f -> {
-            FileChooser chooser = new FileChooser();
+            DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
             chooser.setTitle(LocaleUtil.i18n("importRomSetChooser"));
             final File romSetFile = chooser.showOpenDialog(scene.getWindow());
             try {

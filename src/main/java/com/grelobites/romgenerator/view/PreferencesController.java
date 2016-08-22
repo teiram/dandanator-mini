@@ -64,7 +64,7 @@ public class PreferencesController {
         charSetImage.clearScreen();
         charSetImage.printLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 3, 0);
         charSetImage.printLine("abcdefghijklmnopqrstuvwxyz", 1, 0);
-        charSetImage.printLine("1234567890", 5, 0);
+        charSetImage.printLine("1234567890 !\"#$%&/()[]:;,.-_", 5, 0);
     }
 
     private void recreateBackgroundImage() throws IOException {

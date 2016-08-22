@@ -10,6 +10,7 @@ import com.grelobites.romgenerator.util.gamerenderer.GameRendererFactory;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerFactory;
 import com.grelobites.romgenerator.view.util.DialogUtil;
+import com.grelobites.romgenerator.view.util.DirectoryAwareFileChooser;
 import javafx.beans.binding.Bindings;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -27,7 +28,6 @@ import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
-import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -230,7 +230,7 @@ public class MainAppController {
             });
 
         createRomButton.setOnAction(c -> {
-            FileChooser chooser = new FileChooser();
+            DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
             chooser.setTitle(LocaleUtil.i18n("saveRomSet"));
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
             if (saveFile != null) {
@@ -243,7 +243,7 @@ public class MainAppController {
         });
 
         addRomButton.setOnAction(c -> {
-           FileChooser chooser = new FileChooser();
+           DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
             chooser.setTitle(LocaleUtil.i18n("openSnapshot"));
             final List<File> snapshotFiles = chooser.showOpenMultipleDialog(addRomButton.getScene().getWindow());
             if (snapshotFiles != null) {
