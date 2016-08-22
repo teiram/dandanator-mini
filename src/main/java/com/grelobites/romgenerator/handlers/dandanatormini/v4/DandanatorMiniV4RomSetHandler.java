@@ -24,6 +24,7 @@ import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.util.CompletedTask;
+import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -425,6 +426,11 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
                 .isEqualTo(DandanatorMiniConstants.SLOT_COUNT);
     }
 
+    @Override
+    public RomSetHandlerType type() {
+        return RomSetHandlerType.DDNTR_V4;
+    }
+
     public void bind(ApplicationContext applicationContext) {
         LOGGER.debug("Binding RomSetHandler to ApplicationContext");
         this.applicationContext = applicationContext;
@@ -448,6 +454,9 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
         applicationContext.getGameList().addListener(updateRomUsage);
 
         applicationContext.getExtraMenu().getItems().add(getExportPokesMenuItem());
+
+        updateRomUsage();
+
     }
 
     public void unbind() {

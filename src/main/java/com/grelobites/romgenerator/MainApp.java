@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 public class MainApp extends Application {
     private static final Logger LOGGER = LoggerFactory.getLogger(MainApp.class);
-    private static final String APP_NAME = "Dandanator Mini ROM Generator";
+    private static final String APP_NAME = "ROM Generator";
 
 	private Stage primaryStage;
     private Stage preferencesStage;
@@ -116,8 +116,6 @@ public class MainApp extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
-		this.primaryStage.setTitle("Dandanator Mini ROM Generator");
-
 		this.primaryStage.getIcons()
 			.add(new Image(MainApp.class.getResourceAsStream("/romgenerator-icon.png")));
 
@@ -254,6 +252,7 @@ public class MainApp extends Application {
 	private void initRootLayout() {
 		try {
 		    applicationContext = new ApplicationContext();
+            primaryStage.titleProperty().bind(applicationContext.applicationTitleProperty());
             BorderPane mainPane = new BorderPane();
             Scene scene = new Scene(mainPane);
             scene.getStylesheets().add(getThemeResourceUrl());

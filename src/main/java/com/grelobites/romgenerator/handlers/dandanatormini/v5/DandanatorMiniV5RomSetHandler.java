@@ -18,6 +18,7 @@ import com.grelobites.romgenerator.util.ZxColor;
 import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.ApplicationContext;
+import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -441,12 +442,18 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return ((double) size / (DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE));
     }
 
+    @Override
+    public RomSetHandlerType type() {
+        return RomSetHandlerType.DDNTR_V5;
+    }
+
     protected String generateRomUsageDetail() {
         return String.format(LocaleUtil.i18n("romUsageV5Detail"),
                 getApplicationContext().getGameList().size(),
                 DandanatorMiniConstants.MAX_GAMES,
                 calculateRomUsage() * 100);
     }
+
     private static int getCurrentSize(List<Game> gameList) throws IOException {
         int currentSize = 0;
         for (Game game : gameList) {

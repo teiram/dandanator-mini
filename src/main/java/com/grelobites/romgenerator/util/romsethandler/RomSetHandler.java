@@ -11,6 +11,7 @@ import java.util.concurrent.Future;
 
 public interface RomSetHandler {
 
+    RomSetHandlerType type();
     void bind(ApplicationContext applicationContext);
     void unbind();
 

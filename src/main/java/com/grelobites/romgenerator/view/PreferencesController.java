@@ -2,7 +2,7 @@ package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.util.*;
-import com.grelobites.romgenerator.util.romsethandler.RomSetType;
+import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -175,7 +175,7 @@ public class PreferencesController {
 
     private void romSetModeSetup() {
         romSetModeCombo.setItems(FXCollections.observableArrayList(
-                Stream.of(RomSetType.values()).map(Enum::name)
+                Stream.of(RomSetHandlerType.values()).map(Enum::name)
                         .collect(Collectors.toList())));
         romSetModeCombo.getSelectionModel().select(Configuration.getInstance()
                 .getMode());

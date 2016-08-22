@@ -38,7 +38,7 @@ import java.util.concurrent.Future;
 
 public class ApplicationContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationContext.class);
-
+    private static final String APPLICATION_TITLE = "ROM Generator";
     private Pane romSetHandlerInfoPane;
     private final ObservableList<Game> gameList;
     private ReadOnlyObjectProperty<Game> selectedGame;
@@ -49,6 +49,16 @@ public class ApplicationContext {
     private IntegerProperty backgroundTaskCount;
     private RomSetHandler romSetHandler;
     private Menu extraMenu;
+    private StringProperty applicationTitle;
+
+    private void updateApplicationTitle() {
+        StringBuilder title = new StringBuilder(APPLICATION_TITLE);
+        if (romSetHandler != null) {
+            title.append(" - " );
+            title.append(romSetHandler.type().displayName());
+        }
+        applicationTitle.set(title.toString());
+    }
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(5, r -> {
         Thread t = new Thread(r);
@@ -63,6 +73,8 @@ public class ApplicationContext {
         this.romUsage = new SimpleDoubleProperty();
         this.romUsageDetail = new SimpleStringProperty();
         this.backgroundTaskCount = new SimpleIntegerProperty();
+        this.applicationTitle = new SimpleStringProperty();
+        updateApplicationTitle();
     }
 
     public ObservableList<Game> getGameList() {
@@ -79,6 +91,10 @@ public class ApplicationContext {
 
     public BooleanProperty gameSelectedProperty() {
         return gameSelected;
+    }
+
+    public StringProperty applicationTitleProperty() {
+        return applicationTitle;
     }
 
     public void setRomUsage(double romUsage) {
@@ -151,6 +167,7 @@ public class ApplicationContext {
         }
         romSetHandler.bind(this);
         this.romSetHandler = romSetHandler;
+        updateApplicationTitle();
     }
 
     public void exportCurrentGame() {

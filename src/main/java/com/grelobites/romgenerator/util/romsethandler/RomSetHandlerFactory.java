@@ -9,14 +9,14 @@ public class RomSetHandlerFactory {
 
     public static RomSetHandler getHandler(String type) {
         try {
-            return getHandler(RomSetType.fromString(type));
+            return getHandler(RomSetHandlerType.fromString(type));
         } catch (Exception e) {
             LOGGER.debug("Defaulting to default RomSet handler on error", e);
             return getDefaultHandler();
         }
     }
 
-    public static RomSetHandler getHandler(RomSetType type) {
+    public static RomSetHandler getHandler(RomSetHandlerType type) {
         try {
             return type.handler()
                     .newInstance();
@@ -26,6 +26,6 @@ public class RomSetHandlerFactory {
     }
 
     public static RomSetHandler getDefaultHandler() {
-        return getHandler(RomSetType.DDNTR_V4);
+        return getHandler(RomSetHandlerType.DDNTR_V4);
     }
 }

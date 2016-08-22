@@ -1,6 +1,6 @@
 package com.grelobites.romgenerator;
 
-import com.grelobites.romgenerator.util.romsethandler.RomSetType;
+import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.slf4j.Logger;
@@ -19,7 +19,7 @@ public class Configuration {
     private static final String CHARSETPATH_PROPERTY = "charSetPath";
 
 
-    private static final String DEFAULT_MODE = RomSetType.DDNTR_V4.name();
+    private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V4.name();
 
     byte[] charSet;
     byte[] backgroundImage;
