@@ -23,7 +23,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
-import javafx.stage.FileChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,12 +213,16 @@ public class ApplicationContext {
                             LocaleUtil.i18n("gameDeletionConfirmHeader"),
                             LocaleUtil.i18n("gameDeletionConfirmContent"))
                     .showAndWait();
-            if (result.orElse(ButtonType.CLOSE) == ButtonType.OK){
+            if (result.orElse(ButtonType.CLOSE) == ButtonType.OK) {
                 getGameList().clear();
             }
         }
         InputStream is = new FileInputStream(romSetFile);
         romSetHandler.importRomSet(is);
+    }
+
+    public void mergeRomSet(File romSetFile) throws IOException {
+        romSetHandler.mergeRomSet(new FileInputStream(romSetFile));
     }
 
     class BackgroundTask implements Callable<OperationResult> {

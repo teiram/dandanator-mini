@@ -19,6 +19,8 @@ public interface RomSetHandler {
 
     void importRomSet(InputStream is);
 
+    void mergeRomSet(InputStream is);
+
     void updateMenuPreview();
 
     BooleanProperty generationAllowedProperty();

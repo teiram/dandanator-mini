@@ -443,6 +443,19 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
         }
     }
 
+    @Override
+    public void mergeRomSet(InputStream stream) {
+        try {
+            Optional<SlotZero> slotZero = SlotZero.getImplementation(Util.fromInputStream(stream, Constants.SLOT_SIZE));
+            if (slotZero.isPresent()) {
+                DandanatorMiniImporter importer = slotZero.get().getImporter();
+                importer.mergeRomSet(slotZero.get(), stream, applicationContext);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Merging RomSet", e);
+        }
+    }
+
     protected DandanatorMiniFrameController getDandanatorMiniFrameController(ApplicationContext applicationContext) {
         if (dandanatorMiniFrameController == null) {
             dandanatorMiniFrameController = new DandanatorMiniFrameController();

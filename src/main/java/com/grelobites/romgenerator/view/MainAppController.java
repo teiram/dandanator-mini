@@ -39,23 +39,23 @@ import java.util.List;
 import java.util.Optional;
 
 public class MainAppController {
-	private static final Logger LOGGER = LoggerFactory.getLogger(MainAppController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MainAppController.class);
     private static final DataFormat SERIALIZED_MIME_TYPE = new DataFormat("application/x-java-serialized-object");
 
     private ApplicationContext applicationContext;
     private GameRenderer gameRenderer;
 
     @FXML
-	private ImageView menuPreview;
-	
-	@FXML
-	private ImageView gamePreview;
-	
-	@FXML
-	private TableView<Game> gameTable;
-	
-	@FXML
-	private TableColumn<Game, String> nameColumn;
+    private ImageView menuPreview;
+
+    @FXML
+    private ImageView gamePreview;
+
+    @FXML
+    private TableView<Game> gameTable;
+
+    @FXML
+    private TableColumn<Game, String> nameColumn;
 
     @FXML
     private Button createRomButton;
@@ -88,11 +88,11 @@ public class MainAppController {
     }
 
     private void addSnapshotFiles(List<File> files) {
-            files.stream()
-                    .map(GameUtil::createGameFromFile)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .forEach(g -> getRomSetHandler().addGame(g));
+        files.stream()
+                .map(GameUtil::createGameFromFile)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(g -> getRomSetHandler().addGame(g));
     }
 
     private void updateRomSetHandler() {
@@ -103,13 +103,13 @@ public class MainAppController {
                         .or(applicationContext.getRomSetHandler().generationAllowedProperty().not()));
     }
 
-	@FXML
-	private void initialize() throws IOException {
-	    applicationContext.setRomSetHandlerInfoPane(romSetHandlerInfoPane);
+    @FXML
+    private void initialize() throws IOException {
+        applicationContext.setRomSetHandlerInfoPane(romSetHandlerInfoPane);
         applicationContext.setMenuPreview(menuPreview);
         applicationContext.setSelectedGameProperty(gameTable.getSelectionModel().selectedItemProperty());
 
-	    gameRenderer = GameRendererFactory.getDefaultRenderer();
+        gameRenderer = GameRendererFactory.getDefaultRenderer();
         gameRenderer.setTarget(gamePreview);
         updateRomSetHandler();
 
@@ -117,8 +117,8 @@ public class MainAppController {
                 .bind(Bindings.size(applicationContext.getGameList())
                         .isEqualTo(0));
 
-		gameTable.setItems(applicationContext.getGameList());
-		gameTable.setPlaceholder(new Label(LocaleUtil.i18n("dropGamesMessage")));
+        gameTable.setItems(applicationContext.getGameList());
+        gameTable.setPlaceholder(new Label(LocaleUtil.i18n("dropGamesMessage")));
 
         operationInProgressIndicator.visibleProperty().bind(
                 applicationContext.backgroundTaskCountProperty().greaterThan(0));
@@ -126,62 +126,62 @@ public class MainAppController {
         onGameSelection(null, null);
 
         gameTable.setRowFactory(rf -> {
-			TableRow<Game> row = new TableRow<>();
-	           row.setOnDragDetected(event -> {
-	                if (!row.isEmpty()) {
-	                    Integer index = row.getIndex();
-	                    LOGGER.debug("Dragging content of row " + index);
-	                    Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
-	                    db.setDragView(row.snapshot(null, null));
-	                    ClipboardContent cc = new ClipboardContent();
-	                    cc.put(SERIALIZED_MIME_TYPE, index);
-	                    db.setContent(cc);
-	                    event.consume();
-	                }
-	            });
+            TableRow<Game> row = new TableRow<>();
+            row.setOnDragDetected(event -> {
+                if (!row.isEmpty()) {
+                    Integer index = row.getIndex();
+                    LOGGER.debug("Dragging content of row " + index);
+                    Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
+                    db.setDragView(row.snapshot(null, null));
+                    ClipboardContent cc = new ClipboardContent();
+                    cc.put(SERIALIZED_MIME_TYPE, index);
+                    db.setContent(cc);
+                    event.consume();
+                }
+            });
 
-	            row.setOnDragOver(event -> {
-	                Dragboard db = event.getDragboard();
-	                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
-	                    if (row.getIndex() != (Integer) db.getContent(SERIALIZED_MIME_TYPE)) {
-	                        event.acceptTransferModes(TransferMode.MOVE);
-	                        event.consume();
-	                    }
-	                }
-	            });
-
-	            row.setOnDragDropped(event -> {
-	                Dragboard db = event.getDragboard();
-	            	LOGGER.debug("row.setOnDragDropped: " + db);
-	                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
-	                    int draggedIndex = (Integer) db.getContent(SERIALIZED_MIME_TYPE);
-	                    Game draggedGame = gameTable.getItems().remove(draggedIndex);
-
-	                    int dropIndex ; 
-
-	                    if (row.isEmpty()) {
-	                        dropIndex = gameTable.getItems().size();
-	                    } else {
-	                        dropIndex = row.getIndex();
-	                    }
-
-	                    gameTable.getItems().add(dropIndex, draggedGame);
-
-	                    event.setDropCompleted(true);
-	                    gameTable.getSelectionModel().select(dropIndex);
-	                    event.consume();
-	                } else {
-	                	LOGGER.debug("Dragboard content is not of the required type");
-	                }
-	            });
-
-                row.setOnMouseClicked(e -> {
-                    if (row.isEmpty()) {
-                        gameTable.getSelectionModel().clearSelection();
+            row.setOnDragOver(event -> {
+                Dragboard db = event.getDragboard();
+                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
+                    if (row.getIndex() != (Integer) db.getContent(SERIALIZED_MIME_TYPE)) {
+                        event.acceptTransferModes(TransferMode.MOVE);
+                        event.consume();
                     }
-                });
-			return row;
-		});
+                }
+            });
+
+            row.setOnDragDropped(event -> {
+                Dragboard db = event.getDragboard();
+                LOGGER.debug("row.setOnDragDropped: " + db);
+                if (db.hasContent(SERIALIZED_MIME_TYPE)) {
+                    int draggedIndex = (Integer) db.getContent(SERIALIZED_MIME_TYPE);
+                    Game draggedGame = gameTable.getItems().remove(draggedIndex);
+
+                    int dropIndex ;
+
+                    if (row.isEmpty()) {
+                        dropIndex = gameTable.getItems().size();
+                    } else {
+                        dropIndex = row.getIndex();
+                    }
+
+                    gameTable.getItems().add(dropIndex, draggedGame);
+
+                    event.setDropCompleted(true);
+                    gameTable.getSelectionModel().select(dropIndex);
+                    event.consume();
+                } else {
+                    LOGGER.debug("Dragboard content is not of the required type");
+                }
+            });
+
+            row.setOnMouseClicked(e -> {
+                if (row.isEmpty()) {
+                    gameTable.getSelectionModel().clearSelection();
+                }
+            });
+            return row;
+        });
 
         nameColumn.setCellValueFactory(
                 cellData -> cellData.getValue().nameProperty());
@@ -204,30 +204,30 @@ public class MainAppController {
 
 
         gameTable.setOnDragOver(event -> {
-        	if (event.getGestureSource() != gameTable &&
-        			event.getDragboard().hasFiles()) {
-        		event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-        	}
-        	event.consume();
+            if (event.getGestureSource() != gameTable &&
+                    event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            event.consume();
         });
 
         gameTable.setOnDragEntered(Event::consume);
-        
+
         gameTable.setOnDragExited(Event::consume);
-        
+
         gameTable.setOnDragDropped(event -> {
-                LOGGER.debug("onDragDropped");
-                Dragboard db = event.getDragboard();
-                boolean success = false;
-                if (db.hasFiles()) {
-                    addSnapshotFiles(db.getFiles());
-                    success = true;
-                }
+            LOGGER.debug("onDragDropped");
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                addSnapshotFiles(db.getFiles());
+                success = true;
+            }
                 /* let the source know whether the files were successfully
                  * transferred and used */
-                event.setDropCompleted(success);
-                event.consume();
-            });
+            event.setDropCompleted(success);
+            event.consume();
+        });
 
         createRomButton.setOnAction(c -> {
             DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
@@ -243,7 +243,7 @@ public class MainAppController {
         });
 
         addRomButton.setOnAction(c -> {
-           DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
+            DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
             chooser.setTitle(LocaleUtil.i18n("openSnapshot"));
             final List<File> snapshotFiles = chooser.showOpenMultipleDialog(addRomButton.getScene().getWindow());
             if (snapshotFiles != null) {
@@ -272,23 +272,20 @@ public class MainAppController {
             }
         });
 
-
-         Configuration.getInstance().modeProperty().addListener(
+        Configuration.getInstance().modeProperty().addListener(
                 (observable, oldValue, newValue) -> updateRomSetHandler());
-
-
     }
 
 
 
-	private void onGameSelection(Game oldGame, Game newGame) {
-	    LOGGER.debug("onGameSelection oldGame=" + oldGame+ ", newGame=" + newGame);
-	    gameRenderer.previewGame(newGame);
-		if (newGame == null) {
+    private void onGameSelection(Game oldGame, Game newGame) {
+        LOGGER.debug("onGameSelection oldGame=" + oldGame+ ", newGame=" + newGame);
+        gameRenderer.previewGame(newGame);
+        if (newGame == null) {
             removeSelectedRomButton.setDisable(true);
-		} else {
+        } else {
             removeSelectedRomButton.setDisable(false);
         }
-	}
+    }
 
 }

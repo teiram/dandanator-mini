@@ -115,11 +115,7 @@ public class GameUtil {
     }
 
     public static boolean gameHasPokes(Game game) {
-        if (game instanceof RamGame) {
-            return ((RamGame) game).hasPokes();
-        } else {
-            return false;
-        }
+        return game instanceof RamGame && ((RamGame) game).hasPokes();
     }
 
     public static int getGameAddressValue(Game game, int address) {

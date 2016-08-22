@@ -8,4 +8,7 @@ import java.io.InputStream;
 public interface DandanatorMiniImporter {
     void importRomSet(SlotZero slotZero, InputStream payload, ApplicationContext applicationContext)
         throws IOException;
+
+    void mergeRomSet(SlotZero slotZero, InputStream payload, ApplicationContext applicationContext)
+        throws IOException;
 }

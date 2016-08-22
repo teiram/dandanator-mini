@@ -13,7 +13,9 @@ import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.OperationResult;
 import com.grelobites.romgenerator.util.RamGameCompressor;
+import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.Util;
+import com.grelobites.romgenerator.util.Z80Opcode;
 import com.grelobites.romgenerator.util.ZxColor;
 import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.compress.Compressor;
@@ -42,9 +44,10 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
 
     private static final int CBLOCKS_TABLE_OFFSET = 6641;
     private static final int CBLOCKS_TABLE_SIZE = 16;
+    private static final int GAME_STRUCT_OFFSET = 2561;
     private static final int GAME_STRUCT_SIZE = 136;
     private static final int MAX_MENU_PAGES = 3;
-    protected static final int GAME_LAUNCH_SIZE = 16;
+    protected static final int GAME_LAUNCH_SIZE = 18;
     protected static final int SNA_HEADER_SIZE = 32;
     private static RamGameCompressor ramGameCompressor = new DandanatorMiniRamGameCompressor();
 
@@ -116,11 +119,27 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return paddedHeader;
     }
 
-    protected static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
-        byte[] header = new byte[GAME_LAUNCH_SIZE];
-        os.write(header);
-        LOGGER.warn("Adding empty game launch code!!");
-        return header.length;
+    protected static int dumpGameLaunchCode(OutputStream os, Game game, int index) throws IOException {
+        if (game instanceof RamGame) {
+            RamGame ramGame = (RamGame) game;
+
+            int baseAddress = GAME_STRUCT_OFFSET + GAME_STRUCT_SIZE * index;
+            os.write(Z80Opcode.LD_IX_NN(baseAddress + SNAHeader.REG_IX));
+            os.write(Z80Opcode.LD_SP_NN(baseAddress + SNAHeader.REG_SP));
+            os.write(Z80Opcode.LD_NN_A(1));
+            os.write(Z80Opcode.NOP);
+            os.write(Z80Opcode.NOP);
+            os.write(Z80Opcode.NOP);
+            os.write(Z80Opcode.NOP);
+            os.write(Z80Opcode.NOP);
+            os.write(
+                    (ramGame.getSnaHeader().getValue(SNAHeader.INTERRUPT_ENABLE) & 0x04) == 0 ?
+                        Z80Opcode.DI : Z80Opcode.EI);
+            os.write(Z80Opcode.RET);
+        } else {
+            os.write(new byte[GAME_LAUNCH_SIZE]);
+        }
+        return GAME_LAUNCH_SIZE;
     }
 
     private int dumpUncompressedGameCBlocks(OutputStream os, Game game, int offset)
@@ -178,8 +197,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         os.write(game.getType().typeId());
         os.write(isGameScreenHold(game) ? Constants.B_01 : Constants.B_00);
         os.write(isGameRom(game) ? Constants.B_10 : Constants.B_00);
-        int codeSize = dumpGameLaunchCode(os, game);
-        dumpGameRamCodeLocation(os, game, codeSize);
+        dumpGameLaunchCode(os, game, index);
         os.write(asLittleEndianWord(gameChunk.addr));
         os.write(asLittleEndianWord(gameChunk.data.length));
         return isGameCompressed(game) ?
@@ -255,6 +273,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             GameChunk gameChunk = new GameChunk();
             gameChunk.addr = cBlockOffset;
             gameChunk.data = compressedChunk.toByteArray();
+            LOGGER.debug("Compressed chunk for game " + game.getName() + " calculated offset " + gameChunk.addr);
             return gameChunk;
         }
     }
@@ -568,19 +587,6 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
     public void unbind() {
         super.unbind();
         previewUpdateTimer.stop();
-    }
-
-    @Override
-    public void importRomSet(InputStream stream) {
-        try {
-            Optional<SlotZero> slotZero = SlotZero.getImplementation(Util.fromInputStream(stream, Constants.SLOT_SIZE));
-            if (slotZero.isPresent()) {
-                DandanatorMiniImporter importer = slotZero.get().getImporter();
-                importer.importRomSet(slotZero.get(), stream, applicationContext);
-            }
-        } catch (Exception e) {
-            LOGGER.error("Importing RomSet", e);
-        }
     }
 
     static class GameChunk {

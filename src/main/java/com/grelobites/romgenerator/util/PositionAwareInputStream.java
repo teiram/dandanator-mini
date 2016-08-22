@@ -7,19 +7,19 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class TrackeableInputStream extends InputStream {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TrackeableInputStream.class);
+public class PositionAwareInputStream extends InputStream {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PositionAwareInputStream.class);
 
     private static final int EOF = -1;
     private InputStream delegate;
     private long position;
 
-    public TrackeableInputStream(byte[] byteArray) {
+    public PositionAwareInputStream(byte[] byteArray) {
         this.delegate = new ByteArrayInputStream(byteArray);
         this.position = 0;
     }
 
-    public TrackeableInputStream(InputStream delegate) {
+    public PositionAwareInputStream(InputStream delegate) {
         this.delegate = delegate;
         this.position = 0;
     }
@@ -42,6 +42,13 @@ public class TrackeableInputStream extends InputStream {
         long skipped = delegate.skip(n);
         position += skipped;
         return skipped;
+    }
+
+    public void safeSkip(long n) throws IOException {
+        long skipped = skip(n);
+        if (skipped != n) {
+            throw new IOException("Unable to skip from stream. Bytes " + n);
+        }
     }
 
     public byte[] getAsByteArray(int length) throws IOException {

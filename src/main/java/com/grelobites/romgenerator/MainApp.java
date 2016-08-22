@@ -24,7 +24,6 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -48,6 +47,7 @@ public class MainApp extends Application {
 
         fileMenu.getItems().addAll(
                 importRomSetMenuItem(scene, applicationContext),
+                mergeRomSetMenuItem(scene, applicationContext),
                 exportGameMenuItem(applicationContext));
 
         if (menuToolkit == null) {
@@ -105,6 +105,28 @@ public class MainApp extends Application {
                 }
             } catch (Exception e) {
                 LOGGER.error("Importing ROM Set from file " +  romSetFile, e);
+            }
+        });
+        return importRomSet;
+    }
+
+    private MenuItem mergeRomSetMenuItem(Scene scene, ApplicationContext applicationContext) {
+        MenuItem importRomSet = new MenuItem(LocaleUtil.i18n("mergeRomSetMenuEntry"));
+        importRomSet.setAccelerator(
+                KeyCombination.keyCombination("SHORTCUT+M")
+        );
+        importRomSet.disableProperty().bind(applicationContext
+                .backgroundTaskCountProperty().greaterThan(0));
+        importRomSet.setOnAction(f -> {
+            DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
+            chooser.setTitle(LocaleUtil.i18n("mergeRomSetChooser"));
+            final File romSetFile = chooser.showOpenDialog(scene.getWindow());
+            try {
+                if (romSetFile != null) {
+                    applicationContext.mergeRomSet(romSetFile);
+                }
+            } catch (Exception e) {
+                LOGGER.error("Merging ROM Set from file " +  romSetFile, e);
             }
         });
         return importRomSet;
