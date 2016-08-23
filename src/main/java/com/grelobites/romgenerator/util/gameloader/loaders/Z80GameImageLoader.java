@@ -7,7 +7,7 @@ import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
 import com.grelobites.romgenerator.util.SNAHeader;
-import com.grelobites.romgenerator.util.Z80CompressedInputStream;
+import com.grelobites.romgenerator.util.compress.z80.Z80InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +26,7 @@ public class Z80GameImageLoader implements GameImageLoader {
 
     private static byte[][] getGameImageV1(InputStream is, boolean compressed) throws IOException {
         LOGGER.debug("Loading Z80 version 1 image, compressed " + compressed);
-        InputStream z80is = compressed ? new Z80CompressedInputStream(is) : is;
+        InputStream z80is = compressed ? new Z80InputStream(is) : is;
         byte[][] gameSlots = new byte[3][];
         for (int i = 0; i < 3; i++) {
             gameSlots[i] = Util.fromInputStream(z80is, Constants.SLOT_SIZE);
@@ -35,7 +35,7 @@ public class Z80GameImageLoader implements GameImageLoader {
     }
 
     private static byte[] getCompressedChunk(InputStream is) throws IOException {
-        Z80CompressedInputStream z80is = new Z80CompressedInputStream(is);
+        Z80InputStream z80is = new Z80InputStream(is);
         return Util.fromInputStream(z80is, Constants.SLOT_SIZE);
     }
 

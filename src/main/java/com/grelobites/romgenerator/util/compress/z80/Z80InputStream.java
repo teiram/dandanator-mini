@@ -1,9 +1,9 @@
-package com.grelobites.romgenerator.util;
+package com.grelobites.romgenerator.util.compress.z80;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Z80CompressedInputStream extends InputStream {
+public class Z80InputStream extends InputStream {
 
     private InputStream source;
 
@@ -45,7 +45,7 @@ public class Z80CompressedInputStream extends InputStream {
             return -1;
         }
     }
-    public Z80CompressedInputStream(InputStream source) {
+    public Z80InputStream(InputStream source) {
         this.source = source;
     }
 

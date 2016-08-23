@@ -2,7 +2,7 @@ package com.grelobites.romgenerator.util.compress.zx7;
 
 
 import com.grelobites.romgenerator.util.Util;
-import com.grelobites.romgenerator.util.Z80CompressedInputStream;
+import com.grelobites.romgenerator.util.compress.z80.Z80InputStream;
 import com.grelobites.romgenerator.util.compress.z80.Z80OutputStream;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -28,7 +28,7 @@ public class Z80CompressTest {
         ByteArrayInputStream bis = new ByteArrayInputStream(compressed.toByteArray());
         LOGGER.debug("Compressed: " + Util.dumpAsHexString(compressed.toByteArray()));
 
-        Z80CompressedInputStream zis = new Z80CompressedInputStream(bis);
+        Z80InputStream zis = new Z80InputStream(bis);
         byte[] uncompressed = Util.fromInputStream(zis);
         LOGGER.debug("Orig: " + Util.dumpAsHexString(screen));
         LOGGER.debug("Unco: " + Util.dumpAsHexString(uncompressed));
