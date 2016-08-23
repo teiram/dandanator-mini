@@ -65,9 +65,9 @@ public class PreferencesController {
         charSetImage.setPen(ZxColor.BRIGHTWHITE);
         charSetImage.setInk(ZxColor.BLACK);
         charSetImage.clearScreen();
-        charSetImage.printLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 3, 0);
-        charSetImage.printLine("abcdefghijklmnopqrstuvwxyz", 1, 0);
-        charSetImage.printLine("1234567890 !\"#$%&/()[]:;,.-_", 5, 0);
+        charSetImage.printLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 3, 2);
+        charSetImage.printLine("abcdefghijklmnopqrstuvwxyz", 1, 2);
+        charSetImage.printLine("1234567890 !\"#$%&/()[]:;,.-_", 5, 2);
     }
 
     private void recreateBackgroundImage() throws IOException {
