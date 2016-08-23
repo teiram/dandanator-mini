@@ -46,4 +46,15 @@ public class GameBlock {
     public void setData(byte[] data) {
         this.data = data;
     }
+
+    @Override
+    public String toString() {
+        return "GameBlock{" +
+                "initSlot=" + initSlot +
+                ", start=" + start +
+                ", size=" + size +
+                ", compressed=" + compressed +
+                '}';
+    }
+
 }

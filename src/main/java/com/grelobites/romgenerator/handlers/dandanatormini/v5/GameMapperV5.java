@@ -52,6 +52,7 @@ public class GameMapperV5 implements GameMapper {
             block.setSize(is.getAsLittleEndian());
             block.setCompressed(mapper.isGameCompressed);
             if (block.getInitSlot() < 0xFF) {
+                LOGGER.debug("Read block for game " + mapper.name + ": " + block);
                 mapper.getBlocks().add(block);
             }
         }
@@ -95,11 +96,6 @@ public class GameMapperV5 implements GameMapper {
 
     public int getTrainerCount() {
         return trainerCount;
-    }
-
-    public void exportTrainers(RamGame game) {
-        trainerList.setOwner(game);
-        game.setTrainerList(trainerList);
     }
 
     @Override
