@@ -2,12 +2,16 @@ package com.grelobites.romgenerator.view.util;
 
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
 public class DirectoryAwareFileChooser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DirectoryAwareFileChooser.class);
+
     private FileChooser delegate = new FileChooser();
 
     private static Optional<File> getFileDirectory(List<File> files) {
@@ -19,6 +23,7 @@ public class DirectoryAwareFileChooser {
     }
 
     private static Optional<File> getFileDirectory(File file) {
+        LOGGER.debug("getFileDirectory for " + file);
         if (file != null && file.isFile()) {
             return Optional.ofNullable(file.getParentFile());
         } else {
