@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.Configuration;
+import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.util.*;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import com.grelobites.romgenerator.view.util.DialogUtil;
@@ -8,6 +9,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Pagination;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
@@ -37,6 +39,8 @@ public class PreferencesController {
     private Button resetBackgroundImageButton;
 
     @FXML
+    private Pagination charSetPagination;
+
     private ImageView charSetImageView;
 
     @FXML
@@ -47,7 +51,6 @@ public class PreferencesController {
 
     @FXML
     private ComboBox<String> romSetModeCombo;
-
 
     private void initializeImages() throws IOException {
         backgroundImage = ImageUtil.scrLoader(
@@ -140,7 +143,29 @@ public class PreferencesController {
     }
 
     private void charSetSetup() {
+        Configuration configuration = Configuration.getInstance();
+        charSetImageView = new ImageView();
         charSetImageView.setImage(charSetImage);
+        charSetPagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
+        //Disable the pagination when the charSetPath is externally provided
+        charSetPagination.disableProperty().bind(configuration.charSetPathExternallyProvidedProperty());
+        charSetPagination.setPageCount(configuration.getCharSetFactory().charSetCount());
+        if (!configuration.getCharSetPathExternallyProvided()) {
+            charSetPagination.setCurrentPageIndex(configuration.getInternalCharSetPathIndex());
+        }
+        charSetPagination.setPageFactory((index) -> {
+            if (index < configuration.getCharSetFactory().charSetCount()) {
+                return charSetImageView;
+            } else {
+                return null;
+            }
+        });
+
+        charSetPagination.currentPageIndexProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    Configuration.getInstance().setCharSetPath(Configuration.INTERNAL_CHARSET_PREFIX + newValue);
+                });
+
         changeCharSetButton.setOnAction(event -> {
             FileChooser chooser = new FileChooser();
             chooser.setTitle(LocaleUtil.i18n("selectNewCharSetMessage"));
@@ -157,13 +182,15 @@ public class PreferencesController {
         resetCharSetButton.setOnAction(event -> {
             try {
                 Configuration.getInstance().setCharSetPath(null);
+                charSetPagination.setCurrentPageIndex(0);
                 recreateCharSetImage();
             } catch (Exception e) {
                 LOGGER.error("Resetting charset", e);
             }
         });
+
         Configuration.getInstance().charSetPathProperty().addListener(
-                (observable, oldValue, newValue) -> {
+                (c) -> {
                     try {
                         recreateCharSetImage();
                     } catch (IOException ioe) {

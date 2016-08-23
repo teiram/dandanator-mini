@@ -1,6 +1,9 @@
 package com.grelobites.romgenerator;
 
+import com.grelobites.romgenerator.util.CharSetFactory;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.slf4j.Logger;
@@ -17,7 +20,7 @@ public class Configuration {
     private static final String MODE_PROPERTY = "mode";
     private static final String BACKGROUNDIMAGEPATH_PROPERTY = "backgroundImagePath";
     private static final String CHARSETPATH_PROPERTY = "charSetPath";
-
+    public static final String INTERNAL_CHARSET_PREFIX= "internal://";
 
     private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V4.name();
 
@@ -27,13 +30,29 @@ public class Configuration {
     private StringProperty mode;
     private StringProperty backgroundImagePath;
     private StringProperty charSetPath;
-
+    private BooleanProperty charSetPathExternallyProvided;
     private static Configuration INSTANCE;
+    private CharSetFactory charSetFactory;
+
+    private static boolean isInternalCharSetPath(String value) {
+        return value == null || value.startsWith(Configuration.INTERNAL_CHARSET_PREFIX);
+    }
+
+    private static boolean isCharSetExternallyProvided(String value) {
+        //TODO: Fix this to detect paths from CharSetFactory
+        return Constants.ROMSET_PROVIDED.equals(value) || !isInternalCharSetPath(value);
+    }
 
     private Configuration() {
         this.backgroundImagePath = new SimpleStringProperty();
         this.charSetPath = new SimpleStringProperty();
+        this.charSetPathExternallyProvided = new SimpleBooleanProperty();
         this.mode = new SimpleStringProperty(DEFAULT_MODE);
+
+        this.charSetPath.addListener((observable, oldValue, newValue) -> {
+           charSetPathExternallyProvided.set(isCharSetExternallyProvided(newValue));
+        });
+        this.charSetFactory = new CharSetFactory();
     }
 
     public static Configuration getInstance() {
@@ -41,6 +60,10 @@ public class Configuration {
             INSTANCE =  newInstance();
         }
         return INSTANCE;
+    }
+
+    public CharSetFactory getCharSetFactory() {
+        return charSetFactory;
     }
 
     private static boolean validConfigurationValue(String value) {
@@ -104,17 +127,29 @@ public class Configuration {
         this.backgroundImage = backgroundImage;
     }
 
+    public int getInternalCharSetPathIndex() {
+        if (getCharSetPath() != null) {
+            return Integer.parseInt(getCharSetPath().substring(INTERNAL_CHARSET_PREFIX.length()));
+        } else {
+            return 0;
+        }
+    }
+
     public byte[] getCharSet() throws IOException {
         if (charSet == null) {
-            if (validConfigurationValue(getCharSetPath())) {
-                try {
-                    charSet = Files.readAllBytes(Paths.get(charSetPath.get()));
-                } catch (Exception e) {
-                    LOGGER.error("Unable to load CharSet from " + charSetPath, e);
+            if (isInternalCharSetPath(getCharSetPath())) {
+                return charSetFactory.getCharSetAt(getInternalCharSetPathIndex());
+            } else {
+                if (validConfigurationValue(getCharSetPath())) {
+                    try {
+                        charSet = Files.readAllBytes(Paths.get(charSetPath.get()));
+                    } catch (Exception e) {
+                        LOGGER.error("Unable to load CharSet from " + charSetPath, e);
+                        charSet = Constants.getDefaultCharset();
+                    }
+                } else {
                     charSet = Constants.getDefaultCharset();
                 }
-            } else {
-                charSet = Constants.getDefaultCharset();
             }
         }
         return charSet;
@@ -130,6 +165,14 @@ public class Configuration {
 
     public StringProperty charSetPathProperty() {
         return charSetPath;
+    }
+
+    public BooleanProperty charSetPathExternallyProvidedProperty() {
+        return charSetPathExternallyProvided;
+    }
+
+    public boolean getCharSetPathExternallyProvided() {
+        return charSetPathExternallyProvided.get();
     }
 
     public void setCharSetPath(String charSetPath) {
