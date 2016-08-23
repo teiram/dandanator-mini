@@ -217,12 +217,15 @@ public class ApplicationContext {
                 getGameList().clear();
             }
         }
-        InputStream is = new FileInputStream(romSetFile);
-        romSetHandler.importRomSet(is);
+        try (InputStream is = new FileInputStream(romSetFile)) {
+            romSetHandler.importRomSet(is);
+        }
     }
 
     public void mergeRomSet(File romSetFile) throws IOException {
-        romSetHandler.mergeRomSet(new FileInputStream(romSetFile));
+        try (InputStream is = new FileInputStream(romSetFile)) {
+            romSetHandler.mergeRomSet(is);
+        }
     }
 
     class BackgroundTask implements Callable<OperationResult> {
