@@ -131,7 +131,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             os.write(Z80Opcode.NOP);
             os.write(Z80Opcode.NOP);
             os.write(Z80Opcode.NOP);
-            os.write(Z80Opcode.NOP);
+            os.write(Z80Opcode.DEC_HL);
             os.write(
                     (ramGame.getSnaHeader().getValue(SNAHeader.INTERRUPT_ENABLE) & 0x04) == 0 ?
                         Z80Opcode.DI : Z80Opcode.EI);
