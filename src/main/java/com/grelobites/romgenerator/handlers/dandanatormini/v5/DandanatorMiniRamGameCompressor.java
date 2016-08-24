@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import java.util.Arrays;
 
 public class DandanatorMiniRamGameCompressor implements RamGameCompressor {
+    private static final int COMPRESSED_SLOT_THRESHOLD = 16378;
+    private static final int COMPRESSED_CHUNKSLOT_THRESHOLD = 16128;
 
     private Compressor compressor = DandanatorMiniConfiguration.getInstance().getCompressor();
 
@@ -23,17 +25,30 @@ public class DandanatorMiniRamGameCompressor implements RamGameCompressor {
         return os.toByteArray();
     }
 
-    @Override
-    public byte[] compressSlot(int slot, byte[] data) {
+    private byte[] compressSlotInternal(byte[] data) {
         try {
-            if (slot == DandanatorMiniConstants.GAME_CHUNK_SLOT) {
-                return compress(Arrays.copyOfRange(data, 0,
-                        Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE));
-            } else {
-                return compress(data);
-            }
+            return compress(data);
         } catch (Exception e) {
-            throw new RuntimeException("During compression of slot " + slot, e);
+            throw new RuntimeException("During compression of game data", e);
         }
     }
+
+    private static byte[] filterCompression(byte[] data, byte[] compressedData, int slot) {
+        if (slot == DandanatorMiniConstants.GAME_CHUNK_SLOT) {
+            return compressedData.length > COMPRESSED_CHUNKSLOT_THRESHOLD ?
+                    data : compressedData;
+        } else {
+            return compressedData.length > COMPRESSED_SLOT_THRESHOLD ?
+                    data : compressedData;
+        }
+    }
+
+    @Override
+    public byte[] compressSlot(int slot, byte[] data) {
+        byte[] targetData = (slot == DandanatorMiniConstants.GAME_CHUNK_SLOT) ?
+                Arrays.copyOfRange(data, 0, Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE) :
+                data;
+        return filterCompression(targetData, compressSlotInternal(targetData), slot);
+    }
+
 }

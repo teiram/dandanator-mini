@@ -186,10 +186,8 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
                 .thenComparingInt(GameBlock::getStart));
         for (GameBlock block : gameBlocks) {
             if (block.getInitSlot() < 0xff) {
+                LOGGER.debug("Populating game block " + block);
                 if (block.compressed) {
-                    LOGGER.debug("Uncompressing GameCBlock with initSlot "
-                            + block.getInitSlot() + ", start " + block.getStart()
-                            + ", size " + block.size);
                     block.data = uncompress(is, (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
                 } else {
                     block.data = copy(is, (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);

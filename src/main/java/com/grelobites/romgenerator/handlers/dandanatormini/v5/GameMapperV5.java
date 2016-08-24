@@ -20,6 +20,9 @@ import java.util.List;
 public class GameMapperV5 implements GameMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameMapperV5.class);
 
+    private static final int COMPRESSED_SLOT_MAXSIZE = 16384;
+    private static final int COMPRESSED_CHUNKSLOT_MAXSIZE = 16128;
+
     private SNAHeader snaHeader;
     private String name;
     private boolean isGameCompressed;
@@ -31,6 +34,11 @@ public class GameMapperV5 implements GameMapper {
     private List<GameBlock> blocks = new ArrayList<>();
     private TrainerList trainerList = new TrainerList(null);
     private int trainerCount;
+
+    private static boolean isSlotCompressed(int slotIndex, int size) {
+        return slotIndex != DandanatorMiniConstants.GAME_CHUNK_SLOT ? size < COMPRESSED_SLOT_MAXSIZE :
+                size < COMPRESSED_CHUNKSLOT_MAXSIZE;
+    }
 
     public static GameMapperV5 fromRomSet(PositionAwareInputStream is) throws IOException {
         LOGGER.debug("About to read game data. Offset is " + is.position());
@@ -50,7 +58,7 @@ public class GameMapperV5 implements GameMapper {
             block.setInitSlot(is.read());
             block.setStart(is.getAsLittleEndian());
             block.setSize(is.getAsLittleEndian());
-            block.setCompressed(mapper.isGameCompressed);
+            block.setCompressed(mapper.isGameCompressed && isSlotCompressed(i, block.getSize()));
             if (block.getInitSlot() < 0xFF) {
                 LOGGER.debug("Read block for game " + mapper.name + ": " + block);
                 mapper.getBlocks().add(block);
