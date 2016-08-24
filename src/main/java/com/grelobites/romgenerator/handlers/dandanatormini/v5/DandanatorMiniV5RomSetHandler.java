@@ -23,6 +23,8 @@ import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +48,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
     protected static final int GAME_LAUNCH_SIZE = 18;
     protected static final int SNA_HEADER_SIZE = 32;
     private static RamGameCompressor ramGameCompressor = new DandanatorMiniRamGameCompressor();
+    private DoubleProperty currentRomUsage;
 
     private ZxScreen[] menuImages;
     private AnimationTimer previewUpdateTimer;
@@ -61,6 +64,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
     public DandanatorMiniV5RomSetHandler() throws IOException {
         menuImages = new ZxScreen[MAX_MENU_PAGES];
         initializeMenuImages(menuImages);
+        currentRomUsage = new SimpleDoubleProperty();
         previewUpdateTimer = new AnimationTimer() {
             int currentFrame = 0;
             long lastUpdate = 0;
@@ -438,7 +442,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
 
     protected BooleanBinding getGenerationAllowedBinding(ApplicationContext ctx) {
         return Bindings.size(ctx.getGameList())
-                .isNotEqualTo(0);
+                .isNotEqualTo(0).and(currentRomUsage.lessThan(1.0));
     }
 
     @Override
@@ -454,7 +458,9 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         }
         LOGGER.debug("Used size: " + size + ", total size: "
                 + DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE);
-        return ((double) size / (DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE));
+        currentRomUsage.set(((double) size /
+                (DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE)));
+        return currentRomUsage.get();
     }
 
     @Override

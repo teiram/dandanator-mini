@@ -125,3 +125,7 @@
 .green-bar {
     -fx-accent: green;
 }
+
+.red-bar {
+    -fx-accent: red;
+}
