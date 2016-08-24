@@ -315,9 +315,9 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
     }
 
     private void dumpUncompressedGameData(OutputStream os, Game game) throws IOException {
-        for (int i = 0; i < game.getSlotCount(); i++) {
+        for (int i = game.getSlotCount() - 1; i >= 0; i--) {
             os.write(game.getSlot(i));
-            LOGGER.debug("Dumped uncompressed chunk for game " + game.getName());
+            LOGGER.debug("Dumped uncompressed slot " + i + " for game " + game.getName());
         }
     }
 
@@ -328,7 +328,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             DandanatorMiniConfiguration dmConfiguration = DandanatorMiniConfiguration.getInstance();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Collection<Game> games = getApplicationContext().getGameList();
+            List<Game> games = getApplicationContext().getGameList();
             os.write(dmConfiguration.getDandanatorRom(), 0, DandanatorMiniConstants.BASEROM_SIZE);
             LOGGER.debug("Dumped base ROM. Offset: " + os.size());
 
@@ -385,7 +385,6 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             dumpVersionInfo(os);
             LOGGER.debug("Dumped version info. Offset: " + os.size());
 
-
             for (Game game : games) {
                 if (isGameCompressed(game)) {
                     dumpCompressedGameData(os, game);
@@ -394,14 +393,15 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             }
 
             ByteArrayOutputStream uncompressedStream = new ByteArrayOutputStream();
-            for (Game game : games) {
+            for (int i = games.size() - 1; i >= 0; i--) {
+                Game game = games.get(i);
                 if (!isGameCompressed(game)) {
                     dumpUncompressedGameData(uncompressedStream, game);
-                    LOGGER.debug("Dumped uncompressed game. Offset in uncompressed stream: "
-                            + uncompressedStream.size());
                 }
             }
+
             //Uncompressed data goes at the end minus the extra ROM size
+            //and grows backwards
             int uncompressedOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1)
                     - uncompressedStream.size();
             int gapSize = uncompressedOffset - os.size();
