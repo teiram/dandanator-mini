@@ -437,6 +437,12 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
             if (slotZero.isPresent()) {
                 DandanatorMiniImporter importer = slotZero.get().getImporter();
                 importer.importRomSet(slotZero.get(), stream, applicationContext);
+            } else {
+                DialogUtil.buildErrorAlert(
+                        LocaleUtil.i18n("fileImportError"),
+                        LocaleUtil.i18n("fileImportErrorHeader"),
+                        LocaleUtil.i18n("fileImportErrorContent"))
+                        .showAndWait();
             }
         } catch (Exception e) {
             LOGGER.error("Importing RomSet", e);
@@ -450,6 +456,12 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
             if (slotZero.isPresent()) {
                 DandanatorMiniImporter importer = slotZero.get().getImporter();
                 importer.mergeRomSet(slotZero.get(), stream, applicationContext);
+            } else {
+                DialogUtil.buildErrorAlert(
+                        LocaleUtil.i18n("fileImportError"),
+                        LocaleUtil.i18n("fileImportErrorHeader"),
+                        LocaleUtil.i18n("fileImportErrorContent"))
+                        .showAndWait();
             }
         } catch (Exception e) {
             LOGGER.error("Merging RomSet", e);

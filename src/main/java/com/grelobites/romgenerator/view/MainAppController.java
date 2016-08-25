@@ -90,8 +90,15 @@ public class MainAppController {
     private void addSnapshotFiles(List<File> files) {
         files.stream()
                 .map(GameUtil::createGameFromFile)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .map(o -> o.orElseGet(() -> {
+                    DialogUtil.buildErrorAlert(
+                            LocaleUtil.i18n("fileImportError"),
+                            LocaleUtil.i18n("fileImportErrorHeader"),
+                            LocaleUtil.i18n("fileImportErrorContent"))
+                            .showAndWait();
+                    return null;
+                }))
+                .filter(o -> o != null)
                 .forEach(g -> getRomSetHandler().addGame(g));
     }
 
