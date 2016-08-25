@@ -1,18 +1,13 @@
 package com.grelobites.romgenerator.util.compress.zx7;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
 public class UncompressedByteArrayReader {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UncompressedByteArrayReader.class);
-
     private byte[] inputData;
     private byte[] outputData;
     private int inputIndex;
     private int outputIndex;
-    private int inputSize;
     private int bitMask;
     private int bitValue;
 
