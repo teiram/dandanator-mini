@@ -21,9 +21,6 @@ import java.util.List;
 public class Z80GameImageLoader implements GameImageLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(Z80GameImageLoader.class);
 
-    private static final int GAME_IMAGE_SIZE = 0xC000;
-    private static final int PAGE_SIZE = 0x4000;
-
     private static byte[][] getGameImageV1(InputStream is, boolean compressed) throws IOException {
         LOGGER.debug("Loading Z80 version 1 image, compressed " + compressed);
         InputStream z80is = compressed ? new Z80InputStream(is) : is;
