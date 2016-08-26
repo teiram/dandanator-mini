@@ -34,7 +34,7 @@
                         </TextField>
                                 <Label fx:id="gameType" layoutX="74.0" layoutY="45.0" text="RAM" textFill="WHITE" />
                         <CheckBox fx:id="gameCompressedAttribute" layoutX="10.0" layoutY="117.0" mnemonicParsing="false" text="%gameCompressedProperty" />
-                        <CheckBox fx:id="gameForced128kModeAttribute" layoutX="10.0" layoutY="143.0" mnemonicParsing="false" text="%game128kModeProperty" />
+                        <CheckBox fx:id="gameForced48kModeAttribute" layoutX="10.0" layoutY="143.0" mnemonicParsing="false" text="%game48kModeProperty" />
                             </children>
                         </AnchorPane>
                     </content>

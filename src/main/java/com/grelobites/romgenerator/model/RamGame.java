@@ -4,8 +4,6 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.RamGameCompressor;
 import com.grelobites.romgenerator.util.SNAHeader;
-import com.grelobites.romgenerator.util.compress.Compressor;
-import com.grelobites.romgenerator.util.compress.CompressorType;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -14,9 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +22,7 @@ public class RamGame extends BaseGame implements Game {
 	private BooleanProperty rom;
 	private BooleanProperty holdScreen;
 	private BooleanProperty compressed;
-	private BooleanProperty force128kMode;
+	private BooleanProperty force48kMode;
 	private Image screenshot;
     private SNAHeader snaHeader;
 	private TrainerList trainerList;
@@ -39,19 +35,19 @@ public class RamGame extends BaseGame implements Game {
 		rom = new SimpleBooleanProperty();
 		holdScreen = new SimpleBooleanProperty();
         compressed = new SimpleBooleanProperty(true);
-        force128kMode = new SimpleBooleanProperty(false);
+        force48kMode = new SimpleBooleanProperty(false);
 	}
 
-    public boolean isForce128kMode() {
-        return force128kMode.get();
+    public boolean getForce48kMode() {
+        return force48kMode.get();
     }
 
-    public BooleanProperty force128kModeProperty() {
-        return force128kMode;
+    public BooleanProperty force48kModeProperty() {
+        return force48kMode;
     }
 
-    public void setForce128kMode(boolean force128kMode) {
-        this.force128kMode.set(force128kMode);
+    public void setForce48kMode(boolean force48kMode) {
+        this.force48kMode.set(force48kMode);
     }
 
     public SNAHeader getSnaHeader() {

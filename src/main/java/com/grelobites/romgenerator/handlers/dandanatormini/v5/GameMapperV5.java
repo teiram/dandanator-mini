@@ -28,7 +28,7 @@ public class GameMapperV5 implements GameMapper {
     private SNAHeader snaHeader;
     private String name;
     private boolean isGameCompressed;
-    private boolean isGameForce128kMode;
+    private boolean isGameForce48kMode;
     private int gameType;
     private boolean screenHold;
     private boolean activeRom;
@@ -48,7 +48,7 @@ public class GameMapperV5 implements GameMapper {
         GameMapperV5 mapper = new GameMapperV5();
         mapper.snaHeader = SNAHeader.fromInputStream(is, DandanatorMiniV5RomSetHandler.SNA_HEADER_SIZE);
         mapper.name = Util.getNullTerminatedString(is, 3, DandanatorMiniConstants.GAMENAME_SIZE);
-        mapper.isGameForce128kMode = is.read() != 0;
+        mapper.isGameForce48kMode = is.read() != 0;
         mapper.isGameCompressed = is.read() != 0;
         mapper.gameType = is.read();
         mapper.screenHold = is.read() != 0;
@@ -127,7 +127,7 @@ public class GameMapperV5 implements GameMapper {
                 ramGame.setHoldScreen(screenHold);
                 ramGame.setRom(activeRom);
                 ramGame.setSnaHeader(snaHeader);
-                ramGame.setForce128kMode(isGameForce128kMode);
+                ramGame.setForce48kMode(isGameForce48kMode);
                 ramGame.setTrainerList(trainerList);
                 game = ramGame;
                 break;
