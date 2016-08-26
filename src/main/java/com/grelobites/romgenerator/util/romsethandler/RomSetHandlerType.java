@@ -4,15 +4,17 @@ import com.grelobites.romgenerator.handlers.dandanatormini.v5.DandanatorMiniV5Ro
 import com.grelobites.romgenerator.handlers.dandanatormini.v4.DandanatorMiniV4RomSetHandler;
 
 public enum RomSetHandlerType {
-    DDNTR_V4(DandanatorMiniV4RomSetHandler.class, "Dandanator Mini V4"),
-    DDNTR_V5(DandanatorMiniV5RomSetHandler.class, "Dandanator Mini V5");
+    DDNTR_V4(DandanatorMiniV4RomSetHandler.class, "Dandanator Mini V4", false),
+    DDNTR_V5(DandanatorMiniV5RomSetHandler.class, "Dandanator Mini V5", true);
 
     private Class<? extends RomSetHandler> handler;
     private String displayName;
+    private boolean enabled;
 
-    RomSetHandlerType(Class<? extends RomSetHandler> handler, String displayName) {
+    RomSetHandlerType(Class<? extends RomSetHandler> handler, String displayName, boolean enabled) {
         this.handler = handler;
         this.displayName = displayName;
+        this.enabled = enabled;
     }
 
     public static RomSetHandlerType fromString(String type) {
@@ -25,5 +27,9 @@ public enum RomSetHandlerType {
 
     public String displayName() {
         return displayName;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 }

@@ -133,13 +133,13 @@ public class PreferencesController {
             }
         });
         Configuration.getInstance().backgroundImagePathProperty().addListener(
-            (observable, oldValue, newValue) -> {
-                try {
-                    recreateBackgroundImage();
-                } catch (IOException ioe) {
-                    LOGGER.error("Updating background image", ioe);
-                }
-            });
+                (observable, oldValue, newValue) -> {
+                    try {
+                        recreateBackgroundImage();
+                    } catch (IOException ioe) {
+                        LOGGER.error("Updating background image", ioe);
+                    }
+                });
     }
 
     private void charSetSetup() {
@@ -202,7 +202,9 @@ public class PreferencesController {
 
     private void romSetModeSetup() {
         romSetModeCombo.setItems(FXCollections.observableArrayList(
-                Stream.of(RomSetHandlerType.values()).map(Enum::name)
+                Stream.of(RomSetHandlerType.values())
+                        .filter(RomSetHandlerType::isEnabled)
+                        .map(Enum::name)
                         .collect(Collectors.toList())));
         romSetModeCombo.getSelectionModel().select(Configuration.getInstance()
                 .getMode());
@@ -221,5 +223,5 @@ public class PreferencesController {
         charSetSetup();
 
         romSetModeSetup();
-   }
+    }
 }
