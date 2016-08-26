@@ -46,7 +46,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
     private static final int GAME_STRUCT_SIZE = 136;
     private static final int MAX_MENU_PAGES = 3;
     protected static final int GAME_LAUNCH_SIZE = 18;
-    protected static final int SNA_HEADER_SIZE = 32;
+    protected static final int SNA_HEADER_SIZE = 31;
     private static RamGameCompressor ramGameCompressor = new DandanatorMiniRamGameCompressor();
     private DoubleProperty currentRomUsage;
 
@@ -195,6 +195,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
                                GameChunk gameChunk, int offset) throws IOException {
         os.write(getGamePaddedSnaHeader(game));
         dumpGameName(os, game, index);
+        os.write(isGameForce128kMode(game) ? Constants.B_01 : Constants.B_00);
         os.write(isGameCompressed(game) ? Constants.B_01 : Constants.B_00);
         os.write(game.getType().typeId());
         os.write(isGameScreenHold(game) ? Constants.B_01 : Constants.B_00);

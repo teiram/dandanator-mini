@@ -88,6 +88,9 @@ public class DandanatorMiniFrameController {
     private CheckBox gameCompressedAttribute;
 
     @FXML
+    private CheckBox gameForced128kModeAttribute;
+
+    @FXML
     private Label compressedSize;
 
     @FXML
@@ -254,6 +257,7 @@ public class DandanatorMiniFrameController {
                 gameHoldScreenAttribute.selectedProperty().unbindBidirectional(ramGame.holdScreenProperty());
                 gameRomAttribute.selectedProperty().unbindBidirectional(ramGame.romProperty());
                 gameCompressedAttribute.selectedProperty().unbindBidirectional(ramGame.compressedProperty());
+                gameForced128kModeAttribute.selectedProperty().unbindBidirectional(ramGame.force128kModeProperty());
                 pokeView.setRoot(null);
                 gameCompressedAttribute.selectedProperty().removeListener(getCurrentGameCompressedChangeListener());
             }
@@ -273,6 +277,7 @@ public class DandanatorMiniFrameController {
                 pokeView.setRoot(new RecursiveTreeItem<>(ramGame.getTrainerList(), PokeViewable::getChildren,
                         this::computePokeChange));
                 gameCompressedAttribute.selectedProperty().bindBidirectional(ramGame.compressedProperty());
+                gameForced128kModeAttribute.selectedProperty().bindBidirectional((ramGame.force128kModeProperty()));
                 setCurrentGameCompressedChangeListener((c) -> compressedSize.textProperty().set(getGameSize(game)));
                 ramGame.compressedProperty().addListener(getCurrentGameCompressedChangeListener());
             }

@@ -564,6 +564,10 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
         return game instanceof RamGame && ((RamGame) game).getCompressed();
     }
 
+    protected static boolean isGameForce128kMode(Game game) {
+        return game instanceof RamGame && ((RamGame) game).isForce128kMode();
+    }
+
     @Override
     public void updateMenuPreview() {
         LOGGER.debug("updateMenuPreview");

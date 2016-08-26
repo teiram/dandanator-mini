@@ -26,6 +26,7 @@ public class RamGame extends BaseGame implements Game {
 	private BooleanProperty rom;
 	private BooleanProperty holdScreen;
 	private BooleanProperty compressed;
+	private BooleanProperty force128kMode;
 	private Image screenshot;
     private SNAHeader snaHeader;
 	private TrainerList trainerList;
@@ -38,7 +39,20 @@ public class RamGame extends BaseGame implements Game {
 		rom = new SimpleBooleanProperty();
 		holdScreen = new SimpleBooleanProperty();
         compressed = new SimpleBooleanProperty(true);
+        force128kMode = new SimpleBooleanProperty(false);
 	}
+
+    public boolean isForce128kMode() {
+        return force128kMode.get();
+    }
+
+    public BooleanProperty force128kModeProperty() {
+        return force128kMode;
+    }
+
+    public void setForce128kMode(boolean force128kMode) {
+        this.force128kMode.set(force128kMode);
+    }
 
     public SNAHeader getSnaHeader() {
         return snaHeader;
