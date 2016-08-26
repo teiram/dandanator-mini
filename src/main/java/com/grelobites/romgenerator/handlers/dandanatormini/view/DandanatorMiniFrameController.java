@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini.view;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.PokeViewable;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
@@ -319,6 +320,11 @@ public class DandanatorMiniFrameController {
                     removeAllGamePokesButton.setDisable(false);
                 } else {
                     removeAllGamePokesButton.setDisable(true);
+                }
+                if (ramGame.getType() == GameType.RAM128_HI || ramGame.getType() == GameType.RAM128_LO) {
+                    gameForced48kModeAttribute.setVisible(false);
+                } else {
+                    gameForced48kModeAttribute.setVisible(true);
                 }
             } else {
                 pokeView.setDisable(true);
