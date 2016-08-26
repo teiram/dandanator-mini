@@ -89,16 +89,16 @@ public class GameMapperV5 implements GameMapper {
         this.trainerCount = trainerCount;
     }
 
-    public List<byte[]> getGameSlots() {
+    private List<byte[]> getGameSlots() {
         List<byte[]> gameSlots = new ArrayList<>();
-        int index = 0;
-        for (GameBlock block: blocks) {
+        for (int index = 0; index < blocks.size(); index++) {
+            GameBlock block = blocks.get(index);
+            LOGGER.debug("Adding game slot for compressed game " + name + ": " + block);
             if (index == DandanatorMiniConstants.GAME_CHUNK_SLOT) {
                 gameSlots.add(Util.concatArrays(block.getData(), gameChunk.getData()));
             } else {
                 gameSlots.add(block.getData());
             }
-            index++;
         }
         return gameSlots;
     }
@@ -120,6 +120,7 @@ public class GameMapperV5 implements GameMapper {
             case RAM128_LO:
             case RAM128_HI:
                 RamGame ramGame = new RamGame(type, getGameSlots());
+                ramGame.setCompressed(isGameCompressed);
                 ramGame.setHoldScreen(screenHold);
                 ramGame.setRom(activeRom);
                 ramGame.setSnaHeader(snaHeader);

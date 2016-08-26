@@ -57,6 +57,8 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
     }
 
     private static byte[] copy(PositionAwareInputStream is, int offset, int size) throws IOException {
+        LOGGER.debug("Copying data with offset " + offset + " and size " + size);
+        LOGGER.debug("Skipping " + (offset - is.position()) + " to start of uncompressed data");
         is.safeSkip(offset - is.position());
         return Util.fromInputStream(is, size);
     }
@@ -157,7 +159,11 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
         for (int i = 0; i < gameCount; i++) {
             GameMapperV5 mapper = gameMappers.get(i);
             GameChunk gameChunk = mapper.getGameChunk();
-            gameChunk.setData(uncompress(zis, gameChunk.getAddress(), gameChunk.getLength()));
+            if (gameChunk.getLength() == DandanatorMiniConstants.GAME_CHUNK_SIZE) {
+                gameChunk.setData(copy(zis, gameChunk.getAddress(), gameChunk.getLength()));
+            } else {
+                gameChunk.setData(uncompress(zis, gameChunk.getAddress(), gameChunk.getLength()));
+            }
         }
 
         zis.safeSkip(Constants.SLOT_SIZE - zis.position());
