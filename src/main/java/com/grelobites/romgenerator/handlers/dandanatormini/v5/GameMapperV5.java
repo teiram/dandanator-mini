@@ -22,6 +22,7 @@ public class GameMapperV5 implements GameMapper {
 
     private static final int COMPRESSED_SLOT_MAXSIZE = 16384;
     private static final int COMPRESSED_CHUNKSLOT_MAXSIZE = 16128;
+    private static final int INVALID_SLOT_ID = 0xff;
 
     private SNAHeader snaHeader;
     private String name;
@@ -58,8 +59,8 @@ public class GameMapperV5 implements GameMapper {
             block.setInitSlot(is.read());
             block.setStart(is.getAsLittleEndian());
             block.setSize(is.getAsLittleEndian());
-            block.setCompressed(mapper.isGameCompressed && isSlotCompressed(i, block.getSize()));
-            if (block.getInitSlot() < 0xFF) {
+            block.setCompressed(mapper.isGameCompressed || isSlotCompressed(i, block.getSize()));
+            if (block.getInitSlot() < INVALID_SLOT_ID) {
                 LOGGER.debug("Read block for game " + mapper.name + ": " + block);
                 mapper.getBlocks().add(block);
             }
