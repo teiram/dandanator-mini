@@ -1,5 +1,6 @@
 package com.grelobites.romgenerator.handlers.dandanatormini.v5;
 
+import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
 import com.grelobites.romgenerator.model.Game;
@@ -20,9 +21,9 @@ import java.util.List;
 public class GameMapperV5 implements GameMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameMapperV5.class);
 
-    private static final int COMPRESSED_SLOT_MAXSIZE = 16384;
-    private static final int COMPRESSED_CHUNKSLOT_MAXSIZE = 16128;
-    private static final int INVALID_SLOT_ID = 0xff;
+    private static final int COMPRESSED_SLOT_MAXSIZE = Constants.SLOT_SIZE;
+    private static final int COMPRESSED_CHUNKSLOT_MAXSIZE = Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE;
+    private static final int INVALID_SLOT_ID = DandanatorMiniConstants.FILLER_BYTE;
 
     private SNAHeader snaHeader;
     private String name;

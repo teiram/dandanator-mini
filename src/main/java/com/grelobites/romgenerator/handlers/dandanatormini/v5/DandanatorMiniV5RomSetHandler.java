@@ -110,7 +110,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
 
     private static byte[] getGamePaddedSnaHeader(Game game) {
         byte[] paddedHeader = new byte[SNA_HEADER_SIZE];
-        Arrays.fill(paddedHeader, (byte) 0xff);
+        Arrays.fill(paddedHeader, (byte) DandanatorMiniConstants.FILLER_BYTE);
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
             byte[] snaHeader = ramGame.getSnaHeader().asByteArray();
@@ -159,7 +159,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             gameCBlocks.write(asLittleEndianWord(i == DandanatorMiniConstants.GAME_CHUNK_SLOT ?
                 Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE : Constants.SLOT_SIZE));
         }
-        byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 9, (byte) 0xff);
+        byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 9, (byte) DandanatorMiniConstants.FILLER_BYTE);
         LOGGER.debug("CBlocks array calculated as " + Util.dumpAsHexString(cBlocksArray));
         os.write(cBlocksArray);
         return offset;
@@ -185,7 +185,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             throw new IllegalArgumentException("Cannot extract compressed blocks from a non-RAM game");
         }
         //Fill the remaining space with 0xFF
-        byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 9, (byte) 0xff);
+        byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 9, (byte) DandanatorMiniConstants.FILLER_BYTE);
         LOGGER.debug("CBlocks array calculated as " + Util.dumpAsHexString(cBlocksArray));
         os.write(cBlocksArray);
         return offset;
