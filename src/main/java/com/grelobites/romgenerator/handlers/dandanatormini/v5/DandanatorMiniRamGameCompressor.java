@@ -12,8 +12,9 @@ import java.io.OutputStream;
 import java.util.Arrays;
 
 public class DandanatorMiniRamGameCompressor implements RamGameCompressor {
-    private static final int COMPRESSED_SLOT_THRESHOLD = 16378;
-    private static final int COMPRESSED_CHUNKSLOT_THRESHOLD = 16128;
+    private static final int COMPRESSED_SLOT_THRESHOLD = Constants.SLOT_SIZE - 6;
+    private static final int COMPRESSED_CHUNKSLOT_THRESHOLD = Constants.SLOT_SIZE -
+            DandanatorMiniConstants.GAME_CHUNK_SIZE;
 
     private Compressor compressor = DandanatorMiniConfiguration.getInstance().getCompressor();
 
