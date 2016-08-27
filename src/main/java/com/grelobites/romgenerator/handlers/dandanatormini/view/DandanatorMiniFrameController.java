@@ -311,7 +311,6 @@ public class DandanatorMiniFrameController {
             if (newGame instanceof RamGame) {
                 RamGame ramGame = (RamGame) newGame;
                 addPokeButton.setDisable(false);
-                pokeView.setDisable(false);
                 pokesTab.setDisable(false);
                 gameRomAttribute.setVisible(true);
                 gameHoldScreenAttribute.setVisible(true);
@@ -327,11 +326,11 @@ public class DandanatorMiniFrameController {
                     gameForced48kModeAttribute.setVisible(true);
                 }
             } else {
-                pokeView.setDisable(true);
                 pokesTab.setDisable(true);
                 gameRomAttribute.setVisible(false);
                 gameHoldScreenAttribute.setVisible(false);
                 gameCompressedAttribute.setVisible(false);
+                gameForced48kModeAttribute.setVisible(false);
             }
             gameInfoTabPane.setVisible(true);
         }
