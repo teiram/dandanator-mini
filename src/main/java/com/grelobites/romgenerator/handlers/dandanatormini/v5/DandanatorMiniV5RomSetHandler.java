@@ -8,6 +8,7 @@ import com.grelobites.romgenerator.handlers.dandanatormini.v4.DandanatorMiniV4Ro
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.RomGame;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.OperationResult;
 import com.grelobites.romgenerator.util.RamGameCompressor;
@@ -291,10 +292,15 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
 
     private static GameChunk getUncompressedGameChunk(Game game, int cBlockOffset) throws IOException {
         GameChunk gameChunk = new GameChunk();
-        gameChunk.setData(Arrays.copyOfRange(game.getSlot(DandanatorMiniConstants.GAME_CHUNK_SLOT),
-                Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE,
-                Constants.SLOT_SIZE));
-        gameChunk.setAddress(cBlockOffset);
+        if (game instanceof RamGame) {
+            gameChunk.setData(Arrays.copyOfRange(game.getSlot(DandanatorMiniConstants.GAME_CHUNK_SLOT),
+                    Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE,
+                    Constants.SLOT_SIZE));
+            gameChunk.setAddress(cBlockOffset);
+        } else if (game instanceof RomGame) {
+            gameChunk.setData(new byte[0]);
+            gameChunk.setAddress(cBlockOffset);
+        }
         LOGGER.debug("Uncompressed chunk for game " + game.getName() + " calculated offset " +
                 gameChunk.getAddress());
         return gameChunk;

@@ -161,7 +161,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
             GameChunk gameChunk = mapper.getGameChunk();
             if (gameChunk.getLength() == DandanatorMiniConstants.GAME_CHUNK_SIZE) {
                 gameChunk.setData(copy(zis, gameChunk.getAddress(), gameChunk.getLength()));
-            } else {
+            } else if (gameChunk.getLength() > 0) {
                 gameChunk.setData(uncompress(zis, gameChunk.getAddress(), gameChunk.getLength()));
             }
         }
