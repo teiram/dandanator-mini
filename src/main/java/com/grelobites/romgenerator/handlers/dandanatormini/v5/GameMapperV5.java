@@ -62,7 +62,7 @@ public class GameMapperV5 implements GameMapper {
             block.setInitSlot(is.read());
             block.setStart(is.getAsLittleEndian());
             block.setSize(is.getAsLittleEndian());
-            block.setCompressed(mapper.isGameCompressed || isSlotCompressed(i, block.getSize()));
+            block.setCompressed(mapper.isGameCompressed && isSlotCompressed(i, block.getSize()));
             if (block.getInitSlot() < INVALID_SLOT_ID) {
                 LOGGER.debug("Read block for game " + mapper.name + ": " + block);
                 mapper.getBlocks().add(block);
