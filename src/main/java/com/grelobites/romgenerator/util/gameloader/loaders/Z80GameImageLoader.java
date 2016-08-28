@@ -103,11 +103,8 @@ public class Z80GameImageLoader implements GameImageLoader {
                 LOGGER.debug("Assembling game as version 2/3 128K game");
                 arrangedBlocks.add(gameData[5 + pageOffset]);
                 arrangedBlocks.add(gameData[2 + pageOffset]);
-                arrangedBlocks.add(gameData[c000MappedPage + pageOffset]);
                 for (int page : new Integer[] {0, 1, 3, 4, 6, 7}) {
-                    if (page != c000MappedPage) {
-                        arrangedBlocks.add(gameData[page + pageOffset]);
-                    }
+                    arrangedBlocks.add(gameData[page + pageOffset]);
                 }
                 gameType = arrangedBlocks.size() == 8 ? GameType.RAM128_LO : GameType.RAM128_HI;
             }

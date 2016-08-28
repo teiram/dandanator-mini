@@ -35,13 +35,9 @@ public class SNAGameImageLoader implements GameImageLoader {
             header = SNAHeader.from48kSNAGameByteArray(gameImage);
             gameSlots = get48kGameSlots(gameImage);
             gameType = GameType.RAM48;
-        } else if (gameImage.length == SNA_128KLO_SIZE) {
+        } else if (gameImage.length == SNA_128KLO_SIZE || gameImage.length == SNA_128KHI_SIZE) {
             header = SNAHeader.from128kSNAGameByteArray(gameImage);
-            gameSlots = get128kGameSlots(gameImage);
-            gameType = GameType.RAM128_LO;
-        } else if (gameImage.length == SNA_128KHI_SIZE) {
-            header = SNAHeader.from128kSNAGameByteArray(gameImage);
-            gameSlots = get128kGameSlots(gameImage);
+            gameSlots = get128kGameSlots(gameImage, header);
             gameType = GameType.RAM128_LO;
         } else {
             throw new IllegalArgumentException("Unsupported SNA size: " + gameImage.length);
@@ -104,12 +100,29 @@ public class SNAGameImageLoader implements GameImageLoader {
         return slots;
     }
 
-    private static List<byte[]> get128kGameSlots(byte[] gameImage) {
-        List<byte[]> slots = get48kGameSlots(gameImage);
-        int numSlots = gameImage.length == SNA_128KLO_SIZE ? 8 : 9;
-        int offset = SNA_48K_SIZE + 4; //4 bytes for the extra header bits
-        for (int i = 3; i < numSlots; i++) {
-            slots.add(Arrays.copyOfRange(gameImage, offset, offset + Constants.SLOT_SIZE));
+    private static List<byte[]> get128kGameSlots(byte[] gameImage, SNAHeader header) {
+        ArrayList<byte[]> slots = new ArrayList<>();
+        int offset = Constants.SNA_HEADER_SIZE;
+        boolean bigImage = gameImage.length == SNA_128KHI_SIZE;
+        int mappedBankIndex = header.getValue(SNAHeader.PORT_7FFD) & 0x03;
+        byte[] mappedBank = null;
+        for (int i = 0; i < 3; i++) {
+            if (i < 2) {
+                slots.add(Arrays.copyOfRange(gameImage, offset, offset + Constants.SLOT_SIZE));
+            } else {
+                if (!bigImage) {
+                    mappedBank = Arrays.copyOfRange(gameImage, offset, offset + Constants.SLOT_SIZE);
+                }
+            }
+            offset += Constants.SLOT_SIZE;
+        }
+        offset +=  4; //4 bytes for the extra header bits
+        for (int bank : new Integer[] {0, 1, 3, 4, 6, 7}) {
+            if (mappedBankIndex == bank) {
+                slots.add(mappedBank);
+            } else {
+                slots.add(Arrays.copyOfRange(gameImage, offset, offset + Constants.SLOT_SIZE));
+            }
             offset += Constants.SLOT_SIZE;
         }
         return slots;
