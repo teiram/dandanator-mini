@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public class DandanatorMiniConstants {
     public static final int SLOT_COUNT = 10;
-    public static final int MAX_GAMES = 30;
+    public static final int MAX_GAMES = 25;
     public static final int GAME_SLOTS = 30; //Total ROM Size is 32 slots (minus 1 slot (code) and last (test rom))
     public static final int POKE_HEADER_SIZE = 3 * SLOT_COUNT;
     public static final int GAMENAME_SIZE = 33;
@@ -41,9 +41,12 @@ public class DandanatorMiniConstants {
     public static final int GAME_CHUNK_SLOT = 2;
     public static final int VERSION_SIZE = 32;
     public static final int FILLER_BYTE = 0xFF;
+    public static final int EXTENDED_CHARSET_SIZE = 896;
+    public static final int BASEROM_V5_SIZE = 3072;
     private static byte[] DANDANATOR_ROM;
     private static byte[] EXTRA_ROM;
     private static byte[] DEFAULT_DANDANATOR_PIC_FW;
+
 
     private static PreferencesProvider providerRegister = new PreferencesProvider("Dandanator Mini",
             "/com/grelobites/romgenerator/handlers/dandanatormini/view/dandanatorminipreferences.fxml", false);
@@ -53,7 +56,7 @@ public class DandanatorMiniConstants {
             DANDANATOR_ROM = Util.fromInputStream(
                     DandanatorMiniConstants.class.getClassLoader()
                             .getResourceAsStream(DANDANATOR_ROM_RESOURCE),
-                    BASEROM_SIZE);
+                    BASEROM_V5_SIZE);
         }
         return DANDANATOR_ROM;
     }

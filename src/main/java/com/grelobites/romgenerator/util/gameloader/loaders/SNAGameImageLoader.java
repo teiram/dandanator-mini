@@ -23,6 +23,7 @@ public class SNAGameImageLoader implements GameImageLoader {
     private static final int SNA_48K_SIZE = Constants.SNA_HEADER_SIZE + Constants.SLOT_SIZE * 3;
     private static final int SNA_128KLO_SIZE = Constants.SNA_EXTENDED_HEADER_SIZE + Constants.SLOT_SIZE * 8;
     private static final int SNA_128KHI_SIZE = Constants.SNA_EXTENDED_HEADER_SIZE + Constants.SLOT_SIZE * 9;
+    private static final int[] INDEX_MAP = new int[]{2, 3, 1, 4, 5, 0, 6, 7};
 
     @Override
     public Game load(InputStream is) throws IOException {
@@ -82,11 +83,20 @@ public class SNAGameImageLoader implements GameImageLoader {
 
     private static void save128kSna(RamGame game, OutputStream os, int numSlots) throws IOException {
         byte[] snaHeader = game.getSnaHeader().asByteArray();
-        save48kSna(game, os);
+        os.write(snaHeader, 0, Constants.SNA_HEADER_SIZE);
+        for (int i = 0; i < 2; i++) {
+            os.write(game.getSlot(i));
+        }
+        int mappedBankIndex = game.getSnaHeader().getValue(SNAHeader.PORT_7FFD) & 0x03;
+        os.write(game.getSlot(INDEX_MAP[mappedBankIndex]));
+
         os.write(snaHeader, Constants.SNA_HEADER_SIZE,
                 Constants.SNA_EXTENDED_HEADER_SIZE - Constants.SNA_HEADER_SIZE);
-        for (int i = 3; i < numSlots; i++) {
-            os.write(game.getSlot(i));
+
+        for (int bank : new Integer[] {0, 1, 3, 4, 6, 7}) {
+            if (bank != mappedBankIndex) {
+                os.write(game.getSlot(INDEX_MAP[bank]));
+            }
         }
     }
 
@@ -105,12 +115,14 @@ public class SNAGameImageLoader implements GameImageLoader {
         int offset = Constants.SNA_HEADER_SIZE;
         boolean bigImage = gameImage.length == SNA_128KHI_SIZE;
         int mappedBankIndex = header.getValue(SNAHeader.PORT_7FFD) & 0x03;
+        LOGGER.debug("Mapped bank index is " + mappedBankIndex);
         byte[] mappedBank = null;
         for (int i = 0; i < 3; i++) {
             if (i < 2) {
                 slots.add(Arrays.copyOfRange(gameImage, offset, offset + Constants.SLOT_SIZE));
             } else {
                 if (!bigImage) {
+                    LOGGER.debug("Storing mapped bank from SNA index " + i);
                     mappedBank = Arrays.copyOfRange(gameImage, offset, offset + Constants.SLOT_SIZE);
                 }
             }
@@ -118,12 +130,14 @@ public class SNAGameImageLoader implements GameImageLoader {
         }
         offset +=  4; //4 bytes for the extra header bits
         for (int bank : new Integer[] {0, 1, 3, 4, 6, 7}) {
-            if (mappedBankIndex == bank) {
+            LOGGER.debug("Adding bank " + bank + " to game. Offset is " + offset);
+            if (mappedBankIndex == bank && !bigImage) {
+                LOGGER.debug("Added saved mapped bank!");
                 slots.add(mappedBank);
             } else {
                 slots.add(Arrays.copyOfRange(gameImage, offset, offset + Constants.SLOT_SIZE));
+                offset += Constants.SLOT_SIZE;
             }
-            offset += Constants.SLOT_SIZE;
         }
         return slots;
     }

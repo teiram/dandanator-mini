@@ -57,7 +57,7 @@ public class GameMapperV5 implements GameMapper {
         mapper.gameChunk = new GameChunk();
         mapper.gameChunk.setAddress(is.getAsLittleEndian());
         mapper.gameChunk.setLength(is.getAsLittleEndian());
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < 8; i++) {
             GameBlock block = new GameBlock();
             block.setInitSlot(is.read());
             block.setStart(is.getAsLittleEndian());

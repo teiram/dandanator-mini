@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
+import com.grelobites.romgenerator.handlers.dandanatormini.ExtendedCharSet;
 import com.grelobites.romgenerator.handlers.dandanatormini.v4.DandanatorMiniV4RomSetHandler;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
@@ -41,10 +42,10 @@ import java.util.concurrent.Future;
 public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV5RomSetHandler.class);
 
-    private static final int CBLOCKS_TABLE_OFFSET = 6641;
+    private static final int CBLOCKS_TABLE_OFFSET = 6348;
     private static final int CBLOCKS_TABLE_SIZE = 16;
     private static final int GAME_STRUCT_OFFSET = 2561;
-    private static final int GAME_STRUCT_SIZE = 136;
+    private static final int GAME_STRUCT_SIZE = 131;
     private static final int MAX_MENU_PAGES = 3;
     protected static final int GAME_LAUNCH_SIZE = 18;
     protected static final int SNA_HEADER_SIZE = 31;
@@ -160,7 +161,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             gameCBlocks.write(asLittleEndianWord(i == DandanatorMiniConstants.GAME_CHUNK_SLOT ?
                 Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE : Constants.SLOT_SIZE));
         }
-        byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 9, (byte) DandanatorMiniConstants.FILLER_BYTE);
+        byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 8, (byte) DandanatorMiniConstants.FILLER_BYTE);
         LOGGER.debug("CBlocks array calculated as " + Util.dumpAsHexString(cBlocksArray));
         os.write(cBlocksArray);
         return offset;
@@ -186,7 +187,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             throw new IllegalArgumentException("Cannot extract compressed blocks from a non-RAM game");
         }
         //Fill the remaining space with 0xFF
-        byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 9, (byte) DandanatorMiniConstants.FILLER_BYTE);
+        byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 8, (byte) DandanatorMiniConstants.FILLER_BYTE);
         LOGGER.debug("CBlocks array calculated as " + Util.dumpAsHexString(cBlocksArray));
         os.write(cBlocksArray);
         return offset;
@@ -351,7 +352,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             List<Game> games = getApplicationContext().getGameList();
-            os.write(dmConfiguration.getDandanatorRom(), 0, DandanatorMiniConstants.BASEROM_SIZE);
+            os.write(dmConfiguration.getDandanatorRom(), 0, DandanatorMiniConstants.BASEROM_V5_SIZE);
             LOGGER.debug("Dumped base ROM. Offset: " + os.size());
 
             os.write((byte) games.size());
@@ -375,7 +376,8 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             cBlocksTable.write(asLittleEndianWord(compressedPokeData.length));
             cBlockOffset += compressedPokeData.length;
 
-            byte[] compressedCharSetAndFirmware = compress(configuration.getCharSet(),
+            ExtendedCharSet extendedCharset = new ExtendedCharSet(configuration.getCharSet());
+            byte[] compressedCharSetAndFirmware = compress(extendedCharset.getCharSet(),
                     DandanatorMiniConstants.DANDANATOR_PIC_FW_HEADER.getBytes(),
                     dmConfiguration.getDandanatorPicFirmware());
             cBlocksTable.write(asLittleEndianWord(cBlockOffset));
@@ -550,11 +552,43 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         }
     }
 
+    private static int getGameSymbolCode(Game game) {
+        switch (game.getType()) {
+            case ROM :
+                return ExtendedCharSet.SYMBOL_ROM_0_CODE;
+            case RAM16:
+                return ExtendedCharSet.SYMBOL_16K_0_CODE;
+            case RAM48:
+                return ExtendedCharSet.SYMBOL_48K_0_CODE;
+            case RAM128_HI:
+            case RAM128_LO:
+                return ExtendedCharSet.SYMBOL_128K_0_CODE;
+            default:
+                LOGGER.error("Unable to get a symbol for game of type " + game.getType());
+                return 32;
+        }
+    }
+
+    private static void printGameNameLine(ZxScreen screen, Game game, int index, int line) {
+        screen.setPen(
+                isGameScreenHold(game) ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
+        screen.deleteLine(line);
+        screen.printLine(String.format("%1d", (index + 1) % DandanatorMiniConstants.SLOT_COUNT), line, 0);
+        screen.setPen(ZxColor.BRIGHTWHITE);
+        int gameSymbolCode = getGameSymbolCode(game);
+        screen.printLine(String.format("%c", gameSymbolCode), line, 1);
+        screen.setPen(ZxColor.BRIGHTYELLOW);
+        screen.printLine(String.format("%c", gameSymbolCode + 1), line, 2);
+        screen.setPen(isGameScreenHold(game) ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
+        screen.printLine(
+                String.format("%s", game.getName()), line++, 3);
+    }
+
     private void updateMenuPage(List<Game> gameList, int pageIndex, int numPages) throws IOException {
         DandanatorMiniConfiguration configuration = DandanatorMiniConfiguration.getInstance();
         ZxScreen page = menuImages[pageIndex];
         updateBackgroundImage(page);
-        page.setCharSet(Configuration.getInstance().getCharSet());
+        page.setCharSet(new ExtendedCharSet(Configuration.getInstance().getCharSet()).getCharSet());
 
         page.setInk(ZxColor.BLACK);
         page.setPen(ZxColor.BRIGHTMAGENTA);
@@ -568,16 +602,8 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         int gameCount = 0;
         while (gameIndex < gameList.size() && gameCount < DandanatorMiniConstants.SLOT_COUNT) {
             Game game = gameList.get(gameIndex);
-            page.setPen(
-                    isGameScreenHold(game) ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
-            page.deleteLine(line);
-            page.printLine(
-                    String.format("%d%c %s", (gameCount + 1) % DandanatorMiniConstants.SLOT_COUNT,
-                            isGameRom(game) ? 'r' : '.',
-                            game.getName()),
-                    line++, 0);
+            printGameNameLine(page, game, gameCount++, line++);
             gameIndex++;
-            gameCount++;
         }
 
         page.setPen(ZxColor.BRIGHTBLUE);

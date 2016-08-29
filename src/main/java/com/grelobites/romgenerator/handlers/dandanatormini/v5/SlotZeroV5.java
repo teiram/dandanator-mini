@@ -25,7 +25,7 @@ import java.util.Optional;
 
 public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
     private static final Logger LOGGER = LoggerFactory.getLogger(SlotZeroV5.class);
-    private static final int GAME_STRUCT_SIZE = 136;
+    private static final int GAME_STRUCT_SIZE = 131;
 
     private byte[] charSet;
     private byte[] screen;
@@ -76,7 +76,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
     @Override
     public void parse() throws IOException {
         PositionAwareInputStream zis = new PositionAwareInputStream(data());
-        zis.safeSkip(DandanatorMiniConstants.BASEROM_SIZE);
+        zis.safeSkip(DandanatorMiniConstants.BASEROM_V5_SIZE);
         int gameCount = zis.read();
         LOGGER.debug("Read number of games: " + gameCount);
         gameMappers = new ArrayList<>();
