@@ -84,6 +84,7 @@ public class Z80GameImageLoader implements GameImageLoader {
     private RamGame createRamGameFromData(int version, int c000MappedPage,
                                           int hwMode,
                                           int pc, int sp,
+                                          SNAHeader header,
                                           byte[][] gameData) {
         if (version == 1) {
             LOGGER.debug("Assembling game as version 1 48K game");
@@ -99,6 +100,7 @@ public class Z80GameImageLoader implements GameImageLoader {
                 arrangedBlocks.add(gameData[5]);
                 gameType = GameType.RAM48;
                 injectPCintoStack(arrangedBlocks, sp, pc);
+                header.set48kMode();
             } else {
                 LOGGER.debug("Assembling game as version 2/3 128K game");
                 arrangedBlocks.add(gameData[5 + pageOffset]);
@@ -108,13 +110,15 @@ public class Z80GameImageLoader implements GameImageLoader {
                 }
                 gameType = arrangedBlocks.size() == 8 ? GameType.RAM128_LO : GameType.RAM128_HI;
             }
-            return new RamGame(gameType, arrangedBlocks);
+            RamGame game = new RamGame(gameType, arrangedBlocks);
+            game.setSnaHeader(header);
+            return game;
         }
     }
 
     @Override
     public Game load(InputStream is) throws IOException {
-        SNAHeader header = new SNAHeader(Constants.SNA_HEADER_SIZE);
+        SNAHeader header = new SNAHeader(Constants.SNA_EXTENDED_HEADER_SIZE);
         header.setWordSwapped(SNAHeader.REG_AF, (byte) is.read(), (byte) is.read());
         header.setWord(SNAHeader.REG_BC, (byte) is.read(), (byte) is.read());
         header.setWord(SNAHeader.REG_HL, (byte) is.read(), (byte) is.read());
@@ -154,8 +158,11 @@ public class Z80GameImageLoader implements GameImageLoader {
             int headerLength = Util.asLittleEndian(is);
             version = headerLength == 23 ? 2 : 3;
             pc = Util.asLittleEndian(is);
+            header.setWord(SNAHeader.REG_PC, (byte) (pc & 0xff), (byte) ((pc >> 8) & 0xff));
             hwMode = is.read();
-            c000MappedPage = is.read() & 0x03;
+            c000MappedPage = is.read();
+            header.setByte(SNAHeader.PORT_7FFD, (byte) c000MappedPage);
+            c000MappedPage &= 3;
             is.skip(headerLength - 4);
         }
         LOGGER.debug("Version is " + version + ", hardware mode is " + hwMode
@@ -165,9 +172,8 @@ public class Z80GameImageLoader implements GameImageLoader {
         if (!header.validate()) {
             throw new IllegalArgumentException("Header doesn't pass validations");
         }
+        RamGame game = createRamGameFromData(version, c000MappedPage, hwMode, pc, sp, header, gameSlots);
         LOGGER.debug("Loaded Z80 game. SNAHeader: " + header);
-        RamGame game = createRamGameFromData(version, c000MappedPage, hwMode, pc, sp,  gameSlots);
-        game.setSnaHeader(header);
         return game;
     }
 

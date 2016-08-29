@@ -125,4 +125,10 @@ public class SNAHeader {
     public String toString() {
         return Util.dumpAsHexString(data);
     }
+
+    public void set48kMode() {
+        byte[] newData = new byte[Constants.SNA_HEADER_SIZE];
+        System.arraycopy(data, 0, newData, 0, newData.length);
+        data = newData;
+    }
 }
