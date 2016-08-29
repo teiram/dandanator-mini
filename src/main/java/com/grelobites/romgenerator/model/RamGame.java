@@ -94,13 +94,21 @@ public class RamGame extends BaseGame implements Game {
 	public BooleanProperty holdScreenProperty() {
 		return holdScreen;
 	}
-	
+
+	private int getScreenSlot() {
+	    if (gameType == GameType.RAM128_LO) {
+            return (snaHeader.getValue(SNAHeader.PORT_7FFD) & 0x04) != 0 ? 7 : 0;
+        } else {
+            return 0;
+        }
+    }
+
 	public Image getScreenshot() {
 		if (screenshot == null) {
 			try {
 				screenshot = ImageUtil
 						.scrLoader(ImageUtil.newScreenshot(), 
-								new ByteArrayInputStream(getSlot(0),
+								new ByteArrayInputStream(getSlot(getScreenSlot()),
 										0,
 										Constants.SPECTRUM_FULLSCREEN_SIZE));
 			} catch (Exception e) {
