@@ -34,4 +34,8 @@ public interface Game {
 
     Observable[] getObservable();
 
+    boolean isSlotZeroed(int slot);
+
+    int getSize();
+
 }

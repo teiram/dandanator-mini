@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class RamGame extends BaseGame implements Game {
@@ -147,8 +148,11 @@ public class RamGame extends BaseGame implements Game {
 	    if (compressedData == null || lastCompressorClass != compressor.getClass()) {
             compressedData = new ArrayList<>();
             for (int i = 0; i < getSlotCount(); i++) {
-
-                compressedData.add(compressor.compressSlot(i, getSlot(i)));
+                if (!isSlotZeroed(i)) {
+                    compressedData.add(compressor.compressSlot(i, getSlot(i)));
+                } else {
+                    compressedData.add(null);
+                }
             }
             lastCompressorClass = compressor.getClass();
         }
@@ -164,7 +168,7 @@ public class RamGame extends BaseGame implements Game {
             if (compressor != null) {
                 int size = 0;
                 for (byte[] compressedSlot : getCompressedData(compressor)) {
-                    size += compressedSlot.length;
+                    size += compressedSlot != null ? compressedSlot.length : 0;
                 }
                 compressedSize = size;
             } else {

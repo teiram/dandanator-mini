@@ -30,6 +30,8 @@ public class Constants {
     private static final String SINCLAIR_SCREEN_RESOURCE = "sinclair-1982.scr";
     private static final String DEFAULT_CHARSET_RESOURCE = "charset.rom";
 
+    public static final byte[] ZEROED_SLOT = new byte[SLOT_SIZE];
+
     public static final byte B_01 = 1;
 	public static final byte B_00 = 0;
 	public static final byte B_10 = 0x10;

@@ -193,10 +193,14 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
         for (GameBlock block : gameBlocks) {
             if (block.getInitSlot() < 0xff) {
                 LOGGER.debug("Populating game block " + block);
-                if (block.compressed) {
-                    block.data = uncompress(is, (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
+                if (block.getInitSlot() > 0) {
+                    if (block.compressed) {
+                        block.data = uncompress(is, (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
+                    } else {
+                        block.data = copy(is, (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
+                    }
                 } else {
-                    block.data = copy(is, (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
+                    block.data = Constants.ZEROED_SLOT;
                 }
             }
         }

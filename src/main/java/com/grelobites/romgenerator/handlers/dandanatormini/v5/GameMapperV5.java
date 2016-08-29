@@ -96,7 +96,7 @@ public class GameMapperV5 implements GameMapper {
         List<byte[]> gameSlots = new ArrayList<>();
         for (int index = 0; index < blocks.size(); index++) {
             GameBlock block = blocks.get(index);
-            LOGGER.debug("Adding game slot for compressed game " + name + ": " + block);
+            LOGGER.debug("Adding game slot for game " + name + ": " + block);
             if (index == DandanatorMiniConstants.GAME_CHUNK_SLOT) {
                 gameSlots.add(Util.concatArrays(block.getData(), gameChunk.getData()));
             } else {

@@ -14,6 +14,7 @@ public class Z80Opcode {
     public static final byte PUSH_HL = (byte) 0xE5;     // PUSH HL
     public static final byte POP_HL = (byte) 0xE1;      // POP HL
     public static final byte DEC_HL = (byte) 0x2B;      // DEC HL
+    public static final byte DEC_SP = (byte) 0x3B;
 
     public static final byte LD_IX_NN_0 = (byte) 0xDD;       // LD IX, (nn)
     public static final byte LD_IX_NN_1 = (byte) 0x2A;

@@ -42,6 +42,7 @@ import java.util.concurrent.Future;
 public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV5RomSetHandler.class);
 
+    private static final byte[] EMPTY_CBLOCK = new byte[5];
     private static final int CBLOCKS_TABLE_OFFSET = 6348;
     private static final int CBLOCKS_TABLE_SIZE = 16;
     private static final int GAME_STRUCT_OFFSET = 3073;
@@ -129,15 +130,25 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             os.write(Z80Opcode.LD_IX_NN(baseAddress + SNAHeader.REG_IX));
             os.write(Z80Opcode.LD_SP_NN(baseAddress + SNAHeader.REG_SP));
             os.write(Z80Opcode.LD_NN_A(0));
-            os.write(Z80Opcode.NOP);
-            os.write(Z80Opcode.NOP);
-            os.write(Z80Opcode.NOP);
-            os.write(Z80Opcode.NOP);
-            os.write(Z80Opcode.DEC_HL);
-            os.write(
-                    (ramGame.getSnaHeader().getValue(SNAHeader.INTERRUPT_ENABLE) & 0x04) == 0 ?
-                        Z80Opcode.DI : Z80Opcode.EI);
-            os.write(Z80Opcode.RET);
+            boolean interruptDisable = (ramGame.getSnaHeader().getValue(SNAHeader.INTERRUPT_ENABLE) & 0x04) == 0;
+
+            if (ramGame.getType() == GameType.RAM128_LO) {
+                os.write(Z80Opcode.DEC_SP);
+                os.write(Z80Opcode.DEC_SP);
+                os.write(Z80Opcode.NOP);
+                os.write(Z80Opcode.DEC_HL);
+                os.write(interruptDisable ? Z80Opcode.DI : Z80Opcode.EI);
+                os.write(Z80Opcode.RET);
+                os.write(Z80Opcode.NOP);
+            } else {
+                os.write(Z80Opcode.NOP);
+                os.write(Z80Opcode.NOP);
+                os.write(Z80Opcode.NOP);
+                os.write(Z80Opcode.NOP);
+                os.write(Z80Opcode.DEC_HL);
+                os.write(interruptDisable ? Z80Opcode.DI : Z80Opcode.EI);
+                os.write(Z80Opcode.RET);
+            }
         } else {
             os.write(new byte[GAME_LAUNCH_SIZE]);
         }
@@ -152,14 +163,19 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         ByteArrayOutputStream gameCBlocks = new ByteArrayOutputStream();
 
         for (int i = 0; i < game.getSlotCount(); i++) {
-            byte[] block = game.getSlot(i);
-            offset -= Constants.SLOT_SIZE;
-            LOGGER.debug("Writing CBlock with offset " + offset + " and length " + block.length);
-            gameCBlocks.write(offset / Constants.SLOT_SIZE);
-            gameCBlocks.write(asLittleEndianWord(Constants.B_00)); //Blocks always at offset 0 (uncompressed)
-            //The chunk slot reports its size subtracting the chunk size (we are dumping the whole slot though)
-            gameCBlocks.write(asLittleEndianWord(i == DandanatorMiniConstants.GAME_CHUNK_SLOT ?
-                Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE : Constants.SLOT_SIZE));
+            if (!game.isSlotZeroed(i)) {
+                byte[] block = game.getSlot(i);
+                offset -= Constants.SLOT_SIZE;
+                LOGGER.debug("Writing CBlock with offset " + offset + " and length " + block.length);
+                gameCBlocks.write(offset / Constants.SLOT_SIZE);
+                gameCBlocks.write(asLittleEndianWord(Constants.B_00)); //Blocks always at offset 0 (uncompressed)
+                //The chunk slot reports its size subtracting the chunk size (we are dumping the whole slot though)
+                gameCBlocks.write(asLittleEndianWord(i == DandanatorMiniConstants.GAME_CHUNK_SLOT ?
+                        Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE : Constants.SLOT_SIZE));
+            } else {
+                LOGGER.debug("Writing empty CBlock");
+                gameCBlocks.write(EMPTY_CBLOCK);
+            }
         }
         byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 8, (byte) DandanatorMiniConstants.FILLER_BYTE);
         LOGGER.debug("CBlocks array calculated as " + Util.dumpAsHexString(cBlocksArray));
@@ -177,11 +193,16 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             RamGame ramGame = (RamGame) game;
             List<byte[]> compressedBlocks = ramGame.getCompressedData(ramGameCompressor);
             for (byte[] block : compressedBlocks) {
-                LOGGER.debug("Writing CBlock with offset " + offset + " and length " + block.length);
-                gameCBlocks.write(offset / Constants.SLOT_SIZE);
-                gameCBlocks.write(asLittleEndianWord(offset % Constants.SLOT_SIZE));
-                gameCBlocks.write(asLittleEndianWord(block.length));
-                offset += block.length;
+                if (block != null) {
+                    LOGGER.debug("Writing CBlock with offset " + offset + " and length " + block.length);
+                    gameCBlocks.write(offset / Constants.SLOT_SIZE);
+                    gameCBlocks.write(asLittleEndianWord(offset % Constants.SLOT_SIZE));
+                    gameCBlocks.write(asLittleEndianWord(block.length));
+                    offset += block.length;
+                } else {
+                    LOGGER.debug("Writing empty CBlock");
+                    gameCBlocks.write(EMPTY_CBLOCK);
+                }
             }
         } else {
             throw new IllegalArgumentException("Cannot extract compressed blocks from a non-RAM game");
@@ -338,17 +359,25 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
             for (byte[] compressedSlot : ramGame.getCompressedData(ramGameCompressor)) {
-                os.write(compressedSlot);
-                LOGGER.debug("Dumped compressed slot for game " + ramGame.getName()
-                        + " of size: " + compressedSlot.length);
+                if (compressedSlot != null) {
+                    os.write(compressedSlot);
+                    LOGGER.debug("Dumped compressed slot for game " + ramGame.getName()
+                            + " of size: " + compressedSlot.length);
+                } else {
+                    LOGGER.debug("Skipped zeroed slot");
+                }
             }
         }
     }
 
     private void dumpUncompressedGameData(OutputStream os, Game game) throws IOException {
         for (int i = game.getSlotCount() - 1; i >= 0; i--) {
-            os.write(game.getSlot(i));
-            LOGGER.debug("Dumped uncompressed slot " + i + " for game " + game.getName());
+            if (!game.isSlotZeroed(i)) {
+                os.write(game.getSlot(i));
+                LOGGER.debug("Dumped uncompressed slot " + i + " for game " + game.getName());
+            } else {
+                LOGGER.debug("Skipped zeroed slot");
+            }
         }
     }
 
@@ -461,11 +490,9 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         } else {
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
-                if (ramGame.getCompressed()) {
-                    return ramGame.getCompressedSize(ramGameCompressor);
-                } else {
-                    return ramGame.getSlotCount() * Constants.SLOT_SIZE;
-                }
+                //Calculate compression always here, to avoid locking the GUI later
+                int compressedSize = ramGame.getCompressedSize(ramGameCompressor);
+                return ramGame.getCompressed() ? compressedSize : ramGame.getSize();
             } else {
                 throw new IllegalArgumentException("Unable to calculate size for game " + game);
             }
@@ -589,7 +616,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         screen.printLine(String.format("%c", gameSymbolCode + 1), line, 2);
         screen.setPen(isGameScreenHold(game) ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
         screen.printLine(
-                String.format("%s", game.getName()), line++, 3);
+                String.format("%s", game.getName()), line, 3);
     }
 
     private void updateMenuPage(List<Game> gameList, int pageIndex, int numPages) throws IOException {

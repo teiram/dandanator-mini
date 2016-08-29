@@ -342,12 +342,9 @@ public class DandanatorMiniFrameController {
                 RamGame ramGame = (RamGame) game;
                 if (ramGame.getCompressed()) {
                     return Integer.toString(ramGame.getCompressedSize());
-                } else {
-                    return Integer.toString(ramGame.getSlotCount() * Constants.SLOT_SIZE);
                 }
-            } else {
-                return Integer.toString(game.getSlotCount() * Constants.SLOT_SIZE);
             }
+            return Integer.toString(game.getSize());
         } catch (Exception e) {
             LOGGER.error("Calculating game compressed size", e);
         }
