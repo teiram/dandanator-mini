@@ -44,7 +44,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
 
     private static final int CBLOCKS_TABLE_OFFSET = 6348;
     private static final int CBLOCKS_TABLE_SIZE = 16;
-    private static final int GAME_STRUCT_OFFSET = 2561;
+    private static final int GAME_STRUCT_OFFSET = 3073;
     private static final int GAME_STRUCT_SIZE = 131;
     private static final int MAX_MENU_PAGES = 3;
     protected static final int GAME_LAUNCH_SIZE = 18;
