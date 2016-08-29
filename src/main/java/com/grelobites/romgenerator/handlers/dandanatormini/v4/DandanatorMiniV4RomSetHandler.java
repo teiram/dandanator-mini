@@ -47,6 +47,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
@@ -204,12 +206,12 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
         return importPokesMenuItem;
     }
 
-    private static byte[] asNullTerminatedByteArray(String name, int arrayLength) {
+    protected static byte[] asNullTerminatedByteArray(String name, int arrayLength) {
         String trimmedName =
                 name.length() < arrayLength ?
                         name : name.substring(0, arrayLength - 1);
         byte[] result = new byte[arrayLength];
-        System.arraycopy(trimmedName.getBytes(), 0, result, 0, trimmedName.length());
+        System.arraycopy(trimmedName.getBytes(StandardCharsets.ISO_8859_1), 0, result, 0, trimmedName.length());
         result[trimmedName.length()] = 0;
         return result;
     }

@@ -193,6 +193,14 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return offset;
     }
 
+    protected static void dumpGameName(OutputStream os, Game game, int index) throws IOException {
+        int gameSymbolCode = getGameSymbolCode(game);
+        String gameName = String.format("%1d%c%c%s", (index + 1) % DandanatorMiniConstants.SLOT_COUNT,
+                gameSymbolCode, gameSymbolCode + 1,
+                game.getName());
+        os.write(asNullTerminatedByteArray(gameName, DandanatorMiniConstants.GAMENAME_SIZE));
+    }
+
     private int dumpGameHeader(OutputStream os, int index, Game game,
                                GameChunk gameChunk, int offset) throws IOException {
         os.write(getGamePaddedSnaHeader(game));
