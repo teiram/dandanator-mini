@@ -31,6 +31,8 @@ public class RamGame extends BaseGame implements Game {
     private List<byte[]> compressedData;
     private Integer compressedSize;
 
+    private static final int[] SLOT_MAP = new int[] {2, 3, 1, 4, 5, 0, 6, 7};
+
     public RamGame(GameType gameType, List<byte[]> data) {
         super(gameType, data);
 		rom = new SimpleBooleanProperty();
@@ -184,5 +186,23 @@ public class RamGame extends BaseGame implements Game {
             }
         }
         return compressedSize;
+    }
+
+    public int getSlotForMappedRam(int offset) {
+        int bankPos = offset / Constants.SLOT_SIZE;
+        switch (bankPos) {
+            case 0:
+                throw new IllegalArgumentException("Requested offset in low ROM");
+            case 1:
+                return 0;
+            case 2:
+                return 1;
+            case 3:
+                return (gameType == GameType.RAM128_LO) ?
+                    SLOT_MAP[snaHeader.getValue(SNAHeader.PORT_7FFD) & 0x03] : 2;
+            default:
+                throw new IllegalArgumentException("Requested offset out of mapped RAM");
+        }
+
     }
 }

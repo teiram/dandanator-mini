@@ -128,5 +128,20 @@ public class GameUtil {
         }
     }
 
+    public static int findInGameRam(RamGame game, byte searchValue) {
+        int offset = Constants.SLOT_SIZE;
+        for (int i = 0; i < 3; i++) {
+            int slot = game.getSlotForMappedRam(offset);
+            byte[] data = game.getSlot(slot);
+            for (byte memoryValue : data) {
+                if (searchValue == memoryValue) {
+                    return offset;
+                }
+                offset++;
+            }
+        }
+        return -1;
+    }
+
 
 }
