@@ -113,7 +113,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
 
     private static byte[] getGamePaddedSnaHeader(Game game) {
         byte[] paddedHeader = new byte[SNA_HEADER_SIZE];
-        Arrays.fill(paddedHeader, (byte) DandanatorMiniConstants.FILLER_BYTE);
+        Arrays.fill(paddedHeader, Constants.B_00);
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
             byte[] snaHeader = ramGame.getSnaHeader().asByteArray();
