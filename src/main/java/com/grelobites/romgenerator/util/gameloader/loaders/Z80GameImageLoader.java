@@ -108,7 +108,7 @@ public class Z80GameImageLoader implements GameImageLoader {
                 for (int page : new Integer[] {0, 1, 3, 4, 6, 7}) {
                     arrangedBlocks.add(gameData[page + pageOffset]);
                 }
-                gameType = arrangedBlocks.size() == 8 ? GameType.RAM128_LO : GameType.RAM128_HI;
+                gameType = GameType.RAM128;
             }
             RamGame game = new RamGame(gameType, arrangedBlocks);
             game.setSnaHeader(header);

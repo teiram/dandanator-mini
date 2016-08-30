@@ -132,7 +132,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             os.write(Z80Opcode.LD_NN_A(0));
             boolean interruptDisable = (ramGame.getSnaHeader().getValue(SNAHeader.INTERRUPT_ENABLE) & 0x04) == 0;
 
-            if (ramGame.getType() == GameType.RAM128_LO) {
+            if (ramGame.getType() == GameType.RAM128) {
                 os.write(Z80Opcode.DEC_SP);
                 os.write(Z80Opcode.DEC_SP);
                 os.write(Z80Opcode.NOP);
@@ -542,8 +542,8 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return currentSize;
     }
 
-    @Override
-    public Future<OperationResult> addGame(Game game) {
+    //@Override
+    public Future<OperationResult> addGame0(Game game) {
         return getApplicationContext().addBackgroundTask(() -> {
             if (getApplicationContext().getGameList().size() < DandanatorMiniConstants.MAX_GAMES) {
                 try {
@@ -567,6 +567,21 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
                 return OperationResult.errorResult(LocaleUtil.i18n("gameImportError"),
                         LocaleUtil.i18n("gameImportErrorNoSlotHeader"));
             }
+            return OperationResult.successResult();
+        });
+    }
+
+
+    @Override
+    public Future<OperationResult> addGame(Game game) {
+        return getApplicationContext().addBackgroundTask(() -> {
+                try {
+                    //Force compression calculation
+                    getGameSize(game);
+                    Platform.runLater(() -> getApplicationContext().getGameList().add(game));
+                } catch (Exception e) {
+                    LOGGER.error("Calculating game size", e);
+                }
             return OperationResult.successResult();
         });
     }
@@ -595,8 +610,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
                 return ExtendedCharSet.SYMBOL_16K_0_CODE;
             case RAM48:
                 return ExtendedCharSet.SYMBOL_48K_0_CODE;
-            case RAM128_HI:
-            case RAM128_LO:
+            case RAM128:
                 return ExtendedCharSet.SYMBOL_128K_0_CODE;
             default:
                 LOGGER.error("Unable to get a symbol for game of type " + game.getType());

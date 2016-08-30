@@ -1,6 +1,5 @@
 package com.grelobites.romgenerator.handlers.dandanatormini.view;
 
-import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
@@ -121,10 +120,11 @@ public class DandanatorMiniFrameController {
         romUsageDetail.textProperty().bind(applicationContext.romUsageDetailProperty());
         romUsage.progressProperty().addListener(
                 (observable, oldValue, newValue) -> {
-                    romUsage.getStyleClass().remove(
-                            newValue.doubleValue() > 1.0 ? BLUE_BAR_STYLE : RED_BAR_STYLE);
+                    LOGGER.debug("Changing bar style on romUsage change to " + newValue.doubleValue());
+                    romUsage.getStyleClass().removeAll(BLUE_BAR_STYLE, RED_BAR_STYLE);
                     romUsage.getStyleClass().add(
                             newValue.doubleValue() > 1.0 ? RED_BAR_STYLE : BLUE_BAR_STYLE);
+
                 });
 
         gameInfoTabPane.setVisible(false);
@@ -320,11 +320,7 @@ public class DandanatorMiniFrameController {
                 } else {
                     removeAllGamePokesButton.setDisable(true);
                 }
-                if (ramGame.getType() == GameType.RAM128_HI || ramGame.getType() == GameType.RAM128_LO) {
-                    gameForced48kModeAttribute.setVisible(false);
-                } else {
-                    gameForced48kModeAttribute.setVisible(true);
-                }
+                gameForced48kModeAttribute.setVisible(ramGame.getType() != GameType.RAM128);
             } else {
                 pokesTab.setDisable(true);
                 gameRomAttribute.setVisible(false);

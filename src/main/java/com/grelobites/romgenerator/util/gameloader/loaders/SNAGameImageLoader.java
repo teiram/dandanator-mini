@@ -39,7 +39,7 @@ public class SNAGameImageLoader implements GameImageLoader {
         } else if (gameImage.length == SNA_128KLO_SIZE || gameImage.length == SNA_128KHI_SIZE) {
             header = SNAHeader.from128kSNAGameByteArray(gameImage);
             gameSlots = get128kGameSlots(gameImage, header);
-            gameType = GameType.RAM128_LO;
+            gameType = GameType.RAM128;
         } else {
             throw new IllegalArgumentException("Unsupported SNA size: " + gameImage.length);
         }
@@ -62,11 +62,8 @@ public class SNAGameImageLoader implements GameImageLoader {
                 case RAM48:
                     save48kSna(ramGame, os);
                     break;
-                case RAM128_LO:
-                    save128kSna(ramGame, os, 8);
-                    break;
-                case RAM128_HI:
-                    save128kSna(ramGame, os, 9);
+                case RAM128:
+                    save128kSna(ramGame, os);
                     break;
             }
         } else {
@@ -81,7 +78,7 @@ public class SNAGameImageLoader implements GameImageLoader {
         }
     }
 
-    private static void save128kSna(RamGame game, OutputStream os, int numSlots) throws IOException {
+    private static void save128kSna(RamGame game, OutputStream os) throws IOException {
         byte[] snaHeader = game.getSnaHeader().asByteArray();
         os.write(snaHeader, 0, Constants.SNA_HEADER_SIZE);
         for (int i = 0; i < 2; i++) {

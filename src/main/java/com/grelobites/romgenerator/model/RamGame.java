@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class RamGame extends BaseGame implements Game {
@@ -98,7 +97,7 @@ public class RamGame extends BaseGame implements Game {
 	}
 
 	private int getScreenSlot() {
-	    if (gameType == GameType.RAM128_LO) {
+	    if (gameType == GameType.RAM128) {
             return (snaHeader.getValue(SNAHeader.PORT_7FFD) & 0x04) != 0 ? 7 : 0;
         } else {
             return 0;
@@ -198,7 +197,7 @@ public class RamGame extends BaseGame implements Game {
             case 2:
                 return 1;
             case 3:
-                return (gameType == GameType.RAM128_LO) ?
+                return (gameType == GameType.RAM128) ?
                     SLOT_MAP[snaHeader.getValue(SNAHeader.PORT_7FFD) & 0x03] : 2;
             default:
                 throw new IllegalArgumentException("Requested offset out of mapped RAM");

@@ -120,8 +120,8 @@ public class GameMapperV5 implements GameMapper {
                 break;
             case RAM16:
             case RAM48:
-            case RAM128_LO:
-            case RAM128_HI:
+                snaHeader.set48kMode();
+            case RAM128:
                 RamGame ramGame = new RamGame(type, getGameSlots());
                 ramGame.setCompressed(isGameCompressed);
                 ramGame.setHoldScreen(screenHold);
