@@ -69,6 +69,7 @@ public class DandanatorMiniConfiguration {
         launchGameMessage = new SimpleStringProperty();
         selectPokesMessage = new SimpleStringProperty();
 
+        /*
         setPersistenceListenerOnPropertyChange(dandanatorRomPath, DANDANATORROMPATH_PROPERTY,
                 null);
         setPersistenceListenerOnPropertyChange(extraRomPath, EXTRAROMPATH_PROPERTY,
@@ -83,6 +84,7 @@ public class DandanatorMiniConfiguration {
                 DandanatorMiniConstants.DEFAULT_LAUNCHGAME_MESSAGE);
         setPersistenceListenerOnPropertyChange(selectPokesMessage, SELECTPOKESMESSAGE_PROPERTY,
                 DandanatorMiniConstants.DEFAULT_SELECTPOKE_MESSAGE);
+                */
     }
 
     private static boolean validConfigurationValue(String value) {
@@ -280,6 +282,8 @@ public class DandanatorMiniConfiguration {
 
     synchronized private static DandanatorMiniConfiguration newInstance() {
         final DandanatorMiniConfiguration configuration = new DandanatorMiniConfiguration();
-        return setFromPreferences(configuration);
+        //Avoid persistence so far, since the model is not clear yet
+        //return setFromPreferences(configuration);
+        return configuration;
     }
 }

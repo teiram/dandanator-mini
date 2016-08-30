@@ -101,10 +101,10 @@ public class Configuration {
         //enter before the property is set to null
         if (!Constants.ROMSET_PROVIDED.equals(backgroundImagePath)) {
             backgroundImage = null;
+            persistConfigurationValue(BACKGROUNDIMAGEPATH_PROPERTY, backgroundImagePath);
         }
 
         this.backgroundImagePath.set(backgroundImagePath);
-        persistConfigurationValue(BACKGROUNDIMAGEPATH_PROPERTY, this.backgroundImagePath.get());
     }
 
     public byte[] getBackgroundImage() throws IOException {
@@ -178,9 +178,9 @@ public class Configuration {
     public void setCharSetPath(String charSetPath) {
         if (!Constants.ROMSET_PROVIDED.equals(charSetPath)) {
             charSet = null;
+            persistConfigurationValue(CHARSETPATH_PROPERTY, charSetPath);
         }
         this.charSetPath.set(charSetPath);
-        persistConfigurationValue(CHARSETPATH_PROPERTY, this.charSetPath.get());
     }
 
 
