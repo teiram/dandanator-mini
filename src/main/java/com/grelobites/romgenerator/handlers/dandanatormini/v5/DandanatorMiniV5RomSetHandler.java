@@ -403,7 +403,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             List<Game> games = getApplicationContext().getGameList();
-            os.write(dmConfiguration.getDandanatorRom(), 0, DandanatorMiniConstants.BASEROM_V5_SIZE);
+            os.write(dmConfiguration.getDandanatorRom(), 0, DandanatorMiniConstants.BASEROM_SIZE);
             LOGGER.debug("Dumped base ROM. Offset: " + os.size());
 
             os.write((byte) games.size());

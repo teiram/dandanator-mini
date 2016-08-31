@@ -47,7 +47,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -356,7 +355,7 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             //Only RamGame type supported in this RomSetHandler
             Collection<RamGame> games = Util.collectionUpcast(getApplicationContext().getGameList());
-            os.write(dmConfiguration.getDandanatorRom(), 0, DandanatorMiniConstants.BASEROM_SIZE);
+            os.write(dmConfiguration.getDandanatorRom(), 0, DandanatorMiniConstants.BASEROM_V4_SIZE);
             LOGGER.debug("Dumped base ROM. Offset: " + os.size());
 
             int firmwareHeaderLength = DandanatorMiniConstants.DANDANATOR_PIC_FW_HEADER.length();

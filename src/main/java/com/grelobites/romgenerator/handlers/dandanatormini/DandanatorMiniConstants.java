@@ -18,7 +18,7 @@ public class DandanatorMiniConstants {
     public static final int POKE_NAME_SIZE = 24;
     public static final int POKE_EFFECTIVE_NAME_SIZE = 20;
     public static final int POKE_ZONE_SIZE = 3200;
-    public static final int BASEROM_SIZE = 2560;
+    public static final int BASEROM_V4_SIZE = 2560;
     public static final int DANDANATOR_PIC_FW_SIZE = 3072;
     public static final int MAX_POKES_PER_TRAINER = 6;
     public static final int MAX_TRAINERS_PER_GAME = 8;
@@ -42,11 +42,10 @@ public class DandanatorMiniConstants {
     public static final int VERSION_SIZE = 32;
     public static final int FILLER_BYTE = 0xFF;
     public static final int EXTENDED_CHARSET_SIZE = 896;
-    public static final int BASEROM_V5_SIZE = 3072;
+    public static final int BASEROM_SIZE = 3072;
     private static byte[] DANDANATOR_ROM;
     private static byte[] EXTRA_ROM;
     private static byte[] DEFAULT_DANDANATOR_PIC_FW;
-
 
     private static PreferencesProvider providerRegister = new PreferencesProvider("Dandanator Mini",
             "/com/grelobites/romgenerator/handlers/dandanatormini/view/dandanatorminipreferences.fxml", false);
@@ -56,7 +55,7 @@ public class DandanatorMiniConstants {
             DANDANATOR_ROM = Util.fromInputStream(
                     DandanatorMiniConstants.class.getClassLoader()
                             .getResourceAsStream(DANDANATOR_ROM_RESOURCE),
-                    BASEROM_V5_SIZE);
+                    BASEROM_SIZE);
         }
         return DANDANATOR_ROM;
     }

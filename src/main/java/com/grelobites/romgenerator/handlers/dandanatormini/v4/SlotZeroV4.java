@@ -89,7 +89,7 @@ public class SlotZeroV4 extends SlotZeroBase implements SlotZero {
     public void parse() throws IOException {
         PositionAwareInputStream slotZeroIs = new PositionAwareInputStream(data());
 
-        slotZeroIs.safeSkip(DandanatorMiniConstants.BASEROM_SIZE);
+        slotZeroIs.safeSkip(DandanatorMiniConstants.BASEROM_V4_SIZE);
         slotZeroIs.safeSkip(DandanatorMiniConstants.DANDANATOR_PIC_FW_HEADER.length());
         slotZeroIs.safeSkip(DandanatorMiniConstants.DANDANATOR_PIC_FW_SIZE_0);
         LOGGER.debug("After passing 1st section of PIC firmware. Offset " + slotZeroIs.position());
