@@ -96,9 +96,9 @@ public class RamGame extends BaseGame implements Game {
 		return holdScreen;
 	}
 
-	private int getScreenSlot() {
+	public int getScreenSlot() {
 	    if (gameType == GameType.RAM128) {
-            return (snaHeader.getValue(SNAHeader.PORT_7FFD) & 0x04) != 0 ? 7 : 0;
+            return (snaHeader.getValue(SNAHeader.PORT_7FFD) & 0x08) != 0 ? 7 : 0;
         } else {
             return 0;
         }
