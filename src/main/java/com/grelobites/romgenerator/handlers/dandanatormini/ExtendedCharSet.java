@@ -3,7 +3,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 import com.grelobites.romgenerator.Constants;
 
 public class ExtendedCharSet {
-    public static final byte[] SYMBOL_128K_0 = new byte[] {
+    public static final byte[] SYMBOL_128K_0 = new byte[]{
             (byte) 0x09,
             (byte) 0x18,
             (byte) 0x08,
@@ -14,7 +14,7 @@ public class ExtendedCharSet {
             (byte) 0x00
     };
 
-    public static final byte[] SYMBOL_128K_1 = new byte[] {
+    public static final byte[] SYMBOL_128K_1 = new byte[]{
             (byte) 0xDC,
             (byte) 0x54,
             (byte) 0x54,
@@ -25,7 +25,7 @@ public class ExtendedCharSet {
             (byte) 0x00
     };
 
-    public static final byte[] SYMBOL_48K_0 = new byte[] {
+    public static final byte[] SYMBOL_48K_0 = new byte[]{
             (byte) 0x15,
             (byte) 0x15,
             (byte) 0x15,
@@ -36,7 +36,7 @@ public class ExtendedCharSet {
             (byte) 0x00
     };
 
-    public static final byte[] SYMBOL_48K_1 = new byte[] {
+    public static final byte[] SYMBOL_48K_1 = new byte[]{
             (byte) 0xD0,
             (byte) 0x50,
             (byte) 0x54,
@@ -47,7 +47,7 @@ public class ExtendedCharSet {
             (byte) 0x00
     };
 
-    public static final byte[] SYMBOL_16K_0 = new byte[] {
+    public static final byte[] SYMBOL_16K_0 = new byte[]{
             (byte) 0x09,
             (byte) 0x19,
             (byte) 0x09,
@@ -58,7 +58,7 @@ public class ExtendedCharSet {
             (byte) 0x00
     };
 
-    public static final byte[] SYMBOL_16K_1 = new byte[] {
+    public static final byte[] SYMBOL_16K_1 = new byte[]{
             (byte) 0xD0,
             (byte) 0x50,
             (byte) 0x14,
@@ -69,7 +69,7 @@ public class ExtendedCharSet {
             (byte) 0x00
     };
 
-    public static final byte[] SYMBOL_ROM_0 = new byte[] {
+    public static final byte[] SYMBOL_ROM_0 = new byte[]{
             (byte) 0x1D,
             (byte) 0x15,
             (byte) 0x15,
@@ -80,7 +80,7 @@ public class ExtendedCharSet {
             (byte) 0x00
     };
 
-    public static final byte[] SYMBOL_ROM_1 = new byte[] {
+    public static final byte[] SYMBOL_ROM_1 = new byte[]{
             (byte) 0xD4,
             (byte) 0x5C,
             (byte) 0x5C,
@@ -89,6 +89,17 @@ public class ExtendedCharSet {
             (byte) 0x54,
             (byte) 0xD4,
             (byte) 0x00
+    };
+
+    public static final byte[] SYMBOL_SAD_FACE = new byte[] {
+            (byte) 0x2C,
+            (byte) 0x7E,
+            (byte) 0xFF,
+            (byte) 0xDB,
+            (byte) 0xDB,
+            (byte) 0xFF,
+            (byte) 0xC3,
+            (byte) 0x7E
     };
 
     public static final int CHARSET_OFFSET = 32;
@@ -105,6 +116,8 @@ public class ExtendedCharSet {
     public static final int SYMBOL_ROM_0_CODE = 134;
     public static final int SYMBOL_ROM_1_CODE = 135;
 
+    public static final int SYMBOL_SAD_FACE_CODE = 136;
+
     private byte[] charset;
 
     private static void appendSymbolChars(byte[] charset) {
@@ -116,7 +129,7 @@ public class ExtendedCharSet {
         System.arraycopy(SYMBOL_16K_1, 0, charset, (SYMBOL_16K_1_CODE - CHARSET_OFFSET) * 8, SYMBOL_16K_1.length);
         System.arraycopy(SYMBOL_ROM_0, 0, charset, (SYMBOL_ROM_0_CODE - CHARSET_OFFSET) * 8, SYMBOL_ROM_0.length);
         System.arraycopy(SYMBOL_ROM_1, 0, charset, (SYMBOL_ROM_1_CODE - CHARSET_OFFSET) * 8, SYMBOL_ROM_1.length);
-
+        System.arraycopy(SYMBOL_SAD_FACE, 0, charset, (SYMBOL_SAD_FACE_CODE - CHARSET_OFFSET) * 8, SYMBOL_SAD_FACE.length);
     }
 
     public ExtendedCharSet(byte[] charset) {
