@@ -14,7 +14,8 @@ public class Z80Opcode {
     public static final byte PUSH_HL = (byte) 0xE5;     // PUSH HL
     public static final byte POP_HL = (byte) 0xE1;      // POP HL
     public static final byte DEC_HL = (byte) 0x2B;      // DEC HL
-    public static final byte DEC_SP = (byte) 0x3B;
+    public static final byte INC_HL = (byte) 0x23;      // INC HL
+    public static final byte DEC_SP = (byte) 0x3B;      // DEC SP
 
     public static final byte LD_IX_NN_0 = (byte) 0xDD;       // LD IX, (nn)
     public static final byte LD_IX_NN_1 = (byte) 0x2A;
@@ -23,6 +24,7 @@ public class Z80Opcode {
     public static final byte LD_SP_NN_1 = (byte) 0x7B;
 
     public static final byte LD_NN_A = (byte) 0x32; //LD (nn), A
+    public static final byte JP_NN_0 = (byte) 0xC3; //JP nn
 
 
     private static byte lowByte(int addr) {
@@ -54,6 +56,14 @@ public class Z80Opcode {
     public static byte[] LD_NN_A(int addr) {
         byte[] code = new byte[3];
         code[0] = LD_NN_A;
+        code[1] = lowByte(addr);
+        code[2] = highByte(addr);
+        return code;
+    }
+
+    public static byte[] JP_NN(int addr) {
+        byte[] code = new byte[3];
+        code[0] = JP_NN_0;
         code[1] = lowByte(addr);
         code[2] = highByte(addr);
         return code;

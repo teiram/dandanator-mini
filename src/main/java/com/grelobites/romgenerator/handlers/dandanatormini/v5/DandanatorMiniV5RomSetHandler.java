@@ -10,6 +10,8 @@ import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.RomGame;
+import com.grelobites.romgenerator.util.GameUtil;
+import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.OperationResult;
 import com.grelobites.romgenerator.util.RamGameCompressor;
@@ -122,11 +124,27 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return paddedHeader;
     }
 
+    private static int getAnyRetCodeLocation(RamGame game) {
+        int location = GameUtil.findInGameRam(game, Z80Opcode.RET);
+        LOGGER.debug("Found RET opcode at offset 0x" + Integer.toHexString(location));
+        if (location < 0) {
+            byte[] screenSlot = game.getSlot(0);
+            location = ImageUtil.getHiddenDisplayOffset(screenSlot, 1)
+                    .orElse(Constants.SPECTRUM_SCREEN_SIZE - 1);
+            LOGGER.debug("Injecting RET opcode at screen offset 0x" + Integer.toHexString(location));
+            screenSlot[location] = Z80Opcode.RET;
+            location += Constants.SLOT_SIZE;
+        }
+        LOGGER.debug("RET location calculated as 0x" + Integer.toHexString(location));
+        return location;
+    }
+
     protected static int dumpGameLaunchCode(OutputStream os, Game game, int index) throws IOException {
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
 
             int baseAddress = GAME_STRUCT_OFFSET + GAME_STRUCT_SIZE * index;
+            int retLocation = getAnyRetCodeLocation(ramGame);
             os.write(Z80Opcode.LD_IX_NN(baseAddress + SNAHeader.REG_IX));
             os.write(Z80Opcode.LD_SP_NN(baseAddress + SNAHeader.REG_SP));
             os.write(Z80Opcode.LD_NN_A(0));
@@ -135,19 +153,15 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             if (ramGame.getType() == GameType.RAM128) {
                 os.write(Z80Opcode.DEC_SP);
                 os.write(Z80Opcode.DEC_SP);
-                os.write(Z80Opcode.NOP);
                 os.write(Z80Opcode.DEC_HL);
                 os.write(interruptDisable ? Z80Opcode.DI : Z80Opcode.EI);
-                os.write(Z80Opcode.RET);
-                os.write(Z80Opcode.NOP);
+                os.write(Z80Opcode.JP_NN(retLocation));
             } else {
-                os.write(Z80Opcode.NOP);
-                os.write(Z80Opcode.NOP);
-                os.write(Z80Opcode.NOP);
-                os.write(Z80Opcode.NOP);
+                os.write(Z80Opcode.DEC_HL);
+                os.write(Z80Opcode.INC_HL);
                 os.write(Z80Opcode.DEC_HL);
                 os.write(interruptDisable ? Z80Opcode.DI : Z80Opcode.EI);
-                os.write(Z80Opcode.RET);
+                os.write(Z80Opcode.JP_NN(retLocation));
             }
         } else {
             os.write(new byte[GAME_LAUNCH_SIZE]);
@@ -533,44 +547,6 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
                 DandanatorMiniConstants.MAX_GAMES,
                 calculateRomUsage() * 100);
     }
-
-    private static int getCurrentSize(List<Game> gameList) throws IOException {
-        int currentSize = 0;
-        for (Game game : gameList) {
-            currentSize += getGameSize(game);
-        }
-        return currentSize;
-    }
-
-    //@Override
-    public Future<OperationResult> addGame0(Game game) {
-        return getApplicationContext().addBackgroundTask(() -> {
-            if (getApplicationContext().getGameList().size() < DandanatorMiniConstants.MAX_GAMES) {
-                try {
-                    int gameSize = getGameSize(game);
-                    final int maxSize = DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE;
-                    final int currentSize = getCurrentSize(getApplicationContext().getGameList());
-                    if ((currentSize + gameSize) < maxSize) {
-                        Platform.runLater(() -> getApplicationContext().getGameList().add(game));
-                        LOGGER.debug("After adding game " + game.getName() + ", used size: " + currentSize);
-                    } else {
-                        LOGGER.warn("Unable to add game of size " + gameSize + ". Currently used: " + currentSize);
-                        return OperationResult.errorWithDetailResult(LocaleUtil.i18n("gameImportError"),
-                                String.format(LocaleUtil.i18n("gameImportErrorNoSpaceHeader"), game.getName()),
-                                String.format(LocaleUtil.i18n("gameImportErrorNoSpaceContext"), currentSize));
-                    }
-                } catch (Exception e) {
-                    LOGGER.error("Calculating game size", e);
-                }
-            } else {
-                LOGGER.warn("Unable to add game. Game limit reached.");
-                return OperationResult.errorResult(LocaleUtil.i18n("gameImportError"),
-                        LocaleUtil.i18n("gameImportErrorNoSlotHeader"));
-            }
-            return OperationResult.successResult();
-        });
-    }
-
 
     @Override
     public Future<OperationResult> addGame(Game game) {
