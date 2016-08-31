@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.util.gamerenderer.renderers;
 
 
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.gamerenderer.GameRenderer;
@@ -14,6 +15,7 @@ import java.io.IOException;
 public class ScreenshotGameRenderer extends PassiveGameRendererBase implements GameRenderer  {
 
     private WritableImage spectrum48kImage;
+    private WritableImage cartridgeImage;
     private ImageView targetView;
 
     private void initializeImages() throws IOException {
@@ -21,6 +23,10 @@ public class ScreenshotGameRenderer extends PassiveGameRendererBase implements G
                 ImageUtil.newScreenshot(),
                 ScreenshotGameRenderer.class.getClassLoader()
                         .getResourceAsStream("sinclair-1982.scr"));
+        cartridgeImage = ImageUtil.scrLoader(
+                ImageUtil.newScreenshot(),
+                ScreenshotGameRenderer.class.getClassLoader()
+                        .getResourceAsStream("3carts.scr"));
     }
 
     public ScreenshotGameRenderer() throws IOException {
@@ -35,8 +41,14 @@ public class ScreenshotGameRenderer extends PassiveGameRendererBase implements G
 
     @Override
     public void previewGame(Game game) {
-        if (game != null && game instanceof RamGame) {
-            targetView.setImage(((RamGame) game).getScreenshot());
+        if (game != null) {
+            if (game instanceof RamGame) {
+                targetView.setImage(((RamGame) game).getScreenshot());
+            } else if (game.getType() == GameType.ROM) {
+                targetView.setImage(cartridgeImage);
+            } else {
+                targetView.setImage(spectrum48kImage);
+            }
         } else {
             targetView.setImage(spectrum48kImage);
         }
