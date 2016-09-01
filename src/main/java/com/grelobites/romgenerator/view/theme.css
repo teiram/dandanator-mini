@@ -1,0 +1,131 @@
+.root {
+    -fx-background-color: #2a2a2a;
+    -fx-base: #111111;
+    -fx-accent: #102c9c;
+}
+
+.progress-indicator:indeterminate .segment {
+    -fx-background-color: white;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 1.1em;
+}
+
+.table-view {
+   -fx-background-color: transparent;
+   -fx-border-color: #c0c0c0;
+   -fx-table-cell-border-color: transparent;
+}
+
+.table-view .column-header-background .label {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-alignment: center-left;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: white;
+}
+
+.table-row-cell {
+    -fx-border-width: 1 0 1 0;
+    -fx-border-style: dotted;
+    -fx-border-color: white;
+    -fx-background-color: -fx-table-cell-border-color, #616161;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 0.0em;
+    -fx-cell-size: 18px;
+    -fx-font-size: 12px;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: -fx-table-cell-border-color, #424242;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 0.0em;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: -fx-accent;
+    -fx-table-cell-border-color: transparent;
+}
+
+.tab > .tab-label {
+    -fx-font-size: 10px;
+}
+
+.pane-with-border {
+    -fx-background-radius: 5;
+    -fx-background-color: #a0a0a0;
+}
+
+.dialog-pane {
+    -fx-background-color: #2a2a2a;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: white;
+}
+
+.dialog-pane:header .header-panel {
+    -fx-background-color: #2a2a2a;
+}
+
+.dialog-pane:header .header-panel .label {
+    -fx-font-style: italic;
+    -fx-font-size: 1.1em;
+}
+
+.gameInfoPane {
+   -fx-border-color: #c0c0c0;
+}
+
+.gameInfoPane .tree-cell {
+    -fx-background-color: #2a2a2a;
+    -fx-text-fill: white;
+    -fx-cell-size: 18px;
+    -fx-font-size: 12px;
+}
+
+.gameInfoPane {
+    .label
+    .text-input {
+        -fx-font-size: 10px;
+    }
+}
+
+.gameInfoPane .tree-cell:selected {
+  -fx-background-color: #e0e0e0;
+  -fx-text-fill: black;
+}
+
+.gameInfoPane .tree-cell .tree-disclosure-node .arrow {
+  -fx-background-color: white;
+}
+
+.gameInfoPane .tree-cell:selected .tree-disclosure-node .arrow {
+  -fx-background-color: black;
+}
+
+.scroll-bar:vertical .thumb {
+     -fx-background-color: #616161;
+     -fx-border-color: transparent;
+     -fx-background-radius: 0.8em;
+}
+
+.increment-button ,.decrement-button {
+    -fx-background-color: #616161;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0.8em;
+}
+
+.green-bar {
+    -fx-accent: green;
+}
+
+.red-bar {
+    -fx-accent: red;
+}
