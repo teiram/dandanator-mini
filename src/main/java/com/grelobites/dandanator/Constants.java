@@ -18,7 +18,7 @@ public class Constants {
     private static final String DANDANATOR_ROM_RESOURCE = "dandanator-mini.rom";
     private static final String DANDANATOR_PIC_FW_RESOURCE = "dandanator-pic-fw.bin";
     private static final String EXTRA_ROM_RESOURCE = "test.rom";
-    private static final String DEFAULT_VERSION = "4.4";
+    private static final String DEFAULT_VERSION = "4.5";
 
 	public static final int SNA_HEADER_SIZE = 27;
 	public static final int SPECTRUM_SCREEN_WIDTH = 256;
