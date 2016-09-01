@@ -5,6 +5,7 @@ import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfigu
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.util.RamGameCompressor;
 import com.grelobites.romgenerator.util.compress.Compressor;
+import com.grelobites.romgenerator.util.compress.zx7.Zx7OutputStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,14 +16,20 @@ public class DandanatorMiniRamGameCompressor implements RamGameCompressor {
     private static final int COMPRESSED_SLOT_THRESHOLD = Constants.SLOT_SIZE - 6;
     private static final int COMPRESSED_CHUNKSLOT_THRESHOLD = Constants.SLOT_SIZE -
             DandanatorMiniConstants.GAME_CHUNK_SIZE;
+    private static final int DELTA_LIMITED_SLOT = 1;
+    private static final int DELTA_LIMITED_SLOT_MAXDELTA = 16;
 
     private Compressor compressor = DandanatorMiniConfiguration.getInstance().getCompressor();
+    private Integer compressionDelta;
 
     private byte[] compress(byte[] data) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         OutputStream compressingStream = compressor.getCompressingOutputStream(os);
         compressingStream.write(data);
         compressingStream.flush();
+        if (compressingStream instanceof Zx7OutputStream) {
+            compressionDelta = ((Zx7OutputStream) compressingStream).getCompressionDelta();
+        }
         return os.toByteArray();
     }
 
@@ -34,7 +41,11 @@ public class DandanatorMiniRamGameCompressor implements RamGameCompressor {
         }
     }
 
-    private static byte[] filterCompression(byte[] data, byte[] compressedData, int slot) {
+    private byte[] filterCompression(byte[] data, byte[] compressedData, int slot) {
+        if (slot == DELTA_LIMITED_SLOT) {
+            return compressionDelta > DELTA_LIMITED_SLOT_MAXDELTA ?
+                    data : compressedData;
+        }
         if (slot == DandanatorMiniConstants.GAME_CHUNK_SLOT) {
             return compressedData.length > COMPRESSED_CHUNKSLOT_THRESHOLD ?
                     data : compressedData;
