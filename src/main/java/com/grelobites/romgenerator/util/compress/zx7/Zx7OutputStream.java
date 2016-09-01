@@ -21,6 +21,7 @@ public class Zx7OutputStream extends FilterOutputStream {
 
     private ByteArrayOutputStream inputData;
     private boolean backwards = Zx7Compressor.BACKWARDS_DEFAULT;
+    private int lastDelta = 0;
 
     public Zx7OutputStream(OutputStream out, boolean backwards) {
         this(out);
@@ -56,6 +57,10 @@ public class Zx7OutputStream extends FilterOutputStream {
         Optimal[] optimals = optimize(data);
         byte[] result = compress(optimals, data);
         this.out.write(backwards ? Util.reverseByteArray(result) : result);
+    }
+
+    public int getCompressionDelta() {
+        return lastDelta;
     }
 
     private static Optimal[] optimize(byte[] data) {
@@ -123,12 +128,13 @@ public class Zx7OutputStream extends FilterOutputStream {
         return optimals;
     }
 
+
     private byte[] compress(Optimal[] optimals, byte[] data) throws IOException {
         int inputSize = data.length;
         int inputIndex = inputSize - 1;
         int outputSize = (optimals[inputIndex].bits + 18 + 7) / 8;
         LOGGER.debug("Compressed size will be " + outputSize);
-        CompressedByteArrayWriter output = new CompressedByteArrayWriter(outputSize);
+        CompressedByteArrayWriter output = new CompressedByteArrayWriter(inputSize, outputSize);
 
         int previousInputIndex;
 
@@ -141,12 +147,14 @@ public class Zx7OutputStream extends FilterOutputStream {
 
         //First byte is always literal */
         output.write(data[0]);
+        output.read(1);
 
         //Process remaining bytes */
         while ((inputIndex = optimals[inputIndex].bits) > 0) {
             if (optimals[inputIndex].len == 0) {
                 output.writeBit(0);
                 output.write(data[inputIndex]);
+                output.read(1);
             } else {
                 //Sequence indicator
                 output.writeBit(1);
@@ -163,6 +171,7 @@ public class Zx7OutputStream extends FilterOutputStream {
                         output.writeBit(offset & mask);
                     }
                 }
+                output.read(optimals[inputIndex].len);
             }
         }
 
@@ -173,6 +182,8 @@ public class Zx7OutputStream extends FilterOutputStream {
         }
         output.writeBit(1);
 
+        LOGGER.debug("Compression delta is " + output.getDelta());
+        lastDelta = output.getDelta();
         return output.asByteArray();
     }
 
