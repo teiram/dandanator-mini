@@ -150,19 +150,12 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             os.write(Z80Opcode.LD_NN_A(0));
             boolean interruptDisable = (ramGame.getSnaHeader().getValue(SNAHeader.INTERRUPT_ENABLE) & 0x04) == 0;
 
-            if (ramGame.getType() == GameType.RAM128) {
-                os.write(Z80Opcode.DEC_SP);
-                os.write(Z80Opcode.DEC_SP);
-                os.write(Z80Opcode.DEC_HL);
-                os.write(interruptDisable ? Z80Opcode.DI : Z80Opcode.EI);
-                os.write(Z80Opcode.JP_NN(retLocation));
-            } else {
-                os.write(Z80Opcode.DEC_HL);
-                os.write(Z80Opcode.INC_HL);
-                os.write(Z80Opcode.DEC_HL);
-                os.write(interruptDisable ? Z80Opcode.DI : Z80Opcode.EI);
-                os.write(Z80Opcode.JP_NN(retLocation));
-            }
+            os.write(Z80Opcode.NOP);
+            os.write(Z80Opcode.NOP);
+            os.write(Z80Opcode.NOP);
+            os.write(interruptDisable ? Z80Opcode.DI : Z80Opcode.EI);
+            os.write(Z80Opcode.JP_NN(retLocation));
+
         } else {
             os.write(new byte[GAME_LAUNCH_SIZE]);
         }
@@ -631,7 +624,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             gameIndex++;
         }
 
-        page.setPen(ZxColor.BRIGHTBLUE);
+        page.setPen(ZxColor.BRIGHTWHITE);
         page.printLine(String.format("P. %s", configuration.getTogglePokesMessage()), 21, 0);
         page.setPen(ZxColor.BRIGHTRED);
         page.printLine(String.format("R. %s", configuration.getExtraRomMessage()), 23, 0);

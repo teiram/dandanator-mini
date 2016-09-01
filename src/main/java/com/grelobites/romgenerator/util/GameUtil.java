@@ -143,4 +143,24 @@ public class GameUtil {
         return -1;
     }
 
+    public static void injectPCIntoStack(RamGame game) {
+        SNAHeader header = game.getSnaHeader();
+        int pcValue = header.getRegisterValue(SNAHeader.REG_PC);
+        int sp = header.getRegisterValue(SNAHeader.REG_SP) - 2;
+        byte[] spSlot = game.getSlot(game.getSlotForMappedRam(sp));
+        int spOffset = sp % Constants.SLOT_SIZE;
+        spSlot[spOffset] = (byte) (pcValue & 0xFF);
+        spSlot[spOffset + 1] = (byte) ((pcValue >> 8) & 0xFF);
+        LOGGER.debug("Injected PC 0x" + Integer.toHexString(pcValue) + " into Stack moved to 0x"
+                + Integer.toHexString(sp));
+        header.setWord(SNAHeader.REG_SP, (byte)(sp & 0xff), (byte) ((sp >> 8) & 0xff));
+    }
+
+    public static void removePCFromStack(RamGame game) {
+        SNAHeader header = game.getSnaHeader();
+        int sp = header.getRegisterValue(SNAHeader.REG_SP) + 2;
+        header.setWord(SNAHeader.REG_SP, (byte)(sp & 0xff), (byte) ((sp >> 8) & 0xff));
+    }
+
+
 }

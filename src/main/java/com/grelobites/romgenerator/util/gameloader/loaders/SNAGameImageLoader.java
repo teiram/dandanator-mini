@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
@@ -47,6 +48,9 @@ public class SNAGameImageLoader implements GameImageLoader {
         if (isValidSnaImage) {
             RamGame game = new RamGame(gameType, gameSlots);
             game.setSnaHeader(header);
+            if (gameType == GameType.RAM128) {
+                GameUtil.injectPCIntoStack(game);
+            }
             return game;
         } else {
             throw new IllegalArgumentException("SNA doesn't pass validations");
@@ -79,21 +83,26 @@ public class SNAGameImageLoader implements GameImageLoader {
     }
 
     private static void save128kSna(RamGame game, OutputStream os) throws IOException {
-        byte[] snaHeader = game.getSnaHeader().asByteArray();
-        os.write(snaHeader, 0, Constants.SNA_HEADER_SIZE);
-        for (int i = 0; i < 2; i++) {
-            os.write(game.getSlot(i));
-        }
-        int mappedBankIndex = game.getSnaHeader().getValue(SNAHeader.PORT_7FFD) & 0x03;
-        os.write(game.getSlot(INDEX_MAP[mappedBankIndex]));
-
-        os.write(snaHeader, Constants.SNA_HEADER_SIZE,
-                Constants.SNA_EXTENDED_HEADER_SIZE - Constants.SNA_HEADER_SIZE);
-
-        for (int bank : new Integer[] {0, 1, 3, 4, 6, 7}) {
-            if (bank != mappedBankIndex) {
-                os.write(game.getSlot(INDEX_MAP[bank]));
+        try {
+            GameUtil.removePCFromStack(game);
+            byte[] snaHeader = game.getSnaHeader().asByteArray();
+            os.write(snaHeader, 0, Constants.SNA_HEADER_SIZE);
+            for (int i = 0; i < 2; i++) {
+                os.write(game.getSlot(i));
             }
+            int mappedBankIndex = game.getSnaHeader().getValue(SNAHeader.PORT_7FFD) & 0x03;
+            os.write(game.getSlot(INDEX_MAP[mappedBankIndex]));
+
+            os.write(snaHeader, Constants.SNA_HEADER_SIZE,
+                    Constants.SNA_EXTENDED_HEADER_SIZE - Constants.SNA_HEADER_SIZE);
+
+            for (int bank : new Integer[]{0, 1, 3, 4, 6, 7}) {
+                if (bank != mappedBankIndex) {
+                    os.write(game.getSlot(INDEX_MAP[bank]));
+                }
+            }
+        } finally {
+            GameUtil.injectPCIntoStack(game);
         }
     }
 

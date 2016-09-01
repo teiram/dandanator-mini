@@ -129,6 +129,7 @@ public class DandanatorMiniFrameController {
 
         gameInfoTabPane.setVisible(false);
 
+        pokeView.setDisable(false);
         pokeView.setEditable(true);
         pokeView.setCellFactory(p -> {
             TreeCell<PokeViewable> cell = new PokeEntityTreeCell();
@@ -189,7 +190,6 @@ public class DandanatorMiniFrameController {
             }
         });
 
-        pokeView.setDisable(true);
         pokeView.setOnDragOver(event -> {
             if (event.getGestureSource() != pokeView &&
                     event.getDragboard().hasFiles() &&
@@ -312,6 +312,7 @@ public class DandanatorMiniFrameController {
                 RamGame ramGame = (RamGame) newGame;
                 addPokeButton.setDisable(false);
                 pokesTab.setDisable(false);
+                //pokeView.setDisable(false);
                 gameRomAttribute.setVisible(true);
                 gameHoldScreenAttribute.setVisible(true);
                 gameCompressedAttribute.setVisible(true);
@@ -323,6 +324,7 @@ public class DandanatorMiniFrameController {
                 gameForced48kModeAttribute.setVisible(ramGame.getType() != GameType.RAM128);
             } else {
                 pokesTab.setDisable(true);
+                //pokeView.setDisable(true);
                 gameRomAttribute.setVisible(false);
                 gameHoldScreenAttribute.setVisible(false);
                 gameCompressedAttribute.setVisible(false);
