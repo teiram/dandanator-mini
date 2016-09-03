@@ -205,20 +205,20 @@ public class ApplicationContext {
         this.extraMenu = extraMenu;
     }
 
+    private static boolean confirmRomSetDeletion() {
+        Optional<ButtonType> result = DialogUtil
+                .buildAlert(LocaleUtil.i18n("gameDeletionConfirmTitle"),
+                        LocaleUtil.i18n("gameDeletionConfirmHeader"),
+                        LocaleUtil.i18n("gameDeletionConfirmContent"))
+                .showAndWait();
+        return result.orElse(ButtonType.CLOSE) == ButtonType.OK;
+    }
 
     public void importRomSet(File romSetFile) throws IOException {
-        if (getGameList().size() > 0) {
-            Optional<ButtonType> result = DialogUtil
-                    .buildAlert(LocaleUtil.i18n("gameDeletionConfirmTitle"),
-                            LocaleUtil.i18n("gameDeletionConfirmHeader"),
-                            LocaleUtil.i18n("gameDeletionConfirmContent"))
-                    .showAndWait();
-            if (result.orElse(ButtonType.CLOSE) == ButtonType.OK) {
-                getGameList().clear();
+        if (getGameList().isEmpty() || confirmRomSetDeletion()) {
+            try (InputStream is = new FileInputStream(romSetFile)) {
+                romSetHandler.importRomSet(is);
             }
-        }
-        try (InputStream is = new FileInputStream(romSetFile)) {
-            romSetHandler.importRomSet(is);
         }
     }
 
