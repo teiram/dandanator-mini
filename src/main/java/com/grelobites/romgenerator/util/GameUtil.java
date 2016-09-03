@@ -143,23 +143,56 @@ public class GameUtil {
         return -1;
     }
 
+    public static boolean isSPValid(int sp) {
+        return sp == 0 || sp > 0x4000 + 1;
+    }
+
+    private static void pushByte(RamGame game, int value) {
+        SNAHeader header = game.getSnaHeader();
+        int sp = header.getRegisterValue(SNAHeader.REG_SP);
+        sp = sp == 0 ? 0xffff : sp - 1;
+        byte[] spSlot = game.getSlot(game.getSlotForMappedRam(sp));
+        int spOffset = sp % Constants.SLOT_SIZE;
+        spSlot[spOffset] = (byte) (value & 0xff);
+        header.setWord(SNAHeader.REG_SP, (byte) (sp & 0xff), (byte) ((sp >> 8) & 0xff));
+        LOGGER.debug("Pushing byte 0x" + Integer.toHexString(value) + " into stack moved to 0x"
+            + Integer.toHexString(sp));
+    }
+
+    private static int popByte(RamGame game) {
+        SNAHeader header = game.getSnaHeader();
+        int sp = header.getRegisterValue(SNAHeader.REG_SP);
+        byte[] spSlot = game.getSlot(game.getSlotForMappedRam(sp));
+        int spOffset = sp % Constants.SLOT_SIZE;
+        int value = Byte.toUnsignedInt(spSlot[spOffset]);
+        sp = sp == 0xffff ? 0 : sp + 1;
+        LOGGER.debug("Popping byte from stack moved to 0x" + Integer.toHexString(sp));
+        header.setWord(SNAHeader.REG_SP, (byte) (sp & 0xff), (byte) ((sp >> 8) & 0xff));
+        return value;
+    }
+
+    private static void pushShort(RamGame game, int value) {
+        pushByte(game, (value >> 8) & 0xff);
+        pushByte(game, value & 0xff);
+    }
+
+    private static int popShort(RamGame game) {
+        int value = popByte(game);
+        value |= (popByte(game) << 8) & 0xff00;
+        return value;
+    }
+
     public static void injectPCIntoStack(RamGame game) {
         SNAHeader header = game.getSnaHeader();
         int pcValue = header.getRegisterValue(SNAHeader.REG_PC);
-        int sp = header.getRegisterValue(SNAHeader.REG_SP) - 2;
-        byte[] spSlot = game.getSlot(game.getSlotForMappedRam(sp));
-        int spOffset = sp % Constants.SLOT_SIZE;
-        spSlot[spOffset] = (byte) (pcValue & 0xFF);
-        spSlot[spOffset + 1] = (byte) ((pcValue >> 8) & 0xFF);
+        pushShort(game, pcValue);
+
         LOGGER.debug("Injected PC 0x" + Integer.toHexString(pcValue) + " into Stack moved to 0x"
-                + Integer.toHexString(sp));
-        header.setWord(SNAHeader.REG_SP, (byte)(sp & 0xff), (byte) ((sp >> 8) & 0xff));
+                + Integer.toHexString(header.getRegisterValue(SNAHeader.REG_SP)));
     }
 
-    public static void removePCFromStack(RamGame game) {
-        SNAHeader header = game.getSnaHeader();
-        int sp = header.getRegisterValue(SNAHeader.REG_SP) + 2;
-        header.setWord(SNAHeader.REG_SP, (byte)(sp & 0xff), (byte) ((sp >> 8) & 0xff));
+    public static int removePCFromStack(RamGame game) {
+        return popShort(game);
     }
 
 

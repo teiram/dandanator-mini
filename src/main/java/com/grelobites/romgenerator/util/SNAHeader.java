@@ -114,11 +114,13 @@ public class SNAHeader {
     }
 
     public boolean validate() {
-        LOGGER.debug("Border Color: " + getByte(BORDER_COLOR)
-                + ", SP: " + getRegisterValue(REG_SP)
-                + ", IM: " + getByte(INTERRUPT_MODE));
-        return getRegisterValue(REG_SP) >= 16384 &&
-                VALID_INTERRUPT_MODES.contains(getValue(INTERRUPT_MODE));
+        int sp = getRegisterValue(REG_SP);
+        int interruptMode = getValue(INTERRUPT_MODE);
+        LOGGER.debug("Border Color: " + Integer.toHexString(getByte(BORDER_COLOR))
+                + ", SP: 0x" + Integer.toHexString(sp)
+                + ", IM: 0x" + Integer.toHexString(interruptMode));
+        return GameUtil.isSPValid(sp) &&
+                VALID_INTERRUPT_MODES.contains(interruptMode);
     }
 
     public void set48kMode() {
