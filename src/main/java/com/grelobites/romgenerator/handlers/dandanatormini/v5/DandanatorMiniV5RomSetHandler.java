@@ -635,7 +635,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         LOGGER.debug("updateMenuPreview");
         try {
             List<Game> gameList = getApplicationContext().getGameList();
-            int numPages = 1 + gameList.size() / (DandanatorMiniConstants.SLOT_COUNT + 1);
+            int numPages = 1 + ((gameList.size() - 1) / DandanatorMiniConstants.SLOT_COUNT);
             for (int i = 0; i < numPages; i++) {
                 updateMenuPage(gameList, i, numPages);
             }
