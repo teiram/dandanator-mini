@@ -597,7 +597,9 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         screen.setPen(ZxColor.BRIGHTWHITE);
         int gameSymbolCode = getGameSymbolCode(game);
         screen.printLine(String.format("%c", gameSymbolCode), line, 1);
-        screen.setPen(ZxColor.BRIGHTYELLOW);
+        if (isGameCompressed(game)) {
+            screen.setPen(ZxColor.BRIGHTYELLOW);
+        }
         screen.printLine(String.format("%c", gameSymbolCode + 1), line, 2);
         screen.setPen(isGameScreenHold(game) ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
         screen.printLine(
