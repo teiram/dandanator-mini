@@ -37,7 +37,7 @@ public class MainApp extends Application {
     private Stage preferencesStage;
     private Stage aboutStage;
     private TabPane preferencesPane;
-    private AnchorPane aboutPane;
+    private TabPane aboutPane;
     private MenuToolkit menuToolkit;
     private ApplicationContext applicationContext;
     private String themeResourceUrl;
@@ -178,10 +178,11 @@ public class MainApp extends Application {
         return preferencesStage;
     }
 
-    private AnchorPane getAboutPane() throws IOException {
+    private TabPane getAboutPane() throws IOException {
         if (aboutPane == null) {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(MainApp.class.getResource("view/about.fxml"));
+            loader.setResources(LocaleUtil.getBundle());
             aboutPane = loader.load();
         }
         return aboutPane;
@@ -190,7 +191,9 @@ public class MainApp extends Application {
     private Stage getAboutStage() throws IOException {
         if (aboutStage == null) {
             aboutStage = new Stage();
-            aboutStage.setScene(new Scene(getAboutPane()));
+            Scene aboutScene = new Scene(getAboutPane());
+            aboutScene.getStylesheets().add(getThemeResourceUrl());
+            aboutStage.setScene(aboutScene);
             aboutStage.setTitle("");
             aboutStage.initModality(Modality.APPLICATION_MODAL);
             aboutStage.initOwner(primaryStage.getOwner());
