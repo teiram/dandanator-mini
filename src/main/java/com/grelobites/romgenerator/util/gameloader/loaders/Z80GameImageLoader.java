@@ -54,8 +54,8 @@ public class Z80GameImageLoader implements GameImageLoader {
         return gameSlots;
     }
 
-    private static byte[] getCompressedChunk(InputStream is) throws IOException {
-        Z80InputStream z80is = new Z80InputStream(is);
+    private static byte[] getCompressedChunk(InputStream is, int compressedBlockLen) throws IOException {
+        Z80InputStream z80is = new Z80InputStream(is, compressedBlockLen);
         return Util.fromInputStream(z80is, Constants.SLOT_SIZE);
     }
 
@@ -74,7 +74,7 @@ public class Z80GameImageLoader implements GameImageLoader {
                 LOGGER.info("EOF reading game pages");
                 eof = true;
             } else if (pageNumber < gameSlots.length) {
-                gameSlots[pageNumber] = getCompressedChunk(is);
+                gameSlots[pageNumber] = getCompressedChunk(is, compressedBlockLen);
                 pagesRead++;
             } else {
                 long skipped = is.skip(compressedBlockLen);

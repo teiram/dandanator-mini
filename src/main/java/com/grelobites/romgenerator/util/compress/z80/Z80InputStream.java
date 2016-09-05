@@ -10,14 +10,24 @@ public class Z80InputStream extends InputStream {
     private int cachedValue = 0;
     private int cachedCount = 0;
 
+    private int sourceLimit = Integer.MAX_VALUE;
+
     private static final int COMPRESS_MARK = 0xED;
 
+    private boolean isSourceEof() throws SourceStreamEOFException {
+        return --sourceLimit < 0;
+    }
+
     private int readNextValue() throws SourceStreamEOFException, IOException {
-        int value = source.read();
-        if (value < 0) {
-            throw new SourceStreamEOFException();
+        if (!isSourceEof()) {
+            int value = source.read();
+            if (value < 0) {
+                throw new SourceStreamEOFException();
+            } else {
+                return value;
+            }
         } else {
-            return value;
+            return -1;
         }
     }
 
@@ -33,6 +43,8 @@ public class Z80InputStream extends InputStream {
                     }
                     cachedValue = readNextValue();
                     return cachedValue;
+                } else if (nextValue == -1) {
+                    return value;
                 } else {
                     cachedCount = 1;
                     cachedValue = nextValue;
@@ -47,6 +59,11 @@ public class Z80InputStream extends InputStream {
     }
     public Z80InputStream(InputStream source) {
         this.source = source;
+    }
+
+    public Z80InputStream(InputStream source, int sourceLimit) {
+        this.source = source;
+        this.sourceLimit = sourceLimit;
     }
 
     @Override
