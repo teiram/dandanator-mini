@@ -3,7 +3,6 @@ package com.grelobites.romgenerator.model;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.RamGameCompressor;
-import com.grelobites.romgenerator.util.SNAHeader;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -24,7 +23,7 @@ public class RamGame extends BaseGame implements Game {
 	private BooleanProperty compressed;
 	private BooleanProperty force48kMode;
 	private Image screenshot;
-    private SNAHeader snaHeader;
+    private GameHeader gameHeader;
 	private TrainerList trainerList;
     private Class<? extends RamGameCompressor> lastCompressorClass;
     private List<byte[]> compressedData;
@@ -52,12 +51,12 @@ public class RamGame extends BaseGame implements Game {
         this.force48kMode.set(force48kMode);
     }
 
-    public SNAHeader getSnaHeader() {
-        return snaHeader;
+    public GameHeader getGameHeader() {
+        return gameHeader;
     }
 
-    public void setSnaHeader(SNAHeader snaHeader) {
-        this.snaHeader = snaHeader;
+    public void setGameHeader(GameHeader gameHeader) {
+        this.gameHeader = gameHeader;
     }
 
     public boolean getRom() {
@@ -98,7 +97,7 @@ public class RamGame extends BaseGame implements Game {
 
 	public int getScreenSlot() {
 	    if (gameType == GameType.RAM128) {
-            return (snaHeader.getValue(SNAHeader.PORT_7FFD) & 0x08) != 0 ? 7 : 0;
+            return (gameHeader.getPort7ffdValue() & 0x08) != 0 ? 7 : 0;
         } else {
             return 0;
         }
@@ -198,7 +197,7 @@ public class RamGame extends BaseGame implements Game {
                 return 1;
             case 3:
                 return (gameType == GameType.RAM128) ?
-                    SLOT_MAP[snaHeader.getValue(SNAHeader.PORT_7FFD) & 0x03] : 2;
+                    SLOT_MAP[gameHeader.getPort7ffdValue() & 0x03] : 2;
             default:
                 throw new IllegalArgumentException("Requested offset out of mapped RAM");
         }

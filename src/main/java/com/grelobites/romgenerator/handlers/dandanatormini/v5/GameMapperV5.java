@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.RomGame;
@@ -25,7 +26,7 @@ public class GameMapperV5 implements GameMapper {
     private static final int COMPRESSED_CHUNKSLOT_MAXSIZE = Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE;
     private static final int INVALID_SLOT_ID = DandanatorMiniConstants.FILLER_BYTE;
 
-    private SNAHeader snaHeader;
+    private GameHeader gameHeader;
     private String name;
     private boolean isGameCompressed;
     private boolean isGameForce48kMode;
@@ -46,7 +47,7 @@ public class GameMapperV5 implements GameMapper {
     public static GameMapperV5 fromRomSet(PositionAwareInputStream is) throws IOException {
         LOGGER.debug("About to read game data. Offset is " + is.position());
         GameMapperV5 mapper = new GameMapperV5();
-        mapper.snaHeader = SNAHeader.fromInputStream(is, DandanatorMiniV5RomSetHandler.SNA_HEADER_SIZE);
+        mapper.gameHeader = GameHeaderV5Serializer.deserialize(is);
         mapper.name = Util.getNullTerminatedString(is, 3, DandanatorMiniConstants.GAMENAME_SIZE);
         mapper.isGameForce48kMode = is.read() != 0;
         mapper.isGameCompressed = is.read() != 0;
@@ -120,13 +121,12 @@ public class GameMapperV5 implements GameMapper {
                 break;
             case RAM16:
             case RAM48:
-                snaHeader.set48kMode();
             case RAM128:
                 RamGame ramGame = new RamGame(type, getGameSlots());
                 ramGame.setCompressed(isGameCompressed);
                 ramGame.setHoldScreen(screenHold);
                 ramGame.setRom(activeRom);
-                ramGame.setSnaHeader(snaHeader);
+                ramGame.setGameHeader(gameHeader);
                 ramGame.setForce48kMode(isGameForce48kMode);
                 ramGame.setTrainerList(trainerList);
                 game = ramGame;

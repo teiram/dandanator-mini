@@ -144,7 +144,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
                     if (trainer.isPresent() && pokeCount > 0) {
                         LOGGER.debug("Importing " + pokeCount + " pokes on trainer " + trainerName);
                         for (int k = 0; k < pokeCount; k++) {
-                            int address = Util.asLittleEndian(pokeDataStream);
+                            int address = Util.readAsLittleEndian(pokeDataStream);
                             int value = pokeDataStream.read();
                             trainer.map(t -> {
                                 t.addPoke(address, value);

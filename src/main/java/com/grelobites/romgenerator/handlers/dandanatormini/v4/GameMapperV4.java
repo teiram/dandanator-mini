@@ -3,11 +3,11 @@ package com.grelobites.romgenerator.handlers.dandanatormini.v4;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.TrainerList;
 import com.grelobites.romgenerator.util.PositionAwareInputStream;
-import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ public class GameMapperV4 implements GameMapper {
     private boolean holdScreen;
     private boolean activeRom;
     private String name;
-    private byte[] snaHeader;
+    private GameHeader gameHeader;
     private List<byte[]> gameSlots;
     private TrainerList trainerList = new TrainerList(null);
     private int trainerCount = 0;
@@ -37,10 +37,7 @@ public class GameMapperV4 implements GameMapper {
     }
 
     void readHeader(InputStream is) throws IOException {
-        this.snaHeader = new byte[Constants.SNA_HEADER_SIZE];
-        if (is.read(snaHeader) < Constants.SNA_HEADER_SIZE) {
-            throw new IOException("Unable to get SNA Header from stream");
-        }
+        gameHeader = GameHeaderV4Serializer.deserialize(is);
     }
 
     @Override
@@ -76,14 +73,6 @@ public class GameMapperV4 implements GameMapper {
         }
     }
 
-    public byte[] getSnaHeader() {
-        if (snaHeader != null) {
-            return snaHeader;
-        } else {
-            throw new IllegalStateException("SNA Header not set");
-        }
-    }
-
     public void exportTrainers(RamGame game) {
         trainerList.setOwner(game);
         game.setTrainerList(trainerList);
@@ -95,7 +84,7 @@ public class GameMapperV4 implements GameMapper {
         game.setName(name);
         game.setHoldScreen(holdScreen);
         game.setRom(activeRom);
-        game.setSnaHeader(SNAHeader.from48kSNAGameByteArray(getSnaHeader()));
+        game.setGameHeader(gameHeader);
         exportTrainers(game);
         return game;
     }

@@ -113,12 +113,14 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return target.toByteArray();
     }
 
-    private static byte[] getGamePaddedSnaHeader(Game game) {
+    private static byte[] getGamePaddedSnaHeader(Game game) throws IOException {
         byte[] paddedHeader = new byte[SNA_HEADER_SIZE];
         Arrays.fill(paddedHeader, Constants.B_00);
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
-            byte[] snaHeader = ramGame.getSnaHeader().asByteArray();
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            GameHeaderV5Serializer.serialize(ramGame.getGameHeader(), os);
+            byte[] snaHeader = os.toByteArray();
             System.arraycopy(snaHeader, 0, paddedHeader, 0, snaHeader.length);
         }
         return paddedHeader;
@@ -148,7 +150,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             os.write(Z80Opcode.LD_IX_NN(baseAddress + SNAHeader.REG_IX));
             os.write(Z80Opcode.LD_SP_NN(baseAddress + SNAHeader.REG_SP));
             os.write(Z80Opcode.LD_NN_A(0));
-            boolean interruptDisable = (ramGame.getSnaHeader().getValue(SNAHeader.INTERRUPT_ENABLE) & 0x04) == 0;
+            boolean interruptDisable = (ramGame.getGameHeader().getInterruptEnable() & 0x04) == 0;
 
             os.write(Z80Opcode.NOP);
             os.write(Z80Opcode.NOP);

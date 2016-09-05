@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -18,8 +19,20 @@ public class Util {
     private static final Logger LOGGER = LoggerFactory.getLogger(Util.class);
     private static final String SNAPSHOT_SUFFIX = "-SNAPSHOT";
 
-    public static int asLittleEndian(InputStream is) throws IOException {
+    public static int readAsLittleEndian(InputStream is) throws IOException {
         return is.read() + (is.read() << 8);
+    }
+
+    public static int readAsBigEndian(InputStream is) throws IOException {
+        return ((is.read() & 0xff) << 8) | (is.read() & 0xff);
+    }
+    public static int readAsLittleEndian(byte[] data, int offset) {
+        return (data[offset] & 0xff) | ((data[offset + 1] & 0xff) << 8);
+    }
+
+    public static void writeAsLittleEndian(OutputStream os, int value) throws IOException {
+        os.write(value & 0xff);
+        os.write((value >> 8) & 0xff);
     }
 
     public static String getNullTerminatedString(InputStream is, int maxLength) throws IOException {
@@ -136,6 +149,14 @@ public class Util {
         }
         sb.append(" ]");
         return sb.toString();
+    }
+
+    public static String toHexString(Integer value) {
+        if (value != null) {
+            return String.format("0x%04x", value);
+        } else {
+            return "null";
+        }
     }
 
 

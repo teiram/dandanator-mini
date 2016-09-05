@@ -2,10 +2,10 @@ package com.grelobites.romgenerator.util.gameloader.loaders;
 
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
-import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
 import org.slf4j.Logger;
@@ -29,32 +29,27 @@ public class SNAGameImageLoader implements GameImageLoader {
     @Override
     public Game load(InputStream is) throws IOException {
         byte[] gameImage = Util.fromInputStream(is);
-        SNAHeader header;
+        GameHeader header;
         List<byte[]> gameSlots;
         GameType gameType;
         LOGGER.debug("Read " + gameImage.length + " bytes from game image");
         if (gameImage.length == SNA_48K_SIZE) {
-            header = SNAHeader.from48kSNAGameByteArray(gameImage);
+            header = GameHeader.from48kSnaGameByteArray(gameImage);
             gameSlots = get48kGameSlots(gameImage);
             gameType = GameType.RAM48;
         } else if (gameImage.length == SNA_128KLO_SIZE || gameImage.length == SNA_128KHI_SIZE) {
-            header = SNAHeader.from128kSNAGameByteArray(gameImage);
+            header = GameHeader.from128kSnaGameByteArray(gameImage);
             gameSlots = get128kGameSlots(gameImage, header);
             gameType = GameType.RAM128;
         } else {
             throw new IllegalArgumentException("Unsupported SNA size: " + gameImage.length);
         }
-        boolean isValidSnaImage = header.validate();
-        if (isValidSnaImage) {
-            RamGame game = new RamGame(gameType, gameSlots);
-            game.setSnaHeader(header);
-            if (gameType == GameType.RAM128) {
-                GameUtil.injectPCIntoStack(game);
-            }
-            return game;
-        } else {
-            throw new IllegalArgumentException("SNA doesn't pass validations");
+        RamGame game = new RamGame(gameType, gameSlots);
+        game.setGameHeader(header);
+        if (gameType == GameType.RAM128) {
+            GameUtil.pushPC(game);
         }
+        return game;
     }
 
     @Override
@@ -75,8 +70,27 @@ public class SNAGameImageLoader implements GameImageLoader {
         }
     }
 
+    private static void writeSnaHeader(GameHeader header, OutputStream os) throws IOException {
+        os.write(header.getIRegister());
+        Util.writeAsLittleEndian(os, header.getAlternateHLRegister());
+        Util.writeAsLittleEndian(os, header.getAlternateDERegister());
+        Util.writeAsLittleEndian(os, header.getAlternateBCRegister());
+        Util.writeAsLittleEndian(os, header.getAlternateAFRegister());
+        Util.writeAsLittleEndian(os, header.getHLRegister());
+        Util.writeAsLittleEndian(os, header.getDERegister());
+        Util.writeAsLittleEndian(os, header.getBCRegister());
+        Util.writeAsLittleEndian(os, header.getIYRegister());
+        Util.writeAsLittleEndian(os, header.getIXRegister());
+        os.write(header.getInterruptEnable());
+        os.write(header.getRRegister());
+        Util.writeAsLittleEndian(os, header.getAFRegister());
+        Util.writeAsLittleEndian(os, header.getSPRegister());
+        os.write(header.getInterruptMode());
+        os.write(header.getBorderColor());
+    }
+
     private static void save48kSna(RamGame game, OutputStream os) throws IOException {
-        os.write(game.getSnaHeader().asByteArray(), 0, Constants.SNA_HEADER_SIZE);
+        writeSnaHeader(game.getGameHeader(), os);
         for (int i = 0; i < 3; i++) {
             os.write(game.getSlot(i));
         }
@@ -84,17 +98,16 @@ public class SNAGameImageLoader implements GameImageLoader {
 
     private static void save128kSna(RamGame game, OutputStream os) throws IOException {
         try {
-            GameUtil.removePCFromStack(game);
-            byte[] snaHeader = game.getSnaHeader().asByteArray();
-            os.write(snaHeader, 0, Constants.SNA_HEADER_SIZE);
+            GameUtil.popPC(game);
+            writeSnaHeader(game.getGameHeader(), os);
             for (int i = 0; i < 2; i++) {
                 os.write(game.getSlot(i));
             }
-            int mappedBankIndex = game.getSnaHeader().getValue(SNAHeader.PORT_7FFD) & 0x03;
+            int mappedBankIndex = game.getGameHeader().getPort7ffdValue() & 0x03;
             os.write(game.getSlot(INDEX_MAP[mappedBankIndex]));
-
-            os.write(snaHeader, Constants.SNA_HEADER_SIZE,
-                    Constants.SNA_EXTENDED_HEADER_SIZE - Constants.SNA_HEADER_SIZE);
+            Util.writeAsLittleEndian(os, game.getGameHeader().getPCRegister());
+            os.write(game.getGameHeader().getPort7ffdValue());
+            os.write(Constants.B_00); //TRDOS_MAPPED_ROM
 
             for (int bank : new Integer[]{0, 1, 3, 4, 6, 7}) {
                 if (bank != mappedBankIndex) {
@@ -102,7 +115,7 @@ public class SNAGameImageLoader implements GameImageLoader {
                 }
             }
         } finally {
-            GameUtil.injectPCIntoStack(game);
+            GameUtil.pushPC(game);
         }
     }
 
@@ -116,11 +129,11 @@ public class SNAGameImageLoader implements GameImageLoader {
         return slots;
     }
 
-    private static List<byte[]> get128kGameSlots(byte[] gameImage, SNAHeader header) {
+    private static List<byte[]> get128kGameSlots(byte[] gameImage, GameHeader header) {
         ArrayList<byte[]> slots = new ArrayList<>();
         int offset = Constants.SNA_HEADER_SIZE;
         boolean bigImage = gameImage.length == SNA_128KHI_SIZE;
-        int mappedBankIndex = header.getValue(SNAHeader.PORT_7FFD) & 0x03;
+        int mappedBankIndex = header.getPort7ffdValue() & 0x03;
         LOGGER.debug("Mapped bank index is " + mappedBankIndex);
         byte[] mappedBank = null;
         for (int i = 0; i < 3; i++) {

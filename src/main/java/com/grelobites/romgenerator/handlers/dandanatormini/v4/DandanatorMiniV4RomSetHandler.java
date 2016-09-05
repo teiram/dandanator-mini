@@ -8,6 +8,7 @@ import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorMiniI
 import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
 import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.Poke;
 import com.grelobites.romgenerator.model.PokeViewable;
@@ -16,7 +17,6 @@ import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.OperationResult;
-import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.Z80Opcode;
 import com.grelobites.romgenerator.util.ZxColor;
@@ -223,7 +223,7 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
     }
 
     private static void dumpGameSnaHeader(OutputStream os, RamGame game) throws IOException {
-        os.write(Arrays.copyOfRange(game.getSnaHeader().asByteArray(), 0, Constants.SNA_HEADER_SIZE));
+        GameHeaderV4Serializer.serialize(game.getGameHeader(), os);
     }
 
     protected static int dumpGameLaunchCode(OutputStream os, Game game) throws IOException {
@@ -235,7 +235,7 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
                 os.write(Z80Opcode.POP_HL);
                 os.write(Z80Opcode.PUSH_HL);
                 os.write(Z80Opcode.POP_HL);
-                os.write((ramGame.getSnaHeader().asByteArray()[SNAHeader.INTERRUPT_ENABLE] & 0x04) == 0 ?
+                os.write((ramGame.getGameHeader().getInterruptEnable() & 0x04) == 0 ?
                         Z80Opcode.DI : Z80Opcode.EI);
                 os.write(Z80Opcode.RET);
                 return 6;
