@@ -96,14 +96,6 @@ public class Z80GameImageLoader implements GameImageLoader {
                 (version == 3 && (hwmode < HWMODE_V3_128K));
     }
 
-    private static void injectPCintoStack(List<byte[]> gameSlots, int sp, int pc) {
-        int pcLocation = sp - 0x4000; //Offset of PC in game image (Starts at 0x4000)
-        int pcSlot = pcLocation / Constants.SLOT_SIZE;
-        int pcOffset = pcLocation % Constants.SLOT_SIZE;
-        gameSlots.get(pcSlot)[pcOffset] = (byte) (pc & 0xFF);
-        gameSlots.get(pcSlot)[pcOffset + 1] = (byte) ((pc >> 8) & 0xFF);
-    }
-
     private static RamGame createRamGameFromData(int version,
                                           int hwMode,
                                           int pc, int sp,
