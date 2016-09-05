@@ -1,24 +1,39 @@
 package com.grelobites.romgenerator.util.compress.z80;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
 public class Z80OutputStream extends FilterOutputStream {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Z80OutputStream.class);
 
     private static final int COMPRESS_MARK = 0xED;
     private int cachedValue;
     private int cachedValueCount;
+    private boolean writeEndMark = false;
+
+    private boolean endMarkWritten = false;
 
     public Z80OutputStream(OutputStream out) {
         super(out);
     }
 
+    public Z80OutputStream(OutputStream out, boolean writeEndMark) {
+        this(out);
+        this.writeEndMark = writeEndMark;
+    }
+
     private void writeEndMark() throws IOException {
-        out.write(0);
-        out.write(COMPRESS_MARK);
-        out.write(COMPRESS_MARK);
-        out.write(0);
+        if (writeEndMark && !endMarkWritten) {
+            out.write(0);
+            out.write(COMPRESS_MARK);
+            out.write(COMPRESS_MARK);
+            out.write(0);
+            endMarkWritten = true;
+        }
     }
 
     private void flushCached() throws IOException {
@@ -32,6 +47,8 @@ public class Z80OutputStream extends FilterOutputStream {
                 out.write(cachedValue);
             }
         }
+        cachedValueCount = 0;
+
     }
 
     @Override
@@ -59,7 +76,6 @@ public class Z80OutputStream extends FilterOutputStream {
 
     @Override
     public void close() throws IOException {
-        flush();
         super.close();
     }
 }
