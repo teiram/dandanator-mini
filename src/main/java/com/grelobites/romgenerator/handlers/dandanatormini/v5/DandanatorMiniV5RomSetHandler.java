@@ -119,7 +119,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            GameHeaderV5Serializer.serialize(ramGame.getGameHeader(), os);
+            GameHeaderV5Serializer.serialize(ramGame, os);
             byte[] snaHeader = os.toByteArray();
             System.arraycopy(snaHeader, 0, paddedHeader, 0, snaHeader.length);
         }
@@ -235,7 +235,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
                                GameChunk gameChunk, int offset) throws IOException {
         os.write(getGamePaddedSnaHeader(game));
         dumpGameName(os, game, index);
-        os.write(isGameForce128kMode(game) ? Constants.B_01 : Constants.B_00);
+        os.write(Constants.B_00); //Available byte
         os.write(isGameCompressed(game) ? Constants.B_01 : Constants.B_00);
         os.write(game.getType().typeId());
         os.write(isGameScreenHold(game) ? Constants.B_01 : Constants.B_00);

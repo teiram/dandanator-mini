@@ -200,7 +200,7 @@ public class GameHeader {
         return port7ffdValue != null ? port7ffdValue : defaultValue;
     }
 
-    public void setPort7ffdValue(int port7ffdValue) {
+    public void setPort7ffdValue(Integer port7ffdValue) {
         this.port7ffdValue = port7ffdValue;
     }
 
@@ -212,7 +212,7 @@ public class GameHeader {
         return port1ffdValue != null ? port1ffdValue : defaultValue;
     }
 
-    public void setPort1ffdValue(int port1ffdValue) {
+    public void setPort1ffdValue(Integer port1ffdValue) {
         this.port1ffdValue = port1ffdValue;
     }
 
@@ -241,7 +241,7 @@ public class GameHeader {
         GameHeader header = from48kSnaGameByteArray(in);
         int extendedHeaderOffset = Constants.SNA_HEADER_SIZE + Constants.SLOT_SIZE * 3;
         header.setPCRegister(Util.readAsLittleEndian(in, extendedHeaderOffset));
-        header.setPort7ffdValue(in[extendedHeaderOffset + 2]);
+        header.setPort7ffdValue(Byte.toUnsignedInt(in[extendedHeaderOffset + 2]));
         return header;
     }
 

@@ -1,17 +1,25 @@
 package com.grelobites.romgenerator.handlers.dandanatormini.v5;
 
+import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
+import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static com.sun.tools.doclets.formats.html.markup.HtmlStyle.header;
+
 public class GameHeaderV5Serializer {
 
     private static final int DEFAULT_PORT1FFD_VALUE = 0x04;
-    private static final int SYNTHETIC_PORT1FFD_VALUE_FLAG = 0x80;
-    public static void serialize(GameHeader header, OutputStream os) throws IOException {
+    private static final int SYNTHETIC_PORT_FLAG = 0x80;
+    private static final int DEFAULT_PORT7FFD_VALUE_NON_FORCED = 0x10;
+    private static final int DEFAULT_PORT7FFD_VALUE_FORCED = 0x30;
+
+    public static void serialize(RamGame game, OutputStream os) throws IOException {
+        GameHeader header = game.getGameHeader();
         os.write(header.getIRegister());
         Util.writeAsLittleEndian(os, header.getAlternateHLRegister());
         Util.writeAsLittleEndian(os, header.getAlternateDERegister());
@@ -29,8 +37,14 @@ public class GameHeaderV5Serializer {
         os.write(header.getInterruptMode());
         os.write(header.getBorderColor());
         Util.writeAsLittleEndian(os, header.getSavedStackData(0));
-        os.write(header.getPort7ffdValue(0));
-        os.write(header.getPort1ffdValue(DEFAULT_PORT1FFD_VALUE | SYNTHETIC_PORT1FFD_VALUE_FLAG));
+        os.write(header.getPort7ffdValue(SYNTHETIC_PORT_FLAG |
+                (game.getForce48kMode() ? DEFAULT_PORT7FFD_VALUE_FORCED :
+                DEFAULT_PORT7FFD_VALUE_NON_FORCED)));
+        os.write(header.getPort1ffdValue(DEFAULT_PORT1FFD_VALUE | SYNTHETIC_PORT_FLAG));
+    }
+
+    private static Integer filterSynthetic(int value) {
+        return (value & SYNTHETIC_PORT_FLAG) == 0 ? null : value;
     }
 
     public static GameHeader deserialize(InputStream is) throws IOException {
@@ -52,8 +66,8 @@ public class GameHeaderV5Serializer {
         header.setInterruptMode(is.read());
         header.setBorderColor(is.read());
         header.setSavedStackData(Util.readAsLittleEndian(is));
-        header.setPort7ffdValue(is.read());
-        header.setPort1ffdValue(is.read());
+        header.setPort7ffdValue(filterSynthetic(is.read()));
+        header.setPort1ffdValue(filterSynthetic(is.read()));
         return header;
     }
 
