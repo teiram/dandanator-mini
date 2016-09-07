@@ -8,6 +8,7 @@ import com.grelobites.romgenerator.view.util.DialogUtil;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
@@ -72,6 +73,10 @@ public class DandanatorMiniPreferencesController {
 
     @FXML
     private Button resetDandanatorPicFirmwareButton;
+
+    @FXML
+    private CheckBox disableBorderEffect;
+
 
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
@@ -242,5 +247,9 @@ public class DandanatorMiniPreferencesController {
                 DandanatorMiniConfiguration.getInstance().dandanatorPicFirmwarePathProperty(),
                 resetDandanatorPicFirmwareButton,
                 this::updateDandanatorPicFirmware);
+
+        disableBorderEffect.selectedProperty().bindBidirectional(
+                DandanatorMiniConfiguration.getInstance().disableBorderEffectProperty());
+
     }
 }

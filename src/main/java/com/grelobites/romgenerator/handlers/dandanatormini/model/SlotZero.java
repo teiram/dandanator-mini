@@ -62,4 +62,6 @@ public interface SlotZero {
     String getLaunchGameMessage();
 
     String getSelectPokesMessage();
+
+    boolean getDisableBorderEffect();
 }

@@ -35,6 +35,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
     private String togglePokesMessage;
     private String launchGameMessage;
     private String selectPokesMessage;
+    private boolean disableBorderEffect;
     List<GameBlock> gameBlocks;
 
     public SlotZeroV5(byte[] data) {
@@ -166,6 +167,9 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
             }
         }
 
+        zis.safeSkip(Constants.SLOT_SIZE - zis.position() - DandanatorMiniConstants.VERSION_SIZE - 1);
+        LOGGER.debug("Before version. Position " + zis.position());
+        disableBorderEffect = zis.read() == 1 ? true : false;
         zis.safeSkip(Constants.SLOT_SIZE - zis.position());
         LOGGER.debug("After version. Position " + zis.position());
     }
@@ -234,6 +238,11 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
     @Override
     public String getSelectPokesMessage() {
         return selectPokesMessage;
+    }
+
+    @Override
+    public boolean getDisableBorderEffect() {
+        return disableBorderEffect;
     }
 
 }

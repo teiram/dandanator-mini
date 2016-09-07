@@ -42,4 +42,9 @@ public abstract class SlotZeroBase implements SlotZero {
         //Skip the starting 'v' of the version string
         return Util.getNullTerminatedString(stream, 1, DandanatorMiniConstants.VERSION_SIZE);
     }
+
+    @Override
+    public boolean getDisableBorderEffect() {
+        return false;
+    }
 }

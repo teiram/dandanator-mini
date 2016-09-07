@@ -449,9 +449,10 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             }
             LOGGER.debug("Dumped all game chunks. Offset: " + os.size());
 
-            fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size() - VERSION_SIZE);
+            fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size() - DandanatorMiniConstants.VERSION_SIZE - 1);
             LOGGER.debug("Dumped padding zone. Offset: " + os.size());
 
+            os.write(dmConfiguration.isDisableBorderEffect() ? 1 : 0);
             dumpVersionInfo(os);
             LOGGER.debug("Dumped version info. Offset: " + os.size());
 

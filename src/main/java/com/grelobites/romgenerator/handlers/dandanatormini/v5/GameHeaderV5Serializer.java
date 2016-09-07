@@ -1,6 +1,5 @@
 package com.grelobites.romgenerator.handlers.dandanatormini.v5;
 
-import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.Util;
@@ -9,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static com.sun.tools.doclets.formats.html.markup.HtmlStyle.header;
 
 public class GameHeaderV5Serializer {
 

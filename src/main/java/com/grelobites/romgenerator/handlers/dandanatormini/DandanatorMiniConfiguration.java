@@ -4,6 +4,8 @@ import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.compress.CompressorFactory;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import org.slf4j.Logger;
@@ -32,6 +34,7 @@ public class DandanatorMiniConfiguration {
     private StringProperty extraRomMessage;
     private StringProperty launchGameMessage;
     private StringProperty selectPokesMessage;
+    private BooleanProperty disableBorderEffect;
 
     private byte[] dandanatorRom;
     private byte[] extraRom;
@@ -60,6 +63,7 @@ public class DandanatorMiniConfiguration {
         return INSTANCE;
     }
 
+
     private DandanatorMiniConfiguration() {
         dandanatorRomPath = new SimpleStringProperty();
         extraRomPath = new SimpleStringProperty();
@@ -68,6 +72,8 @@ public class DandanatorMiniConfiguration {
         extraRomMessage = new SimpleStringProperty();
         launchGameMessage = new SimpleStringProperty();
         selectPokesMessage = new SimpleStringProperty();
+        disableBorderEffect = new SimpleBooleanProperty(false);
+
 
         /*
         setPersistenceListenerOnPropertyChange(dandanatorRomPath, DANDANATORROMPATH_PROPERTY,
@@ -234,6 +240,18 @@ public class DandanatorMiniConfiguration {
 
     public void setSelectPokesMessage(String selectPokesMessage) {
         this.selectPokesMessage.set(selectPokesMessage);
+    }
+
+    public boolean isDisableBorderEffect() {
+        return disableBorderEffect.get();
+    }
+
+    public BooleanProperty disableBorderEffectProperty() {
+        return disableBorderEffect;
+    }
+
+    public void setDisableBorderEffect(boolean disableBorderEffect) {
+        this.disableBorderEffect.set(disableBorderEffect);
     }
 
     public void setDandanatorPicFirmware(byte[] dandanatorPicFirmware) {

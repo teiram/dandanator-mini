@@ -69,7 +69,7 @@ public class DandanatorMiniV5Importer implements DandanatorMiniImporter {
         dandanatorMiniConfiguration.setTogglePokesMessage(slotZero.getTogglePokesMessage());
         dandanatorMiniConfiguration.setLaunchGameMessage(slotZero.getLaunchGameMessage());
         dandanatorMiniConfiguration.setSelectPokesMessage(slotZero.getSelectPokesMessage());
-
+        dandanatorMiniConfiguration.setDisableBorderEffect(slotZero.getDisableBorderEffect());
     }
 
     @Override
