@@ -25,15 +25,22 @@ public class MediaTest extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+
         File file = new File("/Users/mteira/Desktop/test.wav");
         FileOutputStream fos = new FileOutputStream(file);
         CompressedWavOutputStream wos = new CompressedWavOutputStream(fos, WavOutputFormat.defaultDataFormat());
-        wos.write(Util.fromInputStream(new FileInputStream("/Users/mteira/Desktop/dandanator-mini.rom")));
+        wos.write(Util.fromInputStream(new FileInputStream("/Users/mteira/Desktop/ifrom.rom")));
         wos.close();
         fos.close();
         LOGGER.debug("Creating media from " + file.toURI().toURL().toExternalForm());
+
         Media media = new Media(file.toURI().toURL().toExternalForm());
+        media.errorProperty().addListener(
+                (observable, oldValue, newValue) -> {
+            LOGGER.error("Media exception happened ", newValue);
+        });
         MediaPlayer player = new MediaPlayer(media);
+        player.setOnError(() -> LOGGER.error("Player error: " + player.getError()));
         player.setAutoPlay(true);
         MediaView mediaView = new MediaView(player);
         AnchorPane pane = new AnchorPane();

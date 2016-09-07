@@ -59,7 +59,7 @@ public class CompressedWavOutputStream extends FilterOutputStream {
                 .putShort(numChannels)                                  //NumChannels
                 .putInt(sampleRate)                                     //SampleRate
                 .putInt(byteRate)                                       //ByteRate
-                .putShort((short) 0)                                    //Block align
+                .putShort((short) 1)                                    //Block align
                 .putShort((short) 8)                                    //Bits per sample
                 .put("data".getBytes())                                 //Subchunk2ID
                 .putInt(wavDataLength);                                 //Subchunk2Size
