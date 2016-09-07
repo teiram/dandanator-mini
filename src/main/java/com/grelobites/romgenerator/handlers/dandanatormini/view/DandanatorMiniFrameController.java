@@ -245,7 +245,7 @@ public class DandanatorMiniFrameController {
 
         applicationContext.selectedGameProperty().addListener(
                 (observable, oldValue, newValue) -> onGameSelection(oldValue, newValue));
-        onGameSelection(applicationContext.selectedGameProperty().get(),
+        onGameSelection(null,
                 applicationContext.selectedGameProperty().get());
     }
 

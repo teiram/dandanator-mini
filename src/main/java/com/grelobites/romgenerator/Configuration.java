@@ -14,6 +14,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.prefs.Preferences;
 
+class InvalidableStringProperty extends SimpleStringProperty {
+    void invalidate() {
+        fireValueChangedEvent();
+    }
+}
+
 public class Configuration {
     private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
@@ -24,8 +30,10 @@ public class Configuration {
 
     private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V5.name();
 
-    byte[] charSet;
-    byte[] backgroundImage;
+    private byte[] charSet;
+    private byte[] backgroundImage;
+    private byte[] defaultBackgroundImage;
+
 
     private StringProperty mode;
     private StringProperty backgroundImagePath;
@@ -44,7 +52,7 @@ public class Configuration {
     }
 
     private Configuration() {
-        this.backgroundImagePath = new SimpleStringProperty();
+        this.backgroundImagePath = new InvalidableStringProperty();
         this.charSetPath = new SimpleStringProperty();
         this.charSetPathExternallyProvided = new SimpleBooleanProperty();
         this.mode = new SimpleStringProperty(DEFAULT_MODE);
@@ -114,10 +122,10 @@ public class Configuration {
                     backgroundImage = Files.readAllBytes(Paths.get(backgroundImagePath.get()));
                 } catch (Exception e) {
                     LOGGER.error("Unable to load Background Image from  " + backgroundImagePath.get(), e);
-                    backgroundImage = Constants.getDefaultMenuScreen();
+                    backgroundImage = getDefaultBackgroundImage();
                 }
             } else {
-                backgroundImage = Constants.getDefaultMenuScreen();
+                backgroundImage = getDefaultBackgroundImage();
             }
         }
         return backgroundImage;
@@ -183,6 +191,21 @@ public class Configuration {
         this.charSetPath.set(charSetPath);
     }
 
+    public void setDefaultBackgroundImage(byte[] defaultBackgroundImage) {
+        this.defaultBackgroundImage = defaultBackgroundImage;
+        if (backgroundImagePath.get() == null) {
+            backgroundImage = null;
+            //Force listeners invalidation
+            ((InvalidableStringProperty) backgroundImagePath).invalidate();
+        }
+    }
+
+    public byte[] getDefaultBackgroundImage() throws IOException {
+        if (defaultBackgroundImage == null) {
+            defaultBackgroundImage = Constants.getDefaultMenuScreen();
+        }
+        return defaultBackgroundImage;
+    }
 
     public static Preferences getApplicationPreferences() {
         return Preferences.userNodeForPackage(Configuration.class);

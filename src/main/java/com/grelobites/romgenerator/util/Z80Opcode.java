@@ -13,6 +13,7 @@ public class Z80Opcode {
     public static final byte RET = (byte) 0xC9;         // RET
     public static final byte PUSH_HL = (byte) 0xE5;     // PUSH HL
     public static final byte POP_HL = (byte) 0xE1;      // POP HL
+    public static final byte PUSH_AF = (byte) 0xF5;
     public static final byte DEC_HL = (byte) 0x2B;      // DEC HL
     public static final byte INC_HL = (byte) 0x23;      // INC HL
     public static final byte DEC_SP = (byte) 0x3B;      // DEC SP

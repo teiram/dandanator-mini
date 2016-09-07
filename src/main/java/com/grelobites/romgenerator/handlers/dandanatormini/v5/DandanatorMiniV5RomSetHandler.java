@@ -44,18 +44,18 @@ import java.util.concurrent.Future;
 public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV5RomSetHandler.class);
 
-    private static final byte[] EMPTY_CBLOCK = new byte[5];
-    private static final int CBLOCKS_TABLE_OFFSET = 6348;
-    private static final int CBLOCKS_TABLE_SIZE = 16;
-    private static final int GAME_STRUCT_OFFSET = 3073;
-    private static final int GAME_STRUCT_SIZE = 131;
-    private static final int MAX_MENU_PAGES = 3;
+    protected static final byte[] EMPTY_CBLOCK = new byte[5];
+    protected static final int CBLOCKS_TABLE_OFFSET = 6348;
+    protected static final int CBLOCKS_TABLE_SIZE = 16;
+    protected static final int GAME_STRUCT_OFFSET = 3073;
+    protected static final int GAME_STRUCT_SIZE = 131;
+    protected static final int MAX_MENU_PAGES = 3;
     protected static final int GAME_LAUNCH_SIZE = 18;
     protected static final int SNA_HEADER_SIZE = 31;
-    private static RamGameCompressor ramGameCompressor = new DandanatorMiniRamGameCompressor();
-    private DoubleProperty currentRomUsage;
+    protected static RamGameCompressor ramGameCompressor = new DandanatorMiniRamGameCompressor();
+    protected DoubleProperty currentRomUsage;
 
-    private ZxScreen[] menuImages;
+    protected ZxScreen[] menuImages;
     private AnimationTimer previewUpdateTimer;
     private static final long SCREEN_UPDATE_PERIOD_NANOS = 3 * 1000000000L;
 
@@ -98,12 +98,12 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         };
     }
 
-    private static Compressor getCompressor() {
+    protected static Compressor getCompressor() {
         return DandanatorMiniConfiguration.getInstance()
                 .getCompressor();
     }
 
-    private static byte[] compress(byte[]... sources) throws IOException {
+    protected static byte[] compress(byte[]... sources) throws IOException {
         ByteArrayOutputStream target = new ByteArrayOutputStream();
         OutputStream os = getCompressor().getCompressingOutputStream(target);
         for (byte[] source : sources) {
@@ -113,7 +113,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return target.toByteArray();
     }
 
-    private static byte[] getGamePaddedSnaHeader(Game game) throws IOException {
+    protected static byte[] getGamePaddedSnaHeader(Game game) throws IOException {
         byte[] paddedHeader = new byte[SNA_HEADER_SIZE];
         Arrays.fill(paddedHeader, Constants.B_00);
         if (game instanceof RamGame) {
@@ -141,7 +141,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return location;
     }
 
-    protected static int dumpGameLaunchCode(OutputStream os, Game game, int index) throws IOException {
+    protected int dumpGameLaunchCode(OutputStream os, Game game, int index) throws IOException {
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
 
@@ -248,7 +248,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
                 dumpUncompressedGameCBlocks(os, game, offset);
     }
 
-    private void dumpGameHeaders(ByteArrayOutputStream os, GameChunk[] gameChunkTable) throws IOException {
+    protected void dumpGameHeaders(ByteArrayOutputStream os, GameChunk[] gameChunkTable) throws IOException {
         int index = 0;
         //forwardOffset after the slot zero
         int forwardOffset = Constants.SLOT_SIZE;
@@ -267,7 +267,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         LOGGER.debug("Filled to end of gamestruct. Offset: " + os.size());
     }
 
-    private static byte[] getScreenThirdSection(byte[] fullScreen) {
+    protected static byte[] getScreenThirdSection(byte[] fullScreen) {
         byte[] result = new byte[Constants.SPECTRUM_FULLSCREEN_SIZE];
         System.arraycopy(fullScreen, 0, result, 0, SCREEN_THIRD_PIXEL_SIZE);
         System.arraycopy(fullScreen, Constants.SPECTRUM_SCREEN_SIZE, result, Constants.SPECTRUM_SCREEN_SIZE,
@@ -282,7 +282,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         }
     }
 
-    private static byte[] getPokeStructureData(Collection<Game> games) throws IOException {
+    protected static byte[] getPokeStructureData(Collection<Game> games) throws IOException {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             for (Game game : games) {
                 os.write(getGamePokeCount(game));
@@ -345,7 +345,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return gameChunk;
     }
 
-    private static GameChunk[] calculateGameChunkTable(Collection<Game> games, int cBlockOffset) throws IOException {
+    protected static GameChunk[] calculateGameChunkTable(Collection<Game> games, int cBlockOffset) throws IOException {
         List<GameChunk> chunkList = new ArrayList<>();
         for (Game game : games) {
             if (game instanceof RamGame) {
@@ -364,7 +364,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return chunkList.toArray(new GameChunk[0]);
     }
 
-    private void dumpCompressedGameData(OutputStream os, Game game) throws IOException {
+    protected void dumpCompressedGameData(OutputStream os, Game game) throws IOException {
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
             for (byte[] compressedSlot : ramGame.getCompressedData(ramGameCompressor)) {
@@ -379,7 +379,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         }
     }
 
-    private void dumpUncompressedGameData(OutputStream os, Game game) throws IOException {
+    protected void dumpUncompressedGameData(OutputStream os, Game game) throws IOException {
         for (int i = game.getSlotCount() - 1; i >= 0; i--) {
             if (!game.isSlotZeroed(i)) {
                 os.write(game.getSlot(i));
@@ -557,7 +557,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         });
     }
 
-    private static void printVersionAndPageInfo(ZxScreen screen, int line, int page, int numPages) {
+    protected static void printVersionAndPageInfo(ZxScreen screen, int line, int page, int numPages) {
         String versionInfo = getVersionInfo();
         screen.setInk(ZxColor.BLACK);
         screen.setPen(ZxColor.BRIGHTMAGENTA);
@@ -589,7 +589,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         }
     }
 
-    private static void printGameNameLine(ZxScreen screen, Game game, int index, int line) {
+    protected static void printGameNameLine(ZxScreen screen, Game game, int index, int line) {
         screen.setPen(
                 isGameScreenHold(game) ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
         screen.deleteLine(line);

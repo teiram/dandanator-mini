@@ -40,11 +40,6 @@ public class Constants {
     private static byte[] SINCLAIR_SCREEN;
     private static byte[] DEFAULT_CHARSET;
 
-    //This is just to register a preferences provider
-    private static PreferencesProvider providerRegister = new PreferencesProvider("General",
-            "/com/grelobites/romgenerator/view/preferences.fxml", true);
-
-
     public static String currentVersion() {
         String version = Constants.class.getPackage()
                 .getImplementationVersion();

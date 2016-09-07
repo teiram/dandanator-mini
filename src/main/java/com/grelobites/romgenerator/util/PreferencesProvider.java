@@ -17,6 +17,17 @@ public class PreferencesProvider implements Comparable<PreferencesProvider> {
 
     public static final List<PreferencesProvider> providers = new ArrayList<>();
 
+    static {
+        providers.add(
+        new PreferencesProvider("General",
+                "/com/grelobites/romgenerator/view/preferences.fxml", true));
+        providers.add(new PreferencesProvider("Dandanator Mini",
+                "/com/grelobites/romgenerator/handlers/dandanatormini/view/dandanatorminipreferences.fxml", false));
+        providers.add(new PreferencesProvider("IFROM",
+                "/com/grelobites/romgenerator/handlers/dandanatormini/view/ifrompreferences.fxml", false));
+    }
+
+
     private String name;
     private String fXmlLocation;
     private boolean globalPreferences;
@@ -27,7 +38,6 @@ public class PreferencesProvider implements Comparable<PreferencesProvider> {
         this.fXmlLocation = fXmlLocation;
         this.globalPreferences = globalPreferences;
         LOGGER.debug("Adding preferences provider " + this);
-        providers.add(this);
     }
 
     private static Optional<Tab> getTab(PreferencesProvider provider) {

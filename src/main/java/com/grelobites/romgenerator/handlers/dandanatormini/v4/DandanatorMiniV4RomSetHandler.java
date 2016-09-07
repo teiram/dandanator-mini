@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
+import com.grelobites.romgenerator.handlers.dandanatormini.IfromConstants;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorMiniImporter;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
 import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
@@ -74,7 +75,7 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
     protected MenuItem exportPokesMenuItem;
     protected MenuItem importPokesMenuItem;
 
-    private InvalidationListener updateImageListener =
+    protected InvalidationListener updateImageListener =
             (c) -> updateMenuPreview();
 
     private InvalidationListener updateRomUsage =
@@ -505,20 +506,36 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
         return RomSetHandlerType.DDNTR_V4;
     }
 
+    protected void bindSpecificConfiguration() {
+        DandanatorMiniConfiguration.getInstance().togglePokesMessageProperty()
+                .addListener(updateImageListener);
+        DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
+                .addListener(updateImageListener);
+        try {
+            Configuration.getInstance().setDefaultBackgroundImage(DandanatorMiniConstants.getDefaultBackgroundImage());
+        } catch (Exception e) {
+            LOGGER.error("Binding default image", e);
+        }
+    }
+
+    protected void unbindSpecificConfiguration() {
+        DandanatorMiniConfiguration.getInstance().togglePokesMessageProperty()
+                .removeListener(updateImageListener);
+        DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
+                .removeListener(updateImageListener);
+    }
+
     public void bind(ApplicationContext applicationContext) {
         LOGGER.debug("Binding RomSetHandler to ApplicationContext");
         this.applicationContext = applicationContext;
         generationAllowedProperty.bind(getGenerationAllowedBinding(applicationContext));
-
+        bindSpecificConfiguration();
         applicationContext.getRomSetHandlerInfoPane().getChildren()
                 .add(getDandanatorMiniFrame(applicationContext));
         updateMenuPreview();
         applicationContext.getMenuPreview().setImage(menuImage);
 
-        DandanatorMiniConfiguration.getInstance().togglePokesMessageProperty()
-                .addListener(updateImageListener);
-        DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
-                .addListener(updateImageListener);
+
         Configuration.getInstance().backgroundImagePathProperty()
                 .addListener(updateImageListener);
         Configuration.getInstance().charSetPathProperty()
@@ -536,10 +553,13 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
 
     public void unbind() {
         LOGGER.debug("Unbinding RomSetHandler from ApplicationContext");
-        DandanatorMiniConfiguration.getInstance().togglePokesMessageProperty()
+        Configuration.getInstance().backgroundImagePathProperty()
                 .removeListener(updateImageListener);
-        DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
+        Configuration.getInstance().charSetPathProperty()
                 .removeListener(updateImageListener);
+
+        unbindSpecificConfiguration();
+
         generationAllowedProperty.unbind();
         generationAllowedProperty.set(false);
         applicationContext.getRomSetHandlerInfoPane().getChildren().clear();

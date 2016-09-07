@@ -133,7 +133,8 @@ public class PreferencesController {
             }
         });
         Configuration.getInstance().backgroundImagePathProperty().addListener(
-                (observable, oldValue, newValue) -> {
+                (observable) -> {
+                    LOGGER.debug("Updating configuration imageview");
                     try {
                         recreateBackgroundImage();
                     } catch (IOException ioe) {

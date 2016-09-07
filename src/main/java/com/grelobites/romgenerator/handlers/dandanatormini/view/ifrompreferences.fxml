@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0"
+            prefWidth="550.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.grelobites.romgenerator.handlers.dandanatormini.view.IfromPreferencesController">
+    <children>
+        <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
+            <children>
+                <AnchorPane prefHeight="28.0" prefWidth="200.0">
+                    <children>
+                        <Label layoutX="38.0" layoutY="6.0" text="%launchGameMessage" AnchorPane.leftAnchor="5.0"/>
+                        <TextField fx:id="launchGamesMessage" layoutX="225.0" layoutY="1.0" prefHeight="27.0"
+                                   prefWidth="240.0" AnchorPane.rightAnchor="75.0"/>
+                        <Button fx:id="resetLaunchGamesMessage" layoutX="473.0" layoutY="1.0" mnemonicParsing="false"
+                                text="%resetButton"/>
+                    </children>
+                </AnchorPane>
+                <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="28.0" prefWidth="200.0">
+                    <children>
+                        <Label layoutX="38.0" layoutY="6.0" text="%togglePokesMessage" AnchorPane.leftAnchor="5.0"/>
+                        <TextField fx:id="togglePokesMessage" layoutX="225.0" layoutY="1.0" prefHeight="27.0"
+                                   prefWidth="240.0" AnchorPane.rightAnchor="75.0"/>
+                        <Button fx:id="resetTogglePokesMessage" layoutX="473.0" layoutY="1.0" mnemonicParsing="false"
+                                text="%resetButton"/>
+                    </children>
+                </AnchorPane>
+                <AnchorPane layoutX="10.0" layoutY="38.0" prefHeight="28.0" prefWidth="200.0">
+                    <children>
+                        <Label layoutX="38.0" layoutY="6.0" text="%selectPokesMessage" AnchorPane.leftAnchor="5.0"/>
+                        <TextField fx:id="selectPokesMessage" layoutX="225.0" layoutY="1.0" prefHeight="27.0"
+                                   prefWidth="240.0" AnchorPane.rightAnchor="75.0"/>
+                        <Button fx:id="resetSelectPokesMessage" layoutX="473.0" layoutY="1.0" mnemonicParsing="false"
+                                text="%resetButton"/>
+                    </children>
+                </AnchorPane>
+                <AnchorPane layoutX="10.0" layoutY="66.0" prefHeight="28.0" prefWidth="200.0">
+                    <children>
+                        <Label layoutX="38.0" layoutY="6.0" text="%preferences.ifrom.customRomMessage" AnchorPane.leftAnchor="5.0"/>
+                        <TextField fx:id="customRomLaunchMessage" layoutX="224.0" layoutY="1.0" prefHeight="27.0"
+                                   prefWidth="242.0" AnchorPane.rightAnchor="74.0"/>
+                        <Button fx:id="resetCustomRomLaunchMessage" layoutX="473.0" mnemonicParsing="false"
+                                text="%resetButton"/>
+                    </children>
+                </AnchorPane>
+                <AnchorPane layoutX="10.0" layoutY="94.0" prefHeight="28.0" prefWidth="200.0">
+                    <children>
+                        <Label layoutX="38.0" layoutY="6.0" text="%preferences.ifrom.customRomLabel" AnchorPane.leftAnchor="5.0"/>
+                        <Label fx:id="customRomPath" alignment="CENTER" layoutX="153.0" prefHeight="28.0"
+                               prefWidth="249.0" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS"/>
+                        <Button fx:id="changeCustomRomButton" layoutX="398.0" layoutY="1.0" mnemonicParsing="false"
+                                text="%changeButton"/>
+                        <Button fx:id="resetCustomRomButton" layoutX="473.0" layoutY="1.0" mnemonicParsing="false"
+                                text="%resetButton"/>
+                    </children>
+                </AnchorPane>
+                <AnchorPane layoutX="10.0" layoutY="122.0" prefHeight="28.0" prefWidth="200.0">
+                    <children>
+                        <Label layoutX="5.0" layoutY="6.0" text="%preferences.ifrom.baseRomLabel" AnchorPane.leftAnchor="5.0"/>
+                        <Label fx:id="baseRomPath" alignment="CENTER" layoutX="153.0" prefHeight="28.0"
+                               prefWidth="249.0" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS"/>
+                        <Button fx:id="changeBaseRomButton" layoutX="398.0" layoutY="1.0"
+                                mnemonicParsing="false" text="%changeButton"/>
+                        <Button fx:id="resetBaseRomButton" layoutX="473.0" layoutY="1.0"
+                                mnemonicParsing="false" text="%resetButton"/>
+                    </children>
+                </AnchorPane>
+            </children>
+            <padding>
+                <Insets top="10.0"/>
+            </padding>
+        </VBox>
+    </children>
+</AnchorPane>
