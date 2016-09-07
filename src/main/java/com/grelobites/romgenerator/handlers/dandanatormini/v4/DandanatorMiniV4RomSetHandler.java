@@ -5,6 +5,7 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.handlers.dandanatormini.IfromConstants;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorConfigurationSetter;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorMiniImporter;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
 import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
@@ -432,13 +433,18 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
         }
     }
 
+    protected DandanatorConfigurationSetter getConfigurationSetter() {
+        return DandanatorMiniConfiguration.getInstance();
+    }
+
     @Override
     public void importRomSet(InputStream stream) {
         try {
             Optional<SlotZero> slotZero = SlotZero.getImplementation(Util.fromInputStream(stream, Constants.SLOT_SIZE));
             if (slotZero.isPresent()) {
                 DandanatorMiniImporter importer = slotZero.get().getImporter();
-                importer.importRomSet(slotZero.get(), stream, applicationContext);
+                importer.importRomSet(slotZero.get(), stream, applicationContext,
+                        getConfigurationSetter());
             } else {
                 DialogUtil.buildErrorAlert(
                         LocaleUtil.i18n("fileImportError"),
@@ -511,6 +517,8 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
                 .addListener(updateImageListener);
         DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
                 .addListener(updateImageListener);
+        getApplicationContext().getRomSetHandlerInfoPane().getChildren()
+                .add(getDandanatorMiniFrame(getApplicationContext()));
         try {
             Configuration.getInstance().setDefaultBackgroundImage(DandanatorMiniConstants.getDefaultBackgroundImage());
         } catch (Exception e) {
@@ -523,6 +531,8 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
                 .removeListener(updateImageListener);
         DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
                 .removeListener(updateImageListener);
+        getApplicationContext().getRomSetHandlerInfoPane().getChildren().clear();
+
     }
 
     public void bind(ApplicationContext applicationContext) {
@@ -530,8 +540,6 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
         this.applicationContext = applicationContext;
         generationAllowedProperty.bind(getGenerationAllowedBinding(applicationContext));
         bindSpecificConfiguration();
-        applicationContext.getRomSetHandlerInfoPane().getChildren()
-                .add(getDandanatorMiniFrame(applicationContext));
         updateMenuPreview();
         applicationContext.getMenuPreview().setImage(menuImage);
 
@@ -562,7 +570,6 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
 
         generationAllowedProperty.unbind();
         generationAllowedProperty.set(false);
-        applicationContext.getRomSetHandlerInfoPane().getChildren().clear();
 
         applicationContext.getExtraMenu().getItems().removeAll(
                 getExportPokesMenuItem(),

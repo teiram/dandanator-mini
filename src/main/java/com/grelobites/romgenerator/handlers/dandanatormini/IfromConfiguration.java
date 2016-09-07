@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorConfigurationSetter;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.compress.CompressorFactory;
 import javafx.beans.property.SimpleStringProperty;
@@ -12,7 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class IfromConfiguration {
+public class IfromConfiguration implements DandanatorConfigurationSetter {
     private static final Logger LOGGER = LoggerFactory.getLogger(IfromConfiguration.class);
 
     private StringProperty baseRomPath;
@@ -125,6 +126,19 @@ public class IfromConfiguration {
             return IfromConstants.DEFAULT_TOGGLEPOKESKEY_MESSAGE;
         }
         return togglePokesMessage.get();
+    }
+
+    @Override
+    public void setExtraRom(byte[] extraRom) {
+    }
+
+    @Override
+    public void setExtraRomPath(String extraRomPath) {
+    }
+
+    @Override
+    public void setExtraRomMessage(String extraRomMessage) {
+        setLaunchCustomRomMessage(extraRomMessage);
     }
 
     public void setTogglePokesMessage(String togglePokesMessage) {

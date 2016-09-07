@@ -1,17 +1,24 @@
 package com.grelobites.romgenerator.handlers.dandanatormini.v5;
 
+import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.ExtendedCharSet;
 import com.grelobites.romgenerator.handlers.dandanatormini.IfromConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.IfromConstants;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorConfigurationSetter;
+import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
+import com.grelobites.romgenerator.handlers.dandanatormini.view.IfromFrameController;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.Z80Opcode;
 import com.grelobites.romgenerator.util.ZxColor;
 import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.layout.Pane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +29,9 @@ import java.util.List;
 
 public class IfromRomSetHandler extends DandanatorMiniV5RomSetHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(IfromRomSetHandler.class);
+
+    private IfromFrameController iFromFrameController;
+    private Pane iFromFrame;
 
     public IfromRomSetHandler() throws IOException {}
 
@@ -167,9 +177,36 @@ public class IfromRomSetHandler extends DandanatorMiniV5RomSetHandler {
         }
     }
 
+
     @Override
     public RomSetHandlerType type() {
         return RomSetHandlerType.IFROM;
+    }
+
+    protected IfromFrameController getIfromFrameController(ApplicationContext applicationContext) {
+        if (iFromFrameController == null) {
+            iFromFrameController = new IfromFrameController();
+        }
+        iFromFrameController.setApplicationContext(applicationContext);
+        return iFromFrameController;
+    }
+
+    protected Pane getIfromFrame(ApplicationContext applicationContext) {
+        try {
+            if (iFromFrame == null) {
+                FXMLLoader loader = new FXMLLoader();
+                loader.setLocation(DandanatorMiniFrameController.class.getResource("ifromframe.fxml"));
+                loader.setController(getIfromFrameController(applicationContext));
+                loader.setResources(LocaleUtil.getBundle());
+                iFromFrame = loader.load();
+            } else {
+                iFromFrameController.setApplicationContext(applicationContext);
+            }
+            return iFromFrame;
+        } catch (Exception e) {
+            LOGGER.error("Creating IFrom frame", e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -179,6 +216,8 @@ public class IfromRomSetHandler extends DandanatorMiniV5RomSetHandler {
                 .addListener(updateImageListener);
         IfromConfiguration.getInstance().launchCustomRomMessageProperty()
                 .addListener(updateImageListener);
+        getApplicationContext().getRomSetHandlerInfoPane().getChildren()
+                .add(getIfromFrame(getApplicationContext()));
         try {
             Configuration.getInstance().setDefaultBackgroundImage(IfromConstants.getDefaultBackgroundImage());
         } catch (Exception e) {
@@ -193,6 +232,8 @@ public class IfromRomSetHandler extends DandanatorMiniV5RomSetHandler {
                 .removeListener(updateImageListener);
         IfromConfiguration.getInstance().launchCustomRomMessageProperty()
                 .removeListener(updateImageListener);
+        getApplicationContext().getRomSetHandlerInfoPane().getChildren().clear();
+
     }
 
     private void updateMenuPage(List<Game> gameList, int pageIndex, int numPages) throws IOException {
@@ -235,6 +276,11 @@ public class IfromRomSetHandler extends DandanatorMiniV5RomSetHandler {
         } catch (Exception e) {
             LOGGER.error("Updating background screen", e);
         }
+    }
+
+    @Override
+    protected DandanatorConfigurationSetter getConfigurationSetter() {
+        return IfromConfiguration.getInstance();
     }
 
 

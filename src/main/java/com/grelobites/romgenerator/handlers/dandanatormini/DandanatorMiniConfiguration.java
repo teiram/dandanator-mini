@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorConfigurationSetter;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.compress.CompressorFactory;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,7 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.prefs.Preferences;
 
-public class DandanatorMiniConfiguration {
+public class DandanatorMiniConfiguration implements DandanatorConfigurationSetter {
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniConfiguration.class);
 
     private static final String DANDANATORROMPATH_PROPERTY = "dandanatorRomPath";

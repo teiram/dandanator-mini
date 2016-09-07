@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public interface DandanatorMiniImporter {
-    void importRomSet(SlotZero slotZero, InputStream payload, ApplicationContext applicationContext)
+    void importRomSet(SlotZero slotZero, InputStream payload, ApplicationContext applicationContext,
+                      DandanatorConfigurationSetter configurationSetter)
         throws IOException;
 
     void mergeRomSet(SlotZero slotZero, InputStream payload, ApplicationContext applicationContext)

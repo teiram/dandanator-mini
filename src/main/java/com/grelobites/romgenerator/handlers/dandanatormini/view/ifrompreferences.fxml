@@ -45,17 +45,6 @@
                                 text="%resetButton"/>
                     </children>
                 </AnchorPane>
-                <AnchorPane layoutX="10.0" layoutY="94.0" prefHeight="28.0" prefWidth="200.0">
-                    <children>
-                        <Label layoutX="38.0" layoutY="6.0" text="%preferences.ifrom.customRomLabel" AnchorPane.leftAnchor="5.0"/>
-                        <Label fx:id="customRomPath" alignment="CENTER" layoutX="153.0" prefHeight="28.0"
-                               prefWidth="249.0" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS"/>
-                        <Button fx:id="changeCustomRomButton" layoutX="398.0" layoutY="1.0" mnemonicParsing="false"
-                                text="%changeButton"/>
-                        <Button fx:id="resetCustomRomButton" layoutX="473.0" layoutY="1.0" mnemonicParsing="false"
-                                text="%resetButton"/>
-                    </children>
-                </AnchorPane>
                 <AnchorPane layoutX="10.0" layoutY="122.0" prefHeight="28.0" prefWidth="200.0">
                     <children>
                         <Label layoutX="5.0" layoutY="6.0" text="%preferences.ifrom.baseRomLabel" AnchorPane.leftAnchor="5.0"/>

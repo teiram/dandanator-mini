@@ -3,7 +3,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini.v4;
 import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
+import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorConfigurationSetter;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.DandanatorMiniImporter;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
 import com.grelobites.romgenerator.model.Game;
@@ -22,7 +22,8 @@ public class DandanatorMiniV4Importer implements DandanatorMiniImporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV4Importer.class);
 
     @Override
-    public void importRomSet(SlotZero slotZero, InputStream payload, ApplicationContext applicationContext) throws IOException {
+    public void importRomSet(SlotZero slotZero, InputStream payload, ApplicationContext applicationContext,
+                             DandanatorConfigurationSetter configurationSetter) throws IOException {
         try {
             slotZero.parse();
 
@@ -54,7 +55,6 @@ public class DandanatorMiniV4Importer implements DandanatorMiniImporter {
 
             //Update preferences only if everything was OK
             Configuration globalConfiguration = Configuration.getInstance();
-            DandanatorMiniConfiguration dandanatorMiniConfiguration = DandanatorMiniConfiguration.getInstance();
 
             globalConfiguration.setCharSet(slotZero.getCharSet());
             globalConfiguration.setCharSetPath(Constants.ROMSET_PROVIDED);
@@ -65,13 +65,13 @@ public class DandanatorMiniV4Importer implements DandanatorMiniImporter {
                     slotZero.getScreenAttributes()));
             globalConfiguration.setBackgroundImagePath(Constants.ROMSET_PROVIDED);
 
-            dandanatorMiniConfiguration.setExtraRom(extraRom);
-            dandanatorMiniConfiguration.setExtraRomPath(Constants.ROMSET_PROVIDED);
+            configurationSetter.setExtraRom(extraRom);
+            configurationSetter.setExtraRomPath(Constants.ROMSET_PROVIDED);
 
-            dandanatorMiniConfiguration.setExtraRomMessage(slotZero.getExtraRomMessage());
-            dandanatorMiniConfiguration.setTogglePokesMessage(slotZero.getTogglePokesMessage());
-            dandanatorMiniConfiguration.setLaunchGameMessage(slotZero.getLaunchGameMessage());
-            dandanatorMiniConfiguration.setSelectPokesMessage(slotZero.getSelectPokesMessage());
+            configurationSetter.setExtraRomMessage(slotZero.getExtraRomMessage());
+            configurationSetter.setTogglePokesMessage(slotZero.getTogglePokesMessage());
+            configurationSetter.setLaunchGameMessage(slotZero.getLaunchGameMessage());
+            configurationSetter.setSelectPokesMessage(slotZero.getSelectPokesMessage());
         } catch (Exception e) {
             LOGGER.error("Importing RomSet", e);
         }

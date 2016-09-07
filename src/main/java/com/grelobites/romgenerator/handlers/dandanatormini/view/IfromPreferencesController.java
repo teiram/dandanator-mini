@@ -48,15 +48,6 @@ public class IfromPreferencesController {
     private Button resetCustomRomLaunchMessage;
 
     @FXML
-    private Label customRomPath;
-
-    @FXML
-    private Button changeCustomRomButton;
-
-    @FXML
-    private Button resetCustomRomButton;
-
-    @FXML
     private Label baseRomPath;
 
     @FXML
@@ -172,8 +163,8 @@ public class IfromPreferencesController {
 
         resetButton.setOnAction(event ->
             configurationProperty.set(null));
-
     }
+
     @FXML
     private void initialize() throws IOException {
         setupMessageWithResetButton(launchGamesMessage, IfromConfiguration.getInstance()
@@ -199,13 +190,6 @@ public class IfromPreferencesController {
                 IfromConstants.EXTRA_ROM_MESSAGE_MAXLENGTH,
                 resetCustomRomLaunchMessage,
                 IfromConstants.DEFAULT_CUSTOMROMKEY_MESSAGE);
-
-        setupFileBasedParameter(changeCustomRomButton,
-                LocaleUtil.i18n("selectExtraRomMessage"),
-                customRomPath,
-                IfromConfiguration.getInstance().customRomPathProperty(),
-                resetCustomRomButton,
-                this::updateCustomRom);
 
         setupFileBasedParameter(changeBaseRomButton,
                 LocaleUtil.i18n("selectDandanatorRomMessage"),
