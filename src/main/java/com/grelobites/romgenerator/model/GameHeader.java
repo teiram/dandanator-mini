@@ -14,6 +14,8 @@ public class GameHeader {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameHeader.class);
     private static final int REGISTER_MASK = 0xffff;
     private static final List<Integer> VALID_INTERRUPT_MODES = Arrays.asList(new Integer[] {0, 1, 2});
+    public static final int DEFAULT_PORT_1FFD_VALUE = 0x04;
+    public static final int DEFAULT_PORT_7FFD_VALUE = 0x10;
 
     private Integer iRegister;
     private Integer alternateHLRegister;

@@ -6,11 +6,12 @@ import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
+import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.RomGame;
 import com.grelobites.romgenerator.model.TrainerList;
+import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.PositionAwareInputStream;
-import com.grelobites.romgenerator.util.SNAHeader;
 import com.grelobites.romgenerator.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class GameMapperV5 implements GameMapper {
     private String name;
     private boolean isGameCompressed;
     private boolean isGameForce48kMode;
+    private HardwareMode hardwareMode;
     private int gameType;
     private boolean screenHold;
     private boolean activeRom;
@@ -44,14 +46,23 @@ public class GameMapperV5 implements GameMapper {
                 size < COMPRESSED_CHUNKSLOT_MAXSIZE;
     }
 
-    public static GameMapperV5 fromRomSet(PositionAwareInputStream is) throws IOException {
+    public static GameMapperV5 fromRomSet(PositionAwareInputStream is, int minorVersion) throws IOException {
         LOGGER.debug("About to read game data. Offset is " + is.position());
         GameMapperV5 mapper = new GameMapperV5();
         mapper.gameHeader = GameHeaderV5Serializer.deserialize(is);
         mapper.name = Util.getNullTerminatedString(is, 3, DandanatorMiniConstants.GAMENAME_SIZE);
-        mapper.isGameForce48kMode = is.read() != 0;
+        if (minorVersion < 3) {
+            mapper.isGameForce48kMode = is.read() != 0;
+        } else {
+            mapper.isGameForce48kMode = (mapper.gameHeader.getPort7ffdValue(0) &
+                    DandanatorMiniConstants.PORT7FFD_FORCED_48KMODE_BITS) != 0;
+            mapper.hardwareMode = HardwareMode.fromIntValueMode(is.read());
+        }
         mapper.isGameCompressed = is.read() != 0;
         mapper.gameType = is.read();
+        if (minorVersion < 3) {
+            mapper.hardwareMode = mapper.gameType > 3 ? HardwareMode.HW_PLUS2A : HardwareMode.HW_48K;
+        }
         mapper.screenHold = is.read() != 0;
         mapper.activeRom = is.read() != 0;
         mapper.launchCode = Util.fromInputStream(is, DandanatorMiniV5RomSetHandler.GAME_LAUNCH_SIZE);
@@ -128,7 +139,11 @@ public class GameMapperV5 implements GameMapper {
                 ramGame.setRom(activeRom);
                 ramGame.setGameHeader(gameHeader);
                 ramGame.setForce48kMode(isGameForce48kMode);
+                ramGame.setHardwareMode(hardwareMode);
                 ramGame.setTrainerList(trainerList);
+                //Extract the PC from SP
+                ramGame.getGameHeader().setPCRegister(GameUtil.popPC(ramGame));
+                GameUtil.pushPC(ramGame);
                 game = ramGame;
                 break;
             default:

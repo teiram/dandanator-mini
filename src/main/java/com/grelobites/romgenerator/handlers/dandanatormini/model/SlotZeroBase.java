@@ -35,6 +35,19 @@ public abstract class SlotZeroBase implements SlotZero {
         return Integer.parseInt(majorVersion);
     }
 
+    protected int getMinorVersion() throws IOException {
+        String version = getVersion();
+        String minorVersion;
+        int index;
+        if ((index = version.indexOf('.')) > -1) {
+            minorVersion = version.substring(index + 1);
+        } else {
+            minorVersion = "0";
+        }
+        LOGGER.debug("Minor version of romset detected as " + minorVersion);
+        return Integer.parseInt(minorVersion);
+    }
+
     protected String getVersion() throws IOException {
         ByteArrayInputStream stream = new ByteArrayInputStream(data, Constants.SLOT_SIZE - DandanatorMiniConstants.VERSION_SIZE,
                 DandanatorMiniConstants.VERSION_SIZE);

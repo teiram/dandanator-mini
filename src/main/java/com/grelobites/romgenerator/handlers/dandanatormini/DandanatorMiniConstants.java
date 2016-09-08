@@ -43,6 +43,12 @@ public class DandanatorMiniConstants {
     public static final int FILLER_BYTE = 0xFF;
     public static final int EXTENDED_CHARSET_SIZE = 896;
     public static final int BASEROM_SIZE = 3072;
+
+    public static final int PORT1FFD_DEFAULT_VALUE = 0x04;
+    public static final int AUTHENTIC_VALUE_FLAG = 0x80;
+    public static final int PORT7FFD_DEFAULT_VALUE = 0x10;
+    public static final int PORT7FFD_FORCED_48KMODE_BITS = 0x20;
+
     private static byte[] DANDANATOR_ROM;
     private static byte[] EXTRA_ROM;
     private static byte[] DEFAULT_DANDANATOR_PIC_FW;

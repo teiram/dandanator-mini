@@ -96,6 +96,9 @@ public class DandanatorMiniFrameController {
     @FXML
     private ProgressBar romUsage;
 
+    @FXML
+    private Label hardwareMode;
+
     private ApplicationContext applicationContext;
 
     private InvalidationListener currentGameCompressedChangeListener;
@@ -281,6 +284,7 @@ public class DandanatorMiniFrameController {
                 gameForced48kModeAttribute.selectedProperty().bindBidirectional((ramGame.force48kModeProperty()));
                 setCurrentGameCompressedChangeListener((c) -> compressedSize.textProperty().set(getGameSize(game)));
                 ramGame.compressedProperty().addListener(getCurrentGameCompressedChangeListener());
+                hardwareMode.textProperty().set(ramGame.getHardwareMode().displayName());
             }
         }
     }
@@ -312,7 +316,6 @@ public class DandanatorMiniFrameController {
                 RamGame ramGame = (RamGame) newGame;
                 addPokeButton.setDisable(false);
                 pokesTab.setDisable(false);
-                //pokeView.setDisable(false);
                 gameRomAttribute.setVisible(true);
                 gameHoldScreenAttribute.setVisible(true);
                 gameCompressedAttribute.setVisible(true);
@@ -322,13 +325,14 @@ public class DandanatorMiniFrameController {
                     removeAllGamePokesButton.setDisable(true);
                 }
                 gameForced48kModeAttribute.setVisible(ramGame.getType() != GameType.RAM128);
+                hardwareMode.setVisible(true);
             } else {
                 pokesTab.setDisable(true);
-                //pokeView.setDisable(true);
                 gameRomAttribute.setVisible(false);
                 gameHoldScreenAttribute.setVisible(false);
                 gameCompressedAttribute.setVisible(false);
                 gameForced48kModeAttribute.setVisible(false);
+                hardwareMode.setVisible(false);
             }
             gameInfoTabPane.setVisible(true);
         }

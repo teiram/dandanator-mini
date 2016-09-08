@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
+import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
@@ -48,6 +49,9 @@ public class SNAGameImageLoader implements GameImageLoader {
         game.setGameHeader(header);
         if (gameType == GameType.RAM128) {
             GameUtil.pushPC(game);
+            game.setHardwareMode(HardwareMode.HW_128K);
+        } else {
+            game.setHardwareMode(HardwareMode.HW_48K);
         }
         return game;
     }
@@ -103,10 +107,10 @@ public class SNAGameImageLoader implements GameImageLoader {
             for (int i = 0; i < 2; i++) {
                 os.write(game.getSlot(i));
             }
-            int mappedBankIndex = game.getGameHeader().getPort7ffdValue() & 0x03;
+            int mappedBankIndex = game.getGameHeader().getPort7ffdValue(GameHeader.DEFAULT_PORT_7FFD_VALUE) & 0x03;
             os.write(game.getSlot(INDEX_MAP[mappedBankIndex]));
             Util.writeAsLittleEndian(os, game.getGameHeader().getPCRegister());
-            os.write(game.getGameHeader().getPort7ffdValue());
+            os.write(game.getGameHeader().getPort7ffdValue(GameHeader.DEFAULT_PORT_7FFD_VALUE));
             os.write(Constants.B_00); //TRDOS_MAPPED_ROM
 
             for (int bank : new Integer[]{0, 1, 3, 4, 6, 7}) {
@@ -133,7 +137,7 @@ public class SNAGameImageLoader implements GameImageLoader {
         ArrayList<byte[]> slots = new ArrayList<>();
         int offset = Constants.SNA_HEADER_SIZE;
         boolean bigImage = gameImage.length == SNA_128KHI_SIZE;
-        int mappedBankIndex = header.getPort7ffdValue() & 0x03;
+        int mappedBankIndex = header.getPort7ffdValue(GameHeader.DEFAULT_PORT_7FFD_VALUE) & 0x03;
         LOGGER.debug("Mapped bank index is " + mappedBankIndex);
         byte[] mappedBank = null;
         for (int i = 0; i < 3; i++) {

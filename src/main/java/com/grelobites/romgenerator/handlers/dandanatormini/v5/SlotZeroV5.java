@@ -83,7 +83,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
         gameMappers = new ArrayList<>();
         gameBlocks = new ArrayList<>();
         for (int i = 0; i < gameCount; i++) {
-            GameMapperV5 mapper = GameMapperV5.fromRomSet(zis);
+            GameMapperV5 mapper = GameMapperV5.fromRomSet(zis, getMinorVersion());
             gameBlocks.addAll(mapper.getBlocks());
             gameMappers.add(mapper);
         }

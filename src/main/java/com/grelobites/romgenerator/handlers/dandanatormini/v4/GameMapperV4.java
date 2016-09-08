@@ -5,6 +5,7 @@ import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
+import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.TrainerList;
 import com.grelobites.romgenerator.util.PositionAwareInputStream;
@@ -85,6 +86,7 @@ public class GameMapperV4 implements GameMapper {
         game.setHoldScreen(holdScreen);
         game.setRom(activeRom);
         game.setGameHeader(gameHeader);
+        game.setHardwareMode(HardwareMode.HW_48K);
         exportTrainers(game);
         return game;
     }

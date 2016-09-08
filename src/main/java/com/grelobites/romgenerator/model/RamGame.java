@@ -28,6 +28,7 @@ public class RamGame extends BaseGame implements Game {
     private Class<? extends RamGameCompressor> lastCompressorClass;
     private List<byte[]> compressedData;
     private Integer compressedSize;
+    private HardwareMode hardwareMode;
 
     private static final int[] SLOT_MAP = new int[] {2, 3, 1, 4, 5, 0, 6, 7};
 
@@ -97,7 +98,7 @@ public class RamGame extends BaseGame implements Game {
 
 	public int getScreenSlot() {
 	    if (gameType == GameType.RAM128) {
-            return (gameHeader.getPort7ffdValue() & 0x08) != 0 ? 7 : 0;
+            return (gameHeader.getPort7ffdValue(0) & 0x08) != 0 ? 7 : 0;
         } else {
             return 0;
         }
@@ -197,10 +198,22 @@ public class RamGame extends BaseGame implements Game {
                 return 1;
             case 3:
                 return (gameType == GameType.RAM128) ?
-                    SLOT_MAP[gameHeader.getPort7ffdValue() & 0x03] : 2;
+                    SLOT_MAP[gameHeader.getPort7ffdValue(0) & 0x03] : 2;
             default:
                 throw new IllegalArgumentException("Requested offset out of mapped RAM");
         }
+    }
 
+    public HardwareMode getHardwareMode() {
+        return hardwareMode;
+    }
+
+    public void setHardwareMode(HardwareMode hardwareMode) {
+        LOGGER.debug("Setting hardware mode " + hardwareMode);
+        if (hardwareMode != HardwareMode.HW_UNSUPPORTED) {
+            this.hardwareMode = hardwareMode;
+        } else {
+            throw new IllegalArgumentException("Unsupported Hardware Mode");
+        }
     }
 }

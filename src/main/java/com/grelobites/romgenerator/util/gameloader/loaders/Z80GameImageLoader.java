@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
+import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
@@ -125,6 +126,7 @@ public class Z80GameImageLoader implements GameImageLoader {
             game = new RamGame(gameType, arrangedBlocks);
         }
         game.setGameHeader(header);
+        game.setHardwareMode(HardwareMode.fromZ80Mode(version, hwMode));
         return game;
     }
 

@@ -179,6 +179,7 @@ public class GameUtil {
     }
 
     public static void pushPC(RamGame game) {
+        LOGGER.debug("Before pushing PC. Header: " + game.getGameHeader());
         GameHeader header = game.getGameHeader();
         int pcValue = header.getPCRegister();
         int low = pushByte(game, (pcValue >> 8) & 0xff);
@@ -190,10 +191,22 @@ public class GameUtil {
     }
 
     public static int popPC(RamGame game) {
+        LOGGER.debug("Before popping PC. Header: " + game.getGameHeader());
         Integer savedStackData = game.getGameHeader().getSavedStackData();
         int value = popByte(game, savedStackData != null ? savedStackData & 0xff : null);
         value |= popByte(game, savedStackData != null ? (savedStackData >> 8) & 0xff: null) << 8;
         return value;
     }
+
+    public static int encodeAsAuthentic(Integer value, int defaultValue) {
+        return value != null ? value | DandanatorMiniConstants.AUTHENTIC_VALUE_FLAG : defaultValue;
+    }
+
+    public static Integer decodeAsAuthentic(int value) {
+        return (value & DandanatorMiniConstants.AUTHENTIC_VALUE_FLAG) != 0 ?
+                value & (DandanatorMiniConstants.AUTHENTIC_VALUE_FLAG - 1) :
+                null;
+    }
+
 
 }

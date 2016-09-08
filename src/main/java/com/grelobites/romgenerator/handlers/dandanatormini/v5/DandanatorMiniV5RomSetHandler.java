@@ -231,11 +231,19 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         os.write(asNullTerminatedByteArray(gameName, DandanatorMiniConstants.GAMENAME_SIZE));
     }
 
+    private static int getGameHardwareMode(Game game) {
+        if (game instanceof RamGame) {
+            return ((RamGame) game).getHardwareMode().intValue();
+        } else {
+            return 0;
+        }
+    }
+
     private int dumpGameHeader(OutputStream os, int index, Game game,
                                GameChunk gameChunk, int offset) throws IOException {
         os.write(getGamePaddedSnaHeader(game));
         dumpGameName(os, game, index);
-        os.write(Constants.B_00); //Available byte
+        os.write(getGameHardwareMode(game));
         os.write(isGameCompressed(game) ? Constants.B_01 : Constants.B_00);
         os.write(game.getType().typeId());
         os.write(isGameScreenHold(game) ? Constants.B_01 : Constants.B_00);
