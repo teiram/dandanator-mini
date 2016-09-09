@@ -14,8 +14,10 @@ public class Z80OutputStream extends FilterOutputStream {
     private int cachedValue;
     private int cachedValueCount;
     private boolean writeEndMark = false;
-
+    private boolean afterSingleCompressMark = false;
     private boolean endMarkWritten = false;
+
+    private int writtenValues = 0;
 
     public Z80OutputStream(OutputStream out) {
         super(out);
@@ -37,39 +39,52 @@ public class Z80OutputStream extends FilterOutputStream {
     }
 
     private void flushCached() throws IOException {
-        if (cachedValueCount > 4 || cachedValue == COMPRESS_MARK) {
+        writtenValues += cachedValueCount;
+        if (cachedValueCount > (cachedValue == COMPRESS_MARK ? 1 : 4)) {
             out.write(COMPRESS_MARK);
             out.write(COMPRESS_MARK);
             out.write(cachedValueCount);
             out.write(cachedValue);
+        } else if (cachedValue == COMPRESS_MARK) {
+            out.write(COMPRESS_MARK);
+            afterSingleCompressMark = true;
         } else {
             while (cachedValueCount-- > 0) {
                 out.write(cachedValue);
             }
         }
         cachedValueCount = 0;
-
     }
 
     @Override
     public void write(int b) throws IOException {
-        if (cachedValueCount > 0) {
-            if (cachedValue == b) {
-                cachedValueCount++;
+        if (afterSingleCompressMark) {
+            LOGGER.debug("After single compress mark");
+            out.write(b);
+            afterSingleCompressMark = false;
+        } else {
+            if (cachedValueCount > 0) {
+                if (cachedValue == b) {
+                    cachedValueCount++;
+                    if (cachedValueCount == 255) {
+                        flushCached();
+                    }
+                } else {
+                    flushCached();
+                    cachedValue = b;
+                    cachedValueCount = 1;
+                }
             } else {
-                flushCached();
                 cachedValue = b;
                 cachedValueCount = 1;
             }
-        } else {
-            cachedValue = b;
-            cachedValueCount = 1;
         }
     }
 
     @Override
     public void flush() throws IOException {
         flushCached();
+        LOGGER.debug("Written values are " + writtenValues);
         writeEndMark();
         super.flush();
     }

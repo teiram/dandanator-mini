@@ -204,6 +204,10 @@ public class RamGame extends BaseGame implements Game {
         }
     }
 
+    public int getSlotForBank(int bankPos) {
+        return SLOT_MAP[bankPos];
+    }
+
     public HardwareMode getHardwareMode() {
         return hardwareMode;
     }

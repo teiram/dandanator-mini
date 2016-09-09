@@ -185,7 +185,7 @@ public class ApplicationContext {
             final File saveFile = chooser.showSaveDialog(menuPreview.getScene().getWindow());
             if (saveFile != null) {
                 try {
-                    GameUtil.exportGameAsSNA(game, saveFile);
+                    GameUtil.exportGameAsZ80(game, saveFile);
                 } catch (IOException e) {
                     LOGGER.error("Exporting Game", e);
                 }

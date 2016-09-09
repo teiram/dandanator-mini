@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator.util.gameloader.loaders;
 
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
@@ -8,41 +9,32 @@ import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
+import com.grelobites.romgenerator.util.compress.z80.Z80OutputStream;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
 import com.grelobites.romgenerator.util.compress.z80.Z80InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Z80GameImageLoader implements GameImageLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(Z80GameImageLoader.class);
 
-    private static final int HWMODE_V23_48K = 0;
-    private static final int HWMODE_V23_48K_IF1 = 1;
-    private static final int HWMODE_V23_SAMRAM = 2;
-    private static final int HWMODE_V2_128K = 3;
-    private static final int HWMODE_V2_128K_IF1 = 4;
+    private static final int HEADER_BASE_LENGTH = 30;
+    private static final int HEADER_V3_EXTENSION_LENGTH = 55;
+    private static final int HEADER_V3_LENGTH = HEADER_BASE_LENGTH + 2 + HEADER_V3_EXTENSION_LENGTH;
 
-    private static final int HWMODE_V3_48K_MGT = 3;
-    private static final int HWMODE_V3_128K = 4;
-    private static final int HWMODE_V3_128_IF1 = 5;
-    private static final int HWMODE_V3_128_MGT = 6;
-
-    private static final int HWMODE_V23_PLUS3 = 7;
-    private static final int HWMODE_V23_WRONG_PLUS3 = 8;
-    private static final int HWMODE_V23_PENTAGON = 9;
-    private static final int HWMODE_V23_SCORPION = 10;
-    private static final int HWMODE_V23_DIDAKTIK = 11;
-    private static final int HWMODE_V23_PLUS2 = 12;
-    private static final int HWMODE_V23_PLUS2A = 13;
-    private static final int HWMODE_V23_TC2048 = 14;
-    private static final int HWMODE_V23_TC2068 = 15;
-    private static final int HWMODE_V23_TS2068 = 128;
+    private static final int Z80_PAGE_OFFSET = 3;
 
     private static byte[][] getGameImageV1(InputStream is, boolean compressed) throws IOException {
         LOGGER.debug("Loading Z80 version 1 image, compressed " + compressed);
@@ -91,9 +83,7 @@ public class Z80GameImageLoader implements GameImageLoader {
     }
 
     private static boolean is48KGame(int version, int hwmode) {
-        return version == 1 ||
-                (version == 2 && (hwmode < HWMODE_V2_128K)) ||
-                (version == 3 && (hwmode < HWMODE_V3_128K));
+        return HardwareMode.fromZ80Mode(version, hwmode) == HardwareMode.HW_48K;
     }
 
     private static RamGame createRamGameFromData(int version,
@@ -106,7 +96,6 @@ public class Z80GameImageLoader implements GameImageLoader {
             game =  new RamGame(GameType.RAM48, Arrays.asList(gameData));
         } else {
             ArrayList<byte[]> arrangedBlocks = new ArrayList<>();
-            final int pageOffset = 3; //To map array positions to page numbers
             GameType gameType;
             if (is48KGame(version, hwMode)) {
                 LOGGER.debug("Assembling game as version 2/3 48K game");
@@ -116,10 +105,10 @@ public class Z80GameImageLoader implements GameImageLoader {
                 gameType = GameType.RAM48;
             } else {
                 LOGGER.debug("Assembling game as version 2/3 128K game");
-                arrangedBlocks.add(gameData[5 + pageOffset]);
-                arrangedBlocks.add(gameData[2 + pageOffset]);
+                arrangedBlocks.add(gameData[5 + Z80_PAGE_OFFSET]);
+                arrangedBlocks.add(gameData[2 + Z80_PAGE_OFFSET]);
                 for (int page : new Integer[]{0, 1, 3, 4, 6, 7}) {
-                    arrangedBlocks.add(gameData[page + pageOffset]);
+                    arrangedBlocks.add(gameData[page + Z80_PAGE_OFFSET]);
                 }
                 gameType = GameType.RAM128;
             }
@@ -194,9 +183,81 @@ public class Z80GameImageLoader implements GameImageLoader {
         return game;
     }
 
-    @Override
-    public void save(Game game, OutputStream os) throws IOException {
-        throw new IllegalStateException("Not implemented yet");
+    private static byte[] getGameZ80Header(RamGame game) {
+        GameHeader header = game.getGameHeader();
+        ByteBuffer buffer = ByteBuffer.allocate(HEADER_V3_LENGTH)
+                .order(ByteOrder.BIG_ENDIAN)
+                .putShort(header.getAFRegister().shortValue())
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putShort(header.getBCRegister().shortValue())
+                .putShort(header.getHLRegister().shortValue())
+                .putShort(Integer.valueOf(0).shortValue())      //PC is stored in extra header in Z80 v3
+                .putShort(header.getSPRegister().shortValue())
+                .put(header.getIRegister().byteValue())
+                .put((byte) (header.getRRegister() & 0x7f))
+                .put((byte) ((header.getRRegister() >> 7) | (header.getBorderColor() << 1) | 0x20))
+                .putShort(header.getDERegister().shortValue())
+                .putShort(header.getAlternateBCRegister().shortValue())
+                .putShort(header.getAlternateDERegister().shortValue())
+                .putShort(header.getAlternateHLRegister().shortValue())
+                .order(ByteOrder.BIG_ENDIAN)
+                .putShort(header.getAlternateAFRegister().shortValue())
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putShort(header.getIYRegister().shortValue())
+                .putShort(header.getIXRegister().shortValue())
+                .put(header.getInterruptEnable().byteValue())
+                .put(Integer.valueOf(0).byteValue())
+                .put(header.getInterruptMode().byteValue()) //First part of the header
+
+                .putShort((short) HEADER_V3_EXTENSION_LENGTH)
+                .putShort(header.getPCRegister().shortValue())
+                .put(Integer.valueOf(game.getHardwareMode().intValue()).byteValue())
+                .put(header.getPort7ffdValue(DandanatorMiniConstants.PORT7FFD_DEFAULT_VALUE |
+                        (game.getForce48kMode() ? DandanatorMiniConstants.PORT7FFD_FORCED_48KMODE_BITS : 0)).byteValue())
+                .put(86, header.getPort1ffdValue(DandanatorMiniConstants.PORT1FFD_DEFAULT_VALUE).byteValue());
+        return buffer.array();
     }
 
+    private static byte[] getCompressedZ80Block(byte[] data, int page) throws IOException {
+        ByteArrayOutputStream compressedBlock = new ByteArrayOutputStream();
+        Z80OutputStream zos = new Z80OutputStream(compressedBlock);
+        zos.write(data);
+        zos.close();
+        LOGGER.debug("Game page " + page + " compressed to " + compressedBlock.size());
+        return ByteBuffer.allocate(compressedBlock.size() + 3)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putShort(Integer.valueOf(compressedBlock.size()).shortValue())
+                .put(Integer.valueOf(page).byteValue())
+                .put(compressedBlock.toByteArray())
+                .array();
+    }
+
+    private static void saveAsZ80(RamGame game, OutputStream os) throws IOException {
+        os.write(getGameZ80Header(game));
+        LOGGER.debug("Saving as Z80 game with " + game.getSlotCount() + " slots");
+        if (game.getType() == GameType.RAM48) {
+            os.write(getCompressedZ80Block(game.getSlot(0), 8));
+            os.write(getCompressedZ80Block(game.getSlot(1), 4));
+            os.write(getCompressedZ80Block(game.getSlot(2), 5));
+        } else {
+            for (int i = 0; i < game.getSlotCount(); i++) {
+                os.write(getCompressedZ80Block(game.getSlot(game.getSlotForBank(i)), i + Z80_PAGE_OFFSET));
+            }
+        }
+    }
+
+    @Override
+    public void save(Game game, OutputStream os) throws IOException {
+        if (game instanceof RamGame) {
+            RamGame ramGame = (RamGame) game;
+            GameUtil.popPC(ramGame);
+            try {
+                saveAsZ80((RamGame) game, os);
+            } finally {
+                GameUtil.pushPC(ramGame);
+            }
+        } else {
+            throw new IllegalArgumentException("Non RAM Games cannot be saved as Z80");
+        }
+    }
 }

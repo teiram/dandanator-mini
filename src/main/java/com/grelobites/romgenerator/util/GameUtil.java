@@ -115,6 +115,13 @@ public class GameUtil {
         }
     }
 
+    public static void exportGameAsZ80(Game selectedGame, File saveFile) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+            GameImageLoaderFactory.getLoader(GameImageType.Z80)
+                    .save(selectedGame, fos);
+        }
+    }
+
     public static boolean gameHasPokes(Game game) {
         return game instanceof RamGame && ((RamGame) game).hasPokes();
     }
