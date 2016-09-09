@@ -25,7 +25,6 @@ public class RamGame extends BaseGame implements Game {
 	private Image screenshot;
     private GameHeader gameHeader;
 	private TrainerList trainerList;
-    private Class<? extends RamGameCompressor> lastCompressorClass;
     private List<byte[]> compressedData;
     private Integer compressedSize;
     private HardwareMode hardwareMode;
@@ -104,7 +103,11 @@ public class RamGame extends BaseGame implements Game {
         }
     }
 
-	public Image getScreenshot() {
+    public void setCompressedData(List<byte[]> compressedData) {
+        this.compressedData = compressedData;
+    }
+
+    public Image getScreenshot() {
 		if (screenshot == null) {
 			try {
 				screenshot = ImageUtil
@@ -154,7 +157,7 @@ public class RamGame extends BaseGame implements Game {
     }
 
 	public List<byte[]> getCompressedData(RamGameCompressor compressor) throws IOException {
-	    if (compressedData == null || lastCompressorClass != compressor.getClass()) {
+	    if (compressedData == null) {
             compressedData = new ArrayList<>();
             for (int i = 0; i < getSlotCount(); i++) {
                 if (!isSlotZeroed(i)) {
@@ -163,7 +166,6 @@ public class RamGame extends BaseGame implements Game {
                     compressedData.add(null);
                 }
             }
-            lastCompressorClass = compressor.getClass();
         }
         return compressedData;
     }

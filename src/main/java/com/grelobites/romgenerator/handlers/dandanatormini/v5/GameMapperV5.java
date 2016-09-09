@@ -118,6 +118,15 @@ public class GameMapperV5 implements GameMapper {
         return gameSlots;
     }
 
+    private List<byte[]> getGameCompressedData() {
+        List<byte[]> compressedData = new ArrayList<>();
+        for (int index = 0; index < blocks.size(); index++) {
+            GameBlock block = blocks.get(index);
+            compressedData.add(block.rawdata);
+        }
+        return compressedData;
+    }
+
     public int getTrainerCount() {
         return trainerCount;
     }
@@ -141,6 +150,7 @@ public class GameMapperV5 implements GameMapper {
                 ramGame.setForce48kMode(isGameForce48kMode);
                 ramGame.setHardwareMode(hardwareMode);
                 ramGame.setTrainerList(trainerList);
+                ramGame.setCompressedData(getGameCompressedData());
                 //Extract the PC from SP
                 ramGame.getGameHeader().setPCRegister(GameUtil.popPC(ramGame));
                 GameUtil.pushPC(ramGame);

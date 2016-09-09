@@ -7,6 +7,7 @@ public class GameBlock {
     public int size;
     public boolean compressed;
     public byte[] data;
+    public byte[] rawdata;
 
     public int getInitSlot() {
         return initSlot;

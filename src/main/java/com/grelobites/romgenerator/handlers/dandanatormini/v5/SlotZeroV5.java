@@ -47,14 +47,18 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
                 .getCompressor();
     }
 
+    private static byte[] uncompressByteArray(byte[] compressedData) throws IOException {
+        InputStream uncompressedStream = getCompressor().getUncompressingInputStream(
+                new ByteArrayInputStream(compressedData));
+        return Util.fromInputStream(uncompressedStream);
+    }
+
     private static byte[] uncompress(PositionAwareInputStream is, int offset, int size) throws IOException {
         LOGGER.debug("Uncompress with offset " + offset + " and size " + size);
         LOGGER.debug("Skipping " + (offset - is.position()) + " to start of compressed data");
         is.safeSkip(offset - is.position());
         byte[] compressedData = Util.fromInputStream(is, size);
-        InputStream uncompressedStream = getCompressor().getUncompressingInputStream(
-                new ByteArrayInputStream(compressedData));
-        return Util.fromInputStream(uncompressedStream);
+        return uncompressByteArray(compressedData);
     }
 
     private static byte[] copy(PositionAwareInputStream is, int offset, int size) throws IOException {
@@ -199,12 +203,16 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
                 LOGGER.debug("Populating game block " + block);
                 if (block.getInitSlot() > 0) {
                     if (block.compressed) {
-                        block.data = uncompress(is, (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
+                        int offset = (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart();
+                        is.safeSkip(offset - is.position());
+                        block.rawdata = Util.fromInputStream(is, block.size);
+                        block.data = uncompressByteArray(block.rawdata);
                     } else {
-                        block.data = copy(is, (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
+                        block.rawdata = block.data = copy(is,
+                                (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
                     }
                 } else {
-                    block.data = Constants.ZEROED_SLOT;
+                    block.data = block.rawdata = Constants.ZEROED_SLOT;
                 }
             }
         }
