@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator.util;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -84,6 +85,9 @@ public class ImageUtil {
         return ((line & 0x18) << 8) | ((line << 5) & 0xe0) | (col & 0x1f);
     }
 
+	public static boolean isValidScreenFile(File screenFile) {
+		return screenFile.isFile() && screenFile.canRead() && screenFile.length() == Constants.SPECTRUM_FULLSCREEN_SIZE;
+	}
 
     public static Optional<Integer> getHiddenDisplayOffset(byte[] displayData, int requiredSize) {
         int attributeBaseOffset = Constants.SPECTRUM_SCREEN_SIZE;

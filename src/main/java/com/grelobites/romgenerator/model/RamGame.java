@@ -1,17 +1,21 @@
 package com.grelobites.romgenerator.model;
 
+import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.RamGameCompressor;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +30,7 @@ public class RamGame extends BaseGame implements Game {
     private GameHeader gameHeader;
 	private TrainerList trainerList;
     private List<byte[]> compressedData;
-    private Integer compressedSize;
+    private IntegerProperty compressedSize;
     private HardwareMode hardwareMode;
 
     private static final int[] SLOT_MAP = new int[] {2, 3, 1, 4, 5, 0, 6, 7};
@@ -37,6 +41,7 @@ public class RamGame extends BaseGame implements Game {
 		holdScreen = new SimpleBooleanProperty();
         compressed = new SimpleBooleanProperty(true);
         force48kMode = new SimpleBooleanProperty(false);
+        compressedSize = new SimpleIntegerProperty(0);
 	}
 
     public boolean getForce48kMode() {
@@ -153,7 +158,7 @@ public class RamGame extends BaseGame implements Game {
 
 	@Override
     public Observable[] getObservable() {
-	    return new Observable[]{name, rom, holdScreen, compressed};
+	    return new Observable[]{name, rom, holdScreen, compressed, compressedSize};
     }
 
 	public List<byte[]> getCompressedData(RamGameCompressor compressor) throws IOException {
@@ -175,17 +180,25 @@ public class RamGame extends BaseGame implements Game {
     }
 
     public int getCompressedSize(RamGameCompressor compressor) throws IOException {
-        if (compressedSize == null) {
+        return getCompressedSize(compressor, false);
+    }
+
+    public int getCompressedSize(RamGameCompressor compressor, boolean forced) throws IOException {
+        if (compressedSize.get() == 0 || forced) {
             if (compressor != null) {
                 int size = 0;
                 for (byte[] compressedSlot : getCompressedData(compressor)) {
                     size += compressedSlot != null ? compressedSlot.length : 0;
                 }
-                compressedSize = size;
+                compressedSize.set(size);
             } else {
                 throw new IllegalStateException("Compressed size not calculated yet");
             }
         }
+        return compressedSize.get();
+    }
+
+    public IntegerProperty compressedSizeProperty() {
         return compressedSize;
     }
 
@@ -221,5 +234,19 @@ public class RamGame extends BaseGame implements Game {
         } else {
             throw new IllegalArgumentException("Unsupported Hardware Mode");
         }
+    }
+
+    public void updateScreen(byte[] screen) throws IOException {
+        int slot = getScreenSlot();
+        byte[] slotData = ByteBuffer.allocate(Constants.SLOT_SIZE)
+                .put(screen, 0, Constants.SPECTRUM_FULLSCREEN_SIZE)
+                .put(getSlot(slot), Constants.SPECTRUM_FULLSCREEN_SIZE,
+                        Constants.SLOT_SIZE - Constants.SPECTRUM_FULLSCREEN_SIZE)
+                .array();
+        data.set(slot, slotData);
+        compressedData.set(slot, Configuration.getInstance().getRamGameCompressor()
+            .compressSlot(slot, slotData));
+        getCompressedSize(Configuration.getInstance().getRamGameCompressor(), true);
+        screenshot = null;
     }
 }

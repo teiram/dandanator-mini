@@ -3,8 +3,12 @@ package com.grelobites.romgenerator.view;
 import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameType;
+import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
+import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
+import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gamerenderer.GameRenderer;
 import com.grelobites.romgenerator.util.gamerenderer.GameRendererFactory;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
@@ -33,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -108,6 +113,27 @@ public class MainAppController {
         createRomButton.disableProperty()
                 .bind(applicationContext.backgroundTaskCountProperty().greaterThan(0)
                         .or(applicationContext.getRomSetHandler().generationAllowedProperty().not()));
+    }
+
+    private boolean acceptsDndSelectedGame() {
+        if (applicationContext.getGameSelected()) {
+            Game selectedGame = applicationContext.selectedGameProperty().get();
+            return selectedGame.getType() != GameType.ROM;
+        } else {
+            return false;
+        }
+    }
+
+    private void updateGameScreen(File screenFile) throws IOException {
+        if (ImageUtil.isValidScreenFile(screenFile)) {
+            Game selectedGame = applicationContext.selectedGameProperty().get();
+            if (selectedGame instanceof RamGame) {
+                ((RamGame) selectedGame).updateScreen(Util.fromInputStream(new FileInputStream(screenFile)));
+                gameRenderer.previewGame(selectedGame);
+            }
+        } else {
+            LOGGER.warn("Ignoring invalid provided screen file");
+        }
     }
 
     @FXML
@@ -232,6 +258,32 @@ public class MainAppController {
             }
                 /* let the source know whether the files were successfully
                  * transferred and used */
+            event.setDropCompleted(success);
+            event.consume();
+        });
+
+        gamePreview.setOnDragOver(event -> {
+            if (event.getDragboard().hasFiles() && acceptsDndSelectedGame()) {
+                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            }
+            event.consume();
+        });
+        gamePreview.setOnDragEntered(Event::consume);
+        gamePreview.setOnDragExited(Event::consume);
+        gamePreview.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                if (db.getFiles().size() == 1) {
+                    try {
+                        updateGameScreen(db.getFiles().get(0));
+                    } catch (IOException e) {
+                        LOGGER.error("Updating Game screen", e);
+                    }
+                }
+                LOGGER.debug("And we had got some files: " + db.getFiles());
+                success = true;
+            }
             event.setDropCompleted(success);
             event.consume();
         });

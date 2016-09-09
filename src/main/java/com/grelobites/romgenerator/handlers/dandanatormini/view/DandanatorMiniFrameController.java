@@ -13,6 +13,8 @@ import com.grelobites.romgenerator.view.util.DialogUtil;
 import com.grelobites.romgenerator.view.util.PokeEntityTreeCell;
 import com.grelobites.romgenerator.view.util.RecursiveTreeItem;
 import javafx.beans.InvalidationListener;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -256,6 +258,7 @@ public class DandanatorMiniFrameController {
         if (game != null) {
             LOGGER.debug("Unbinding bidirectionally name property from game " + game);
             gameName.textProperty().unbindBidirectional(game.nameProperty());
+            compressedSize.textProperty().unbind();
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 gameHoldScreenAttribute.selectedProperty().unbindBidirectional(ramGame.holdScreenProperty());
@@ -273,7 +276,7 @@ public class DandanatorMiniFrameController {
             LOGGER.debug("Binding bidirectionally name property to game " + game);
             gameName.textProperty().bindBidirectional(game.nameProperty());
             gameType.textProperty().set(game.getType().screenName());
-            compressedSize.textProperty().set(getGameSize(game));
+            compressedSize.textProperty().bind(getGameSizeProperty(game).asString());
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 gameHoldScreenAttribute.selectedProperty().bindBidirectional(ramGame.holdScreenProperty());
@@ -282,7 +285,10 @@ public class DandanatorMiniFrameController {
                         this::computePokeChange));
                 gameCompressedAttribute.selectedProperty().bindBidirectional(ramGame.compressedProperty());
                 gameForced48kModeAttribute.selectedProperty().bindBidirectional((ramGame.force48kModeProperty()));
-                setCurrentGameCompressedChangeListener((c) -> compressedSize.textProperty().set(getGameSize(game)));
+                setCurrentGameCompressedChangeListener((c) -> {
+                    compressedSize.textProperty().unbind();
+                    compressedSize.textProperty().bind(getGameSizeProperty(game).asString());
+                });
                 ramGame.compressedProperty().addListener(getCurrentGameCompressedChangeListener());
                 hardwareMode.textProperty().set(ramGame.getHardwareMode().displayName());
             }
@@ -338,19 +344,19 @@ public class DandanatorMiniFrameController {
         }
     }
 
-    private String getGameSize(Game game) {
+    private IntegerProperty getGameSizeProperty(Game game) {
         try {
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 if (ramGame.getCompressed()) {
-                    return Integer.toString(ramGame.getCompressedSize());
+                    return ramGame.compressedSizeProperty();
                 }
             }
-            return Integer.toString(game.getSize());
+            return new SimpleIntegerProperty(game.getSize());
         } catch (Exception e) {
             LOGGER.error("Calculating game compressed size", e);
         }
-        return "-";
+        return null;
     }
 
 }

@@ -661,6 +661,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
     public void bind(ApplicationContext context) {
         super.bind(context);
         previewUpdateTimer.start();
+        Configuration.getInstance().setRamGameCompressor(ramGameCompressor);
     }
 
     @Override

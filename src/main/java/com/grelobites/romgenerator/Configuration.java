@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator;
 
 import com.grelobites.romgenerator.util.CharSetFactory;
+import com.grelobites.romgenerator.util.RamGameCompressor;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -33,6 +34,7 @@ public class Configuration {
     private BooleanProperty charSetPathExternallyProvided;
     private static Configuration INSTANCE;
     private CharSetFactory charSetFactory;
+    private RamGameCompressor ramGameCompressor;
 
     private static boolean isInternalCharSetPath(String value) {
         return value == null || value.startsWith(Configuration.INTERNAL_CHARSET_PREFIX);
@@ -183,6 +185,13 @@ public class Configuration {
         this.charSetPath.set(charSetPath);
     }
 
+    public RamGameCompressor getRamGameCompressor() {
+        return ramGameCompressor;
+    }
+
+    public void setRamGameCompressor(RamGameCompressor ramGameCompressor) {
+        this.ramGameCompressor = ramGameCompressor;
+    }
 
     public static Preferences getApplicationPreferences() {
         return Preferences.userNodeForPackage(Configuration.class);
