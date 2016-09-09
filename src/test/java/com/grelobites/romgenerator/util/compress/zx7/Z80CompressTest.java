@@ -37,7 +37,6 @@ public class Z80CompressTest {
         assertArrayEquals(screen, uncompressed);
     }
 
-    @Test
     public void testFailingCompression() throws IOException {
         Game game = GameUtil.createGameFromFile(new File("/Users/mteira/Desktop/Dandanator/Z80/living.z80")).get();
         ByteArrayOutputStream compressed = new ByteArrayOutputStream();
