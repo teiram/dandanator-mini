@@ -11,13 +11,11 @@ public class Z80OutputStream extends FilterOutputStream {
     private static final Logger LOGGER = LoggerFactory.getLogger(Z80OutputStream.class);
 
     private static final int COMPRESS_MARK = 0xED;
+    private static final int VALUE_MASK = 0xff;
     private int cachedValue;
     private int cachedValueCount;
     private boolean writeEndMark = false;
-    private boolean afterSingleCompressMark = false;
     private boolean endMarkWritten = false;
-
-    private int writtenValues = 0;
 
     public Z80OutputStream(OutputStream out) {
         super(out);
@@ -39,15 +37,11 @@ public class Z80OutputStream extends FilterOutputStream {
     }
 
     private void flushCached() throws IOException {
-        writtenValues += cachedValueCount;
         if (cachedValueCount > (cachedValue == COMPRESS_MARK ? 1 : 4)) {
             out.write(COMPRESS_MARK);
             out.write(COMPRESS_MARK);
             out.write(cachedValueCount);
             out.write(cachedValue);
-        } else if (cachedValue == COMPRESS_MARK) {
-            out.write(COMPRESS_MARK);
-            afterSingleCompressMark = true;
         } else {
             while (cachedValueCount-- > 0) {
                 out.write(cachedValue);
@@ -56,12 +50,19 @@ public class Z80OutputStream extends FilterOutputStream {
         cachedValueCount = 0;
     }
 
+    private boolean wasSimpleMark(int b) {
+        return cachedValue == COMPRESS_MARK &&
+                cachedValueCount == 1 &&
+                b != COMPRESS_MARK;
+    }
+
     @Override
     public void write(int b) throws IOException {
-        if (afterSingleCompressMark) {
-            LOGGER.debug("After single compress mark");
+        b &= VALUE_MASK;
+        if (wasSimpleMark(b)) {
+            out.write(COMPRESS_MARK);
             out.write(b);
-            afterSingleCompressMark = false;
+            cachedValueCount = 0;
         } else {
             if (cachedValueCount > 0) {
                 if (cachedValue == b) {
@@ -84,7 +85,6 @@ public class Z80OutputStream extends FilterOutputStream {
     @Override
     public void flush() throws IOException {
         flushCached();
-        LOGGER.debug("Written values are " + writtenValues);
         writeEndMark();
         super.flush();
     }

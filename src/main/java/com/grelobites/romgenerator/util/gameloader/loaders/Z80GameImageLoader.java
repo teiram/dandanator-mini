@@ -51,6 +51,16 @@ public class Z80GameImageLoader implements GameImageLoader {
         return Util.fromInputStream(z80is, Constants.SLOT_SIZE);
     }
 
+    private static byte[] getCompressedChunkDebug(InputStream is, int compressedBlockLen) throws IOException {
+        byte[] data = Util.fromInputStream(is, compressedBlockLen);
+        FileOutputStream fos = new FileOutputStream("/Users/mteira/Desktop/" + compressedBlockLen + ".bin");
+        fos.write(data);
+        fos.close();
+        Z80InputStream z80is = new Z80InputStream(new ByteArrayInputStream(data));
+        return Util.fromInputStream(z80is, Constants.SLOT_SIZE);
+    }
+
+
     private static byte[][] getGameImageV23(InputStream is) throws IOException {
         byte[][] gameSlots = new byte[12][];
         int pagesRead = 0;
