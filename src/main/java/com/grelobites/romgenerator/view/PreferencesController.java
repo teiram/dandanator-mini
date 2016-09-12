@@ -77,20 +77,20 @@ public class PreferencesController {
     }
 
     private void updateBackgroundImage(File backgroundImageFile) throws IOException {
-        if (isReadableFile(backgroundImageFile)) {
+        if (isReadableFile(backgroundImageFile) && backgroundImageFile.length() == Constants.SPECTRUM_FULLSCREEN_SIZE) {
             Configuration.getInstance().setBackgroundImagePath(backgroundImageFile.getAbsolutePath());
             recreateBackgroundImage();
         } else {
-            throw new IllegalArgumentException("No readable file provided");
+            throw new IllegalArgumentException("No valid background image file provided");
         }
     }
 
     private void updateCharSetPath(File charSetFile) throws IOException {
-        if (isReadableFile(charSetFile)) {
+        if (isReadableFile(charSetFile) && charSetFile.length() == Constants.CHARSET_SIZE) {
             Configuration.getInstance().setCharSetPath(charSetFile.getAbsolutePath());
             recreateCharSetImage();
         } else {
-            throw new IllegalArgumentException("No readable file provided");
+            throw new IllegalArgumentException("No valid charset file provided");
         }
     }
 

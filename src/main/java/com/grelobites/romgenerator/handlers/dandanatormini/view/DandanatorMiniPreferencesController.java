@@ -83,7 +83,7 @@ public class DandanatorMiniPreferencesController {
     }
 
     private void updateExtraRom(File extraRomFile) {
-        if (isReadableFile(extraRomFile)) {
+        if (isReadableFile(extraRomFile) && extraRomFile.length() == Constants.SLOT_SIZE) {
             DandanatorMiniConfiguration.getInstance().setExtraRomPath(extraRomFile.getAbsolutePath());
         } else {
             throw new IllegalArgumentException("Invalid ROM File provided");
