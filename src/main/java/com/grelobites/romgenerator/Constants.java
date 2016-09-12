@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator;
 
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
+import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.PreferencesProvider;
 import com.grelobites.romgenerator.util.Util;
 import org.slf4j.Logger;
@@ -41,7 +42,8 @@ public class Constants {
     private static byte[] DEFAULT_CHARSET;
 
     //This is just to register a preferences provider
-    private static PreferencesProvider providerRegister = new PreferencesProvider("General",
+    private static PreferencesProvider providerRegister = new PreferencesProvider(
+            LocaleUtil.i18n("preferencesGeneralTab"),
             "/com/grelobites/romgenerator/view/preferences.fxml", true);
 
 
