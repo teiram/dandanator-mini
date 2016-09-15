@@ -229,10 +229,10 @@ public class RamGame extends BaseGame implements Game {
 
     public void setHardwareMode(HardwareMode hardwareMode) {
         LOGGER.debug("Setting hardware mode " + hardwareMode);
-        if (hardwareMode != HardwareMode.HW_UNSUPPORTED) {
+        if (hardwareMode != HardwareMode.HW_UNKNOWN) {
             this.hardwareMode = hardwareMode;
         } else {
-            throw new IllegalArgumentException("Unsupported Hardware Mode");
+            throw new IllegalArgumentException("Unknown Hardware Mode");
         }
     }
 

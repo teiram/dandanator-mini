@@ -1,5 +1,6 @@
 package com.grelobites.romgenerator.util.gameloader.loaders;
 
+import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
@@ -92,12 +93,12 @@ public class Z80GameImageLoader implements GameImageLoader {
         return version1 ? getGameImageV1(is, compressed) : getGameImageV23(is);
     }
 
-    private static boolean is48KGame(int version, int hwmode) {
-        return HardwareMode.fromZ80Mode(version, hwmode) == HardwareMode.HW_48K;
+    private static boolean is48KGame(HardwareMode hardwareMode) {
+        return hardwareMode.intValue() == 0;
     }
 
     private static RamGame createRamGameFromData(int version,
-                                          int hwMode,
+                                          HardwareMode hardwareMode,
                                           GameHeader header,
                                           byte[][] gameData) {
         RamGame game;
@@ -107,7 +108,7 @@ public class Z80GameImageLoader implements GameImageLoader {
         } else {
             ArrayList<byte[]> arrangedBlocks = new ArrayList<>();
             GameType gameType;
-            if (is48KGame(version, hwMode)) {
+            if (is48KGame(hardwareMode)) {
                 LOGGER.debug("Assembling game as version 2/3 48K game");
                 arrangedBlocks.add(gameData[8]);
                 arrangedBlocks.add(gameData[4]);
@@ -125,7 +126,7 @@ public class Z80GameImageLoader implements GameImageLoader {
             game = new RamGame(gameType, arrangedBlocks);
         }
         game.setGameHeader(header);
-        game.setHardwareMode(HardwareMode.fromZ80Mode(version, hwMode));
+        game.setHardwareMode(hardwareMode);
         return game;
     }
 
@@ -187,10 +188,16 @@ public class Z80GameImageLoader implements GameImageLoader {
         LOGGER.debug("Version is " + version + ", hardware mode is " + hwMode
                 + ", c000MappedPage is " + c000MappedPage);
         byte[][] gameSlots = getGameImage(is, compressed, version1);
-        RamGame game = createRamGameFromData(version, hwMode, header, gameSlots);
-        GameUtil.pushPC(game);
-        LOGGER.debug("Loaded Z80 game. Header: " + header);
-        return game;
+        HardwareMode hardwareMode = HardwareMode.fromZ80Mode(version, hwMode);
+        if (Configuration.getInstance().isAllowExperimentalGames() || hardwareMode.supported()) {
+            RamGame game = createRamGameFromData(version, hardwareMode, header, gameSlots);
+            GameUtil.pushPC(game);
+            LOGGER.debug("Loaded Z80 game. Header: " + header);
+            return game;
+        } else {
+            LOGGER.warn("Game captured on unsupported hardware " + hardwareMode);
+            throw new IllegalArgumentException("Unsupported Z80 hardware");
+        }
     }
 
     private static byte[] getGameZ80Header(RamGame game) {
@@ -221,7 +228,8 @@ public class Z80GameImageLoader implements GameImageLoader {
 
                 .putShort((short) HEADER_V3_EXTENSION_LENGTH)
                 .putShort(header.getPCRegister().shortValue())
-                .put(Integer.valueOf(game.getHardwareMode().intValue()).byteValue())
+                .put(Integer.valueOf(game.getHardwareMode().supported() ?
+                        game.getHardwareMode().intValue() : HardwareMode.HW_128K.intValue()).byteValue())
                 .put(header.getPort7ffdValue(DandanatorMiniConstants.PORT7FFD_DEFAULT_VALUE |
                         (game.getForce48kMode() ? DandanatorMiniConstants.PORT7FFD_FORCED_48KMODE_BITS : 0)).byteValue())
                 .put(86, header.getPort1ffdValue(DandanatorMiniConstants.PORT1FFD_DEFAULT_VALUE).byteValue());

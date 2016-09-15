@@ -21,6 +21,7 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -294,6 +295,20 @@ public class MainApp extends Application {
             mainPane.setCenter(getApplicationPane());
 
             primaryStage.setScene(scene);
+
+            scene.setOnKeyPressed(e -> {
+                if (e.getCode() == KeyCode.ALT) {
+                    LOGGER.debug("ALT key pressed");
+                    Configuration.getInstance().setAllowExperimentalGames(true);
+                }
+            });
+
+            scene.setOnKeyReleased(e -> {
+                if (e.getCode() == KeyCode.ALT) {
+                    LOGGER.debug("ALT key released");
+                    Configuration.getInstance().setAllowExperimentalGames(false);
+                }
+            });
 
             if (menuToolkit != null) {
                 menuToolkit.setMenuBar(primaryStage, menuBar);

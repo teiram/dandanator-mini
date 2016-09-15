@@ -32,9 +32,11 @@ public class Configuration {
     private StringProperty backgroundImagePath;
     private StringProperty charSetPath;
     private BooleanProperty charSetPathExternallyProvided;
-    private static Configuration INSTANCE;
     private CharSetFactory charSetFactory;
     private RamGameCompressor ramGameCompressor;
+    private BooleanProperty allowExperimentalGames;
+
+    private static Configuration INSTANCE;
 
     private static boolean isInternalCharSetPath(String value) {
         return value == null || value.startsWith(Configuration.INTERNAL_CHARSET_PREFIX);
@@ -50,6 +52,7 @@ public class Configuration {
         this.charSetPath = new SimpleStringProperty();
         this.charSetPathExternallyProvided = new SimpleBooleanProperty();
         this.mode = new SimpleStringProperty(DEFAULT_MODE);
+        this.allowExperimentalGames = new SimpleBooleanProperty(false);
 
         this.charSetPath.addListener((observable, oldValue, newValue) -> {
            charSetPathExternallyProvided.set(isCharSetExternallyProvided(newValue));
@@ -191,6 +194,18 @@ public class Configuration {
 
     public void setRamGameCompressor(RamGameCompressor ramGameCompressor) {
         this.ramGameCompressor = ramGameCompressor;
+    }
+
+    public boolean isAllowExperimentalGames() {
+        return allowExperimentalGames.get();
+    }
+
+    public BooleanProperty allowExperimentalGamesProperty() {
+        return allowExperimentalGames;
+    }
+
+    public void setAllowExperimentalGames(boolean allowExperimentalGames) {
+        this.allowExperimentalGames.set(allowExperimentalGames);
     }
 
     public static Preferences getApplicationPreferences() {
