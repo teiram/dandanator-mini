@@ -1,8 +1,10 @@
 package com.grelobites.romgenerator.util;
 
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Tab;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +37,7 @@ public class PreferencesProvider implements Comparable<PreferencesProvider> {
         loader.setLocation(PreferencesProvider.class.getResource(provider.fXmlLocation));
         loader.setResources(LocaleUtil.getBundle());
         try {
-            AnchorPane preferencesPane = loader.load();
+            Node preferencesPane = loader.load();
             Tab tab = new Tab(provider.name, preferencesPane);
             tab.setClosable(false);
             return Optional.of(tab);

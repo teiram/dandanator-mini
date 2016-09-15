@@ -249,15 +249,15 @@ public class MainAppController {
         gameTable.setOnDragExited(Event::consume);
 
         gameTable.setOnDragDropped(event -> {
-            LOGGER.debug("onDragDropped");
             Dragboard db = event.getDragboard();
+            LOGGER.debug("onDragDropped. Transfer modes are " + db.getTransferModes());
             boolean success = false;
             if (db.hasFiles()) {
                 addSnapshotFiles(db.getFiles());
                 success = true;
             }
-                /* let the source know whether the files were successfully
-                 * transferred and used */
+            /* let the source know whether the files were successfully
+             * transferred and used */
             event.setDropCompleted(success);
             event.consume();
         });
