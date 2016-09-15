@@ -92,19 +92,28 @@ public class MainAppController {
         return getApplicationContext().getRomSetHandler();
     }
 
-    private void addSnapshotFiles(List<File> files) {
-        files.stream()
-                .map(GameUtil::createGameFromFile)
-                .map(o -> o.orElseGet(() -> {
+    private void addGamesFromFiles(List<File> files) {
+        files.forEach(file -> {
+            Optional<Game> gameOptional = GameUtil.createGameFromFile(file);
+            if (gameOptional.isPresent()) {
+                getRomSetHandler().addGame(gameOptional.get());
+            } else {
+                try (FileInputStream fis = new FileInputStream(file)) {
+                    if (getApplicationContext().getGameList().isEmpty()) {
+                        getRomSetHandler().importRomSet(fis);
+                    } else {
+                        getRomSetHandler().mergeRomSet(fis);
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Importing ROMSet", e);
                     DialogUtil.buildErrorAlert(
                             LocaleUtil.i18n("fileImportError"),
                             LocaleUtil.i18n("fileImportErrorHeader"),
                             LocaleUtil.i18n("fileImportErrorContent"))
                             .showAndWait();
-                    return null;
-                }))
-                .filter(o -> o != null)
-                .forEach(g -> getRomSetHandler().addGame(g));
+                }
+            }
+            });
     }
 
     private void updateRomSetHandler() {
@@ -253,7 +262,7 @@ public class MainAppController {
             LOGGER.debug("onDragDropped. Transfer modes are " + db.getTransferModes());
             boolean success = false;
             if (db.hasFiles()) {
-                addSnapshotFiles(db.getFiles());
+                addGamesFromFiles(db.getFiles());
                 success = true;
             }
             /* let the source know whether the files were successfully
@@ -307,7 +316,7 @@ public class MainAppController {
             final List<File> snapshotFiles = chooser.showOpenMultipleDialog(addRomButton.getScene().getWindow());
             if (snapshotFiles != null) {
                 try {
-                    addSnapshotFiles(snapshotFiles);
+                    addGamesFromFiles(snapshotFiles);
                 } catch (Exception e) {
                     LOGGER.error("Opening snapshots from files " + snapshotFiles, e);
                 }
