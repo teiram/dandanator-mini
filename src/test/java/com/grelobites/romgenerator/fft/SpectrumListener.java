@@ -4,12 +4,14 @@ package com.grelobites.romgenerator.fft;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +26,10 @@ import java.util.Arrays;
 
 public class SpectrumListener  extends Application {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpectrumListener.class);
-    private static final int WIDTH = 600;
+    private static final int WIDTH = 512;
     private static final int HEIGHT = 400;
     private ImageView spectrumImageView = new ImageView();
+    private Canvas canvas = new Canvas(WIDTH, HEIGHT);
     private Label frequencyLabel = new Label("--");
 
     private void smoothSignal(ByteBuffer buffer, int samples, double smoothing) {
@@ -37,6 +40,30 @@ public class SpectrumListener  extends Application {
             value += (currentValue - value) / smoothing;
             buffer.putShort(i, value);
         }
+    }
+
+    private void updateCanvas(Complex[] spectrum) {
+        double[] energy = Arrays.stream(spectrum).mapToDouble(c -> c.abs()).toArray();
+        final double max = Arrays.stream(energy).max().getAsDouble();
+
+        double[] normalized = Arrays.stream(energy).map(d -> d / max).toArray();
+        Platform.runLater(() -> {
+            GraphicsContext gc = canvas.getGraphicsContext2D();
+            gc.setFill(Color.BLACK);
+            gc.fillRect(0, 0, WIDTH, HEIGHT);
+            gc.setLineWidth(1.0);
+            for (int i = 0; i < spectrum.length / 2; i++) {
+                gc.setStroke(Color.GREEN);
+                gc.setLineDashes(null);
+                gc.strokeLine(i, HEIGHT - 1,
+                        i, HEIGHT - 1 - Double.valueOf(normalized[i] * (HEIGHT - 1)).intValue());
+                if (i % 23 == 0) {
+                    gc.setStroke(Color.WHITE);
+                    gc.setLineDashes(2.0);
+                    gc.strokeLine(i, HEIGHT - 1, i, 0);
+                }
+            }
+        });
     }
 
     private void updateImageView(Complex[] spectrum) {
@@ -60,7 +87,7 @@ public class SpectrumListener  extends Application {
         Complex[] source = new Complex[samples];
         ByteBuffer buffer = ByteBuffer.wrap(data)
                 .order(ByteOrder.BIG_ENDIAN);
-        smoothSignal(buffer, samples, 100);
+        //smoothSignal(buffer, samples, 100);
         buffer.rewind();
         for (int i = 0; i < samples; i++) {
             source[i] = new Complex(buffer.getShort(), 0);
@@ -79,7 +106,7 @@ public class SpectrumListener  extends Application {
                 minValue = value;
             }
         }
-        updateImageView(result);
+        updateCanvas(result);
 
         return freqIndex;
     }
@@ -126,7 +153,7 @@ public class SpectrumListener  extends Application {
                     int frequencyIndex = getDominantFrequency(buffer);
                     if (frequencyIndex == lastFrequencyIndex) {
                         checkCount++;
-                        if (checkCount >= 10) {
+                        if (checkCount >= 40) {
                             updateFrequency((sampleRate * frequencyIndex) / fftSize);
                         }
                     }
@@ -149,7 +176,7 @@ public class SpectrumListener  extends Application {
         primaryStage.setTitle("Spectrum Listener");
 
         VBox root = new VBox();
-        root.getChildren().addAll(spectrumImageView, frequencyLabel);
+        root.getChildren().addAll(canvas, frequencyLabel);
         primaryStage.setScene(new Scene(root, WIDTH, HEIGHT + 30));
         primaryStage.show();
         new Thread(() -> updateSpectrum()).start();
