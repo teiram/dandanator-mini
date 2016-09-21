@@ -26,12 +26,15 @@ public class MediaTest extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        File file = new File("/Users/mteira/Desktop/test.wav");
+
+        File file = new File("/Users/mteira/Desktop/stereo.wav");
         FileOutputStream fos = new FileOutputStream(file);
         CompressedWavOutputStream wos = new CompressedWavOutputStream(fos, WavOutputFormat.defaultDataFormat());
-        wos.write(Util.fromInputStream(new FileInputStream("/Users/mteira/Desktop/ifrom.rom")));
+        wos.write(Util.fromInputStream(new FileInputStream("/Users/mteira/Downloads/block")));
         wos.close();
         fos.close();
+
+        //File file = new File("/Users/mteira/Downloads/stereo.wav");
         LOGGER.debug("Creating media from " + file.toURI().toURL().toExternalForm());
 
         Media media = new Media(file.toURI().toURL().toExternalForm());

@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.media;
+package com.grelobites.romgenerator.util.player;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
