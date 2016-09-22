@@ -78,7 +78,7 @@ public class PlayerController {
     public PlayerController(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         playing = new SimpleBooleanProperty(false);
-        currentBlock = -1;
+        currentBlock = 0;
         nextBlockRequested = new SimpleIntegerProperty(-1);
     }
 
@@ -150,13 +150,17 @@ public class PlayerController {
                 f.map(frequency -> {
                     if (Math.abs(frequency - OK_TONE) < 100.0) {
                         LOGGER.debug("Detected success tone");
+                        try {
+                            Thread.sleep(1200);
+                        } catch (InterruptedException ioe) {}
                         playBlock(currentBlock + 1);
                     } else {
                         LOGGER.debug("Detected something else");
                         playBlock(currentBlock);
                     }
-                    return null;
+                    return 0;
                 }).orElseGet(() -> {
+                    LOGGER.debug("Fallback to repeat current block");
                     playBlock(currentBlock);
                     return null;
                 });
@@ -165,6 +169,7 @@ public class PlayerController {
             LOGGER.debug("Started detection");
             detector.start();
         } else {
+            LOGGER.debug("Playing next block on skipped detection");
             playBlock(currentBlock + 1);
         }
     }
@@ -206,7 +211,7 @@ public class PlayerController {
         volumeSlider.disableProperty().bind(playing.not());
 
         overallProgress.progressProperty().bind(Bindings.createDoubleBinding(() -> {
-            return Integer.valueOf(currentBlock).doubleValue() / (ROMSET_SIZE / BLOCK_SIZE);
+            return Math.max(0, Integer.valueOf(currentBlock).doubleValue() / (ROMSET_SIZE / BLOCK_SIZE));
         }, nextBlockRequested));
 
         nextBlockRequested.addListener(observable -> {
