@@ -10,6 +10,8 @@ import java.nio.ByteOrder;
 public class CompressedWavOutputStream extends FilterOutputStream {
 
     private static final int HEADER_LENGTH = 44;
+    private static final int LOW_VALUE = 0;
+    private static final int HIGH_VALUE = 0xff;
 
     private static int table1[][] = new int[][] {
             new int[] {1, 2, 2, 3},
@@ -74,11 +76,11 @@ public class CompressedWavOutputStream extends FilterOutputStream {
     private void writeBits(int value) throws IOException {
         value &= 0xffff;
         for (int i = 0; i < value; i++) {
-            wavStream.write(initialBit ? 0xc0 : 0x40);
+            wavStream.write(initialBit ? HIGH_VALUE : LOW_VALUE);
             if (format.getChannelType() == ChannelType.STEREO) {
-                wavStream.write(initialBit ? 0xc0 : 0x40);
+                wavStream.write(initialBit ? HIGH_VALUE : LOW_VALUE);
             } else if (format.getChannelType() == ChannelType.STEREOINV) {
-                wavStream.write(initialBit ? 0x40 : 0xc0);
+                wavStream.write(initialBit ? LOW_VALUE : HIGH_VALUE);
             }
         }
         initialBit = !initialBit;

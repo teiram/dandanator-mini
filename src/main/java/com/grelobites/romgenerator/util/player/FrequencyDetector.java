@@ -20,7 +20,7 @@ public class FrequencyDetector {
     private static final int FFT_SIZE = 1024;
     private static final float SAMPLE_RATE = 44100.0f;
     private static final int MINIMUM_LEVEL = 500;
-    private static final int CONSECUTIVE_DETECTIONS = 40;
+    private static final int CONSECUTIVE_DETECTIONS = 20;
 
     final long timeoutMillis;
     final Consumer<Optional<Float>> frequencyConsumer;
@@ -73,6 +73,7 @@ public class FrequencyDetector {
     }
 
     private void updateFrequency(Float frequency) {
+        LOGGER.debug("Scheduled frequency update: " + frequency);
         Platform.runLater(() -> {
             LOGGER.debug("Detected frequency was " + frequency);
             frequencyConsumer.accept(Optional.ofNullable(frequency));

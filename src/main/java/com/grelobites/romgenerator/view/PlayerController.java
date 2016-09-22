@@ -27,7 +27,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class PlayerController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerController.class);
@@ -35,9 +34,9 @@ public class PlayerController {
     private static final int ROMSET_SIZE = Constants.SLOT_SIZE * 32;
     private static final int BLOCK_SIZE = 4096;
 
-    private static final double OK_TONE = 5000.0;
+    private static final double OK_TONE = 4000.0;
 
-    private boolean useTargetFeedback = false;
+    private boolean useTargetFeedback = true;
 
     @FXML
     private Button playButton;
@@ -147,7 +146,7 @@ public class PlayerController {
 
     private void calculateNextBlock() throws IOException {
         if (useTargetFeedback) {
-            FrequencyDetector detector = new FrequencyDetector(5000, (f) -> {
+            FrequencyDetector detector = new FrequencyDetector(3000, (f) -> {
                 f.map(frequency -> {
                     if (Math.abs(frequency - OK_TONE) < 100.0) {
                         LOGGER.debug("Detected success tone");

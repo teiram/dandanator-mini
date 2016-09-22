@@ -67,7 +67,7 @@ public class WavOutputFormat {
 
     public static WavOutputFormat defaultHeaderFormat() {
         return new Builder().withSampleRate(SRATE_44100)
-                .withChannelType(ChannelType.MONO)
+                .withChannelType(ChannelType.STEREOINV)
                 .withFlagByte(HEADER_FLAG_BYTE)
                 .withSpeed(DEFAULT_SPEED)
                 .withOffset(DEFAULT_OFFSET)
@@ -78,7 +78,7 @@ public class WavOutputFormat {
 
     public static WavOutputFormat defaultDataFormat() {
         return new Builder().withSampleRate(SRATE_44100)
-                .withChannelType(ChannelType.MONO)
+                .withChannelType(ChannelType.STEREOINV)
                 .withFlagByte(DATA_FLAG_BYTE)
                 .withSpeed(DEFAULT_SPEED)
                 .withOffset(DEFAULT_OFFSET)
