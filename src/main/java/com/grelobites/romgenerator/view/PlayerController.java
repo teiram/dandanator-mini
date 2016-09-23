@@ -32,7 +32,7 @@ public class PlayerController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerController.class);
 
     private static final int ROMSET_SIZE = Constants.SLOT_SIZE * 32;
-    private static final int BLOCK_SIZE = 4096;
+    private static final int BLOCK_SIZE = 0x8000;
 
     private static final double OK_TONE = 4000.0;
 
@@ -177,6 +177,7 @@ public class PlayerController {
     private void onEndOfMedia() {
         try {
             playingLed.setVisible(false);
+            cleanup();
             calculateNextBlock();
         } catch (Exception e) {
             LOGGER.error("Setting next player", e);
