@@ -6,7 +6,7 @@ public class WavOutputFormat {
     public static final int HEADER_FLAG_BYTE = 0;
     public static final int DATA_FLAG_BYTE = 0xff;
 
-    public static final int DEFAULT_PILOT_DURATION = 1000;
+    public static final int DEFAULT_PILOT_DURATION = 250;
     public static final int DEFAULT_PAUSE_DURATION = 0;
     public static final int DEFAULT_SPEED = 3;
     public static final int DEFAULT_OFFSET = 0;
@@ -80,7 +80,7 @@ public class WavOutputFormat {
         return new Builder().withSampleRate(SRATE_44100)
                 .withChannelType(ChannelType.STEREO)
                 .withFlagByte(DATA_FLAG_BYTE)
-                .withSpeed(DEFAULT_SPEED)
+                .withSpeed(2)
                 .withOffset(DEFAULT_OFFSET)
                 .withPilotDurationMillis(DEFAULT_PILOT_DURATION)
                 .withFinalPauseDurationMillis(DEFAULT_PAUSE_DURATION)
