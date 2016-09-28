@@ -41,7 +41,7 @@
             <Font size="12.0" />
          </font>
       </Button>
-    <Button fx:id="createRomButton" disable="true" layoutX="125.0" layoutY="437.0" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="106.0" text="%createRomSetButton" />
+    <Button fx:id="createRomButton" disable="true" layoutX="109.0" layoutY="437.0" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="122.0" text="%createRomSetButton" />
       <ProgressIndicator fx:id="operationInProgressIndicator" layoutX="243.0" layoutY="437.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="25.0" visible="false" />
       <TableView fx:id="gameTable" editable="true" layoutX="5.0" layoutY="214.0" prefHeight="220.0" prefWidth="265.0" AnchorPane.leftAnchor="5.0">
         <columns>

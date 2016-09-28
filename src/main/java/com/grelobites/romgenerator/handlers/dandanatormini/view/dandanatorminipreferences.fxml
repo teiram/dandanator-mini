@@ -7,77 +7,93 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.VBox?>
-
+<?import javafx.scene.layout.HBox?>
 
 <ScrollPane minHeight="-Infinity" minWidth="-Infinity" pannable="true" prefHeight="325.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniPreferencesController">
    <content>
       <AnchorPane minHeight="-Infinity" minWidth="-Infinity">
           <children>
-              <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0">
-                  <children>
-                      <AnchorPane prefHeight="28.0" prefWidth="200.0">
-                          <children>
-                              <Label layoutX="38.0" layoutY="6.0" text="%launchGameMessage" AnchorPane.leftAnchor="5.0" />
-                              <TextField fx:id="launchGamesMessage" layoutX="225.0" layoutY="1.0" prefHeight="27.0" prefWidth="240.0" AnchorPane.rightAnchor="75.0" />
-                              <Button fx:id="resetLaunchGamesMessage" layoutX="473.0" layoutY="1.0" mnemonicParsing="false" text="%resetButton" />
-                          </children>
-                      </AnchorPane>
-                      <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="28.0" prefWidth="200.0">
-                          <children>
-                              <Label layoutX="38.0" layoutY="6.0" text="%togglePokesMessage" AnchorPane.leftAnchor="5.0" />
-                              <TextField fx:id="togglePokesMessage" layoutX="225.0" layoutY="1.0" prefHeight="27.0" prefWidth="240.0" AnchorPane.rightAnchor="75.0" />
-                              <Button fx:id="resetTogglePokesMessage" layoutX="473.0" layoutY="1.0" mnemonicParsing="false" text="%resetButton" />
-                          </children>
-                      </AnchorPane>
-                      <AnchorPane layoutX="10.0" layoutY="38.0" prefHeight="28.0" prefWidth="200.0">
-                          <children>
-                              <Label layoutX="38.0" layoutY="6.0" text="%selectPokesMessage" AnchorPane.leftAnchor="5.0" />
-                              <TextField fx:id="selectPokesMessage" layoutX="225.0" layoutY="1.0" prefHeight="27.0" prefWidth="240.0" AnchorPane.rightAnchor="75.0" />
-                              <Button fx:id="resetSelectPokesMessage" layoutX="473.0" layoutY="1.0" mnemonicParsing="false" text="%resetButton" />
-                          </children>
-                      </AnchorPane>
-                      <AnchorPane layoutX="10.0" layoutY="66.0" prefHeight="28.0" prefWidth="200.0">
-                          <children>
-                              <Label layoutX="38.0" layoutY="6.0" text="%extraRomMessage" AnchorPane.leftAnchor="5.0" />
-                              <TextField fx:id="extraRomMessage" layoutX="224.0" layoutY="1.0" prefHeight="27.0" prefWidth="242.0" AnchorPane.rightAnchor="74.0" />
-                              <Button fx:id="resetExtraRomMessage" layoutX="473.0" mnemonicParsing="false" text="%resetButton" />
-                          </children>
-                      </AnchorPane>
-                      <AnchorPane layoutX="10.0" layoutY="94.0" prefHeight="28.0" prefWidth="200.0">
-                          <children>
-                              <Label layoutX="38.0" layoutY="6.0" text="%extraRom" AnchorPane.leftAnchor="5.0" />
-                              <Label fx:id="extraRomPath" alignment="CENTER" layoutX="153.0" prefHeight="28.0" prefWidth="249.0" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS" />
-                              <Button fx:id="changeExtraRomButton" layoutX="398.0" layoutY="1.0" mnemonicParsing="false" text="%changeButton" />
-                              <Button fx:id="resetExtraRomButton" layoutX="473.0" layoutY="1.0" mnemonicParsing="false" text="%resetButton" />
-                          </children>
-                      </AnchorPane>
-                      <AnchorPane layoutX="10.0" layoutY="122.0" prefHeight="28.0" prefWidth="200.0">
-                          <children>
-                              <Label layoutX="5.0" layoutY="6.0" text="%dandanatorMiniRom" AnchorPane.leftAnchor="5.0" />
-                              <Label fx:id="dandanatorMiniRomPath" alignment="CENTER" layoutX="153.0" prefHeight="28.0" prefWidth="249.0" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS" />
-                              <Button fx:id="changeDandanatorMiniRomButton" layoutX="398.0" layoutY="1.0" mnemonicParsing="false" text="%changeButton" />
-                              <Button fx:id="resetDandanatorMiniRomButton" layoutX="473.0" layoutY="1.0" mnemonicParsing="false" text="%resetButton" />
-                          </children>
-                      </AnchorPane>
-                      <AnchorPane layoutX="10.0" layoutY="210.0" prefHeight="28.0" prefWidth="200.0">
-                          <children>
-                              <Label layoutX="5.0" layoutY="6.0" text="%dandanatorMiniFirmware" AnchorPane.leftAnchor="5.0" />
-                              <Label fx:id="dandanatorPicFirmwarePath" alignment="CENTER" layoutX="153.0" prefHeight="28.0" prefWidth="249.0" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS" />
-                              <Button fx:id="changeDandanatorPicFirmwareButton" layoutX="398.0" layoutY="1.0" mnemonicParsing="false" text="%changeButton" />
-                              <Button fx:id="resetDandanatorPicFirmwareButton" layoutX="473.0" layoutY="1.0" mnemonicParsing="false" text="%resetButton" />
-                          </children>
-                      </AnchorPane>
-                  <AnchorPane>
-                     <children>
-                        <CheckBox fx:id="disableBorderEffect" layoutX="7.0" mnemonicParsing="false" text="%disableBorderEffect" />
-                     </children>
-                  </AnchorPane>
-                  </children>
-                  <padding>
-                      <Insets top="10.0" />
-                  </padding>
-              </VBox>
+            <HBox alignment="CENTER_LEFT" layoutY="10.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="27.0" prefWidth="544.0" spacing="10.0">
+               <children>
+                        <Label text="%launchGameMessage" />
+                        <TextField fx:id="launchGamesMessage" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="resetLaunchGamesMessage" mnemonicParsing="false" text="%resetButton" />
+               </children>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" layoutY="48.0" prefHeight="26.0" prefWidth="543.0" spacing="10.0">
+               <children>
+                        <Label text="%togglePokesMessage" />
+                        <TextField fx:id="togglePokesMessage" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="resetTogglePokesMessage" mnemonicParsing="false" text="%resetButton" />
+               </children>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" layoutY="86.0" prefHeight="26.0" prefWidth="544.0" spacing="10.0">
+               <children>
+                        <Label text="%selectPokesMessage" />
+                        <TextField fx:id="selectPokesMessage" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="resetSelectPokesMessage" mnemonicParsing="false" text="%resetButton" />
+               </children>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" layoutY="124.0" prefHeight="26.0" prefWidth="544.0" spacing="10.0">
+               <children>
+                        <Label text="%extraRomMessage" />
+                        <TextField fx:id="extraRomMessage" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="resetExtraRomMessage" mnemonicParsing="false" text="%resetButton" />
+               </children>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" layoutY="162.0" prefHeight="26.0" prefWidth="544.0" spacing="10.0">
+               <children>
+                        <Label text="%extraRom" />
+                        <Label fx:id="extraRomPath" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="changeExtraRomButton" mnemonicParsing="false" text="%changeButton" />
+                        <Button fx:id="resetExtraRomButton" mnemonicParsing="false" text="%resetButton" />
+               </children>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" layoutY="200.0" prefHeight="26.0" prefWidth="543.0" spacing="10.0">
+               <children>
+                        <Label text="%dandanatorMiniRom" />
+                        <Label fx:id="dandanatorMiniRomPath" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="changeDandanatorMiniRomButton" mnemonicParsing="false" text="%changeButton" />
+                        <Button fx:id="resetDandanatorMiniRomButton" mnemonicParsing="false" text="%resetButton" />
+               </children>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" layoutY="238.0" prefHeight="26.0" prefWidth="543.0" spacing="10.0">
+               <children>
+                        <Label text="%dandanatorMiniFirmware" />
+                        <Label fx:id="dandanatorPicFirmwarePath" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="changeDandanatorPicFirmwareButton" mnemonicParsing="false" text="%changeButton" />
+                        <Button fx:id="resetDandanatorPicFirmwareButton" mnemonicParsing="false" text="%resetButton" />
+               </children>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="CENTER_LEFT" layoutY="276.0" prefHeight="18.0" prefWidth="544.0" spacing="10.0">
+               <children>
+                  <CheckBox fx:id="disableBorderEffect" mnemonicParsing="false" text="%disableBorderEffect" />
+               </children>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </HBox>
           </children>
       </AnchorPane>
    </content>
