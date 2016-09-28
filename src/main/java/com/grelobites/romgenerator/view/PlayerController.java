@@ -2,7 +2,9 @@ package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.Util;
+import com.grelobites.romgenerator.util.player.ChannelType;
 import com.grelobites.romgenerator.util.player.CompressedWavOutputStream;
 import com.grelobites.romgenerator.util.player.FrequencyDetector;
 import com.grelobites.romgenerator.util.player.WavOutputFormat;
@@ -32,14 +34,19 @@ public class PlayerController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerController.class);
 
     private static final int ROMSET_SIZE = Constants.SLOT_SIZE * 32;
-    private static final int BLOCK_SIZE = 0x8000;
 
     private static final double OK_TONE = 4000.0;
 
-    private boolean useTargetFeedback = true;
+    private static PlayerConfiguration configuration = PlayerConfiguration.getInstance();
 
     @FXML
     private Button playButton;
+
+    @FXML
+    private Button rewindButton;
+
+    @FXML
+    private Button forwardButton;
 
     @FXML
     private Slider volumeSlider;
@@ -106,9 +113,7 @@ public class PlayerController {
     }
 
     private MediaPlayer getBootstrapMediaPlayer() throws IOException {
-        String resource = PlayerController.class.getResource("/loader.wav").toExternalForm();
-        LOGGER.debug("getBootstrapMediaPlayer from resource " + resource);
-        byte[] wavData = Util.fromInputStream(PlayerController.class.getResourceAsStream("/loader.wav"));
+        byte[] wavData = Util.fromInputStream(configuration.getLoaderStream());
         File tempFile = getTemporaryFile();
         FileOutputStream fos = new FileOutputStream(tempFile);
         fos.write(wavData);
@@ -122,13 +127,23 @@ public class PlayerController {
     }
 
     private MediaPlayer getBlockMediaPlayer(int block) throws IOException {
-        byte[] buffer = new byte[BLOCK_SIZE + 1];
-        System.arraycopy(getRomsetByteArray(), block * BLOCK_SIZE, buffer, 0, BLOCK_SIZE);
-        buffer[BLOCK_SIZE] = Integer.valueOf(block + 1).byteValue();
+        int blockSize = configuration.getBlockSize();
+        byte[] buffer = new byte[blockSize + 1];
+        System.arraycopy(getRomsetByteArray(), block * blockSize, buffer, 0, blockSize);
+        buffer[blockSize] = Integer.valueOf(block + 1).byteValue();
         File tempFile = getTemporaryFile();
         LOGGER.debug("Creating new MediaPlayer for block " + block + " on file " + tempFile);
         FileOutputStream fos = new FileOutputStream(tempFile);
-        CompressedWavOutputStream wos = new CompressedWavOutputStream(fos, WavOutputFormat.defaultDataFormat());
+        CompressedWavOutputStream wos = new CompressedWavOutputStream(fos,
+                WavOutputFormat.builder()
+                    .withSampleRate(WavOutputFormat.SRATE_44100)
+                    .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
+                    .withSpeed(configuration.getEncodingSpeed())
+                    .withFlagByte(WavOutputFormat.DATA_FLAG_BYTE)
+                    .withOffset(WavOutputFormat.DEFAULT_OFFSET)
+                    .withPilotDurationMillis(configuration.getPilotLength())
+                    .withFinalPauseDurationMillis(configuration.getTrailLength())
+                    .build());
         wos.write(buffer);
         wos.close();
         fos.close();
@@ -145,13 +160,13 @@ public class PlayerController {
     }
 
     private void calculateNextBlock() throws IOException {
-        if (useTargetFeedback) {
+        if (configuration.isUseTargetFeedback()) {
             FrequencyDetector detector = new FrequencyDetector(3000, (f) -> {
                 f.map(frequency -> {
                     if (Math.abs(frequency - OK_TONE) < 100.0) {
                         LOGGER.debug("Detected success tone");
                         try {
-                            Thread.sleep(1200);
+                            Thread.sleep(configuration.getPauseBetweenBlocks());
                         } catch (InterruptedException ioe) {}
                         playBlock(currentBlock + 1);
                     } else {
@@ -170,6 +185,9 @@ public class PlayerController {
             detector.start();
         } else {
             LOGGER.debug("Playing next block on skipped detection");
+            try {
+                Thread.sleep(configuration.getPauseBetweenBlocks());
+            } catch (InterruptedException ioe) {}
             playBlock(currentBlock + 1);
         }
     }
@@ -212,7 +230,8 @@ public class PlayerController {
         volumeSlider.disableProperty().bind(playing.not());
 
         overallProgress.progressProperty().bind(Bindings.createDoubleBinding(() -> {
-            return Math.max(0, Integer.valueOf(currentBlock).doubleValue() / (ROMSET_SIZE / BLOCK_SIZE));
+            return Math.max(0, Integer.valueOf(currentBlock).doubleValue() / (ROMSET_SIZE /
+                    configuration.getBlockSize()));
         }, nextBlockRequested));
 
         nextBlockRequested.addListener(observable -> {
@@ -227,13 +246,14 @@ public class PlayerController {
                         playingLed.setVisible(true);
                         currentBlockLabel.setText("Loader");
                         playButton.setText("||");
-                    } else if (currentBlock * BLOCK_SIZE < ROMSET_SIZE) {
+                    } else if (currentBlock * configuration.getBlockSize() < ROMSET_SIZE) {
                         MediaPlayer player = getBlockMediaPlayer(currentBlock);
                         player.setOnEndOfMedia(() -> onEndOfMedia());
                         mediaView.setMediaPlayer(player);
                         player.play();
                         playingLed.setVisible(true);
-                        currentBlockLabel.setText(String.format("%d/%d", currentBlock + 1, ROMSET_SIZE / BLOCK_SIZE));
+                        currentBlockLabel.setText(String.format("%d/%d", currentBlock + 1,
+                                ROMSET_SIZE / configuration.getBlockSize()));
                         playButton.setText("||");
                     } else {
                         playing.set(false);
@@ -263,6 +283,28 @@ public class PlayerController {
                 }
             } catch (Exception e) {
                 LOGGER.error("Getting ROMSet block", e);
+            }
+        });
+
+        rewindButton.setOnAction(c -> {
+            try {
+                if (playing.get() && currentBlock > 0) {
+                    mediaView.getMediaPlayer().stop();
+                    playBlock(currentBlock - 1);
+                }
+            } catch (Exception e) {
+                LOGGER.error("Trying to rewind", e);
+            }
+        });
+
+        forwardButton.setOnAction(c -> {
+            try {
+                if (playing.get() && (currentBlock + 1) * configuration.getBlockSize() < ROMSET_SIZE) {
+                    mediaView.getMediaPlayer().stop();
+                    playBlock(currentBlock + 1);
+                }
+            } catch (Exception e) {
+                LOGGER.error("Trying to fast forward", e);
             }
         });
 

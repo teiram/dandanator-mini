@@ -9,11 +9,10 @@
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.shape.Circle?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="50.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <Button fx:id="playButton" layoutX="13.0" layoutY="12.0" mnemonicParsing="false" text="&gt;" />
-      <Slider fx:id="volumeSlider" blockIncrement="0.1" layoutX="63.0" layoutY="17.0" max="1.0" prefHeight="16.0" prefWidth="175.0" />
+      <Button fx:id="playButton" layoutX="48.0" layoutY="13.0" mnemonicParsing="false" text="&gt;" />
+      <Slider fx:id="volumeSlider" blockIncrement="0.1" layoutX="119.0" layoutY="17.0" max="1.0" prefHeight="16.0" prefWidth="119.0" />
       <ProgressBar fx:id="blockProgress" layoutX="256.0" layoutY="9.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="154.0" progress="0.0" />
       <Separator layoutX="5.0" prefHeight="6.0" prefWidth="542.0" />
       <ProgressBar fx:id="overallProgress" layoutX="257.0" layoutY="32.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="154.0" progress="0.0" />
@@ -21,5 +20,7 @@
       <Circle fx:id="playingLed" fill="#5fff1f" layoutX="530.0" layoutY="25.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
       <Circle fx:id="recordingLed" fill="#ff281f" layoutX="530.0" layoutY="25.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
       <Label fx:id="currentBlockLabel" layoutX="423.0" layoutY="17.0" />
+      <Button fx:id="rewindButton" layoutX="12.0" layoutY="13.0" mnemonicParsing="false" text="&lt;|" />
+      <Button fx:id="forwardButton" layoutX="82.0" layoutY="13.0" mnemonicParsing="false" text="|&gt;" />
    </children>
 </AnchorPane>

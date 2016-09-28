@@ -10,7 +10,7 @@ import java.nio.ByteOrder;
 public class CompressedWavOutputStream extends FilterOutputStream {
 
     private static final int HEADER_LENGTH = 44;
-    private static final int LOW_VALUE = 0;
+    private static final int LOW_VALUE = 0x00;
     private static final int HIGH_VALUE = 0xff;
 
     private static int table1[][] = new int[][] {

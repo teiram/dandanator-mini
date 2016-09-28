@@ -46,6 +46,10 @@ public class Constants {
             LocaleUtil.i18n("preferencesGeneralTab"),
             "/com/grelobites/romgenerator/view/preferences.fxml", true);
 
+    private static PreferencesProvider playerPreferences = new PreferencesProvider(
+            "Player",
+            "/com/grelobites/romgenerator/view/playerconfiguration.fxml", false);
+
 
     public static String currentVersion() {
         String version = Constants.class.getPackage()

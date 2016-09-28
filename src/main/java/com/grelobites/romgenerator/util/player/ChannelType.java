@@ -13,6 +13,6 @@ public enum ChannelType {
     int bits() {
         return bits;
     }
-    int channels() { return bits & 3; }
+    public int channels() { return bits & 3; }
 
 }
