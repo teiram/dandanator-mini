@@ -18,6 +18,7 @@ import com.grelobites.romgenerator.view.util.DirectoryAwareFileChooser;
 import javafx.beans.binding.Bindings;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
@@ -31,6 +32,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
@@ -49,6 +51,9 @@ public class MainAppController {
 
     private ApplicationContext applicationContext;
     private GameRenderer gameRenderer;
+
+    @FXML
+    private Pane applicationPane;
 
     @FXML
     private ImageView menuPreview;
@@ -79,6 +84,10 @@ public class MainAppController {
 
     @FXML
     private Pane romSetHandlerInfoPane;
+
+    private Pane playerPane;
+    private PlayerController playerController;
+    private boolean playerVisible = false;
 
     public MainAppController(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -323,6 +332,13 @@ public class MainAppController {
             }
         });
 
+        menuPreview.setOnMouseClicked(c -> {
+            if (c.getClickCount() == 2) {
+                LOGGER.debug("Detected double-click");
+                showOrHidePlayer();
+            }
+        });
+
         removeSelectedRomButton.setOnAction(c -> {
             Optional<Integer> selectedIndex = Optional.of(gameTable.getSelectionModel().getSelectedIndex());
             selectedIndex.ifPresent(index -> applicationContext.getGameList().remove(index.intValue()));
@@ -353,6 +369,79 @@ public class MainAppController {
             removeSelectedRomButton.setDisable(true);
         } else {
             removeSelectedRomButton.setDisable(false);
+        }
+    }
+
+    private PlayerController getPlayerController(ApplicationContext applicationContext) {
+        if (playerController == null) {
+            playerController = new PlayerController(applicationContext);
+        }
+        return playerController;
+    }
+
+    private Pane getPlayerPane() {
+        try {
+            if (playerPane == null) {
+                FXMLLoader loader = new FXMLLoader();
+                loader.setLocation(MainAppController.class.getResource("player.fxml"));
+                loader.setController(getPlayerController(applicationContext));
+                loader.setResources(LocaleUtil.getBundle());
+                playerPane = loader.load();
+            }
+            return playerPane;
+        } catch (Exception e) {
+            LOGGER.error("Creating Player", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void showOrHidePlayer() {
+        LOGGER.debug("showOrHidePlayer on applicationPane " + applicationPane);
+        if (!playerVisible) {
+            LOGGER.debug("Showing player");
+            /*
+            final Animation showPlayer = new Transition() {
+                { setCycleDuration(Duration.millis(250)); }
+                protected void interpolate(double frac) {
+                    final double curHeight = 470 + (50 * frac);
+                    LOGGER.debug("Setting preferred Height to " + curHeight);
+                    applicationPane.setPrefHeight(curHeight);
+                    applicationContext.getApplicationStage().sizeToScene();
+
+                }
+            };
+            showPlayer.setOnFinished(e -> {
+                LOGGER.debug("onShowFinished. Children are: " + applicationPane.getChildren());
+                ((AnchorPane) applicationPane).setBottomAnchor(getPlayerPane(), 0.0);
+                applicationPane.getChildren().add(getPlayerPane());});
+            showPlayer.play();
+            */
+            applicationPane.setPrefHeight(470 + 50);
+            ((AnchorPane) applicationPane).setBottomAnchor(getPlayerPane(), 0.0);
+            applicationPane.getChildren().add(getPlayerPane());
+            applicationContext.getApplicationStage().sizeToScene();
+            playerVisible = true;
+        } else {
+            LOGGER.debug("Hiding player");
+            /*
+            final Animation hidePlayer = new Transition() {
+                { setCycleDuration(Duration.millis(250)); }
+                protected void interpolate(double frac) {
+                    final double curHeight = 470 + (50 * (1.0 - frac));
+                    applicationPane.setPrefHeight(curHeight);
+                    applicationContext.getApplicationStage().sizeToScene();
+                }
+            };
+            LOGGER.debug("Before removing. Children are " + applicationPane.getChildren());
+            applicationPane.getChildren().remove(getPlayerPane());
+            LOGGER.debug("After removing. Children are: " + applicationPane.getChildren());
+
+            hidePlayer.play();
+            */
+            applicationPane.getChildren().remove(getPlayerPane());
+            applicationPane.setPrefHeight(470);
+            applicationContext.getApplicationStage().sizeToScene();
+            playerVisible = false;
         }
     }
 

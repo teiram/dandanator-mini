@@ -295,6 +295,7 @@ public class MainApp extends Application {
             mainPane.setCenter(getApplicationPane());
 
             primaryStage.setScene(scene);
+            applicationContext.setApplicationStage(primaryStage);
 
             scene.setOnKeyPressed(e -> {
                 if (e.getCode() == KeyCode.ALT) {

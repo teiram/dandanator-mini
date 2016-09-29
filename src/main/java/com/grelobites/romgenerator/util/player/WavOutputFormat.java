@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.media;
+package com.grelobites.romgenerator.util.player;
 
 public class WavOutputFormat {
     public static final int SRATE_44100 = 44100;
@@ -6,9 +6,9 @@ public class WavOutputFormat {
     public static final int HEADER_FLAG_BYTE = 0;
     public static final int DATA_FLAG_BYTE = 0xff;
 
-    public static final int DEFAULT_PILOT_DURATION = 1000;
-    public static final int DEFAULT_PAUSE_DURATION = 1000;
-    public static final int DEFAULT_SPEED = 3;
+    public static final int DEFAULT_PILOT_DURATION = 250;
+    public static final int DEFAULT_PAUSE_DURATION = 0;
+    public static final int DEFAULT_SPEED = 2;
     public static final int DEFAULT_OFFSET = 0;
     private int sampleRate;
     private ChannelType channelType;
@@ -67,7 +67,7 @@ public class WavOutputFormat {
 
     public static WavOutputFormat defaultHeaderFormat() {
         return new Builder().withSampleRate(SRATE_44100)
-                .withChannelType(ChannelType.MONO)
+                .withChannelType(ChannelType.STEREOINV)
                 .withFlagByte(HEADER_FLAG_BYTE)
                 .withSpeed(DEFAULT_SPEED)
                 .withOffset(DEFAULT_OFFSET)

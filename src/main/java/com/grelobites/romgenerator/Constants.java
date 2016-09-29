@@ -14,7 +14,7 @@ public class Constants {
     public static final String ROMSET_PROVIDED = "__ROMSET_PROVIDED__";
     public static final int SLOT_SIZE = 0x4000;
 
-    private static final String DEFAULT_VERSION = "5.3";
+    private static final String DEFAULT_VERSION = "6.0";
 
     public static final int CHARSET_SIZE = 768;
 
@@ -45,6 +45,10 @@ public class Constants {
     private static PreferencesProvider providerRegister = new PreferencesProvider(
             LocaleUtil.i18n("preferencesGeneralTab"),
             "/com/grelobites/romgenerator/view/preferences.fxml", true);
+
+    private static PreferencesProvider playerPreferences = new PreferencesProvider(
+            "Player",
+            "/com/grelobites/romgenerator/view/playerconfiguration.fxml", false);
 
 
     public static String currentVersion() {

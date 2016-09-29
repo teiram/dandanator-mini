@@ -19,10 +19,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Scene;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +41,7 @@ import java.util.concurrent.Future;
 public class ApplicationContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationContext.class);
     private static final String APPLICATION_TITLE = "ROM Generator";
+    Stage applicationStage;
     private Pane romSetHandlerInfoPane;
     private final ObservableList<Game> gameList;
     private ReadOnlyObjectProperty<Game> selectedGame;
@@ -175,6 +178,15 @@ public class ApplicationContext {
         romSetHandler.bind(this);
         this.romSetHandler = romSetHandler;
         updateApplicationTitle();
+        updateApplicationTitle();
+    }
+
+    public Stage getApplicationStage() {
+        return applicationStage;
+    }
+
+    public void setApplicationStage(Stage applicationStage) {
+        this.applicationStage = applicationStage;
     }
 
     public void exportCurrentGame() {
