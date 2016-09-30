@@ -143,3 +143,19 @@
 .pagination-simple > .pagination-control {
     -fx-translate-y: -24px;
 }
+
+.button-play {
+    -fx-graphic : none;
+    -fx-background-image: url("/player/playback-start.png");
+    -fx-background-size: 18px;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+.button-stop {
+    -fx-graphic: none;
+    -fx-background-image: url("/player/playback-stop.png");
+    -fx-background-size: 18px;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}

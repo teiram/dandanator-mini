@@ -4,6 +4,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.Slider?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.shape.Circle?>
@@ -14,15 +16,29 @@
    <children>
       <Circle fill="#650c0c" layoutX="25.0" layoutY="65.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
       <Circle fill="#1b4009" layoutX="25.0" layoutY="44.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
-      <Button fx:id="playButton" layoutX="48.0" layoutY="87.0" mnemonicParsing="false" text="&gt;" />
+      <Button fx:id="playButton" layoutX="48.0" layoutY="87.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="33.0" styleClass="button-play" />
       <ProgressBar fx:id="blockProgress" layoutX="55.0" layoutY="145.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="154.0" progress="0.0" />
       <ProgressBar fx:id="overallProgress" layoutX="55.0" layoutY="163.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="154.0" progress="0.0" />
       <MediaView fx:id="mediaView" fitHeight="10.0" fitWidth="10.0" layoutX="457.0" layoutY="20.0" />
       <Circle fx:id="recordingLed" fill="#ff281f" layoutX="25.0" layoutY="65.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
       <Label fx:id="currentBlockLabel" layoutX="132.0" layoutY="91.0" />
-      <Button fx:id="rewindButton" layoutX="9.0" layoutY="87.0" mnemonicParsing="false" text="&lt;|" />
-      <Button fx:id="forwardButton" layoutX="83.0" layoutY="87.0" mnemonicParsing="false" text="|&gt;" />
-      <Slider fx:id="volumeSlider" layoutX="224.0" layoutY="22.0" max="1.0" orientation="VERTICAL" prefHeight="151.0" prefWidth="16.0" />
+      <Button fx:id="rewindButton" layoutX="9.0" layoutY="87.0" mnemonicParsing="false">
+         <graphic>
+            <ImageView fitHeight="18.0" fitWidth="18.0" preserveRatio="true">
+               <image>
+                  <Image url="@/player/skip-backwards.png" />
+               </image>
+            </ImageView>
+         </graphic></Button>
+      <Button fx:id="forwardButton" layoutX="83.0" layoutY="87.0" mnemonicParsing="false">
+         <graphic>
+            <ImageView fitHeight="18.0" fitWidth="18.0" preserveRatio="true">
+               <image>
+                  <Image url="@/player/skip-forward.png" />
+               </image>
+            </ImageView>
+         </graphic></Button>
+      <Slider fx:id="volumeSlider" layoutX="224.0" layoutY="40.0" max="1.0" orientation="VERTICAL" prefHeight="133.0" prefWidth="16.0" />
       <Text fill="#b9c9b0" layoutX="54.0" layoutY="21.0" strokeType="OUTSIDE" strokeWidth="0.0" text="ROMSET PLAYER">
          <font>
             <Font name="Monospaced Regular" size="20.0" />
@@ -41,5 +57,15 @@
       <Text fill="#5ad742" layoutX="49.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Play" />
       <Text fill="#e44444" layoutX="49.0" layoutY="70.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Record" />
       <Circle fx:id="playingLed" fill="#5fff1f" layoutX="25.0" layoutY="44.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
+      <ImageView fitHeight="47.0" fitWidth="47.0" layoutX="132.0" layoutY="33.0" preserveRatio="true">
+         <image>
+            <Image url="@/player/cassette.jpg" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="18.0" fitWidth="18.0" layoutX="223.0" layoutY="24.0" preserveRatio="true">
+         <image>
+            <Image url="@/player/volume-control.png" />
+         </image>
+      </ImageView>
    </children>
 </AnchorPane>

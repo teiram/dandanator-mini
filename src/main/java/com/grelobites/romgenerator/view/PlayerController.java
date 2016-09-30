@@ -14,8 +14,6 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -41,6 +39,9 @@ public class PlayerController {
     private static final double OK_TONE = 4000.0;
 
     private static PlayerConfiguration configuration = PlayerConfiguration.getInstance();
+
+    private static final String PLAY_BUTTON_STYLE = "button-play";
+    private static final String STOP_BUTTON_STYLE = "button-stop";
 
     @FXML
     private Button playButton;
@@ -234,9 +235,23 @@ public class PlayerController {
     private void initMediaPlayer(MediaPlayer player) {
         player.setOnEndOfMedia(() -> onEndOfMedia());
         mediaView.setMediaPlayer(player);
-        player.play();
+        play();
+    }
+
+    private void play() {
         playingLed.setVisible(true);
-        playButton.setText("||");
+        playButton.getStyleClass().removeAll(PLAY_BUTTON_STYLE);
+        playButton.getStyleClass().add(STOP_BUTTON_STYLE);
+        mediaView.getMediaPlayer().play();
+        playing.set(true);
+    }
+
+    private void stop() {
+        playingLed.setVisible(false);
+        playButton.getStyleClass().removeAll(STOP_BUTTON_STYLE);
+        playButton.getStyleClass().add(PLAY_BUTTON_STYLE);
+        mediaView.getMediaPlayer().stop();
+        playing.set(false);
     }
 
     @FXML
@@ -267,8 +282,7 @@ public class PlayerController {
                         currentBlockLabel.setText(String.format("%d/%d", currentBlock + 1,
                                 ROMSET_SIZE / configuration.getBlockSize()));
                     } else {
-                        playing.set(false);
-                        playButton.setText(">");
+                        stop();
                     }
                 } catch (Exception e) {
                     LOGGER.error("Setting up player", e);
@@ -282,15 +296,9 @@ public class PlayerController {
                     //Start playing
                     playing.set(true);
                     playBlock(-1);
-                    playButton.setText("||");
-                    playing.set(true);
                 } else {
                     //Stop
-                    mediaView.getMediaPlayer().pause();
-                    playingLed.setVisible(false);
-                    playButton.setText(">");
-                    playing.set(false);
-
+                    stop();
                 }
             } catch (Exception e) {
                 LOGGER.error("Getting ROMSet block", e);
@@ -327,8 +335,6 @@ public class PlayerController {
                 bindPlayer(newValue);
             }
         });
-
     }
-
 
 }
