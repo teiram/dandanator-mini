@@ -314,7 +314,7 @@ public class PlayerController {
         });
 
         rewindButton.setOnAction(c -> {
-            if (currentBlock.get() >= LOADER_BLOCK) {
+            if (currentBlock.get() > LOADER_BLOCK) {
                 currentBlock.set(currentBlock.get() - 1);
             }
         });
