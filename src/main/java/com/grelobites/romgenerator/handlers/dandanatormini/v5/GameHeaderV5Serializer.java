@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini.v5;
 
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.GameHeader;
+import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
@@ -32,11 +33,17 @@ public class GameHeaderV5Serializer {
         os.write(header.getInterruptMode());
         os.write(header.getBorderColor());
         Util.writeAsLittleEndian(os, header.getSavedStackData(0));
-        os.write(GameUtil.encodeAsAuthentic(header.getPort7ffdValue(),
-                DandanatorMiniConstants.PORT7FFD_DEFAULT_VALUE |
-                        (game.getForce48kMode() ? DandanatorMiniConstants.PORT7FFD_FORCED_48KMODE_BITS : 0)));
-        os.write(GameUtil.encodeAsAuthentic(header.getPort1ffdValue(),
-                DandanatorMiniConstants.PORT1FFD_DEFAULT_VALUE));
+        if (game.getType() == GameType.RAM48) {
+            os.write(DandanatorMiniConstants.PORT7FFD_DEFAULT_VALUE |
+                    (game.getForce48kMode() ? DandanatorMiniConstants.PORT7FFD_FORCED_48KMODE_BITS : 0));
+            os.write(GameUtil.encodeAsAuthentic(header.getPort1ffdValue(),
+                    DandanatorMiniConstants.PORT1FFD_DEFAULT_VALUE));
+        } else {
+            os.write(GameUtil.encodeAsAuthentic(header.getPort7ffdValue(),
+                    DandanatorMiniConstants.PORT7FFD_DEFAULT_VALUE));
+            os.write(GameUtil.encodeAsAuthentic(header.getPort1ffdValue(),
+                    DandanatorMiniConstants.PORT1FFD_DEFAULT_VALUE));
+        }
     }
 
     public static GameHeader deserialize(InputStream is) throws IOException {
@@ -58,8 +65,8 @@ public class GameHeaderV5Serializer {
         header.setInterruptMode(is.read());
         header.setBorderColor(is.read());
         header.setSavedStackData(Util.readAsLittleEndian(is));
-        header.setPort7ffdValue(GameUtil.decodeAsAuthentic(is.read()));
-        header.setPort1ffdValue(GameUtil.decodeAsAuthentic(is.read()));
+        header.setPort7ffdValue(is.read());
+        header.setPort1ffdValue(is.read());
         return header;
     }
 

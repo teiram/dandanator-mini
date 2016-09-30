@@ -230,9 +230,13 @@ public class Z80GameImageLoader implements GameImageLoader {
                 .putShort(header.getPCRegister().shortValue())
                 .put(Integer.valueOf(game.getHardwareMode().supported() ?
                         game.getHardwareMode().intValue() : HardwareMode.HW_128K.intValue()).byteValue())
-                .put(header.getPort7ffdValue(DandanatorMiniConstants.PORT7FFD_DEFAULT_VALUE |
-                        (game.getForce48kMode() ? DandanatorMiniConstants.PORT7FFD_FORCED_48KMODE_BITS : 0)).byteValue())
-                .put(86, header.getPort1ffdValue(DandanatorMiniConstants.PORT1FFD_DEFAULT_VALUE).byteValue());
+                .put(GameUtil.decodeAsAuthentic(header
+                        .getPort7ffdValue(DandanatorMiniConstants.PORT7FFD_DEFAULT_VALUE |
+                        (game.getForce48kMode() ? DandanatorMiniConstants.PORT7FFD_FORCED_48KMODE_BITS : 0)))
+                        .byteValue())
+                .put(86, GameUtil.decodeAsAuthentic(header
+                        .getPort1ffdValue(DandanatorMiniConstants.PORT1FFD_DEFAULT_VALUE))
+                        .byteValue());
         return buffer.array();
     }
 
