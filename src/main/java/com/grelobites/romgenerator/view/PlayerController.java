@@ -37,6 +37,7 @@ public class PlayerController {
     private static final int ROMSET_SIZE = Constants.SLOT_SIZE * 32;
 
     private static final double OK_TONE = 4000.0;
+    private static final int LOADER_BLOCK = -1;
 
     private static PlayerConfiguration configuration = PlayerConfiguration.getInstance();
 
@@ -73,6 +74,7 @@ public class PlayerController {
     @FXML
     private Circle recordingLed;
 
+
     private File temporaryFile;
 
     private ApplicationContext applicationContext;
@@ -81,10 +83,9 @@ public class PlayerController {
 
     private byte[] romsetByteArray;
 
-    private int currentBlock;
+    private IntegerProperty currentBlock;
 
-
-    private IntegerProperty nextBlockRequested;
+    private BooleanProperty nextBlockRequested;
 
     private static void doAfterDelay(int delay, Runnable r) {
         Task<Void> sleeper = new Task<Void>() {
@@ -105,8 +106,8 @@ public class PlayerController {
     public PlayerController(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         playing = new SimpleBooleanProperty(false);
-        currentBlock = 0;
-        nextBlockRequested = new SimpleIntegerProperty(-1);
+        currentBlock = new SimpleIntegerProperty(LOADER_BLOCK);
+        nextBlockRequested = new SimpleBooleanProperty();
     }
 
     private File getTemporaryFile() throws IOException {
@@ -172,11 +173,10 @@ public class PlayerController {
         return player;
     }
 
-    private void playBlock(int block) {
-        LOGGER.debug("playBlock with block " + block + " requested");
+    private void playCurrentBlock() {
+        LOGGER.debug("playBlock with block " + currentBlock + " requested");
         recordingLed.setVisible(false);
-        currentBlock = block;
-        nextBlockRequested.set(nextBlockRequested.get() + 1);
+        nextBlockRequested.set(nextBlockRequested.not().get());
     }
 
     private void calculateNextBlock() throws IOException {
@@ -185,15 +185,18 @@ public class PlayerController {
                 f.map(frequency -> {
                     if (Math.abs(frequency - OK_TONE) < 100.0) {
                         LOGGER.debug("Detected success tone");
-                        doAfterDelay(configuration.getPauseBetweenBlocks(), () -> playBlock(currentBlock + 1));
+                        doAfterDelay(configuration.getPauseBetweenBlocks(), () -> {
+                            currentBlock.set(currentBlock.get() + 1);
+                            playCurrentBlock();
+                        });
                     } else {
                         LOGGER.debug("Detected something else");
-                        playBlock(currentBlock);
+                        playCurrentBlock();
                     }
                     return 0;
                 }).orElseGet(() -> {
                     LOGGER.debug("Fallback to repeat current block");
-                    playBlock(currentBlock);
+                    playCurrentBlock();
                     return null;
                 });
             });
@@ -202,7 +205,10 @@ public class PlayerController {
             detector.start();
         } else {
             LOGGER.debug("Playing next block on skipped detection");
-            doAfterDelay(configuration.getPauseBetweenBlocks(), () -> playBlock(currentBlock + 1));
+            doAfterDelay(configuration.getPauseBetweenBlocks(), () -> {
+                currentBlock.set(currentBlock.get() + 1);
+                playCurrentBlock();
+            });
         }
     }
 
@@ -259,28 +265,30 @@ public class PlayerController {
         playingLed.setVisible(false);
         recordingLed.setVisible(false);
 
+        rewindButton.disableProperty().bind(playing);
+        forwardButton.disableProperty().bind(playing);
         playButton.disableProperty().bind(applicationContext.backgroundTaskCountProperty().greaterThan(0)
                 .or(applicationContext.getRomSetHandler().generationAllowedProperty().not()));
 
         volumeSlider.setValue(1.0);
         volumeSlider.disableProperty().bind(playing.not());
 
-        overallProgress.progressProperty().bind(Bindings.createDoubleBinding(() -> {
-            return Math.max(0, Integer.valueOf(currentBlock).doubleValue() / (ROMSET_SIZE /
-                    configuration.getBlockSize()));
-        }, nextBlockRequested));
+        overallProgress.progressProperty().bind(Bindings.createDoubleBinding(() ->
+             Math.max(0, currentBlock.doubleValue() / (ROMSET_SIZE /
+                    configuration.getBlockSize())), currentBlock));
+
+        currentBlockLabel.textProperty().bind(Bindings.createStringBinding(() ->
+                currentBlock.get() >= 0 ? String.format("%d/%d", currentBlock.get() + 1,
+                ROMSET_SIZE / configuration.getBlockSize()) : "Loader", currentBlock));
 
         nextBlockRequested.addListener(observable -> {
             LOGGER.debug("nextBlockRequested listener triggered with currentBlock " + currentBlock);
             if (playing.get()) {
                 try {
-                    if (currentBlock < 0) {
+                    if (currentBlock.get() == LOADER_BLOCK) {
                         initMediaPlayer(getBootstrapMediaPlayer());
-                        currentBlockLabel.setText("Loader");
-                    } else if (currentBlock * configuration.getBlockSize() < ROMSET_SIZE) {
-                        initMediaPlayer(getBlockMediaPlayer(currentBlock));
-                        currentBlockLabel.setText(String.format("%d/%d", currentBlock + 1,
-                                ROMSET_SIZE / configuration.getBlockSize()));
+                    } else if (currentBlock.get() * configuration.getBlockSize() < ROMSET_SIZE) {
+                        initMediaPlayer(getBlockMediaPlayer(currentBlock.get()));
                     } else {
                         stop();
                     }
@@ -295,7 +303,7 @@ public class PlayerController {
                 if (!playing.get()) {
                     //Start playing
                     playing.set(true);
-                    playBlock(-1);
+                    playCurrentBlock();
                 } else {
                     //Stop
                     stop();
@@ -306,24 +314,14 @@ public class PlayerController {
         });
 
         rewindButton.setOnAction(c -> {
-            try {
-                if (playing.get() && currentBlock > 0) {
-                    mediaView.getMediaPlayer().stop();
-                    playBlock(currentBlock - 1);
-                }
-            } catch (Exception e) {
-                LOGGER.error("Trying to rewind", e);
+            if (currentBlock.get() >= LOADER_BLOCK) {
+                currentBlock.set(currentBlock.get() - 1);
             }
         });
 
         forwardButton.setOnAction(c -> {
-            try {
-                if (playing.get() && (currentBlock + 1) * configuration.getBlockSize() < ROMSET_SIZE) {
-                    mediaView.getMediaPlayer().stop();
-                    playBlock(currentBlock + 1);
-                }
-            } catch (Exception e) {
-                LOGGER.error("Trying to fast forward", e);
+            if ((currentBlock.get() + 1) * configuration.getBlockSize() < ROMSET_SIZE) {
+                currentBlock.set(currentBlock.get() + 1);
             }
         });
 
