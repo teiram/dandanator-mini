@@ -30,6 +30,7 @@ public class Constants {
     private static final String DEFAULT_MENU_SCREEN_RESOURCE = "menu.scr";
     private static final String SINCLAIR_SCREEN_RESOURCE = "sinclair-1982.scr";
     private static final String DEFAULT_CHARSET_RESOURCE = "charset.rom";
+    private static final String THEME_RESOURCE = "view/theme.css";
 
     public static final byte[] ZEROED_SLOT = new byte[SLOT_SIZE];
 
@@ -40,6 +41,8 @@ public class Constants {
     private static byte[] DEFAULT_DANDANATOR_SCREEN;
     private static byte[] SINCLAIR_SCREEN;
     private static byte[] DEFAULT_CHARSET;
+
+    private static String THEME_RESOURCE_URL;
 
     //This is just to register a preferences provider
     private static PreferencesProvider providerRegister = new PreferencesProvider(
@@ -89,4 +92,13 @@ public class Constants {
         }
         return DEFAULT_CHARSET;
     }
+
+    public static String getThemeResourceUrl() {
+        if (THEME_RESOURCE_URL == null) {
+            THEME_RESOURCE_URL = Constants.class.getResource(THEME_RESOURCE)
+                    .toExternalForm();
+        }
+        return THEME_RESOURCE_URL;
+    }
+
 }

@@ -157,19 +157,11 @@ public class MainApp extends Application {
         return preferencesPane;
     }
 
-    private String getThemeResourceUrl() {
-        if (themeResourceUrl == null) {
-            themeResourceUrl = MainApp.class.getResource("view/theme.css")
-                    .toExternalForm();
-        }
-        return themeResourceUrl;
-    }
-
     private Stage getPreferencesStage() throws IOException {
         if (preferencesStage == null) {
             preferencesStage = new Stage();
             Scene preferencesScene = new Scene(getPreferencesPane());
-            preferencesScene.getStylesheets().add(getThemeResourceUrl());
+            preferencesScene.getStylesheets().add(Constants.getThemeResourceUrl());
             preferencesStage.setScene(preferencesScene);
             preferencesStage.setTitle(LocaleUtil.i18n("preferencesStageTitle"));
             preferencesStage.initModality(Modality.WINDOW_MODAL);
@@ -193,7 +185,7 @@ public class MainApp extends Application {
         if (aboutStage == null) {
             aboutStage = new Stage();
             Scene aboutScene = new Scene(getAboutPane());
-            aboutScene.getStylesheets().add(getThemeResourceUrl());
+            aboutScene.getStylesheets().add(Constants.getThemeResourceUrl());
             aboutStage.setScene(aboutScene);
             aboutStage.setTitle("");
             aboutStage.initModality(Modality.APPLICATION_MODAL);
@@ -282,7 +274,7 @@ public class MainApp extends Application {
             primaryStage.titleProperty().bind(applicationContext.applicationTitleProperty());
             BorderPane mainPane = new BorderPane();
             Scene scene = new Scene(mainPane);
-            scene.getStylesheets().add(getThemeResourceUrl());
+            scene.getStylesheets().add(Constants.getThemeResourceUrl());
             menuToolkit = MenuToolkit.toolkit(Locale.getDefault());
             MenuBar menuBar = initMenuBar();
             if (menuToolkit == null) {

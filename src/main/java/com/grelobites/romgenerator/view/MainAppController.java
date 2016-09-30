@@ -19,20 +19,13 @@ import javafx.beans.binding.Bindings;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
@@ -56,6 +49,8 @@ public class MainAppController {
     private Pane applicationPane;
 
     @FXML
+    private Pagination menuPagination;
+
     private ImageView menuPreview;
 
     @FXML
@@ -156,6 +151,18 @@ public class MainAppController {
 
     @FXML
     private void initialize() throws IOException {
+        menuPreview = new ImageView();
+        menuPagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
+        menuPagination.setPageFactory((index) -> {
+            switch (index) {
+                case 0:
+                    return menuPreview;
+                case 1:
+                    return getPlayerPane();
+                default:
+                    return null;
+            }
+        });
         applicationContext.setRomSetHandlerInfoPane(romSetHandlerInfoPane);
         applicationContext.setMenuPreview(menuPreview);
         applicationContext.setSelectedGameProperty(gameTable.getSelectionModel().selectedItemProperty());
@@ -332,13 +339,6 @@ public class MainAppController {
             }
         });
 
-        menuPreview.setOnMouseClicked(c -> {
-            if (c.getClickCount() == 2) {
-                LOGGER.debug("Detected double-click");
-                showOrHidePlayer();
-            }
-        });
-
         removeSelectedRomButton.setOnAction(c -> {
             Optional<Integer> selectedIndex = Optional.of(gameTable.getSelectionModel().getSelectedIndex());
             selectedIndex.ifPresent(index -> applicationContext.getGameList().remove(index.intValue()));
@@ -392,56 +392,6 @@ public class MainAppController {
         } catch (Exception e) {
             LOGGER.error("Creating Player", e);
             throw new RuntimeException(e);
-        }
-    }
-
-    private void showOrHidePlayer() {
-        LOGGER.debug("showOrHidePlayer on applicationPane " + applicationPane);
-        if (!playerVisible) {
-            LOGGER.debug("Showing player");
-            /*
-            final Animation showPlayer = new Transition() {
-                { setCycleDuration(Duration.millis(250)); }
-                protected void interpolate(double frac) {
-                    final double curHeight = 470 + (50 * frac);
-                    LOGGER.debug("Setting preferred Height to " + curHeight);
-                    applicationPane.setPrefHeight(curHeight);
-                    applicationContext.getApplicationStage().sizeToScene();
-
-                }
-            };
-            showPlayer.setOnFinished(e -> {
-                LOGGER.debug("onShowFinished. Children are: " + applicationPane.getChildren());
-                ((AnchorPane) applicationPane).setBottomAnchor(getPlayerPane(), 0.0);
-                applicationPane.getChildren().add(getPlayerPane());});
-            showPlayer.play();
-            */
-            applicationPane.setPrefHeight(470 + 50);
-            ((AnchorPane) applicationPane).setBottomAnchor(getPlayerPane(), 0.0);
-            applicationPane.getChildren().add(getPlayerPane());
-            applicationContext.getApplicationStage().sizeToScene();
-            playerVisible = true;
-        } else {
-            LOGGER.debug("Hiding player");
-            /*
-            final Animation hidePlayer = new Transition() {
-                { setCycleDuration(Duration.millis(250)); }
-                protected void interpolate(double frac) {
-                    final double curHeight = 470 + (50 * (1.0 - frac));
-                    applicationPane.setPrefHeight(curHeight);
-                    applicationContext.getApplicationStage().sizeToScene();
-                }
-            };
-            LOGGER.debug("Before removing. Children are " + applicationPane.getChildren());
-            applicationPane.getChildren().remove(getPlayerPane());
-            LOGGER.debug("After removing. Children are: " + applicationPane.getChildren());
-
-            hidePlayer.play();
-            */
-            applicationPane.getChildren().remove(getPlayerPane());
-            applicationPane.setPrefHeight(470);
-            applicationContext.getApplicationStage().sizeToScene();
-            playerVisible = false;
         }
     }
 

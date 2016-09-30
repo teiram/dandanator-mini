@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.effect.Blend?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
@@ -14,11 +14,7 @@
    <children>
       <Pane layoutX="5.0" layoutY="5.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="201.0" prefWidth="265.0" styleClass="pane-with-border" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="5.0">
          <children>
-            <ImageView fx:id="menuPreview" fitHeight="192.0" fitWidth="256.0" layoutX="5.0" layoutY="5.0" pickOnBounds="true" preserveRatio="true">
-               <effect>
-                  <Blend />
-               </effect>
-            </ImageView>
+            <Pagination fx:id="menuPagination" layoutX="5.0" layoutY="5.0" pageCount="2" prefHeight="192.0" prefWidth="256.0" styleClass="pagination-simple" />
          </children>
       </Pane>
       <Pane layoutX="289.0" layoutY="5.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="201.0" prefWidth="265.0" styleClass="pane-with-border" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">

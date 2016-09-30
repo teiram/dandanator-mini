@@ -13,6 +13,9 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -81,6 +84,22 @@ public class PlayerController {
 
 
     private IntegerProperty nextBlockRequested;
+
+    private static void doAfterDelay(int delay, Runnable r) {
+        Task<Void> sleeper = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    LOGGER.warn("Delay thread was interrupted", e);
+                }
+                return null;
+            }
+        };
+        sleeper.setOnSucceeded(event -> r.run());
+        new Thread(sleeper).start();
+    }
 
     public PlayerController(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -165,10 +184,7 @@ public class PlayerController {
                 f.map(frequency -> {
                     if (Math.abs(frequency - OK_TONE) < 100.0) {
                         LOGGER.debug("Detected success tone");
-                        try {
-                            Thread.sleep(configuration.getPauseBetweenBlocks());
-                        } catch (InterruptedException ioe) {}
-                        playBlock(currentBlock + 1);
+                        doAfterDelay(configuration.getPauseBetweenBlocks(), () -> playBlock(currentBlock + 1));
                     } else {
                         LOGGER.debug("Detected something else");
                         playBlock(currentBlock);
@@ -185,10 +201,7 @@ public class PlayerController {
             detector.start();
         } else {
             LOGGER.debug("Playing next block on skipped detection");
-            try {
-                Thread.sleep(configuration.getPauseBetweenBlocks());
-            } catch (InterruptedException ioe) {}
-            playBlock(currentBlock + 1);
+            doAfterDelay(configuration.getPauseBetweenBlocks(), () -> playBlock(currentBlock + 1));
         }
     }
 
@@ -218,6 +231,14 @@ public class PlayerController {
         }, player.currentTimeProperty(), player.totalDurationProperty()));
     }
 
+    private void initMediaPlayer(MediaPlayer player) {
+        player.setOnEndOfMedia(() -> onEndOfMedia());
+        mediaView.setMediaPlayer(player);
+        player.play();
+        playingLed.setVisible(true);
+        playButton.setText("||");
+    }
+
     @FXML
     void initialize() throws IOException {
         playingLed.setVisible(false);
@@ -239,22 +260,12 @@ public class PlayerController {
             if (playing.get()) {
                 try {
                     if (currentBlock < 0) {
-                        MediaPlayer player = getBootstrapMediaPlayer();
-                        player.setOnEndOfMedia(() -> onEndOfMedia());
-                        mediaView.setMediaPlayer(player);
-                        player.play();
-                        playingLed.setVisible(true);
+                        initMediaPlayer(getBootstrapMediaPlayer());
                         currentBlockLabel.setText("Loader");
-                        playButton.setText("||");
                     } else if (currentBlock * configuration.getBlockSize() < ROMSET_SIZE) {
-                        MediaPlayer player = getBlockMediaPlayer(currentBlock);
-                        player.setOnEndOfMedia(() -> onEndOfMedia());
-                        mediaView.setMediaPlayer(player);
-                        player.play();
-                        playingLed.setVisible(true);
+                        initMediaPlayer(getBlockMediaPlayer(currentBlock));
                         currentBlockLabel.setText(String.format("%d/%d", currentBlock + 1,
                                 ROMSET_SIZE / configuration.getBlockSize()));
-                        playButton.setText("||");
                     } else {
                         playing.set(false);
                         playButton.setText(">");
