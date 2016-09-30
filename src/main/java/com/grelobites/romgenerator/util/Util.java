@@ -35,6 +35,11 @@ public class Util {
         os.write((value >> 8) & 0xff);
     }
 
+    public static void writeAsLittleEndian(byte[] data, int offset, int value) {
+        data[offset] = Integer.valueOf(value).byteValue();
+        data[offset + 1] = Integer.valueOf((value >> 8)).byteValue();
+    }
+
     public static String getNullTerminatedString(InputStream is, int maxLength) throws IOException {
         return getNullTerminatedString(is, 0, maxLength);
     }

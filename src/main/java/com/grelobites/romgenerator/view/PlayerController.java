@@ -147,11 +147,23 @@ public class PlayerController {
         return player;
     }
 
+    private static int getBlockCrc(byte[] data, int blockSize) {
+        int sum = 0;
+        for (byte value : data) {
+            sum += Byte.toUnsignedInt(value);
+        }
+        return sum & 0xffff;
+    }
+
     private MediaPlayer getBlockMediaPlayer(int block) throws IOException {
         int blockSize = configuration.getBlockSize();
-        byte[] buffer = new byte[blockSize + 1];
+        byte[] buffer = new byte[blockSize + 3];
         System.arraycopy(getRomsetByteArray(), block * blockSize, buffer, 0, blockSize);
+
         buffer[blockSize] = Integer.valueOf(block + 1).byteValue();
+
+        Util.writeAsLittleEndian(buffer, blockSize + 1, getBlockCrc(buffer, blockSize));
+
         File tempFile = getTemporaryFile();
         LOGGER.debug("Creating new MediaPlayer for block " + block + " on file " + tempFile);
         FileOutputStream fos = new FileOutputStream(tempFile);
