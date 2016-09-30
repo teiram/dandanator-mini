@@ -23,7 +23,7 @@
                             <children>
                                 <Label layoutX="10.0" layoutY="14.0" text="%gameNameProperty" textFill="WHITE" />
                                 <Label layoutX="10.0" layoutY="45.0" text="%gameTypeProperty" textFill="WHITE" />
-                                <Label layoutX="150.0" layoutY="118.0" text="%gameSizeProperty" textFill="WHITE" />
+                                <Label layoutX="141.0" layoutY="118.0" text="%gameSizeProperty" textFill="WHITE" />
                                 <Label fx:id="compressedSize" layoutX="203.0" layoutY="118.0" prefHeight="17.0" prefWidth="54.0" text="0" textAlignment="RIGHT" textFill="WHITE" />
                                 <CheckBox fx:id="gameHoldScreenAttribute" layoutX="10.0" layoutY="92.0" mnemonicParsing="false" text="%holdScreenProperty" textFill="WHITE" />
                                 <CheckBox fx:id="gameRomAttribute" layoutX="10.0" layoutY="67.0" mnemonicParsing="false" text="%activeRomProperty" textFill="WHITE" />
