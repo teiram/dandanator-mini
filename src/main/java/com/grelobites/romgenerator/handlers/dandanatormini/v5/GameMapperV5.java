@@ -42,8 +42,9 @@ public class GameMapperV5 implements GameMapper {
     private int trainerCount;
 
     private static boolean isSlotCompressed(int slotIndex, int size) {
-        return slotIndex != DandanatorMiniConstants.GAME_CHUNK_SLOT ? size < COMPRESSED_SLOT_MAXSIZE :
-                size < COMPRESSED_CHUNKSLOT_MAXSIZE;
+        return size > 0 && ((slotIndex != DandanatorMiniConstants.GAME_CHUNK_SLOT) ?
+                size < COMPRESSED_SLOT_MAXSIZE :
+                size < COMPRESSED_CHUNKSLOT_MAXSIZE);
     }
 
     public static GameMapperV5 fromRomSet(PositionAwareInputStream is, int minorVersion) throws IOException {
