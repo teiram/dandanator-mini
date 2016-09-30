@@ -110,7 +110,8 @@ public class SNAGameImageLoader implements GameImageLoader {
             int mappedBankIndex = game.getGameHeader().getPort7ffdValue(GameHeader.DEFAULT_PORT_7FFD_VALUE) & 0x03;
             os.write(game.getSlot(INDEX_MAP[mappedBankIndex]));
             Util.writeAsLittleEndian(os, game.getGameHeader().getPCRegister());
-            os.write(game.getGameHeader().getPort7ffdValue(GameHeader.DEFAULT_PORT_7FFD_VALUE));
+            os.write(GameUtil.decodeAsAuthentic(game.getGameHeader()
+                    .getPort7ffdValue(GameHeader.DEFAULT_PORT_7FFD_VALUE)));
             os.write(Constants.B_00); //TRDOS_MAPPED_ROM
 
             for (int bank : new Integer[]{0, 1, 3, 4, 6, 7}) {
