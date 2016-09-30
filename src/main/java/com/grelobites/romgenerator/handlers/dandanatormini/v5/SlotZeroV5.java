@@ -212,7 +212,8 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
                                 (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
                     }
                 } else {
-                    block.data = block.rawdata = Constants.ZEROED_SLOT;
+                    block.data = Constants.ZEROED_SLOT;
+                    block.rawdata = null;
                 }
             }
         }
