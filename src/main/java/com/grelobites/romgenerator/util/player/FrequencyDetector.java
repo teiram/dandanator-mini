@@ -19,7 +19,7 @@ public class FrequencyDetector {
     private static final int DEFAULT_FFT_SIZE = 1024;
     private static final float DEFAULT_SAMPLE_RATE = 44100.0f;
     private static final int DEFAULT_LEVEL_THRESHOLD = 500;
-    private static final int DEFAULT_CONSECUTIVE_DETECTIONS = 20;
+    private static final int DEFAULT_CONSECUTIVE_DETECTIONS = 10;
     private static final int DEFAULT_TIMEOUT_MILLIS = 2000;
 
 
@@ -160,14 +160,18 @@ public class FrequencyDetector {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(buffer).order(ByteOrder.BIG_ENDIAN);
                 if (checkThreshold(byteBuffer, numRead / 2)) {
                     int frequencyIndex = getDominantFrequency(buffer);
+                    LOGGER.debug("Frequency is " + frequencyIndex);
                     if (frequencyIndex == lastFrequencyIndex) {
                         checkCount++;
                         if (checkCount >= consecutiveDetections) {
                             detectedFrequency = (sampleRate * frequencyIndex) / fftSize;
+                            LOGGER.debug("Detected frequency " + detectedFrequency);
                         }
                     } else if (checkCount >= consecutiveDetections) {
                         detectedFrequencyExtinguished = true;
+                        LOGGER.debug("Detected Frequency was extinguished");
                     } else {
+                        detectedFrequency = null;
                         checkCount = 0;
                     }
                     lastFrequencyIndex = frequencyIndex;
