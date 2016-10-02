@@ -11,6 +11,7 @@ import java.util.List;
 
 public class StandardWavOutputStream extends FilterOutputStream {
 
+    private static final int SPECTRUM_CLOCK = 3500000;
     private static final int WAV_HEADER_LENGTH = 44;
     private static final int HEADER_PULSE_LENGTH = 2168;
     private static final int SYNC_P0_LENGTH = 667;
@@ -53,7 +54,7 @@ public class StandardWavOutputStream extends FilterOutputStream {
 
     private int tStatesToSamples(int tstates) {
         int upper = tstates * format.getSampleRate();
-        return upper / 3500000 + (upper % 3500000 == 0 ? 1 : 0);
+        return upper / SPECTRUM_CLOCK + (upper % SPECTRUM_CLOCK == 0 ? 0 : 1);
     }
 
     private void writeSamples(int samples, boolean high) throws IOException {
