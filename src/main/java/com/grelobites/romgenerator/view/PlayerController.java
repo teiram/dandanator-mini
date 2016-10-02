@@ -169,14 +169,14 @@ public class PlayerController {
         FileOutputStream fos = new FileOutputStream(tempFile);
         CompressedWavOutputStream wos = new CompressedWavOutputStream(fos,
                 WavOutputFormat.builder()
-                    .withSampleRate(WavOutputFormat.SRATE_44100)
-                    .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
-                    .withSpeed(configuration.getEncodingSpeed())
-                    .withFlagByte(WavOutputFormat.DATA_FLAG_BYTE)
-                    .withOffset(WavOutputFormat.DEFAULT_OFFSET)
-                    .withPilotDurationMillis(configuration.getPilotLength())
-                    .withFinalPauseDurationMillis(configuration.getTrailLength())
-                    .build());
+                        .withSampleRate(WavOutputFormat.SRATE_44100)
+                        .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
+                        .withSpeed(configuration.getEncodingSpeed())
+                        .withFlagByte(WavOutputFormat.DATA_FLAG_BYTE)
+                        .withOffset(WavOutputFormat.DEFAULT_OFFSET)
+                        .withPilotDurationMillis(configuration.getPilotLength())
+                        .withFinalPauseDurationMillis(configuration.getTrailLength())
+                        .build());
         wos.write(buffer);
         wos.close();
         fos.close();
@@ -193,25 +193,27 @@ public class PlayerController {
 
     private void calculateNextBlock() throws IOException {
         if (configuration.isUseTargetFeedback()) {
-            FrequencyDetector detector = new FrequencyDetector(3000, (f) -> {
-                f.map(frequency -> {
-                    if (Math.abs(frequency - OK_TONE) < 100.0) {
-                        LOGGER.debug("Detected success tone");
-                        doAfterDelay(configuration.getPauseBetweenBlocks(), () -> {
-                            currentBlock.set(currentBlock.get() + 1);
+
+            FrequencyDetector detector = FrequencyDetector.builder()
+                    .withTimeoutMillis(3000)
+                    .withFrequencyConsumer(f -> f.map(frequency -> {
+                        if (Math.abs(frequency - OK_TONE) < 100.0) {
+                            LOGGER.debug("Detected success tone");
+                            doAfterDelay(configuration.getPauseBetweenBlocks(), () -> {
+                                currentBlock.set(currentBlock.get() + 1);
+                                playCurrentBlock();
+                            });
+                        } else {
+                            LOGGER.debug("Detected something else");
                             playCurrentBlock();
-                        });
-                    } else {
-                        LOGGER.debug("Detected something else");
+                        }
+                        return 0;
+                    }).orElseGet(() -> {
+                        LOGGER.debug("Fallback to repeat current block");
                         playCurrentBlock();
-                    }
-                    return 0;
-                }).orElseGet(() -> {
-                    LOGGER.debug("Fallback to repeat current block");
-                    playCurrentBlock();
-                    return null;
-                });
-            });
+                        return null;
+                    })).build();
+
             recordingLed.setVisible(true);
             LOGGER.debug("Started detection");
             detector.start();
@@ -277,8 +279,10 @@ public class PlayerController {
         playingLed.setVisible(false);
         recordingLed.setVisible(false);
 
-        rewindButton.disableProperty().bind(playing);
-        forwardButton.disableProperty().bind(playing);
+        rewindButton.disableProperty().bind(playing
+                .or(currentBlock.isEqualTo(LOADER_BLOCK)));
+        forwardButton.disableProperty().bind(playing
+                .or(currentBlock.isEqualTo(ROMSET_SIZE / configuration.getBlockSize() - 1)));
         playButton.disableProperty().bind(applicationContext.backgroundTaskCountProperty().greaterThan(0)
                 .or(applicationContext.getRomSetHandler().generationAllowedProperty().not()));
 
@@ -286,12 +290,12 @@ public class PlayerController {
         volumeSlider.disableProperty().bind(playing.not());
 
         overallProgress.progressProperty().bind(Bindings.createDoubleBinding(() ->
-             Math.max(0, currentBlock.doubleValue() / (ROMSET_SIZE /
-                    configuration.getBlockSize())), currentBlock));
+                Math.max(0, currentBlock.doubleValue() / (ROMSET_SIZE /
+                        configuration.getBlockSize())), currentBlock));
 
         currentBlockLabel.textProperty().bind(Bindings.createStringBinding(() ->
                 currentBlock.get() >= 0 ? String.format("%d/%d", currentBlock.get() + 1,
-                ROMSET_SIZE / configuration.getBlockSize()) : "Loader", currentBlock));
+                        ROMSET_SIZE / configuration.getBlockSize()) : "Loader", currentBlock));
 
         nextBlockRequested.addListener(observable -> {
             LOGGER.debug("nextBlockRequested listener triggered with currentBlock " + currentBlock);
