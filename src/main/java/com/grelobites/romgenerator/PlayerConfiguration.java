@@ -81,7 +81,7 @@ public class PlayerConfiguration {
 
     public InputStream getLoaderStream() throws IOException {
         if (loaderPath.get() == null) {
-            return PlayerConfiguration.class.getResourceAsStream("/loader.wav");
+            return PlayerConfiguration.class.getResourceAsStream("/loader.tap");
         } else {
             return new FileInputStream(loaderPath.get());
         }

@@ -4,10 +4,7 @@ import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.Util;
-import com.grelobites.romgenerator.util.player.ChannelType;
-import com.grelobites.romgenerator.util.player.CompressedWavOutputStream;
-import com.grelobites.romgenerator.util.player.FrequencyDetector;
-import com.grelobites.romgenerator.util.player.WavOutputFormat;
+import com.grelobites.romgenerator.util.player.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -134,10 +131,13 @@ public class PlayerController {
     }
 
     private MediaPlayer getBootstrapMediaPlayer() throws IOException {
-        byte[] wavData = Util.fromInputStream(configuration.getLoaderStream());
         File tempFile = getTemporaryFile();
         FileOutputStream fos = new FileOutputStream(tempFile);
-        fos.write(wavData);
+        TapUtil.tap2wav(WavOutputFormat.builder()
+                .withSampleRate(WavOutputFormat.SRATE_44100)
+                .withChannelType(ChannelType.valueOf(configuration.getAudioMode())).build(),
+                configuration.getLoaderStream(),
+                fos);
         fos.close();
         MediaPlayer player = new MediaPlayer(new Media(tempFile.toURI().toURL().toExternalForm()));
         player.setOnError(() -> {
