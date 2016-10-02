@@ -35,7 +35,7 @@ public class PlayerController {
 
     private static final double OK_TONE = 4000.0;
     private static final int LOADER_BLOCK = -1;
-
+    private static final String LOADER_STRING = "Loader";
     private static PlayerConfiguration configuration = PlayerConfiguration.getInstance();
 
     private static final String PLAY_BUTTON_STYLE = "button-play";
@@ -118,7 +118,9 @@ public class PlayerController {
 
     private void cleanup() {
         if (temporaryFile != null) {
-            temporaryFile.delete();
+            if (!temporaryFile.delete()) {
+                LOGGER.warn("Unable to delete temporary file " + temporaryFile);
+            }
             temporaryFile = null;
         }
     }
@@ -151,8 +153,8 @@ public class PlayerController {
 
     private static int getBlockCrc(byte[] data, int blockSize) {
         int sum = 0;
-        for (byte value : data) {
-            sum += Byte.toUnsignedInt(value);
+        for (int i = 0; i <  blockSize; i++) {
+            sum += Byte.toUnsignedInt(data[i]);
         }
         return sum & 0xffff;
     }
@@ -164,8 +166,13 @@ public class PlayerController {
 
         buffer[blockSize] = Integer.valueOf(block + 1).byteValue();
 
-        Util.writeAsLittleEndian(buffer, blockSize + 1, getBlockCrc(buffer, blockSize));
+        Util.writeAsLittleEndian(buffer, blockSize + 1, getBlockCrc(buffer, blockSize + 1));
 
+        /*
+        FileOutputStream blockfile = new FileOutputStream("/var/tmp/block " + block + ".bin");
+        blockfile.write(buffer);
+        blockfile.close();
+        */
         File tempFile = getTemporaryFile();
         LOGGER.debug("Creating new MediaPlayer for block " + block + " on file " + tempFile);
         FileOutputStream fos = new FileOutputStream(tempFile);
@@ -197,7 +204,7 @@ public class PlayerController {
         if (configuration.isUseTargetFeedback()) {
 
             FrequencyDetector detector = FrequencyDetector.builder()
-                    .withTimeoutMillis(3000)
+                    .withTimeoutMillis(2000)
                     .withFrequencyConsumer(f -> f.map(frequency -> {
                         if (Math.abs(frequency - OK_TONE) < 100.0) {
                             LOGGER.debug("Detected success tone");
@@ -258,7 +265,7 @@ public class PlayerController {
     }
 
     private void initMediaPlayer(MediaPlayer player) {
-        player.setOnEndOfMedia(() -> onEndOfMedia());
+        player.setOnEndOfMedia(this::onEndOfMedia);
         mediaView.setMediaPlayer(player);
         play();
     }
@@ -278,6 +285,20 @@ public class PlayerController {
         mediaView.getMediaPlayer().stop();
         playing.set(false);
         encodingSpeedPolicy.reset();
+    }
+
+    private String getCurrentBlockString() {
+        int blockNumber = currentBlock.get();
+        int totalBlocks = ROMSET_SIZE / configuration.getBlockSize();
+        if (blockNumber >= 0) {
+            if (blockNumber < totalBlocks) {
+                return String.format("%d/%d", blockNumber + 1, totalBlocks);
+            } else {
+                return "";
+            }
+        } else {
+            return LOADER_STRING;
+        }
     }
 
     @FXML
@@ -300,8 +321,7 @@ public class PlayerController {
                         configuration.getBlockSize())), currentBlock));
 
         currentBlockLabel.textProperty().bind(Bindings.createStringBinding(() ->
-                currentBlock.get() >= 0 ? String.format("%d/%d", currentBlock.get() + 1,
-                        ROMSET_SIZE / configuration.getBlockSize()) : "Loader", currentBlock));
+                getCurrentBlockString(), currentBlock));
 
         nextBlockRequested.addListener(observable -> {
             LOGGER.debug("nextBlockRequested listener triggered with currentBlock " + currentBlock);
