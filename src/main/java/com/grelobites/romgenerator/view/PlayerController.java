@@ -6,6 +6,7 @@ import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.player.ChannelType;
 import com.grelobites.romgenerator.util.player.CompressedWavOutputStream;
+import com.grelobites.romgenerator.util.player.EncodingSpeedPolicy;
 import com.grelobites.romgenerator.util.player.FrequencyDetector;
 import com.grelobites.romgenerator.util.player.WavOutputFormat;
 import javafx.beans.binding.Bindings;
@@ -74,7 +75,6 @@ public class PlayerController {
     @FXML
     private Circle recordingLed;
 
-
     private File temporaryFile;
 
     private ApplicationContext applicationContext;
@@ -86,6 +86,8 @@ public class PlayerController {
     private IntegerProperty currentBlock;
 
     private BooleanProperty nextBlockRequested;
+
+    private EncodingSpeedPolicy encodingSpeedPolicy;
 
     private static void doAfterDelay(int delay, Runnable r) {
         Task<Void> sleeper = new Task<Void>() {
@@ -108,6 +110,7 @@ public class PlayerController {
         playing = new SimpleBooleanProperty(false);
         currentBlock = new SimpleIntegerProperty(LOADER_BLOCK);
         nextBlockRequested = new SimpleBooleanProperty();
+        encodingSpeedPolicy = new EncodingSpeedPolicy(configuration.getEncodingSpeed());
     }
 
     private File getTemporaryFile() throws IOException {
@@ -171,7 +174,7 @@ public class PlayerController {
                 WavOutputFormat.builder()
                         .withSampleRate(WavOutputFormat.SRATE_44100)
                         .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
-                        .withSpeed(configuration.getEncodingSpeed())
+                        .withSpeed(encodingSpeedPolicy.getEncodingSpeed())
                         .withFlagByte(WavOutputFormat.DATA_FLAG_BYTE)
                         .withOffset(WavOutputFormat.DEFAULT_OFFSET)
                         .withPilotDurationMillis(configuration.getPilotLength())
@@ -199,17 +202,20 @@ public class PlayerController {
                     .withFrequencyConsumer(f -> f.map(frequency -> {
                         if (Math.abs(frequency - OK_TONE) < 100.0) {
                             LOGGER.debug("Detected success tone");
+                            encodingSpeedPolicy.onSuccess();
                             doAfterDelay(configuration.getPauseBetweenBlocks(), () -> {
                                 currentBlock.set(currentBlock.get() + 1);
                                 playCurrentBlock();
                             });
                         } else {
                             LOGGER.debug("Detected something else");
+                            encodingSpeedPolicy.onFailure();
                             playCurrentBlock();
                         }
                         return 0;
                     }).orElseGet(() -> {
                         LOGGER.debug("Fallback to repeat current block");
+                        encodingSpeedPolicy.onFailure();
                         playCurrentBlock();
                         return null;
                     })).build();
@@ -272,6 +278,7 @@ public class PlayerController {
         playButton.getStyleClass().add(PLAY_BUTTON_STYLE);
         mediaView.getMediaPlayer().stop();
         playing.set(false);
+        encodingSpeedPolicy.reset();
     }
 
     @FXML
@@ -317,11 +324,9 @@ public class PlayerController {
         playButton.setOnAction(c -> {
             try {
                 if (!playing.get()) {
-                    //Start playing
                     playing.set(true);
                     playCurrentBlock();
                 } else {
-                    //Stop
                     stop();
                 }
             } catch (Exception e) {
