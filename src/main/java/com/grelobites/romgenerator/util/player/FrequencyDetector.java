@@ -2,7 +2,6 @@ package com.grelobites.romgenerator.util.player;
 
 
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,17 +16,78 @@ import java.util.function.Consumer;
 
 public class FrequencyDetector {
     private static final Logger LOGGER = LoggerFactory.getLogger(FrequencyDetector.class);
-    private static final int FFT_SIZE = 1024;
-    private static final float SAMPLE_RATE = 44100.0f;
-    private static final int MINIMUM_LEVEL = 500;
-    private static final int CONSECUTIVE_DETECTIONS = 20;
+    private static final int DEFAULT_FFT_SIZE = 1024;
+    private static final float DEFAULT_SAMPLE_RATE = 44100.0f;
+    private static final int DEFAULT_LEVEL_THRESHOLD = 500;
+    private static final int DEFAULT_CONSECUTIVE_DETECTIONS = 20;
+    private static final int DEFAULT_TIMEOUT_MILLIS = 2000;
+
 
     final long timeoutMillis;
     final Consumer<Optional<Float>> frequencyConsumer;
+    final float sampleRate;
+    final int fftSize;
+    final int levelThreshold;
+    final int consecutiveDetections;
 
-    public FrequencyDetector(long timeoutMillis, Consumer<Optional<Float>> frequencyConsumer) {
+    public static class Builder {
+        long timeoutMillis = DEFAULT_TIMEOUT_MILLIS;
+        Consumer<Optional<Float>> frequencyConsumer;
+        float sampleRate = DEFAULT_SAMPLE_RATE;
+        int fftSize = DEFAULT_FFT_SIZE;
+        int consecutiveDetections = DEFAULT_CONSECUTIVE_DETECTIONS;
+        int levelThreshold = DEFAULT_LEVEL_THRESHOLD;
+
+        public Builder withTimeoutMillis(int timeoutMillis) {
+            this.timeoutMillis = timeoutMillis;
+            return this;
+        }
+
+        public Builder withFrequencyConsumer(Consumer<Optional<Float>> frequencyConsumer) {
+            this.frequencyConsumer = frequencyConsumer;
+            return this;
+        }
+
+        public Builder withSampleRate(float sampleRate) {
+            this.sampleRate = sampleRate;
+            return this;
+        }
+
+        public Builder withFftSize(int fftSize) {
+            this.fftSize = fftSize;
+            return this;
+        }
+
+        public Builder withLevelThreshold(int levelThreshold) {
+            this.levelThreshold = levelThreshold;
+            return this;
+        }
+
+        public Builder withConsecutiveDetections(int consecutiveDetections) {
+            this.consecutiveDetections = consecutiveDetections;
+            return this;
+        }
+
+        public FrequencyDetector build() {
+            return new FrequencyDetector(frequencyConsumer, timeoutMillis, sampleRate,
+                    fftSize, levelThreshold, consecutiveDetections);
+        }
+
+    }
+
+
+    public FrequencyDetector(Consumer<Optional<Float>> frequencyConsumer, long timeoutMillis, float sampleRate,
+                             int fftSize, int levelThreshold, int consecutiveDetections) {
         this.timeoutMillis = timeoutMillis;
         this.frequencyConsumer = frequencyConsumer;
+        this.sampleRate = sampleRate;
+        this.fftSize = fftSize;
+        this.levelThreshold = levelThreshold;
+        this.consecutiveDetections = consecutiveDetections;
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     public void start() {
@@ -61,7 +121,7 @@ public class FrequencyDetector {
         return freqIndex;
     }
 
-    private static boolean checkThreshold(ByteBuffer buffer, int samples) {
+    private boolean checkThreshold(ByteBuffer buffer, int samples) {
         int maximum = 0;
         for (int i = 0; i < samples; i++) {
             short sample = buffer.getShort();
@@ -69,7 +129,7 @@ public class FrequencyDetector {
                 maximum = Math.abs(sample);
             }
         }
-        return maximum > MINIMUM_LEVEL;
+        return maximum > levelThreshold;
     }
 
     private void updateFrequency(Float frequency) {
@@ -81,31 +141,34 @@ public class FrequencyDetector {
     }
 
     public void runDetection()  {
-        AudioFormat format = new AudioFormat(SAMPLE_RATE, 16, 1, true, true);
+        AudioFormat format = new AudioFormat(sampleRate, 16, 1, true, true);
         DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
 
         try (TargetDataLine line = (TargetDataLine) AudioSystem.getLine(info)) {
-            boolean noFrequencyDetected = true;
+            boolean detectedFrequencyExtinguished = false;
             long startTime = System.currentTimeMillis();
             line.open(format);
             line.start();
-            byte[] buffer = new byte[FFT_SIZE * 2];  //16 bits per sample (2 bytes)
+            byte[] buffer = new byte[fftSize * 2];  //16 bits per sample (2 bytes)
             int numRead;
             int checkCount = 0;
             int lastFrequencyIndex = -1;
             Float detectedFrequency = null;
             while ((numRead = line.read(buffer, 0, buffer.length)) > 0 &&
                     (System.currentTimeMillis() - startTime < timeoutMillis) &&
-                    noFrequencyDetected) {
+                    !detectedFrequencyExtinguished) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(buffer).order(ByteOrder.BIG_ENDIAN);
                 if (checkThreshold(byteBuffer, numRead / 2)) {
                     int frequencyIndex = getDominantFrequency(buffer);
                     if (frequencyIndex == lastFrequencyIndex) {
                         checkCount++;
-                        if (checkCount >= CONSECUTIVE_DETECTIONS) {
-                            detectedFrequency = (SAMPLE_RATE * frequencyIndex) / FFT_SIZE;
-                            noFrequencyDetected = false;
+                        if (checkCount >= consecutiveDetections) {
+                            detectedFrequency = (sampleRate * frequencyIndex) / fftSize;
                         }
+                    } else if (checkCount >= consecutiveDetections) {
+                        detectedFrequencyExtinguished = true;
+                    } else {
+                        checkCount = 0;
                     }
                     lastFrequencyIndex = frequencyIndex;
                 }
