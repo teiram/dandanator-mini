@@ -11,6 +11,8 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.TargetDataLine;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -21,7 +23,10 @@ public class FrequencyDetector {
     private static final int DEFAULT_LEVEL_THRESHOLD = 500;
     private static final int DEFAULT_CONSECUTIVE_DETECTIONS = 10;
     private static final int DEFAULT_TIMEOUT_MILLIS = 2000;
-
+    private static final float DEFAULT_FREQUENCY_TOLERANCE = 100;
+    public static final float SUCCESS_FREQUENCY = 4000;
+    public static final float ERROR_FREQUENCY = 5000;
+    private static final List<Float> DEFAULT_EXPECTED_FREQUENCIES = Arrays.asList(SUCCESS_FREQUENCY, ERROR_FREQUENCY);
 
     final long timeoutMillis;
     final Consumer<Optional<Float>> frequencyConsumer;
@@ -29,6 +34,8 @@ public class FrequencyDetector {
     final int fftSize;
     final int levelThreshold;
     final int consecutiveDetections;
+    final List<Float> expectedFrequencies;
+    final float frequencyTolerance;
 
     public static class Builder {
         long timeoutMillis = DEFAULT_TIMEOUT_MILLIS;
@@ -37,6 +44,8 @@ public class FrequencyDetector {
         int fftSize = DEFAULT_FFT_SIZE;
         int consecutiveDetections = DEFAULT_CONSECUTIVE_DETECTIONS;
         int levelThreshold = DEFAULT_LEVEL_THRESHOLD;
+        List<Float> expectedFrequencies = DEFAULT_EXPECTED_FREQUENCIES;
+        float frequencyTolerance = DEFAULT_FREQUENCY_TOLERANCE;
 
         public Builder withTimeoutMillis(int timeoutMillis) {
             this.timeoutMillis = timeoutMillis;
@@ -45,6 +54,16 @@ public class FrequencyDetector {
 
         public Builder withFrequencyConsumer(Consumer<Optional<Float>> frequencyConsumer) {
             this.frequencyConsumer = frequencyConsumer;
+            return this;
+        }
+
+        public Builder withExpectedFrequencies(List<Float> expectedFrequencies) {
+            this.expectedFrequencies = expectedFrequencies;
+            return this;
+        }
+
+        public Builder withFrequencyTolerance(float frequencyTolerance) {
+            this.frequencyTolerance = frequencyTolerance;
             return this;
         }
 
@@ -69,14 +88,19 @@ public class FrequencyDetector {
         }
 
         public FrequencyDetector build() {
-            return new FrequencyDetector(frequencyConsumer, timeoutMillis, sampleRate,
+            return new FrequencyDetector(frequencyConsumer, timeoutMillis,
+                    expectedFrequencies, frequencyTolerance,
+                    sampleRate,
                     fftSize, levelThreshold, consecutiveDetections);
         }
 
     }
 
 
-    public FrequencyDetector(Consumer<Optional<Float>> frequencyConsumer, long timeoutMillis, float sampleRate,
+    public FrequencyDetector(Consumer<Optional<Float>> frequencyConsumer, long timeoutMillis,
+                             List<Float> expectedFrequencies,
+                             float frequencyTolerance,
+                             float sampleRate,
                              int fftSize, int levelThreshold, int consecutiveDetections) {
         this.timeoutMillis = timeoutMillis;
         this.frequencyConsumer = frequencyConsumer;
@@ -84,6 +108,8 @@ public class FrequencyDetector {
         this.fftSize = fftSize;
         this.levelThreshold = levelThreshold;
         this.consecutiveDetections = consecutiveDetections;
+        this.expectedFrequencies = expectedFrequencies;
+        this.frequencyTolerance = frequencyTolerance;
     }
 
     public static Builder builder() {
@@ -121,7 +147,7 @@ public class FrequencyDetector {
         return freqIndex;
     }
 
-    private boolean checkThreshold(ByteBuffer buffer, int samples) {
+    private boolean isLevelThresholdReached(ByteBuffer buffer, int samples) {
         int maximum = 0;
         for (int i = 0; i < samples; i++) {
             short sample = buffer.getShort();
@@ -138,6 +164,16 @@ public class FrequencyDetector {
             LOGGER.debug("Detected frequency was " + frequency);
             frequencyConsumer.accept(Optional.ofNullable(frequency));
         });
+    }
+
+    private Optional<Float> getDetectedFrequency(int frequencyIndex) {
+        float detectedFrequency = (sampleRate * frequencyIndex) / fftSize;
+        for (float expectedFrequency : expectedFrequencies) {
+            if (Math.abs(detectedFrequency - expectedFrequency) < frequencyTolerance) {
+                return Optional.of(expectedFrequency);
+            }
+        }
+        return Optional.empty();
     }
 
     public void runDetection()  {
@@ -158,14 +194,17 @@ public class FrequencyDetector {
                     (System.currentTimeMillis() - startTime < timeoutMillis) &&
                     !detectedFrequencyExtinguished) {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(buffer).order(ByteOrder.BIG_ENDIAN);
-                if (checkThreshold(byteBuffer, numRead / 2)) {
+                if (isLevelThresholdReached(byteBuffer, numRead / 2)) {
                     int frequencyIndex = getDominantFrequency(buffer);
-                    LOGGER.debug("Frequency is " + frequencyIndex);
+                    LOGGER.debug("Dominant frequency index is " + frequencyIndex);
                     if (frequencyIndex == lastFrequencyIndex) {
-                        checkCount++;
-                        if (checkCount >= consecutiveDetections) {
-                            detectedFrequency = (sampleRate * frequencyIndex) / fftSize;
-                            LOGGER.debug("Detected frequency " + detectedFrequency);
+                        Optional<Float> detectedFrequencyOptional = getDetectedFrequency(frequencyIndex);
+                        if (detectedFrequencyOptional.isPresent()) {
+                            checkCount++;
+                            if (checkCount >= consecutiveDetections) {
+                                detectedFrequency = detectedFrequencyOptional.get();
+                                LOGGER.debug("Detected frequency " + detectedFrequency);
+                            }
                         }
                     } else if (checkCount >= consecutiveDetections) {
                         detectedFrequencyExtinguished = true;
