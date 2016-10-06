@@ -23,14 +23,14 @@ public class PlayerConfiguration {
     private static final String ENCODINGSPEED_PROPERTY = "encodingSpeed";
     private static final String PILOTLENGTH_PROPERTY = "pilotLength";
     private static final String TRAILLENGTH_PROPERTY = "trailLength";
-    private static final String PAUSEBETWEENBLOCKS_PROPERTY = "pauseBetweenBlocks";
+    private static final String RECORDINGPAUSE_PROPERTY = "recordingPause";
     private static final String USETARGETFEEDBACK_PROPERTY = "useTargetFeedback";
     private static final int DEFAULT_BLOCKSIZE = 0x1000;
     private static final String DEFAULT_AUDIOMODE = "STEREOINV";
     private static final int DEFAULT_ENCODINGSPEED = 2;
     private static final int DEFAULT_PILOTLENGTH = 250;
     private static final int DEFAULT_TRAILLENGTH = 0;
-    private static final int DEFAULT_PAUSEBETWEENBLOCKS = 3000;
+    private static final int DEFAULT_RECORDINGPAUSE = 10000;
 
     private StringProperty loaderPath;
     private IntegerProperty blockSize;
@@ -38,7 +38,7 @@ public class PlayerConfiguration {
     private IntegerProperty encodingSpeed;
     private IntegerProperty pilotLength;
     private IntegerProperty trailLength;
-    private IntegerProperty pauseBetweenBlocks;
+    private IntegerProperty recordingPause;
     private BooleanProperty useTargetFeedback;
 
     private static PlayerConfiguration INSTANCE;
@@ -50,7 +50,7 @@ public class PlayerConfiguration {
         encodingSpeed = new SimpleIntegerProperty(DEFAULT_ENCODINGSPEED);
         pilotLength = new SimpleIntegerProperty(DEFAULT_PILOTLENGTH);
         trailLength = new SimpleIntegerProperty(DEFAULT_TRAILLENGTH);
-        pauseBetweenBlocks = new SimpleIntegerProperty(DEFAULT_PAUSEBETWEENBLOCKS);
+        recordingPause = new SimpleIntegerProperty(DEFAULT_RECORDINGPAUSE);
         useTargetFeedback = new SimpleBooleanProperty(false);
 
         loaderPath.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
@@ -65,8 +65,8 @@ public class PlayerConfiguration {
                 PILOTLENGTH_PROPERTY, newValue.toString()));
         trailLength.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 TRAILLENGTH_PROPERTY, newValue.toString()));
-        pauseBetweenBlocks.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
-                PAUSEBETWEENBLOCKS_PROPERTY, newValue.toString()));
+        recordingPause.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                RECORDINGPAUSE_PROPERTY, newValue.toString()));
         useTargetFeedback.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 USETARGETFEEDBACK_PROPERTY, newValue.toString()));
 
@@ -159,16 +159,16 @@ public class PlayerConfiguration {
         this.trailLength.set(trailLength);
     }
 
-    public int getPauseBetweenBlocks() {
-        return pauseBetweenBlocks.get();
+    public int getRecordingPause() {
+        return recordingPause.get();
     }
 
-    public IntegerProperty pauseBetweenBlocksProperty() {
-        return pauseBetweenBlocks;
+    public IntegerProperty recordingPauseProperty() {
+        return recordingPause;
     }
 
-    public void setPauseBetweenBlocks(int pauseBetweenBlocks) {
-        this.pauseBetweenBlocks.set(pauseBetweenBlocks);
+    public void setRecordingPause(int recordingPause) {
+        this.recordingPause.set(recordingPause);
     }
 
     public boolean isUseTargetFeedback() {
@@ -210,7 +210,7 @@ public class PlayerConfiguration {
         configuration.blockSize.set(p.getInt(BLOCKSIZE_PROPERTY, DEFAULT_BLOCKSIZE));
         configuration.encodingSpeed.set(p.getInt(ENCODINGSPEED_PROPERTY, DEFAULT_ENCODINGSPEED));
         configuration.loaderPath.set(p.get(LOADERPATH_PROPERTY, null));
-        configuration.pauseBetweenBlocks.set(p.getInt(PAUSEBETWEENBLOCKS_PROPERTY, DEFAULT_PAUSEBETWEENBLOCKS));
+        configuration.recordingPause.set(p.getInt(RECORDINGPAUSE_PROPERTY, DEFAULT_RECORDINGPAUSE));
         configuration.pilotLength.set(p.getInt(PILOTLENGTH_PROPERTY, DEFAULT_PILOTLENGTH));
         configuration.trailLength.set(p.getInt(TRAILLENGTH_PROPERTY, DEFAULT_TRAILLENGTH));
         configuration.useTargetFeedback.set(p.getBoolean(USETARGETFEEDBACK_PROPERTY, false));

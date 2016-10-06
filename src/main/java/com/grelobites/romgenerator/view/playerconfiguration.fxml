@@ -20,11 +20,11 @@
       <Label layoutX="5.0" layoutY="98.0" text="Tono piloto" />
       <TextField fx:id="encodingSpeed" layoutX="215.0" layoutY="64.0" prefHeight="26.0" prefWidth="95.0" />
       <Label layoutX="6.0" layoutY="125.0" text="Pausa final" />
-      <Label layoutX="6.0" layoutY="152.0" text="Pausa entre bloques" />
+      <Label layoutX="6.0" layoutY="152.0" text="Pausa de grabación" />
       <Label layoutX="6.0" layoutY="179.0" text="Modo de sonido" />
       <ComboBox fx:id="audioMode" layoutX="161.0" layoutY="172.0" prefWidth="150.0" />
       <TextField fx:id="pilotLength" layoutX="215.0" layoutY="91.0" prefHeight="26.0" prefWidth="95.0" />
       <TextField fx:id="trailLength" layoutX="215.0" layoutY="118.0" prefHeight="26.0" prefWidth="95.0" />
-      <TextField fx:id="pauseBetweenBlocks" layoutX="215.0" layoutY="145.0" prefHeight="26.0" prefWidth="95.0" />
+      <TextField fx:id="recordingPause" layoutX="215.0" layoutY="145.0" prefHeight="26.0" prefWidth="95.0" />
     </children>
 </AnchorPane>
