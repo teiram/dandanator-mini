@@ -22,26 +22,12 @@ public class TapUtilTest {
     }
 
     @Test
-    public void generateWavFromBinary() throws IOException {
-        InputStream binary = TapUtilTest.class.getResourceAsStream("/EE_full.bin");
-        assertNotNull(binary);
-        ByteArrayOutputStream tapStream = new ByteArrayOutputStream();
-        TapOutputStream tos = new TapOutputStream(tapStream);
-        tos.addProgramStream("EE", 10, binary);
-
-        FileOutputStream fos = new FileOutputStream("/home/mteira/Escritorio/ee.wav");
-        TapUtil.tap2wav(WavOutputFormat.defaultDataFormat(),
-                new ByteArrayInputStream(tapStream.toByteArray()), fos);
-    }
-
-    @Test
     public void generateTapFromBinary() throws IOException {
         InputStream binary = TapUtilTest.class.getResourceAsStream("/EE_full.bin");
         assertNotNull(binary);
-        FileOutputStream fos = new FileOutputStream("/home/mteira/Escritorio/ee.tap");
-        TapOutputStream tos = new TapOutputStream(fos);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        TapOutputStream tos = new TapOutputStream(bos);
         tos.addProgramStream("EE", 10, binary);
-
-        fos.close();
+        assertNotEquals(0, bos.size());
     }
 }

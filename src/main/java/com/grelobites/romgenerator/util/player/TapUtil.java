@@ -2,7 +2,6 @@ package com.grelobites.romgenerator.util.player;
 
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.compress.zx7.Zx7OutputStream;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +16,7 @@ public class TapUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(TapUtil.class);
 
     private static final String LOADER_NAME = "EEP Writer";
+    private static final String UNCOMPRESSOR_RESOURCE = "/player/uncompressor.bin";
 
     public static void tap2wav(WavOutputFormat format, InputStream tapStream, OutputStream wavStream)
     throws IOException {
@@ -37,7 +37,7 @@ public class TapUtil {
     }
 
     public static byte[] generateLoaderTap(InputStream loader) throws IOException {
-        InputStream uncompressor = TapUtil.class.getResourceAsStream("/player/uncompressor.bin");
+        InputStream uncompressor = TapUtil.class.getResourceAsStream(UNCOMPRESSOR_RESOURCE);
         if (uncompressor != null) {
             byte[] uncompressorByteArray = Util.fromInputStream(uncompressor);
             ByteArrayOutputStream compressedLoader = new ByteArrayOutputStream();
@@ -46,13 +46,13 @@ public class TapUtil {
             }
             byte[] loaderByteArray = compressedLoader.toByteArray();
 
-            ByteOutputStream tapStream = new ByteOutputStream();
+            ByteArrayOutputStream tapStream = new ByteArrayOutputStream();
             TapOutputStream tos = new TapOutputStream(tapStream);
             tos.addProgramStream(LOADER_NAME, 10, new ByteArrayInputStream(ByteBuffer
                     .allocate(uncompressorByteArray.length + loaderByteArray.length)
                     .put(uncompressorByteArray)
                     .put(loaderByteArray).array()));
-            return tapStream.getBytes();
+            return tapStream.toByteArray();
         } else {
             throw new IllegalStateException("No uncompressor resource found");
         }
