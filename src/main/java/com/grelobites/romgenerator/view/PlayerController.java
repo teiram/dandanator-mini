@@ -26,10 +26,7 @@ import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 public class PlayerController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerController.class);
@@ -156,10 +153,12 @@ public class PlayerController {
     private MediaPlayer getBootstrapMediaPlayer() throws IOException {
         File tempFile = getTemporaryFile();
         FileOutputStream fos = new FileOutputStream(tempFile);
+        byte[] loaderTap = TapUtil.generateLoaderTap(configuration.getLoaderStream());
+
         TapUtil.tap2wav(WavOutputFormat.builder()
                 .withSampleRate(WavOutputFormat.SRATE_44100)
                 .withChannelType(ChannelType.valueOf(configuration.getAudioMode())).build(),
-                configuration.getLoaderStream(),
+                new ByteArrayInputStream(loaderTap),
                 fos);
         fos.close();
         MediaPlayer player = new MediaPlayer(new Media(tempFile.toURI().toURL().toExternalForm()));

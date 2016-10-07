@@ -155,7 +155,7 @@ public class PlayerConfigurationController {
     @FXML
     private void initialize() throws IOException {
         setupFileBasedParameter(changeLoaderPathButton,
-                "Cargador WAV",
+                "Cargador",
                 loaderPath,
                 PlayerConfiguration.getInstance().loaderPathProperty(),
                 resetLoaderPathButton,

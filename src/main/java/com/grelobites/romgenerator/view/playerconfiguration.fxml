@@ -9,7 +9,7 @@
 
 <AnchorPane minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PlayerConfigurationController">
     <children>
-            <Label layoutX="5.0" layoutY="16.0" text="Cargador WAV" AnchorPane.leftAnchor="5.0" />
+            <Label layoutX="5.0" layoutY="16.0" text="Cargador" AnchorPane.leftAnchor="5.0" />
             <Label fx:id="loaderPath" alignment="CENTER" layoutX="153.0" layoutY="10.0" prefHeight="28.0" prefWidth="249.0" text="Integrado" textOverrun="LEADING_ELLIPSIS" />
             <Button fx:id="changeLoaderPathButton" layoutX="384.0" layoutY="11.0" mnemonicParsing="false" text="Cambiar" />
             <Button fx:id="resetLoaderPathButton" layoutX="465.0" layoutY="11.0" mnemonicParsing="false" text="Revertir" />

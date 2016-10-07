@@ -17,6 +17,7 @@ import java.util.prefs.Preferences;
 public class PlayerConfiguration {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerConfiguration.class);
 
+    private static final String DEFAULT_LOADER_BINARY = "/player/loader.bin";
     private static final String LOADERPATH_PROPERTY = "loaderPath";
     private static final String BLOCKSIZE_PROPERTY = "blockSize";
     private static final String AUDIOMODE_PROPERTY = "audioMode";
@@ -81,7 +82,7 @@ public class PlayerConfiguration {
 
     public InputStream getLoaderStream() throws IOException {
         if (loaderPath.get() == null) {
-            return PlayerConfiguration.class.getResourceAsStream("/loader.tap");
+            return PlayerConfiguration.class.getResourceAsStream(DEFAULT_LOADER_BINARY);
         } else {
             return new FileInputStream(loaderPath.get());
         }
