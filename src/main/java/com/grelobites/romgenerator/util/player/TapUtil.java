@@ -16,7 +16,8 @@ public class TapUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(TapUtil.class);
 
     private static final String LOADER_NAME = "EEP Writer";
-    private static final String UNCOMPRESSOR_RESOURCE = "/player/uncompressor.bin";
+    private static final String BOOOTER_RESOURCE = "/player/boot.bin";
+    private static final String SCREEN_RESOURCE = "/player/screen.scr";
 
     public static void tap2wav(WavOutputFormat format, InputStream tapStream, OutputStream wavStream)
     throws IOException {
@@ -36,21 +37,29 @@ public class TapUtil {
         }
     }
 
+    private static byte[] compressedByteArrayOf(InputStream is) throws IOException {
+        ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
+        try (Zx7OutputStream zos = new Zx7OutputStream(compressedStream)) {
+            zos.write(Util.fromInputStream(is));
+        }
+        return compressedStream.toByteArray();
+    }
+
     public static byte[] generateLoaderTap(InputStream loader) throws IOException {
-        InputStream uncompressor = TapUtil.class.getResourceAsStream(UNCOMPRESSOR_RESOURCE);
+        InputStream uncompressor = TapUtil.class.getResourceAsStream(BOOOTER_RESOURCE);
         if (uncompressor != null) {
+            byte[] compressedScreen = compressedByteArrayOf(TapUtil.class.getResourceAsStream(SCREEN_RESOURCE));
             byte[] uncompressorByteArray = Util.fromInputStream(uncompressor);
-            ByteArrayOutputStream compressedLoader = new ByteArrayOutputStream();
-            try (Zx7OutputStream zos = new Zx7OutputStream(compressedLoader)) {
-                zos.write(Util.fromInputStream(loader));
-            }
-            byte[] loaderByteArray = compressedLoader.toByteArray();
+            Util.writeAsLittleEndian(uncompressorByteArray, uncompressorByteArray.length - 2, compressedScreen.length);
+
+            byte[] loaderByteArray = compressedByteArrayOf(loader);
 
             ByteArrayOutputStream tapStream = new ByteArrayOutputStream();
             TapOutputStream tos = new TapOutputStream(tapStream);
             tos.addProgramStream(LOADER_NAME, 10, new ByteArrayInputStream(ByteBuffer
-                    .allocate(uncompressorByteArray.length + loaderByteArray.length)
+                    .allocate(uncompressorByteArray.length + compressedScreen.length + loaderByteArray.length)
                     .put(uncompressorByteArray)
+                    .put(compressedScreen)
                     .put(loaderByteArray).array()));
             return tapStream.toByteArray();
         } else {
