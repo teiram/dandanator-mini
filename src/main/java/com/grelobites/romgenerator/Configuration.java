@@ -213,13 +213,15 @@ public class Configuration {
     }
 
     public static void persistConfigurationValue(String key, String value) {
-        LOGGER.debug("persistConfigurationValue " + key + ", " + value);
-        if (!Constants.ROMSET_PROVIDED.equals(value)) {
-            Preferences p = getApplicationPreferences();
-            if (value != null) {
-                p.put(key, value);
-            } else {
-                p.remove(key);
+        if (false) {
+            LOGGER.debug("persistConfigurationValue " + key + ", " + value);
+            if (!Constants.ROMSET_PROVIDED.equals(value)) {
+                Preferences p = getApplicationPreferences();
+                if (value != null) {
+                    p.put(key, value);
+                } else {
+                    p.remove(key);
+                }
             }
         }
     }
@@ -236,6 +238,7 @@ public class Configuration {
 
     synchronized private static Configuration newInstance() {
         final Configuration configuration = new Configuration();
-        return setFromPreferences(configuration);
+        //return setFromPreferences(configuration);
+        return configuration;
     }
 }

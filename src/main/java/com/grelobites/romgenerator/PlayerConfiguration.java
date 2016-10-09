@@ -17,7 +17,7 @@ import java.util.prefs.Preferences;
 public class PlayerConfiguration {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerConfiguration.class);
 
-    private static final String DEFAULT_LOADER_BINARY = "/player/loader.bin";
+    private static final String DEFAULT_LOADER_BINARY = "/player/eewriter.bin";
     private static final String LOADERPATH_PROPERTY = "loaderPath";
     private static final String BLOCKSIZE_PROPERTY = "blockSize";
     private static final String AUDIOMODE_PROPERTY = "audioMode";
@@ -26,7 +26,7 @@ public class PlayerConfiguration {
     private static final String TRAILLENGTH_PROPERTY = "trailLength";
     private static final String RECORDINGPAUSE_PROPERTY = "recordingPause";
     private static final String USETARGETFEEDBACK_PROPERTY = "useTargetFeedback";
-    private static final int DEFAULT_BLOCKSIZE = 0x1000;
+    private static final int DEFAULT_BLOCKSIZE = 0x8000;
     private static final String DEFAULT_AUDIOMODE = "STEREOINV";
     private static final int DEFAULT_ENCODINGSPEED = 2;
     private static final int DEFAULT_PILOTLENGTH = 250;
@@ -52,7 +52,7 @@ public class PlayerConfiguration {
         pilotLength = new SimpleIntegerProperty(DEFAULT_PILOTLENGTH);
         trailLength = new SimpleIntegerProperty(DEFAULT_TRAILLENGTH);
         recordingPause = new SimpleIntegerProperty(DEFAULT_RECORDINGPAUSE);
-        useTargetFeedback = new SimpleBooleanProperty(false);
+        useTargetFeedback = new SimpleBooleanProperty(true);
 
         loaderPath.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 LOADERPATH_PROPERTY, newValue));
@@ -189,12 +189,14 @@ public class PlayerConfiguration {
     }
 
     public static void persistConfigurationValue(String key, String value) {
-        LOGGER.debug("persistConfigurationValue " + key + ", " + value);
-        Preferences p = getApplicationPreferences();
-        if (value != null) {
-            p.put(key, value);
-        } else {
-            p.remove(key);
+        if (false) {
+            LOGGER.debug("persistConfigurationValue " + key + ", " + value);
+            Preferences p = getApplicationPreferences();
+            if (value != null) {
+                p.put(key, value);
+            } else {
+                p.remove(key);
+            }
         }
     }
 
@@ -220,6 +222,7 @@ public class PlayerConfiguration {
 
     synchronized private static PlayerConfiguration newInstance() {
         final PlayerConfiguration configuration = new PlayerConfiguration();
-        return setFromPreferences(configuration);
+        //return setFromPreferences(configuration);
+        return configuration;
     }
 }
