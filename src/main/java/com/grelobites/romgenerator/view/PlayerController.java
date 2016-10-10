@@ -153,7 +153,8 @@ public class PlayerController {
     private MediaPlayer getBootstrapMediaPlayer() throws IOException {
         File tempFile = getTemporaryFile();
         FileOutputStream fos = new FileOutputStream(tempFile);
-        byte[] loaderTap = TapUtil.generateLoaderTap(configuration.getLoaderStream());
+        byte[] loaderTap = TapUtil.generateLoaderTap(configuration.getLoaderStream(),
+                configuration.isUseTargetFeedback());
 
         TapUtil.tap2wav(WavOutputFormat.builder()
                 .withSampleRate(WavOutputFormat.SRATE_44100)
