@@ -71,7 +71,7 @@ public class SlotZeroV5 extends SlotZeroBase implements SlotZero {
     @Override
     public boolean validate() {
         try {
-            return getMajorVersion() == 5;
+            return getMajorVersion() >= 5 ;
         } catch (Exception e) {
             LOGGER.debug("Validation failed", e);
             return false;
