@@ -16,8 +16,8 @@ public class StandardWavOutputStream extends FilterOutputStream {
     private static final int HEADER_PULSE_LENGTH = 2168;
     private static final int SYNC_P0_LENGTH = 667;
     private static final int SYNC_P1_LENGTH = 735;
-    private static final int ONE_PULSE_LENGTH = 1710;
-    private static final int ZERO_PULSE_LENGTH = 855;
+    private static final int ONE_PULSE_LENGTH = Float.valueOf(1710 * 0.875f).intValue();
+    private static final int ZERO_PULSE_LENGTH = Float.valueOf(855 * 0.875f).intValue();
 
     private static final int HEADER_DURATION = 5000;
 

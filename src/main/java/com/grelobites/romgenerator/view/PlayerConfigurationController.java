@@ -48,7 +48,7 @@ public class PlayerConfigurationController {
     private TextField trailLength;
 
     @FXML
-    private TextField pauseBetweenBlocks;
+    private TextField recordingPause;
 
     @FXML
     private CheckBox useTargetFeedback;
@@ -155,7 +155,7 @@ public class PlayerConfigurationController {
     @FXML
     private void initialize() throws IOException {
         setupFileBasedParameter(changeLoaderPathButton,
-                "Cargador WAV",
+                "Cargador",
                 loaderPath,
                 PlayerConfiguration.getInstance().loaderPathProperty(),
                 resetLoaderPathButton,
@@ -173,8 +173,8 @@ public class PlayerConfigurationController {
         Bindings.bindBidirectional(trailLength.textProperty(),
                 PlayerConfiguration.getInstance().trailLengthProperty(),
                 new NumberStringConverter());
-        Bindings.bindBidirectional(pauseBetweenBlocks.textProperty(),
-                PlayerConfiguration.getInstance().pauseBetweenBlocksProperty(),
+        Bindings.bindBidirectional(recordingPause.textProperty(),
+                PlayerConfiguration.getInstance().recordingPauseProperty(),
                 new NumberStringConverter());
 
         useTargetFeedback.selectedProperty().bindBidirectional(

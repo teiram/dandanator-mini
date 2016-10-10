@@ -1,12 +1,11 @@
 package com.grelobites.romgenerator.util;
 
+import com.grelobites.romgenerator.util.player.TapOutputStream;
 import com.grelobites.romgenerator.util.player.TapUtil;
 import com.grelobites.romgenerator.util.player.WavOutputFormat;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertNotEquals;
@@ -20,5 +19,15 @@ public class TapUtilTest {
         ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
         TapUtil.tap2wav(WavOutputFormat.defaultDataFormat(), tap, wavStream);
         assertNotEquals(0, wavStream.size());
+    }
+
+    @Test
+    public void generateTapFromBinary() throws IOException {
+        InputStream binary = TapUtilTest.class.getResourceAsStream("/EE_full.bin");
+        assertNotNull(binary);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        TapOutputStream tos = new TapOutputStream(bos);
+        tos.addProgramStream("EE", 10, binary);
+        assertNotEquals(0, bos.size());
     }
 }

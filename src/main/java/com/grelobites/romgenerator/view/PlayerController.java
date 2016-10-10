@@ -5,6 +5,8 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.player.*;
+import javafx.animation.FadeTransition;
+import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -20,21 +22,21 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.shape.Circle;
+import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 public class PlayerController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerController.class);
 
     private static final int ROMSET_SIZE = Constants.SLOT_SIZE * 32;
 
-    private static final double OK_TONE = 4000.0;
     private static final int LOADER_BLOCK = -1;
+    private static final int PAUSE_AFTER_LOADER = 2000;
+    private static final int DETECTION_TIMEOUT = 3000;
+
     private static final String LOADER_STRING = "Loader";
     private static PlayerConfiguration configuration = PlayerConfiguration.getInstance();
 
@@ -101,6 +103,20 @@ public class PlayerController {
         new Thread(sleeper).start();
     }
 
+    private void playBlinkingTransition(int duration) {
+        final boolean visibleState = playingLed.isVisible();
+        playingLed.setVisible(true);
+        FadeTransition ft = new FadeTransition(Duration.millis(1000), playingLed);
+        ft.setFromValue(1.0);
+        ft.setToValue(0.0);
+        ft.setCycleCount(duration / 1000);
+        ft.setAutoReverse(true);
+        ft.setOnFinished(e -> {
+            //playingLed.setVisible(visibleState);
+        });
+        ft.play();
+    }
+
     public PlayerController(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         playing = new SimpleBooleanProperty(false);
@@ -137,10 +153,12 @@ public class PlayerController {
     private MediaPlayer getBootstrapMediaPlayer() throws IOException {
         File tempFile = getTemporaryFile();
         FileOutputStream fos = new FileOutputStream(tempFile);
+        byte[] loaderTap = TapUtil.generateLoaderTap(configuration.getLoaderStream());
+
         TapUtil.tap2wav(WavOutputFormat.builder()
                 .withSampleRate(WavOutputFormat.SRATE_44100)
                 .withChannelType(ChannelType.valueOf(configuration.getAudioMode())).build(),
-                configuration.getLoaderStream(),
+                new ByteArrayInputStream(loaderTap),
                 fos);
         fos.close();
         MediaPlayer player = new MediaPlayer(new Media(tempFile.toURI().toURL().toExternalForm()));
@@ -196,7 +214,6 @@ public class PlayerController {
 
     private void playCurrentBlock() {
         LOGGER.debug("playBlock with block " + currentBlock + " requested");
-        recordingLed.setVisible(false);
         nextBlockRequested.set(nextBlockRequested.not().get());
     }
 
@@ -204,12 +221,16 @@ public class PlayerController {
         if (configuration.isUseTargetFeedback()) {
 
             FrequencyDetector detector = FrequencyDetector.builder()
-                    .withTimeoutMillis(2000)
+                    .withTimeoutMillis(DETECTION_TIMEOUT)
                     .withFrequencyConsumer(f -> f.map(frequency -> {
-                        if (Math.abs(frequency - OK_TONE) < 100.0) {
+                        if (frequency == FrequencyDetector.SUCCESS_FREQUENCY) {
                             LOGGER.debug("Detected success tone");
                             encodingSpeedPolicy.onSuccess();
-                            doAfterDelay(configuration.getPauseBetweenBlocks(), () -> {
+                            if (currentBlock.get() != LOADER_BLOCK) {
+                                playBlinkingTransition(configuration.getRecordingPause());
+                            }
+                            doAfterDelay(currentBlock.get() == LOADER_BLOCK ?
+                                    PAUSE_AFTER_LOADER : configuration.getRecordingPause(), () -> {
                                 currentBlock.set(currentBlock.get() + 1);
                                 playCurrentBlock();
                             });
@@ -218,9 +239,11 @@ public class PlayerController {
                             encodingSpeedPolicy.onFailure();
                             playCurrentBlock();
                         }
+                        recordingLed.setVisible(false);
                         return 0;
                     }).orElseGet(() -> {
                         LOGGER.debug("Fallback to repeat current block");
+                        recordingLed.setVisible(false);
                         encodingSpeedPolicy.onFailure();
                         playCurrentBlock();
                         return null;
@@ -231,7 +254,10 @@ public class PlayerController {
             detector.start();
         } else {
             LOGGER.debug("Playing next block on skipped detection");
-            doAfterDelay(configuration.getPauseBetweenBlocks(), () -> {
+            if (currentBlock.get() != LOADER_BLOCK) {
+                playBlinkingTransition(configuration.getRecordingPause());
+            }
+            doAfterDelay(configuration.getRecordingPause(), () -> {
                 currentBlock.set(currentBlock.get() + 1);
                 playCurrentBlock();
             });
@@ -306,6 +332,12 @@ public class PlayerController {
         playingLed.setVisible(false);
         recordingLed.setVisible(false);
 
+        //React to changes in the game list
+        applicationContext.getGameList().addListener((InvalidationListener) e -> {
+            stop();
+            romsetByteArray = null;
+        });
+
         rewindButton.disableProperty().bind(playing
                 .or(currentBlock.isEqualTo(LOADER_BLOCK)));
         forwardButton.disableProperty().bind(playing
@@ -333,6 +365,7 @@ public class PlayerController {
                         initMediaPlayer(getBlockMediaPlayer(currentBlock.get()));
                     } else {
                         stop();
+                        currentBlock.set(LOADER_BLOCK);
                     }
                 } catch (Exception e) {
                     LOGGER.error("Setting up player", e);
