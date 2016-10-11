@@ -73,14 +73,24 @@ public class CompressedWavOutputStream extends FilterOutputStream {
     private ByteArrayOutputStream wavStream;
     private WavOutputFormat format;
 
+    private static int highLevel(ChannelType channelType) {
+        return channelType.equals(ChannelType.MONO) ? 0xFF : HIGH_VALUE;
+    }
+
+    private static int lowLevel(ChannelType channelType) {
+        return channelType.equals(ChannelType.MONO) ? 0 : LOW_VALUE;
+    }
+
     private void writeBits(int value) throws IOException {
         value &= 0xffff;
+        int level = initialBit ? highLevel(format.getChannelType()) : lowLevel(format.getChannelType());
+        int reverseLevel = initialBit ? lowLevel(format.getChannelType()) : highLevel(format.getChannelType());
         for (int i = 0; i < value; i++) {
-            wavStream.write(initialBit ? HIGH_VALUE : LOW_VALUE);
+            wavStream.write(level);
             if (format.getChannelType() == ChannelType.STEREO) {
-                wavStream.write(initialBit ? HIGH_VALUE : LOW_VALUE);
+                wavStream.write(level);
             } else if (format.getChannelType() == ChannelType.STEREOINV) {
-                wavStream.write(initialBit ? LOW_VALUE : HIGH_VALUE);
+                wavStream.write(reverseLevel);
             }
         }
         initialBit = !initialBit;

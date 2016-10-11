@@ -258,7 +258,8 @@ public class PlayerController {
             if (currentBlock.get() != LOADER_BLOCK) {
                 playBlinkingTransition(configuration.getRecordingPause());
             }
-            doAfterDelay(configuration.getRecordingPause(), () -> {
+            doAfterDelay(currentBlock.get() == LOADER_BLOCK ?
+                    PAUSE_AFTER_LOADER : configuration.getRecordingPause(), () -> {
                 currentBlock.set(currentBlock.get() + 1);
                 playCurrentBlock();
             });
