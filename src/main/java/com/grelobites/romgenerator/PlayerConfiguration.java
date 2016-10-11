@@ -41,6 +41,8 @@ public class PlayerConfiguration {
     private IntegerProperty trailLength;
     private IntegerProperty recordingPause;
     private BooleanProperty useTargetFeedback;
+    private BooleanProperty useSerialPort;
+    private StringProperty serialPort;
 
     private static PlayerConfiguration INSTANCE;
 
@@ -53,7 +55,8 @@ public class PlayerConfiguration {
         trailLength = new SimpleIntegerProperty(DEFAULT_TRAILLENGTH);
         recordingPause = new SimpleIntegerProperty(DEFAULT_RECORDINGPAUSE);
         useTargetFeedback = new SimpleBooleanProperty(true);
-
+        useSerialPort = new SimpleBooleanProperty(false);
+        serialPort = new SimpleStringProperty(null);
         loaderPath.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 LOADERPATH_PROPERTY, newValue));
         blockSize.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
@@ -182,6 +185,30 @@ public class PlayerConfiguration {
 
     public void setUseTargetFeedback(boolean useTargetFeedback) {
         this.useTargetFeedback.set(useTargetFeedback);
+    }
+
+    public boolean isUseSerialPort() {
+        return useSerialPort.get();
+    }
+
+    public BooleanProperty useSerialPortProperty() {
+        return useSerialPort;
+    }
+
+    public void setUseSerialPort(boolean useSerialPort) {
+        this.useSerialPort.set(useSerialPort);
+    }
+
+    public String getSerialPort() {
+        return serialPort.get();
+    }
+
+    public StringProperty serialPortProperty() {
+        return serialPort;
+    }
+
+    public void setSerialPort(String serialPort) {
+        this.serialPort.set(serialPort);
     }
 
     public static Preferences getApplicationPreferences() {

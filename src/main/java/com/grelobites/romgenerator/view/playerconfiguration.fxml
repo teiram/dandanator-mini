@@ -13,7 +13,7 @@
             <Label fx:id="loaderPath" alignment="CENTER" layoutX="153.0" layoutY="10.0" prefHeight="28.0" prefWidth="249.0" text="Integrado" textOverrun="LEADING_ELLIPSIS" />
             <Button fx:id="changeLoaderPathButton" layoutX="384.0" layoutY="11.0" mnemonicParsing="false" text="Cambiar" />
             <Button fx:id="resetLoaderPathButton" layoutX="465.0" layoutY="11.0" mnemonicParsing="false" text="Revertir" />
-      <CheckBox fx:id="useTargetFeedback" layoutX="7.0" layoutY="213.0" mnemonicParsing="false" text="Detectar pitidos" />
+      <CheckBox fx:id="useTargetFeedback" layoutX="5.0" layoutY="210.0" mnemonicParsing="false" text="Detectar pitidos" />
       <Label layoutX="5.0" layoutY="43.0" text="Tamaño de Bloque" />
       <TextField fx:id="blockSize" layoutX="215.0" layoutY="37.0" prefHeight="26.0" prefWidth="95.0" />
       <Label layoutX="6.0" layoutY="70.0" text="Velocidad de codificacion" />
@@ -26,5 +26,7 @@
       <TextField fx:id="pilotLength" layoutX="215.0" layoutY="91.0" prefHeight="26.0" prefWidth="95.0" />
       <TextField fx:id="trailLength" layoutX="215.0" layoutY="118.0" prefHeight="26.0" prefWidth="95.0" />
       <TextField fx:id="recordingPause" layoutX="215.0" layoutY="145.0" prefHeight="26.0" prefWidth="95.0" />
+      <CheckBox fx:id="useSerialPort" layoutX="5.0" layoutY="244.0" mnemonicParsing="false" text="Por puerto serie" />
+      <ComboBox fx:id="serialPort" layoutX="161.0" layoutY="235.0" prefWidth="150.0" />
     </children>
 </AnchorPane>

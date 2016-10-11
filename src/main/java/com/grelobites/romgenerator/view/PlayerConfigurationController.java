@@ -12,6 +12,7 @@ import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import javafx.util.converter.NumberStringConverter;
+import jssc.SerialPortList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,11 @@ public class PlayerConfigurationController {
     @FXML
     private CheckBox useTargetFeedback;
 
+    @FXML
+    private ComboBox<String> serialPort;
+
+    @FXML
+    private CheckBox useSerialPort;
 
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
@@ -187,5 +193,13 @@ public class PlayerConfigurationController {
         audioMode.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) ->
                         PlayerConfiguration.getInstance().setAudioMode(newValue));
+
+        serialPort.setItems(FXCollections.observableArrayList(SerialPortList.getPortNames()));
+        serialPort.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) ->
+                        PlayerConfiguration.getInstance().setSerialPort(newValue));
+        useSerialPort.setSelected(false);
+        useSerialPort.selectedProperty().bindBidirectional(
+                PlayerConfiguration.getInstance().useSerialPortProperty());
     }
 }

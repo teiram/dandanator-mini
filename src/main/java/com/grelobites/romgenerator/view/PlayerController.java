@@ -10,8 +10,11 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableObjectValue;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -73,8 +76,6 @@ public class PlayerController {
     @FXML
     private Circle recordingLed;
 
-    private File temporaryFile;
-
     private ApplicationContext applicationContext;
 
     private BooleanProperty playing;
@@ -86,6 +87,8 @@ public class PlayerController {
     private BooleanProperty nextBlockRequested;
 
     private EncodingSpeedPolicy encodingSpeedPolicy;
+
+    private ObjectProperty<DataPlayer> currentPlayer;
 
     private static void doAfterDelay(int delay, Runnable r) {
         Task<Void> sleeper = new Task<Void>() {
@@ -103,39 +106,13 @@ public class PlayerController {
         new Thread(sleeper).start();
     }
 
-    private void encodeBuffer(byte[] buffer, OutputStream out) throws IOException {
-        OutputStream wos = encodingSpeedPolicy.useStandardEncoding() ?
-                new StandardWavOutputStream(out, StandardWavOutputFormat.builder()
-                        .withSampleRate(StandardWavOutputFormat.SRATE_44100)
-                        .withPilotDurationMillis(configuration.getPilotLength())
-                        .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
-                        .build()) :
-                new CompressedWavOutputStream(out,
-                        CompressedWavOutputFormat.builder()
-                                .withSampleRate(CompressedWavOutputFormat.SRATE_44100)
-                                .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
-                                .withSpeed(encodingSpeedPolicy.getEncodingSpeed())
-                                .withFlagByte(CompressedWavOutputFormat.DATA_FLAG_BYTE)
-                                .withOffset(CompressedWavOutputFormat.DEFAULT_OFFSET)
-                                .withPilotDurationMillis(configuration.getPilotLength())
-                                .withFinalPauseDurationMillis(configuration.getTrailLength())
-                                .build());
-
-        wos.write(buffer);
-        wos.flush();
-    }
-
     private void playBlinkingTransition(int duration) {
-        final boolean visibleState = playingLed.isVisible();
         playingLed.setVisible(true);
         FadeTransition ft = new FadeTransition(Duration.millis(1000), playingLed);
         ft.setFromValue(1.0);
         ft.setToValue(0.0);
         ft.setCycleCount(duration / 1000);
         ft.setAutoReverse(true);
-        ft.setOnFinished(e -> {
-            //playingLed.setVisible(visibleState);
-        });
         ft.play();
     }
 
@@ -145,23 +122,9 @@ public class PlayerController {
         currentBlock = new SimpleIntegerProperty(LOADER_BLOCK);
         nextBlockRequested = new SimpleBooleanProperty();
         encodingSpeedPolicy = new EncodingSpeedPolicy(configuration.getEncodingSpeed());
+        currentPlayer = new SimpleObjectProperty<>();
     }
 
-    private File getTemporaryFile() throws IOException {
-        if (temporaryFile == null) {
-            temporaryFile = File.createTempFile("romgenerator", ".wav");
-        }
-        return temporaryFile;
-    }
-
-    private void cleanup() {
-        if (temporaryFile != null) {
-            if (!temporaryFile.delete()) {
-                LOGGER.warn("Unable to delete temporary file " + temporaryFile);
-            }
-            temporaryFile = null;
-        }
-    }
 
     private byte[] getRomsetByteArray() throws IOException {
         if (romsetByteArray == null) {
@@ -172,53 +135,19 @@ public class PlayerController {
         return romsetByteArray;
     }
 
-    private MediaPlayer getBootstrapMediaPlayer() throws IOException {
-        File tempFile = getTemporaryFile();
-        FileOutputStream fos = new FileOutputStream(tempFile);
-        byte[] loaderTap = TapUtil.generateLoaderTap(configuration.getLoaderStream(),
-                configuration.isUseTargetFeedback());
-
-        TapUtil.tap2wav(StandardWavOutputFormat.builder()
-                        .withSampleRate(CompressedWavOutputFormat.SRATE_44100)
-                        .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
-                        .withPilotDurationMillis(5000)
-                        .build(),
-                new ByteArrayInputStream(loaderTap),
-                fos);
-        fos.close();
-        MediaPlayer player = new MediaPlayer(new Media(tempFile.toURI().toURL().toExternalForm()));
-        player.setOnError(() -> {
-            LOGGER.error("Bootstrap Player error: " + player.getError());
-            player.stop();
-        });
+    private DataPlayer getBootstrapMediaPlayer() throws IOException {
+        AudioDataPlayer player = new AudioDataPlayer(mediaView);
         return player;
     }
 
-    private static int getBlockCrc(byte[] data, int blockSize) {
-        int sum = 0;
-        for (int i = 0; i <  blockSize; i++) {
-            sum += Byte.toUnsignedInt(data[i]);
-        }
-        return sum & 0xffff;
-    }
-
-    private MediaPlayer getBlockMediaPlayer(int block) throws IOException {
+    private DataPlayer getBlockMediaPlayer(int block) throws IOException {
         int blockSize = configuration.getBlockSize();
-        byte[] buffer = new byte[blockSize + 3];
+        byte[] buffer = new byte[blockSize];
         System.arraycopy(getRomsetByteArray(), block * blockSize, buffer, 0, blockSize);
 
-        buffer[blockSize] = Integer.valueOf(block + 1).byteValue();
-
-        Util.writeAsLittleEndian(buffer, blockSize + 1, getBlockCrc(buffer, blockSize + 1));
-
-        File tempFile = getTemporaryFile();
-        LOGGER.debug("Creating new MediaPlayer for block " + block + " on file " + tempFile);
-        FileOutputStream fos = new FileOutputStream(tempFile);
-        encodeBuffer(buffer, fos);
-        fos.close();
-        MediaPlayer player = new MediaPlayer(new Media(tempFile.toURI().toURL().toExternalForm()));
-        player.setOnError(() -> LOGGER.error("Player error: " + player.getError()));
-        return player;
+        return configuration.isUseSerialPort() ?
+                new SerialDataPlayer(block, buffer) :
+                new AudioDataPlayer(mediaView, block,  buffer, encodingSpeedPolicy);
     }
 
     private void playCurrentBlock() {
@@ -277,32 +206,31 @@ public class PlayerController {
     private void onEndOfMedia() {
         try {
             playingLed.setVisible(false);
-            cleanup();
             calculateNextBlock();
         } catch (Exception e) {
             LOGGER.error("Setting next player", e);
         }
     }
 
-    private void unbindPlayer(MediaPlayer player) {
-        player.volumeProperty().unbindBidirectional(volumeSlider.valueProperty());
+    private void unbindPlayer(DataPlayer player) {
+        LOGGER.debug("Unbinding player " + player);
+        if (player.volumeProperty().isPresent()) {
+            player.volumeProperty().get().unbindBidirectional(volumeSlider.valueProperty());
+        }
         blockProgress.progressProperty().unbind();
     }
 
-    private void bindPlayer(MediaPlayer player) {
-        player.volumeProperty().bindBidirectional(volumeSlider.valueProperty());
-        blockProgress.progressProperty().bind(Bindings.createDoubleBinding(() -> {
-            if (player.getCurrentTime() != null && player.getTotalDuration() != null) {
-                return player.getCurrentTime().toSeconds() / player.getTotalDuration().toSeconds();
-            } else {
-                return 0.0;
-            }
-        }, player.currentTimeProperty(), player.totalDurationProperty()));
+    private void bindPlayer(DataPlayer player) {
+        LOGGER.debug("Binding player " + player);
+        if (player.volumeProperty().isPresent()) {
+            player.volumeProperty().get().bindBidirectional(volumeSlider.valueProperty());
+        }
+        blockProgress.progressProperty().bind(player.progressProperty());
     }
 
-    private void initMediaPlayer(MediaPlayer player) {
-        player.setOnEndOfMedia(this::onEndOfMedia);
-        mediaView.setMediaPlayer(player);
+    private void initMediaPlayer(DataPlayer player) {
+        this.currentPlayer.set(player);
+        player.onFinalization(this::onEndOfMedia);
         play();
     }
 
@@ -310,7 +238,7 @@ public class PlayerController {
         playingLed.setVisible(true);
         playButton.getStyleClass().removeAll(PLAY_BUTTON_STYLE);
         playButton.getStyleClass().add(STOP_BUTTON_STYLE);
-        mediaView.getMediaPlayer().play();
+        currentPlayer.get().send();
         playing.set(true);
     }
 
@@ -318,7 +246,7 @@ public class PlayerController {
         playingLed.setVisible(false);
         playButton.getStyleClass().removeAll(STOP_BUTTON_STYLE);
         playButton.getStyleClass().add(PLAY_BUTTON_STYLE);
-        mediaView.getMediaPlayer().stop();
+        currentPlayer.get().stop();
         playing.set(false);
         encodingSpeedPolicy.reset(configuration.getEncodingSpeed());
     }
@@ -408,7 +336,7 @@ public class PlayerController {
             }
         });
 
-        mediaView.mediaPlayerProperty().addListener((observable, oldValue, newValue) -> {
+        currentPlayer.addListener((observable, oldValue, newValue) -> {
             if (oldValue != null) {
                 unbindPlayer(oldValue);
             }
