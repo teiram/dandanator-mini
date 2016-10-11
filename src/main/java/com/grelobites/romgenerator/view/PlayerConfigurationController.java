@@ -196,8 +196,11 @@ public class PlayerConfigurationController {
 
         serialPort.setItems(FXCollections.observableArrayList(SerialPortList.getPortNames()));
         serialPort.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) ->
-                        PlayerConfiguration.getInstance().setSerialPort(newValue));
+                (observable, oldValue, newValue) -> {
+                    PlayerConfiguration.getInstance().setSerialPort(newValue);
+                    useSerialPort.setDisable(newValue == null);
+                });
+        useSerialPort.setDisable(true);
         useSerialPort.setSelected(false);
         useSerialPort.selectedProperty().bindBidirectional(
                 PlayerConfiguration.getInstance().useSerialPortProperty());
