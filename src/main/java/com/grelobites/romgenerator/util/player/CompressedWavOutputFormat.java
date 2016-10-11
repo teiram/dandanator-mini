@@ -1,6 +1,6 @@
 package com.grelobites.romgenerator.util.player;
 
-public class WavOutputFormat {
+public class CompressedWavOutputFormat {
     public static final int SRATE_44100 = 44100;
     public static final int SRATE_48000 = 48000;
     public static final int HEADER_FLAG_BYTE = 0;
@@ -19,7 +19,7 @@ public class WavOutputFormat {
     private int finalPauseDurationMillis;
 
     public static class Builder {
-        private WavOutputFormat outputFormat = new WavOutputFormat();
+        private CompressedWavOutputFormat outputFormat = new CompressedWavOutputFormat();
 
         public Builder withSampleRate(int sampleRate) {
             outputFormat.setSampleRate(sampleRate);
@@ -56,7 +56,7 @@ public class WavOutputFormat {
             return this;
         }
 
-        public WavOutputFormat build() {
+        public CompressedWavOutputFormat build() {
             return outputFormat;
         }
     }
@@ -65,7 +65,7 @@ public class WavOutputFormat {
         return new Builder();
     }
 
-    public static WavOutputFormat defaultHeaderFormat() {
+    public static CompressedWavOutputFormat defaultHeaderFormat() {
         return new Builder().withSampleRate(SRATE_44100)
                 .withChannelType(ChannelType.STEREOINV)
                 .withFlagByte(HEADER_FLAG_BYTE)
@@ -76,7 +76,7 @@ public class WavOutputFormat {
                 .build();
     }
 
-    public static WavOutputFormat defaultDataFormat() {
+    public static CompressedWavOutputFormat defaultDataFormat() {
         return new Builder().withSampleRate(SRATE_44100)
                 .withChannelType(ChannelType.STEREOINV)
                 .withFlagByte(DATA_FLAG_BYTE)
@@ -87,9 +87,9 @@ public class WavOutputFormat {
                 .build();
     }
 
-    public WavOutputFormat(int sampleRate, ChannelType channelType, int flagByte,
-                           int speed, int offset, int pilotDurationMillis,
-                           int finalPauseDurationMillis) {
+    public CompressedWavOutputFormat(int sampleRate, ChannelType channelType, int flagByte,
+                                     int speed, int offset, int pilotDurationMillis,
+                                     int finalPauseDurationMillis) {
         this.sampleRate = sampleRate;
         this.channelType = channelType;
         this.flagByte = flagByte;
@@ -99,7 +99,7 @@ public class WavOutputFormat {
         this.finalPauseDurationMillis = finalPauseDurationMillis;
     }
 
-    public WavOutputFormat() {}
+    public CompressedWavOutputFormat() {}
 
     public int getSampleRate() {
         return sampleRate;

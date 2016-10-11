@@ -1,7 +1,7 @@
 package com.grelobites.romgenerator.serialproto;
 
 import com.grelobites.romgenerator.util.player.ChannelType;
-import com.grelobites.romgenerator.util.player.WavOutputFormat;
+import com.grelobites.romgenerator.util.player.CompressedWavOutputFormat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
@@ -47,7 +47,7 @@ public class SerialWavOutputStream extends FilterOutputStream {
     private boolean initialBit;
     private ByteArrayOutputStream buffer;
     private ByteArrayOutputStream wavStream;
-    private WavOutputFormat format;
+    private CompressedWavOutputFormat format;
 
     private void writeBit(int bit) throws IOException {
         for (int i = 0; i < SAMPLE_LENGTH; i++) {
@@ -70,7 +70,7 @@ public class SerialWavOutputStream extends FilterOutputStream {
         writeBit(STOP_BIT);
     }
 
-    public SerialWavOutputStream(OutputStream out, WavOutputFormat format) {
+    public SerialWavOutputStream(OutputStream out, CompressedWavOutputFormat format) {
         super(out);
         this.format = format;
         this.buffer = new ByteArrayOutputStream();

@@ -1,7 +1,7 @@
 package com.grelobites.romgenerator.serialproto;
 
 
-import com.grelobites.romgenerator.util.player.WavOutputFormat;
+import com.grelobites.romgenerator.util.player.CompressedWavOutputFormat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,7 +13,7 @@ public class SerialWavGenerator {
             try (FileOutputStream fos = new FileOutputStream(outputFile)) {
                 SerialWavOutputStream wos = new SerialWavOutputStream(
                         fos,
-                        WavOutputFormat.defaultDataFormat());
+                        CompressedWavOutputFormat.defaultDataFormat());
                 for (int i = 0; i < 256; i++) {
                     wos.write(i);
                 }

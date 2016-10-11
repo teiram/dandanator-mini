@@ -71,7 +71,7 @@ public class CompressedWavOutputStream extends FilterOutputStream {
     private boolean initialBit;
     private ByteArrayOutputStream buffer;
     private ByteArrayOutputStream wavStream;
-    private WavOutputFormat format;
+    private CompressedWavOutputFormat format;
 
     private static int highLevel(ChannelType channelType) {
         return channelType.equals(ChannelType.MONO) ? 0xFF : HIGH_VALUE;
@@ -96,7 +96,7 @@ public class CompressedWavOutputStream extends FilterOutputStream {
         initialBit = !initialBit;
     }
 
-    public CompressedWavOutputStream(OutputStream out, WavOutputFormat format) {
+    public CompressedWavOutputStream(OutputStream out, CompressedWavOutputFormat format) {
         super(out);
         this.format = format;
         this.buffer = new ByteArrayOutputStream();
@@ -111,7 +111,7 @@ public class CompressedWavOutputStream extends FilterOutputStream {
     public void flush() throws IOException {
         initialBit = false;
         byte[] data = buffer.toByteArray();
-        boolean mlow = format.getSampleRate() == WavOutputFormat.SRATE_48000;
+        boolean mlow = format.getSampleRate() == CompressedWavOutputFormat.SRATE_48000;
         int pilotts = (short) (mlow ? 875 : 952);
         int pilotpulses = new Double(format.getPilotDurationMillis() * 3500 / pilotts + 0.5).intValue();
         pilotpulses += ((pilotpulses & 1) == 0 ? 1 : 0);

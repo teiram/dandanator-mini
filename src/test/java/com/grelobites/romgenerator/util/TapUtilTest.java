@@ -1,8 +1,10 @@
 package com.grelobites.romgenerator.util;
 
+import com.grelobites.romgenerator.util.player.ChannelType;
+import com.grelobites.romgenerator.util.player.StandardWavOutputFormat;
 import com.grelobites.romgenerator.util.player.TapOutputStream;
 import com.grelobites.romgenerator.util.player.TapUtil;
-import com.grelobites.romgenerator.util.player.WavOutputFormat;
+import com.grelobites.romgenerator.util.player.CompressedWavOutputFormat;
 import org.junit.Test;
 
 import java.io.*;
@@ -17,7 +19,11 @@ public class TapUtilTest {
         InputStream tap = TapUtilTest.class.getResourceAsStream("/EE_full.tap");
         assertNotNull(tap);
         ByteArrayOutputStream wavStream = new ByteArrayOutputStream();
-        TapUtil.tap2wav(WavOutputFormat.defaultDataFormat(), tap, wavStream);
+        TapUtil.tap2wav(StandardWavOutputFormat.builder()
+                .withChannelType(ChannelType.STEREOINV)
+                .withSampleRate(StandardWavOutputFormat.SRATE_44100)
+                .withPilotDurationMillis(5000).build(),
+                tap, wavStream);
         assertNotEquals(0, wavStream.size());
     }
 

@@ -19,7 +19,7 @@ public class TapUtil {
     private static final String BOOOTER_RESOURCE = "/player/boot.bin";
     private static final String SCREEN_RESOURCE = "/player/screen.scr";
 
-    public static void tap2wav(WavOutputFormat format, InputStream tapStream, OutputStream wavStream)
+    public static void tap2wav(StandardWavOutputFormat format, InputStream tapStream, OutputStream wavStream)
     throws IOException {
         try (StandardWavOutputStream encodingStream = new StandardWavOutputStream(wavStream, format)) {
             while (true) {

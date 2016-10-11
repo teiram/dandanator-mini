@@ -19,8 +19,6 @@ public class StandardWavOutputStream extends FilterOutputStream {
     private static final int ONE_PULSE_LENGTH = Float.valueOf(1710 * 0.875f).intValue();
     private static final int ZERO_PULSE_LENGTH = Float.valueOf(855 * 0.875f).intValue();
 
-    private static final int HEADER_DURATION = 5000;
-
     private static final int HIGH_VALUE = 0xc0;
     private static final int LOW_VALUE = 0x40;
 
@@ -50,7 +48,7 @@ public class StandardWavOutputStream extends FilterOutputStream {
     private List<ByteArrayOutputStream> buffers;
     private ByteArrayOutputStream currentBuffer;
     private ByteArrayOutputStream wavStream;
-    private WavOutputFormat format;
+    private StandardWavOutputFormat format;
 
     private int tStatesToSamples(int tstates) {
         int upper = tstates * format.getSampleRate();
@@ -83,7 +81,7 @@ public class StandardWavOutputStream extends FilterOutputStream {
         }
     }
 
-    public StandardWavOutputStream(OutputStream out, WavOutputFormat format) {
+    public StandardWavOutputStream(OutputStream out, StandardWavOutputFormat format) {
         super(out);
         this.format = format;
         buffers = new ArrayList<>();
@@ -92,7 +90,7 @@ public class StandardWavOutputStream extends FilterOutputStream {
     }
 
     private void writeHeader() throws IOException {
-        int headerSamples = new Double(HEADER_DURATION * format.getSampleRate() / 1000).intValue();
+        int headerSamples = new Double(format.getPilotDurationMillis() * format.getSampleRate() / 1000).intValue();
         int pulseSamples = tStatesToSamples(HEADER_PULSE_LENGTH);
         int cycles = headerSamples / (pulseSamples * 2);
         for (int i = 0; i < cycles; i++) {

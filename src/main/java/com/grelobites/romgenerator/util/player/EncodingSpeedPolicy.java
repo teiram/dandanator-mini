@@ -8,6 +8,8 @@ public class EncodingSpeedPolicy {
 
     private static final int MIN_SPEED = 7;
     private static final int MAX_SPEED = 0;
+    private static final int STANDARD_SPEED = 8;
+
     private static final int DEFAULT_ACCUMULATIVE_SUCCESSES_THRESHOLD = 2;
     private static final int DEFAULT_ACCUMULATIVE_FAILURES_THRESHOLD = 2;
 
@@ -35,12 +37,14 @@ public class EncodingSpeedPolicy {
     }
 
     public EncodingSpeedPolicy(int maximumEncodingSpeed) {
+        LOGGER.debug("Creating EncodingSpeedPolicy with maximum speed " + maximumEncodingSpeed);
         this.maximumEncodingSpeed = maximumEncodingSpeed;
         this.encodingSpeed = maximumEncodingSpeed;
     }
 
-    public void reset() {
+    public void reset(int maximumEncodingSpeed) {
         consecutiveFailures = consecutiveSuccesses = 0;
+        this.maximumEncodingSpeed = maximumEncodingSpeed;
         encodingSpeed = maximumEncodingSpeed;
     }
 
@@ -77,5 +81,9 @@ public class EncodingSpeedPolicy {
     public void onSuccess() {
         consecutiveSuccesses++;
         consecutiveFailures = 0;
+    }
+
+    public boolean useStandardEncoding() {
+        return encodingSpeed == STANDARD_SPEED;
     }
 }

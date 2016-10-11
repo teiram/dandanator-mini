@@ -103,6 +103,28 @@ public class PlayerController {
         new Thread(sleeper).start();
     }
 
+    private void encodeBuffer(byte[] buffer, OutputStream out) throws IOException {
+        OutputStream wos = encodingSpeedPolicy.useStandardEncoding() ?
+                new StandardWavOutputStream(out, StandardWavOutputFormat.builder()
+                        .withSampleRate(StandardWavOutputFormat.SRATE_44100)
+                        .withPilotDurationMillis(configuration.getPilotLength())
+                        .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
+                        .build()) :
+                new CompressedWavOutputStream(out,
+                        CompressedWavOutputFormat.builder()
+                                .withSampleRate(CompressedWavOutputFormat.SRATE_44100)
+                                .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
+                                .withSpeed(encodingSpeedPolicy.getEncodingSpeed())
+                                .withFlagByte(CompressedWavOutputFormat.DATA_FLAG_BYTE)
+                                .withOffset(CompressedWavOutputFormat.DEFAULT_OFFSET)
+                                .withPilotDurationMillis(configuration.getPilotLength())
+                                .withFinalPauseDurationMillis(configuration.getTrailLength())
+                                .build());
+
+        wos.write(buffer);
+        wos.flush();
+    }
+
     private void playBlinkingTransition(int duration) {
         final boolean visibleState = playingLed.isVisible();
         playingLed.setVisible(true);
@@ -156,9 +178,11 @@ public class PlayerController {
         byte[] loaderTap = TapUtil.generateLoaderTap(configuration.getLoaderStream(),
                 configuration.isUseTargetFeedback());
 
-        TapUtil.tap2wav(WavOutputFormat.builder()
-                .withSampleRate(WavOutputFormat.SRATE_44100)
-                .withChannelType(ChannelType.valueOf(configuration.getAudioMode())).build(),
+        TapUtil.tap2wav(StandardWavOutputFormat.builder()
+                        .withSampleRate(CompressedWavOutputFormat.SRATE_44100)
+                        .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
+                        .withPilotDurationMillis(5000)
+                        .build(),
                 new ByteArrayInputStream(loaderTap),
                 fos);
         fos.close();
@@ -187,26 +211,10 @@ public class PlayerController {
 
         Util.writeAsLittleEndian(buffer, blockSize + 1, getBlockCrc(buffer, blockSize + 1));
 
-        /*
-        FileOutputStream blockfile = new FileOutputStream("/var/tmp/block " + block + ".bin");
-        blockfile.write(buffer);
-        blockfile.close();
-        */
         File tempFile = getTemporaryFile();
         LOGGER.debug("Creating new MediaPlayer for block " + block + " on file " + tempFile);
         FileOutputStream fos = new FileOutputStream(tempFile);
-        CompressedWavOutputStream wos = new CompressedWavOutputStream(fos,
-                WavOutputFormat.builder()
-                        .withSampleRate(WavOutputFormat.SRATE_44100)
-                        .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
-                        .withSpeed(encodingSpeedPolicy.getEncodingSpeed())
-                        .withFlagByte(WavOutputFormat.DATA_FLAG_BYTE)
-                        .withOffset(WavOutputFormat.DEFAULT_OFFSET)
-                        .withPilotDurationMillis(configuration.getPilotLength())
-                        .withFinalPauseDurationMillis(configuration.getTrailLength())
-                        .build());
-        wos.write(buffer);
-        wos.close();
+        encodeBuffer(buffer, fos);
         fos.close();
         MediaPlayer player = new MediaPlayer(new Media(tempFile.toURI().toURL().toExternalForm()));
         player.setOnError(() -> LOGGER.error("Player error: " + player.getError()));
@@ -312,7 +320,7 @@ public class PlayerController {
         playButton.getStyleClass().add(PLAY_BUTTON_STYLE);
         mediaView.getMediaPlayer().stop();
         playing.set(false);
-        encodingSpeedPolicy.reset();
+        encodingSpeedPolicy.reset(configuration.getEncodingSpeed());
     }
 
     private String getCurrentBlockString() {

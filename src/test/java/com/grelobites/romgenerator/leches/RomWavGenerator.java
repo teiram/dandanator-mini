@@ -1,11 +1,10 @@
 package com.grelobites.romgenerator.leches;
 
 
-import com.grelobites.romgenerator.serialproto.SerialWavOutputStream;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.player.ChannelType;
 import com.grelobites.romgenerator.util.player.CompressedWavOutputStream;
-import com.grelobites.romgenerator.util.player.WavOutputFormat;
+import com.grelobites.romgenerator.util.player.CompressedWavOutputFormat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,10 +18,10 @@ public class RomWavGenerator {
         try (FileOutputStream fos = new FileOutputStream(outputFile)) {
             CompressedWavOutputStream wos = new CompressedWavOutputStream(
                     fos,
-                    WavOutputFormat.builder()
-                            .withSampleRate(WavOutputFormat.SRATE_44100)
+                    CompressedWavOutputFormat.builder()
+                            .withSampleRate(CompressedWavOutputFormat.SRATE_44100)
                             .withChannelType(ChannelType.STEREOINV)
-                            .withFlagByte(WavOutputFormat.DATA_FLAG_BYTE)
+                            .withFlagByte(CompressedWavOutputFormat.DATA_FLAG_BYTE)
                             .withSpeed(4)
                             .withOffset(0)
                             .withPilotDurationMillis(2000)
