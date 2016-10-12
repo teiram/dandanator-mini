@@ -58,7 +58,6 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
             serialPort.setParams(SerialPort.BAUDRATE_38400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
 
-
             int counter = 0;
             for (byte value : data) {
                 serialPort.writeByte(value);
@@ -69,10 +68,15 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
                     });
                 }
                 if (state != State.RUNNING) {
+                    LOGGER.debug("No more in RUNNING state");
                     break;
                 }
             }
+            if (state == State.RUNNING && onFinalization != null) {
+                Platform.runLater(onFinalization);
+            }
             state = State.STOPPED;
+            LOGGER.debug("State is now STOPPED");
         } catch (SerialPortException e) {
             LOGGER.error("Serial port exception", e);
         } finally {
@@ -83,11 +87,7 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
             } catch (SerialPortException e) {
                 LOGGER.error("Closing port", e);
             }
-            if (onFinalization != null) {
-                onFinalization.run();
-            }
         }
-
     }
 
     @Override
@@ -98,12 +98,16 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
 
     @Override
     public void stop() {
-        state = State.STOPPING;
-        while (state != State.STOPPED) {
-            try {
-                serviceThread.join();
-            } catch (InterruptedException e) {
-                LOGGER.debug("Serial thread was interrupted" , e);
+        if (state == State.RUNNING) {
+            state = State.STOPPING;
+            LOGGER.debug("State changed to STOPPING");
+
+            while (state != State.STOPPED) {
+                try {
+                    serviceThread.join();
+                } catch (InterruptedException e) {
+                    LOGGER.debug("Serial thread was interrupted", e);
+                }
             }
         }
     }

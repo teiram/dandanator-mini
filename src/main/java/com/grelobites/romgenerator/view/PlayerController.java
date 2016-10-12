@@ -246,6 +246,7 @@ public class PlayerController {
         playingLed.setVisible(false);
         playButton.getStyleClass().removeAll(STOP_BUTTON_STYLE);
         playButton.getStyleClass().add(PLAY_BUTTON_STYLE);
+        LOGGER.debug("Stopping player");
         currentPlayer.get().stop();
         playing.set(false);
         encodingSpeedPolicy.reset(configuration.getEncodingSpeed());
