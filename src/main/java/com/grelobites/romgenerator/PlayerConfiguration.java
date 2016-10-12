@@ -18,6 +18,7 @@ public class PlayerConfiguration {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerConfiguration.class);
 
     private static final String DEFAULT_LOADER_BINARY = "/player/eewriter.bin";
+    private static final String SCREEN_RESOURCE = "/player/screen.scr";
     private static final String LOADERPATH_PROPERTY = "loaderPath";
     private static final String BLOCKSIZE_PROPERTY = "blockSize";
     private static final String AUDIOMODE_PROPERTY = "audioMode";
@@ -31,7 +32,7 @@ public class PlayerConfiguration {
     private static final int DEFAULT_ENCODINGSPEED = 2;
     private static final int DEFAULT_PILOTLENGTH = 250;
     private static final int DEFAULT_TRAILLENGTH = 0;
-    private static final int DEFAULT_RECORDINGPAUSE = 10000;
+    private static final int DEFAULT_RECORDINGPAUSE = 8000;
 
     private StringProperty loaderPath;
     private IntegerProperty blockSize;
@@ -89,6 +90,10 @@ public class PlayerConfiguration {
         } else {
             return new FileInputStream(loaderPath.get());
         }
+    }
+
+    public InputStream getScreenStream() throws IOException {
+        return PlayerConfiguration.class.getResourceAsStream(SCREEN_RESOURCE);
     }
 
     public String getLoaderPath() {
