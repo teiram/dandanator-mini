@@ -210,7 +210,13 @@ public class PlayerConfigurationController {
         useSerialPort.setSelected(false);
         useSerialPort.selectedProperty().bindBidirectional(
                 PlayerConfiguration.getInstance().useSerialPortProperty());
-        //useTargetFeedback.disableProperty().bind(useSerialPort.selectedProperty());
+        useSerialPort.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                useTargetFeedback.setSelected(false);
+            }
+            useTargetFeedback.setDisable(newValue);
+        });
+
         refreshSerialPorts.setOnAction(e -> {
             serialPort.getSelectionModel().clearSelection();
             serialPort.getItems().clear();
