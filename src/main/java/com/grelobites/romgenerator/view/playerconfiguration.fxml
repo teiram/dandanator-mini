@@ -5,6 +5,8 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PlayerConfigurationController">
@@ -28,5 +30,14 @@
       <TextField fx:id="recordingPause" layoutX="215.0" layoutY="145.0" prefHeight="26.0" prefWidth="95.0" />
       <CheckBox fx:id="useSerialPort" layoutX="5.0" layoutY="244.0" mnemonicParsing="false" text="Por puerto serie" />
       <ComboBox fx:id="serialPort" layoutX="161.0" layoutY="235.0" prefWidth="150.0" />
+      <Button fx:id="refreshSerialPorts" layoutX="325.0" layoutY="235.0" mnemonicParsing="false">
+         <graphic>
+            <ImageView fitHeight="25.0" fitWidth="18.0" preserveRatio="true">
+               <image>
+                  <Image url="@/player/refresh.png" />
+               </image>
+            </ImageView>
+         </graphic>
+      </Button>
     </children>
 </AnchorPane>

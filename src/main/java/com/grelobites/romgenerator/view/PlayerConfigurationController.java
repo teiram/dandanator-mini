@@ -60,6 +60,9 @@ public class PlayerConfigurationController {
     @FXML
     private CheckBox useSerialPort;
 
+    @FXML
+    private Button refreshSerialPorts;
+
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
     }
@@ -198,11 +201,20 @@ public class PlayerConfigurationController {
         serialPort.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
                     PlayerConfiguration.getInstance().setSerialPort(newValue);
+                    if (newValue == null) {
+                        useSerialPort.setSelected(false);
+                    }
                     useSerialPort.setDisable(newValue == null);
                 });
         useSerialPort.setDisable(true);
         useSerialPort.setSelected(false);
         useSerialPort.selectedProperty().bindBidirectional(
                 PlayerConfiguration.getInstance().useSerialPortProperty());
+        //useTargetFeedback.disableProperty().bind(useSerialPort.selectedProperty());
+        refreshSerialPorts.setOnAction(e -> {
+            serialPort.getSelectionModel().clearSelection();
+            serialPort.getItems().clear();
+            serialPort.getItems().addAll(SerialPortList.getPortNames());
+        });
     }
 }
