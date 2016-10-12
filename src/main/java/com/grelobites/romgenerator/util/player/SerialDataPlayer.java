@@ -53,7 +53,7 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
     private void serialSendData() {
         try {
             serialPort.openPort();
-            serialPort.setParams(SerialPort.BAUDRATE_38400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
+            serialPort.setParams(SerialPort.BAUDRATE_57600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
 
             int counter = 0;
