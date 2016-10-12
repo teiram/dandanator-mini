@@ -116,18 +116,15 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return target.toByteArray();
     }
 
-    private static byte[] getEepromLoader() throws IOException {
+    private static byte[] getEepromLoader(int offset) throws IOException {
         PlayerConfiguration configuration = PlayerConfiguration.getInstance();
         byte[] screen = Util.fromInputStream(configuration.getScreenStream());
         byte[] eewriter = Util.fromInputStream(configuration.getLoaderStream());
         byte[] compressedScreen = compress(screen);
         byte[] compressedWriter = compress(eewriter);
-        int flagValue = (configuration.isUseTargetFeedback() ? 1 : 0) |
-                (configuration.isUseSerialPort() ? 2 : 0);
-        return ByteBuffer.allocate(3 + compressedScreen.length + compressedWriter.length)
+        return ByteBuffer.allocate(2 + compressedScreen.length + compressedWriter.length)
                 .order(ByteOrder.LITTLE_ENDIAN)
-                .put(Integer.valueOf(flagValue).byteValue())
-                .putShort(Integer.valueOf(compressedScreen.length).shortValue())
+                .putShort(Integer.valueOf(compressedScreen.length + offset).shortValue())
                 .put(compressedScreen)
                 .put(compressedWriter).array();
     }
@@ -477,10 +474,13 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             }
             LOGGER.debug("Dumped all game chunks. Offset: " + os.size());
 
+            int eepromLocation = 0;
             int freeSpace = Constants.SLOT_SIZE - os.size() - DandanatorMiniConstants.VERSION_SIZE - 1;
-            byte[] eepromLoader = getEepromLoader();
+            byte[] eepromLoader = getEepromLoader(os.size());
             if (eepromLoader.length <= freeSpace) {
-                LOGGER.debug("Dumping EEPROM Loader with size " + eepromLoader.length);
+                eepromLocation = os.size();
+                LOGGER.debug("Dumping EEPROM Loader with size " + eepromLoader.length
+                    + " at offset " + eepromLocation + ". Free space was " + freeSpace);
                 os.write(eepromLoader);
             } else {
                 LOGGER.debug("Skipping EEPROM Loader. Not enough free space: " +
@@ -490,8 +490,11 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             LOGGER.debug("Dumped padding zone. Offset: " + os.size());
 
             os.write(dmConfiguration.isDisableBorderEffect() ? 1 : 0);
-            dumpVersionInfo(os);
+            os.write(asNullTerminatedByteArray(getVersionInfo(), VERSION_SIZE - 2));
             LOGGER.debug("Dumped version info. Offset: " + os.size());
+            Util.writeAsLittleEndian(os, eepromLocation);
+            LOGGER.debug("Dumped EEPROM location. Offset: " + os.size());
+
 
             for (Game game : games) {
                 if (isGameCompressed(game)) {
