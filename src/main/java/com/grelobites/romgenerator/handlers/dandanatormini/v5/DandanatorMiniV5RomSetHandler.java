@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini.v5;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.handlers.dandanatormini.ExtendedCharSet;
@@ -35,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -111,6 +114,22 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         }
         os.close();
         return target.toByteArray();
+    }
+
+    private static byte[] getEepromLoader() throws IOException {
+        PlayerConfiguration configuration = PlayerConfiguration.getInstance();
+        byte[] screen = Util.fromInputStream(configuration.getScreenStream());
+        byte[] eewriter = Util.fromInputStream(configuration.getLoaderStream());
+        byte[] compressedScreen = compress(screen);
+        byte[] compressedWriter = compress(eewriter);
+        int flagValue = (configuration.isUseTargetFeedback() ? 1 : 0) |
+                (configuration.isUseSerialPort() ? 2 : 0);
+        return ByteBuffer.allocate(3 + compressedScreen.length + compressedWriter.length)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .put(Integer.valueOf(flagValue).byteValue())
+                .putShort(Integer.valueOf(compressedScreen.length).shortValue())
+                .put(compressedScreen)
+                .put(compressedWriter).array();
     }
 
     private static byte[] getGamePaddedSnaHeader(Game game) throws IOException {
@@ -438,6 +457,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             cBlocksTable.write(asLittleEndianWord(compressedCharSetAndFirmware.length));
             cBlockOffset += compressedCharSetAndFirmware.length;
 
+
             GameChunk[] gameChunkTable = calculateGameChunkTable(games, cBlockOffset);
 
             dumpGameHeaders(os, gameChunkTable);
@@ -457,6 +477,15 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             }
             LOGGER.debug("Dumped all game chunks. Offset: " + os.size());
 
+            int freeSpace = Constants.SLOT_SIZE - os.size() - DandanatorMiniConstants.VERSION_SIZE - 1;
+            byte[] eepromLoader = getEepromLoader();
+            if (eepromLoader.length <= freeSpace) {
+                LOGGER.debug("Dumping EEPROM Loader with size " + eepromLoader.length);
+                os.write(eepromLoader);
+            } else {
+                LOGGER.debug("Skipping EEPROM Loader. Not enough free space: " +
+                    freeSpace + ". Needed: " + eepromLoader.length);
+            }
             fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size() - DandanatorMiniConstants.VERSION_SIZE - 1);
             LOGGER.debug("Dumped padding zone. Offset: " + os.size());
 
