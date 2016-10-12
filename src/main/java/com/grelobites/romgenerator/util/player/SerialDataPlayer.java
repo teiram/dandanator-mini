@@ -32,9 +32,7 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
     private void init() {
         progressProperty = new SimpleDoubleProperty(0.0);
         serialPort =  new SerialPort(configuration.getSerialPort());
-        serviceThread = new Thread(() -> {
-            serialSendData();
-        });
+        serviceThread = new Thread(() -> serialSendData());
     }
 
     public SerialDataPlayer(int block, byte[] data) {
@@ -79,6 +77,7 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
             LOGGER.debug("State is now STOPPED");
         } catch (SerialPortException e) {
             LOGGER.error("Serial port exception", e);
+            state = State.STOPPED;
         } finally {
             try {
                 if (serialPort.isOpened()) {

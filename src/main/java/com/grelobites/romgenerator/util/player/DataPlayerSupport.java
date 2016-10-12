@@ -8,7 +8,6 @@ import java.io.OutputStream;
 public class DataPlayerSupport {
 
     protected PlayerConfiguration configuration = PlayerConfiguration.getInstance();
-    protected static final int LOADER_BLOCK = -1;
 
     protected static int getBlockCrc(byte[] data, int blockSize) {
         int sum = 0;
