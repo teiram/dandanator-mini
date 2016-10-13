@@ -32,7 +32,7 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
     private void init() {
         progressProperty = new SimpleDoubleProperty(0.0);
         serialPort =  new SerialPort(configuration.getSerialPort());
-        serviceThread = new Thread(() -> serialSendData());
+        serviceThread = new Thread(this::serialSendData);
     }
 
     public SerialDataPlayer(int block, byte[] data) {
@@ -61,9 +61,7 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
                 serialPort.writeByte(value);
                 if (++counter % 25 == 0) {
                     final double progress = 1.0 * counter / data.length;
-                    Platform.runLater(() -> {
-                        progressProperty.set(progress);
-                    });
+                    Platform.runLater(() -> progressProperty.set(progress));
                 }
                 if (state != State.RUNNING) {
                     LOGGER.debug("No more in RUNNING state");

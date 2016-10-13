@@ -18,6 +18,7 @@ public class PlayerConfiguration {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerConfiguration.class);
 
     private static final String DEFAULT_LOADER_BINARY = "/player/eewriter.bin";
+    private static final String ROMSET_LOADER_BINARY = "/player/romset_eewriter.bin";
     private static final String SCREEN_RESOURCE = "/player/screen.scr";
     private static final String LOADERPATH_PROPERTY = "loaderPath";
     private static final String BLOCKSIZE_PROPERTY = "blockSize";
@@ -44,6 +45,8 @@ public class PlayerConfiguration {
     private BooleanProperty useTargetFeedback;
     private BooleanProperty useSerialPort;
     private StringProperty serialPort;
+    private StringProperty customRomSetPath;
+    private BooleanProperty skipLoader;
 
     private static PlayerConfiguration INSTANCE;
 
@@ -58,6 +61,8 @@ public class PlayerConfiguration {
         useTargetFeedback = new SimpleBooleanProperty(true);
         useSerialPort = new SimpleBooleanProperty(false);
         serialPort = new SimpleStringProperty(null);
+        customRomSetPath = new SimpleStringProperty(null);
+        skipLoader = new SimpleBooleanProperty(false);
         loaderPath.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 LOADERPATH_PROPERTY, newValue));
         blockSize.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
@@ -90,6 +95,10 @@ public class PlayerConfiguration {
         } else {
             return new FileInputStream(loaderPath.get());
         }
+    }
+
+    public InputStream getRomsetLoaderStream() throws IOException {
+        return PlayerConfiguration.class.getResourceAsStream(ROMSET_LOADER_BINARY);
     }
 
     public InputStream getScreenStream() throws IOException {
@@ -214,6 +223,30 @@ public class PlayerConfiguration {
 
     public void setSerialPort(String serialPort) {
         this.serialPort.set(serialPort);
+    }
+
+    public String getCustomRomSetPath() {
+        return customRomSetPath.get();
+    }
+
+    public StringProperty customRomSetPathProperty() {
+        return customRomSetPath;
+    }
+
+    public void setCustomRomSetPath(String customRomSetPath) {
+        this.customRomSetPath.set(customRomSetPath);
+    }
+
+    public boolean isSkipLoader() {
+        return skipLoader.get();
+    }
+
+    public BooleanProperty skipLoaderProperty() {
+        return skipLoader;
+    }
+
+    public void setSkipLoader(boolean skipLoader) {
+        this.skipLoader.set(skipLoader);
     }
 
     public static Preferences getApplicationPreferences() {

@@ -39,5 +39,10 @@
             </ImageView>
          </graphic>
       </Button>
+      <CheckBox fx:id="skipLoader" layoutX="5.0" layoutY="272.0" mnemonicParsing="false" text="Omitir cargador" />
+      <Label layoutX="6.0" layoutY="305.0" text="ROMSet forzado" />
+      <Label fx:id="customRomSetPath" alignment="CENTER" layoutX="153.0" layoutY="306.0" prefHeight="17.0" prefWidth="217.0" text="Ninguno" />
+      <Button fx:id="changeCustomRomSetPathButton" layoutX="390.0" layoutY="292.0" mnemonicParsing="false" text="Cambiar" />
+      <Button fx:id="resetCustomRomSetPathButton" layoutX="469.0" layoutY="292.0" mnemonicParsing="false" text="Revertir" />
     </children>
 </AnchorPane>

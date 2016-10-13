@@ -8,7 +8,11 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import javafx.util.converter.NumberStringConverter;
@@ -63,6 +67,18 @@ public class PlayerConfigurationController {
     @FXML
     private Button refreshSerialPorts;
 
+    @FXML
+    private Label customRomSetPath;
+
+    @FXML
+    private Button changeCustomRomSetPathButton;
+
+    @FXML
+    private Button resetCustomRomSetPathButton;
+
+    @FXML
+    private CheckBox skipLoader;
+
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
     }
@@ -73,7 +89,14 @@ public class PlayerConfigurationController {
         } else {
             throw new IllegalArgumentException("Invalid Loader File provided");
         }
+    }
 
+    private void updateCustomRomSetPath(File romsetFile) {
+        if (isReadableFile(romsetFile) && romsetFile.length() == 32 * Constants.SLOT_SIZE) {
+            PlayerConfiguration.getInstance().setCustomRomSetPath(romsetFile.getAbsolutePath());
+        } else {
+            throw new IllegalArgumentException("Invalid ROMSet file provided");
+        }
     }
 
     private static void showGenericFileErrorAlert() {
@@ -83,36 +106,12 @@ public class PlayerConfigurationController {
                 .showAndWait();
     }
 
-    private static void bindLabelToConfiguration(TextField textField,
-                                                 StringProperty stringProperty,
-                                                 int maxMessageLength) {
-        textField.textProperty().bindBidirectional(stringProperty);
-        textField.textProperty().addListener(
-                (observable, oldValue, newValue) -> {
-                    if (newValue != null &&
-                            newValue.length() > maxMessageLength) {
-                        textField.setText(oldValue);
-                    }
-                });
-    }
-
-    private void setupMessageWithResetButton(TextField textField,
-                                             StringProperty stringProperty,
-                                             int maxMessageLength,
-                                             Button resetButton,
-                                             String defaultMessage) {
-        bindLabelToConfiguration(textField, stringProperty, maxMessageLength);
-        if (stringProperty.get() == null) {
-            stringProperty.set(defaultMessage);
-        }
-        resetButton.setOnAction(event -> stringProperty.set(defaultMessage));
-
-    }
     private void setupFileBasedParameter(Button changeButton,
                                          String changeMessage,
                                          Label pathLabel,
                                          StringProperty configurationProperty,
                                          Button resetButton,
+                                         String defaultMessage,
                                          Consumer<File> consumer) {
         pathLabel.textProperty().bindBidirectional(configurationProperty,
                 new StringConverter<String>() {
@@ -120,7 +119,7 @@ public class PlayerConfigurationController {
                     public String toString(String object) {
                         LOGGER.debug("Executing toString on " + object);
                         if (object == null) {
-                            return LocaleUtil.i18n("builtInMessage");
+                            return defaultMessage;
                         } else if (object.equals(Constants.ROMSET_PROVIDED)) {
                             return LocaleUtil.i18n("romsetProvidedMessage");
                         } else {
@@ -168,7 +167,16 @@ public class PlayerConfigurationController {
                 loaderPath,
                 PlayerConfiguration.getInstance().loaderPathProperty(),
                 resetLoaderPathButton,
+                LocaleUtil.i18n("builtInMessage"),
                 this::updateLoaderPath);
+
+        setupFileBasedParameter(changeCustomRomSetPathButton,
+                "ROMSet forzado",
+                customRomSetPath,
+                PlayerConfiguration.getInstance().customRomSetPathProperty(),
+                resetCustomRomSetPathButton,
+                "Ninguno",
+                this::updateCustomRomSetPath);
 
         Bindings.bindBidirectional(blockSize.textProperty(),
                 PlayerConfiguration.getInstance().blockSizeProperty(),
@@ -196,6 +204,9 @@ public class PlayerConfigurationController {
         audioMode.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) ->
                         PlayerConfiguration.getInstance().setAudioMode(newValue));
+
+        skipLoader.selectedProperty().bindBidirectional(
+                PlayerConfiguration.getInstance().skipLoaderProperty());
 
         serialPort.setItems(FXCollections.observableArrayList(SerialPortList.getPortNames()));
         serialPort.getSelectionModel().selectedItemProperty().addListener(

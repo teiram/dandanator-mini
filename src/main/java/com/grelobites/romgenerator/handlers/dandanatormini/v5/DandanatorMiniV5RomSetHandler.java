@@ -119,12 +119,12 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
     private static byte[] getEepromLoader(int offset) throws IOException {
         PlayerConfiguration configuration = PlayerConfiguration.getInstance();
         byte[] screen = Util.fromInputStream(configuration.getScreenStream());
-        byte[] eewriter = Util.fromInputStream(configuration.getLoaderStream());
+        byte[] eewriter = Util.fromInputStream(configuration.getRomsetLoaderStream());
         byte[] compressedScreen = compress(screen);
         byte[] compressedWriter = compress(eewriter);
         return ByteBuffer.allocate(2 + compressedScreen.length + compressedWriter.length)
                 .order(ByteOrder.LITTLE_ENDIAN)
-                .putShort(Integer.valueOf(compressedScreen.length + offset).shortValue())
+                .putShort(Integer.valueOf(compressedScreen.length + offset + 2).shortValue())
                 .put(compressedScreen)
                 .put(compressedWriter).array();
     }

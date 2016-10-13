@@ -86,6 +86,8 @@ public class PlayerController {
 
     private BooleanProperty nextBlockRequested;
 
+    private IntegerProperty startingBlockProperty;
+
     private EncodingSpeedPolicy encodingSpeedPolicy;
 
     private ObjectProperty<DataPlayer> currentPlayer;
@@ -119,7 +121,8 @@ public class PlayerController {
     public PlayerController(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
         playing = new SimpleBooleanProperty(false);
-        currentBlock = new SimpleIntegerProperty(LOADER_BLOCK);
+        startingBlockProperty = new SimpleIntegerProperty(configuration.isSkipLoader() ? 0 : LOADER_BLOCK);
+        currentBlock = new SimpleIntegerProperty(startingBlockProperty.get());
         nextBlockRequested = new SimpleBooleanProperty();
         encodingSpeedPolicy = new EncodingSpeedPolicy(configuration.getEncodingSpeed());
         currentPlayer = new SimpleObjectProperty<>();
@@ -128,9 +131,15 @@ public class PlayerController {
 
     private byte[] getRomsetByteArray() throws IOException {
         if (romsetByteArray == null) {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            applicationContext.getRomSetHandler().exportRomSet(bos);
-            romsetByteArray = bos.toByteArray();
+            if (configuration.getCustomRomSetPath() != null) {
+                try (FileInputStream fis = new FileInputStream(configuration.getCustomRomSetPath())) {
+                    romsetByteArray = Util.fromInputStream(fis);
+                }
+            } else {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                applicationContext.getRomSetHandler().exportRomSet(bos);
+                romsetByteArray = bos.toByteArray();
+            }
         }
         return romsetByteArray;
     }
@@ -243,13 +252,15 @@ public class PlayerController {
     }
 
     private void stop() {
-        playingLed.setVisible(false);
-        playButton.getStyleClass().removeAll(STOP_BUTTON_STYLE);
-        playButton.getStyleClass().add(PLAY_BUTTON_STYLE);
-        LOGGER.debug("Stopping player");
-        currentPlayer.get().stop();
-        playing.set(false);
-        encodingSpeedPolicy.reset(configuration.getEncodingSpeed());
+        if (playing.get()) {
+            playingLed.setVisible(false);
+            playButton.getStyleClass().removeAll(STOP_BUTTON_STYLE);
+            playButton.getStyleClass().add(PLAY_BUTTON_STYLE);
+            LOGGER.debug("Stopping player");
+            currentPlayer.get().stop();
+            playing.set(false);
+            encodingSpeedPolicy.reset(configuration.getEncodingSpeed());
+        }
     }
 
     private String getCurrentBlockString() {
@@ -273,16 +284,42 @@ public class PlayerController {
 
         //React to changes in the game list
         applicationContext.getGameList().addListener((InvalidationListener) e -> {
+            if (configuration.getCustomRomSetPath() == null) {
+                stop();
+                romsetByteArray = null;
+            }
+        });
+
+        configuration.customRomSetPathProperty().addListener(e -> {
             stop();
             romsetByteArray = null;
         });
 
+        configuration.loaderPathProperty().addListener(e -> {
+            stop();
+            romsetByteArray = null;
+        });
+
+        configuration.skipLoaderProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    stop();
+                    if (newValue && currentBlock.get() == LOADER_BLOCK) {
+                        currentBlock.set(0);
+                    }
+                    if (!newValue && currentBlock.get() == 0) {
+                        currentBlock.set(LOADER_BLOCK);
+                    }
+        });
+        startingBlockProperty.bind(Bindings.createIntegerBinding(() ->
+                configuration.isSkipLoader() ? 0 : LOADER_BLOCK, configuration.skipLoaderProperty()));
+
         rewindButton.disableProperty().bind(playing
-                .or(currentBlock.isEqualTo(LOADER_BLOCK)));
+                .or(currentBlock.isEqualTo(startingBlockProperty)));
         forwardButton.disableProperty().bind(playing
                 .or(currentBlock.isEqualTo(ROMSET_SIZE / configuration.getBlockSize() - 1)));
         playButton.disableProperty().bind(applicationContext.backgroundTaskCountProperty().greaterThan(0)
-                .or(applicationContext.getRomSetHandler().generationAllowedProperty().not()));
+                .or(applicationContext.getRomSetHandler().generationAllowedProperty().not())
+                .and(configuration.customRomSetPathProperty().isNull()));
 
         volumeSlider.setValue(1.0);
         volumeSlider.disableProperty().bind(playing.not());
