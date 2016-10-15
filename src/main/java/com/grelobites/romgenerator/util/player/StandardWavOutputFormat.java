@@ -4,9 +4,21 @@ public class StandardWavOutputFormat {
     public static final int SRATE_44100 = 44100;
     public static final int SRATE_44800 = 44800;
 
+    private static final int ZERO_DURATON_STANDARD = 10;
+    private static final int ONE_DURATION_STANDARD = 10;
+
+    private static final int ZERO_DURATON_TURBO_1 = 10;
+    private static final int ONE_DURATION_TURBO_1 = 10;
+
+    private static final int ZERO_DURATON_TURBO_2 = 10;
+    private static final int ONE_DURATION_TURBO_2 = 10;
+
     private int sampleRate;
     private ChannelType channelType;
     private int pilotDurationMillis;
+    private int oneDurationTStates;
+    private int zeroDurationTStates;
+
 
     public static class Builder {
         private StandardWavOutputFormat outputFormat = new StandardWavOutputFormat();
