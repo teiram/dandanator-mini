@@ -3,7 +3,6 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
-<?import javafx.scene.control.Slider?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -21,7 +20,7 @@
       <ProgressBar fx:id="overallProgress" layoutX="55.0" layoutY="163.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="154.0" progress="0.0" />
       <MediaView fx:id="mediaView" fitHeight="10.0" fitWidth="10.0" layoutX="457.0" layoutY="20.0" />
       <Circle fx:id="recordingLed" fill="#ff281f" layoutX="27.0" layoutY="82.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
-      <Label fx:id="currentBlockLabel" layoutX="134.0" layoutY="108.0" />
+      <Label fx:id="currentBlockLabel" layoutX="134.0" layoutY="110.0" text="Loader" />
       <Button fx:id="rewindButton" layoutX="11.0" layoutY="104.0" mnemonicParsing="false">
          <graphic>
             <ImageView fitHeight="18.0" fitWidth="18.0" preserveRatio="true">
@@ -38,7 +37,6 @@
                </image>
             </ImageView>
          </graphic></Button>
-      <Slider fx:id="volumeSlider" layoutX="224.0" layoutY="40.0" max="1.0" orientation="VERTICAL" prefHeight="133.0" prefWidth="16.0" />
       <Text fill="#87eb99" layoutX="9.0" layoutY="153.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Block">
          <font>
             <Font size="10.0" />
@@ -52,14 +50,9 @@
       <Text fill="#5ad742" layoutX="51.0" layoutY="65.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Play" />
       <Text fill="#e44444" layoutX="51.0" layoutY="87.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Listen" />
       <Circle fx:id="playingLed" fill="#5fff1f" layoutX="27.0" layoutY="61.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
-      <ImageView fitWidth="72.0" layoutX="136.0" layoutY="53.0" preserveRatio="true">
+      <ImageView fx:id="playerImage" fitHeight="58.0" fitWidth="100.0" layoutX="134.0" layoutY="39.0" preserveRatio="true">
          <image>
             <Image url="@/player/cassette.jpg" />
-         </image>
-      </ImageView>
-      <ImageView fitHeight="18.0" fitWidth="18.0" layoutX="223.0" layoutY="24.0" preserveRatio="true">
-         <image>
-            <Image url="@/player/volume-control.png" />
          </image>
       </ImageView>
       <ImageView fitHeight="34.0" fitWidth="200.0" layoutX="30.0" layoutY="4.0" preserveRatio="true">

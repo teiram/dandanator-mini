@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,20 +21,25 @@ public class PlayerConfiguration {
     private static final String DEFAULT_LOADER_BINARY = "/player/eewriter.bin";
     private static final String ROMSET_LOADER_BINARY = "/player/romset_eewriter.bin";
     private static final String SCREEN_RESOURCE = "/player/screen.scr";
-    private static final String LOADERPATH_PROPERTY = "loaderPath";
-    private static final String BLOCKSIZE_PROPERTY = "blockSize";
     private static final String AUDIOMODE_PROPERTY = "audioMode";
     private static final String ENCODINGSPEED_PROPERTY = "encodingSpeed";
-    private static final String PILOTLENGTH_PROPERTY = "pilotLength";
-    private static final String TRAILLENGTH_PROPERTY = "trailLength";
-    private static final String RECORDINGPAUSE_PROPERTY = "recordingPause";
     private static final String USETARGETFEEDBACK_PROPERTY = "useTargetFeedback";
+    private static final String USESERIALPORT_PROPERTY = "useSerialPort";
+    private static final String SERIALPORT_PROPERTY = "serialPort";
+    private static final String SENDLOADER_PROPERTY = "sendLoader";
+
     private static final int DEFAULT_BLOCKSIZE = 0x8000;
     private static final String DEFAULT_AUDIOMODE = "STEREOINV";
-    private static final int DEFAULT_ENCODINGSPEED = 2;
-    private static final int DEFAULT_PILOTLENGTH = 250;
+    private static final int DEFAULT_ENCODINGSPEED = 6;
+    private static final int DEFAULT_PILOTLENGTH = 500;
     private static final int DEFAULT_TRAILLENGTH = 0;
     private static final int DEFAULT_RECORDINGPAUSE = 8000;
+    private static final String CASSETE_IMAGE_RESOURCE = "/player/cassette.jpg";
+    private static final String KEMPSTON_IMAGE_RESOURCE = "/player/kempston.png";
+
+    public static final Integer[] ENCODING_SPEEDS = new Integer[] {1, 2, 3, 4, 5, 6};
+
+    public static final String[] AUDIO_MODES = new String[] {"MONO", "STEREO", "STEREOINV"};
 
     private StringProperty loaderPath;
     private IntegerProperty blockSize;
@@ -46,7 +52,10 @@ public class PlayerConfiguration {
     private BooleanProperty useSerialPort;
     private StringProperty serialPort;
     private StringProperty customRomSetPath;
-    private BooleanProperty skipLoader;
+    private BooleanProperty sendLoader;
+
+    private static Image cassetteImage;
+    private static Image kempstonImage;
 
     private static PlayerConfiguration INSTANCE;
 
@@ -62,23 +71,20 @@ public class PlayerConfiguration {
         useSerialPort = new SimpleBooleanProperty(false);
         serialPort = new SimpleStringProperty(null);
         customRomSetPath = new SimpleStringProperty(null);
-        skipLoader = new SimpleBooleanProperty(false);
-        loaderPath.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
-                LOADERPATH_PROPERTY, newValue));
-        blockSize.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
-                BLOCKSIZE_PROPERTY, newValue.toString()));
+        sendLoader = new SimpleBooleanProperty(true);
+
         audioMode.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 AUDIOMODE_PROPERTY, newValue));
         encodingSpeed.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 ENCODINGSPEED_PROPERTY, newValue.toString()));
-        pilotLength.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
-                PILOTLENGTH_PROPERTY, newValue.toString()));
-        trailLength.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
-                TRAILLENGTH_PROPERTY, newValue.toString()));
-        recordingPause.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
-                RECORDINGPAUSE_PROPERTY, newValue.toString()));
         useTargetFeedback.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 USETARGETFEEDBACK_PROPERTY, newValue.toString()));
+        useSerialPort.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                USESERIALPORT_PROPERTY, newValue.toString()));
+        serialPort.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                SERIALPORT_PROPERTY, newValue));
+        sendLoader.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                SENDLOADER_PROPERTY, newValue.toString()));
 
     }
 
@@ -237,16 +243,30 @@ public class PlayerConfiguration {
         this.customRomSetPath.set(customRomSetPath);
     }
 
-    public boolean isSkipLoader() {
-        return skipLoader.get();
+    public boolean getSendLoader() {
+        return sendLoader.get();
     }
 
-    public BooleanProperty skipLoaderProperty() {
-        return skipLoader;
+    public BooleanProperty sendLoaderProperty() {
+        return sendLoader;
     }
 
-    public void setSkipLoader(boolean skipLoader) {
-        this.skipLoader.set(skipLoader);
+    public void setSendLoader(boolean sendLoader) {
+        this.sendLoader.set(sendLoader);
+    }
+
+    public Image getCassetteImage() {
+        if (cassetteImage == null) {
+            cassetteImage = new Image(PlayerConfiguration.class.getResourceAsStream(CASSETE_IMAGE_RESOURCE));
+        }
+        return cassetteImage;
+    }
+
+    public Image getKempstonImage() {
+        if (kempstonImage == null) {
+            kempstonImage = new Image(PlayerConfiguration.class.getResourceAsStream(KEMPSTON_IMAGE_RESOURCE));
+        }
+        return kempstonImage;
     }
 
     public static Preferences getApplicationPreferences() {
@@ -254,14 +274,12 @@ public class PlayerConfiguration {
     }
 
     public static void persistConfigurationValue(String key, String value) {
-        if (false) {
-            LOGGER.debug("persistConfigurationValue " + key + ", " + value);
-            Preferences p = getApplicationPreferences();
-            if (value != null) {
-                p.put(key, value);
-            } else {
-                p.remove(key);
-            }
+        LOGGER.debug("persistConfigurationValue " + key + ", " + value);
+        Preferences p = getApplicationPreferences();
+        if (value != null) {
+            p.put(key, value);
+        } else {
+            p.remove(key);
         }
     }
 
@@ -275,19 +293,16 @@ public class PlayerConfiguration {
     private static PlayerConfiguration setFromPreferences(PlayerConfiguration configuration) {
         Preferences p = getApplicationPreferences();
         configuration.audioMode.set(p.get(AUDIOMODE_PROPERTY, DEFAULT_AUDIOMODE));
-        configuration.blockSize.set(p.getInt(BLOCKSIZE_PROPERTY, DEFAULT_BLOCKSIZE));
         configuration.encodingSpeed.set(p.getInt(ENCODINGSPEED_PROPERTY, DEFAULT_ENCODINGSPEED));
-        configuration.loaderPath.set(p.get(LOADERPATH_PROPERTY, null));
-        configuration.recordingPause.set(p.getInt(RECORDINGPAUSE_PROPERTY, DEFAULT_RECORDINGPAUSE));
-        configuration.pilotLength.set(p.getInt(PILOTLENGTH_PROPERTY, DEFAULT_PILOTLENGTH));
-        configuration.trailLength.set(p.getInt(TRAILLENGTH_PROPERTY, DEFAULT_TRAILLENGTH));
         configuration.useTargetFeedback.set(p.getBoolean(USETARGETFEEDBACK_PROPERTY, false));
+        configuration.useSerialPort.set(p.getBoolean(USESERIALPORT_PROPERTY, false));
+        configuration.serialPort.set(p.get(SERIALPORT_PROPERTY, null));
+        configuration.sendLoader.set(p.getBoolean(SENDLOADER_PROPERTY, true));
         return configuration;
     }
 
     synchronized private static PlayerConfiguration newInstance() {
         final PlayerConfiguration configuration = new PlayerConfiguration();
-        //return setFromPreferences(configuration);
-        return configuration;
+        return setFromPreferences(configuration);
     }
 }

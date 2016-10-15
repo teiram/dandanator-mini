@@ -54,7 +54,7 @@
             <Insets left="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_RIGHT" layoutX="270.0" layoutY="264.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="26.0" prefWidth="264.0" spacing="10.0">
+      <HBox alignment="CENTER_RIGHT" layoutX="270.0" layoutY="264.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="26.0" prefWidth="264.0" spacing="10.0" visible="false">
          <children>
             <Label text="%romSetTypeMessage">
                <font>

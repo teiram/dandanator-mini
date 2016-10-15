@@ -4,7 +4,6 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.view.util.DialogUtil;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -12,10 +11,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
-import javafx.util.converter.NumberStringConverter;
 import jssc.SerialPortList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,22 +35,10 @@ public class PlayerConfigurationController {
     private Button resetLoaderPathButton;
 
     @FXML
-    private TextField blockSize;
-
-    @FXML
     private ComboBox<String> audioMode;
 
     @FXML
-    private TextField encodingSpeed;
-
-    @FXML
-    private TextField pilotLength;
-
-    @FXML
-    private TextField trailLength;
-
-    @FXML
-    private TextField recordingPause;
+    private ComboBox<Integer> encodingSpeed;
 
     @FXML
     private CheckBox useTargetFeedback;
@@ -77,7 +62,7 @@ public class PlayerConfigurationController {
     private Button resetCustomRomSetPathButton;
 
     @FXML
-    private CheckBox skipLoader;
+    private CheckBox sendLoader;
 
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
@@ -175,38 +160,29 @@ public class PlayerConfigurationController {
                 customRomSetPath,
                 PlayerConfiguration.getInstance().customRomSetPathProperty(),
                 resetCustomRomSetPathButton,
-                "Ninguno",
+                LocaleUtil.i18n("none"),
                 this::updateCustomRomSetPath);
 
-        Bindings.bindBidirectional(blockSize.textProperty(),
-                PlayerConfiguration.getInstance().blockSizeProperty(),
-                new NumberStringConverter());
-        Bindings.bindBidirectional(encodingSpeed.textProperty(),
-                PlayerConfiguration.getInstance().encodingSpeedProperty(),
-                new NumberStringConverter());
-        Bindings.bindBidirectional(pilotLength.textProperty(),
-                PlayerConfiguration.getInstance().pilotLengthProperty(),
-                new NumberStringConverter());
-        Bindings.bindBidirectional(trailLength.textProperty(),
-                PlayerConfiguration.getInstance().trailLengthProperty(),
-                new NumberStringConverter());
-        Bindings.bindBidirectional(recordingPause.textProperty(),
-                PlayerConfiguration.getInstance().recordingPauseProperty(),
-                new NumberStringConverter());
+        encodingSpeed.setItems(FXCollections.observableArrayList(PlayerConfiguration.ENCODING_SPEEDS));
+        encodingSpeed.getSelectionModel().select(PlayerConfiguration.getInstance().getEncodingSpeed());
+        encodingSpeed.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    PlayerConfiguration.getInstance().setEncodingSpeed(newValue);
+                }
+        );
 
         useTargetFeedback.selectedProperty().bindBidirectional(
                 PlayerConfiguration.getInstance().useTargetFeedbackProperty());
 
-        audioMode.setItems(FXCollections.observableArrayList(
-                "MONO", "STEREO", "STEREOINV"));
+        audioMode.setItems(FXCollections.observableArrayList(PlayerConfiguration.AUDIO_MODES));
         audioMode.getSelectionModel().select(PlayerConfiguration.getInstance()
                 .getAudioMode());
         audioMode.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) ->
                         PlayerConfiguration.getInstance().setAudioMode(newValue));
 
-        skipLoader.selectedProperty().bindBidirectional(
-                PlayerConfiguration.getInstance().skipLoaderProperty());
+        sendLoader.selectedProperty().bindBidirectional(
+                PlayerConfiguration.getInstance().sendLoaderProperty());
 
         serialPort.setItems(FXCollections.observableArrayList(SerialPortList.getPortNames()));
         serialPort.getSelectionModel().selectedItemProperty().addListener(
@@ -226,6 +202,9 @@ public class PlayerConfigurationController {
                 useTargetFeedback.setSelected(false);
             }
             useTargetFeedback.setDisable(newValue);
+            encodingSpeed.setDisable(newValue);
+            sendLoader.setDisable(!newValue);
+            audioMode.setDisable(newValue);
         });
 
         refreshSerialPorts.setOnAction(e -> {
