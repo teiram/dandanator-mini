@@ -341,7 +341,7 @@ public class PlayerController {
                         initMediaPlayer(getBlockMediaPlayer(currentBlock.get()));
                     } else {
                         stop();
-                        currentBlock.set(LOADER_BLOCK);
+                        currentBlock.set(startingBlockProperty.get());
                     }
                 } catch (Exception e) {
                     LOGGER.error("Setting up player", e);
