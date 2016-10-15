@@ -272,6 +272,9 @@ public class MainApp extends Application {
 		try {
 		    applicationContext = new ApplicationContext();
             primaryStage.titleProperty().bind(applicationContext.applicationTitleProperty());
+            primaryStage.setOnCloseRequest(e -> {
+               Platform.exit();
+            });
             BorderPane mainPane = new BorderPane();
             Scene scene = new Scene(mainPane);
             scene.getStylesheets().add(Constants.getThemeResourceUrl());
