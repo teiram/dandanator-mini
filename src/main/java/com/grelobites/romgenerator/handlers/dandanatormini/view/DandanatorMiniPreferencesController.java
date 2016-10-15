@@ -77,6 +77,10 @@ public class DandanatorMiniPreferencesController {
     @FXML
     private CheckBox disableBorderEffect;
 
+    private static String getRomFileName(String name) {
+        int extensionLocation = name.lastIndexOf(".");
+        return extensionLocation > 0 ? name.substring(0, extensionLocation) : name;
+    }
 
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
@@ -85,6 +89,7 @@ public class DandanatorMiniPreferencesController {
     private void updateExtraRom(File extraRomFile) {
         if (isReadableFile(extraRomFile) && extraRomFile.length() == Constants.SLOT_SIZE) {
             DandanatorMiniConfiguration.getInstance().setExtraRomPath(extraRomFile.getAbsolutePath());
+            extraRomMessage.setText(getRomFileName(extraRomFile.getName()));
         } else {
             throw new IllegalArgumentException("Invalid ROM File provided");
         }
@@ -154,7 +159,8 @@ public class DandanatorMiniPreferencesController {
                                          Label pathLabel,
                                          StringProperty configurationProperty,
                                          Button resetButton,
-                                         Consumer<File> consumer) {
+                                         Consumer<File> consumer,
+                                         Runnable resetAction) {
         pathLabel.textProperty().bindBidirectional(configurationProperty,
                 new StringConverter<String>() {
                     @Override
@@ -198,8 +204,12 @@ public class DandanatorMiniPreferencesController {
             }
         });
 
-        resetButton.setOnAction(event ->
-            configurationProperty.set(null));
+        resetButton.setOnAction(event -> {
+            configurationProperty.set(null);
+            if (resetAction != null) {
+                resetAction.run();
+            }
+        });
 
     }
     @FXML
@@ -232,21 +242,26 @@ public class DandanatorMiniPreferencesController {
                 extraRomPath,
                 DandanatorMiniConfiguration.getInstance().extraRomPathProperty(),
                 resetExtraRomButton,
-                this::updateExtraRom);
+                this::updateExtraRom,
+                () -> {
+                    extraRomMessage.setText(DandanatorMiniConstants.DEFAULT_EXTRAROMKEY_MESSAGE);
+                });
 
         setupFileBasedParameter(changeDandanatorMiniRomButton,
                 LocaleUtil.i18n("selectDandanatorRomMessage"),
                 dandanatorMiniRomPath,
                 DandanatorMiniConfiguration.getInstance().dandanatorRomPathProperty(),
                 resetDandanatorMiniRomButton,
-                this::updateDandanatorRom);
+                this::updateDandanatorRom,
+                null);
 
         setupFileBasedParameter(changeDandanatorPicFirmwareButton,
                 LocaleUtil.i18n("selectDandanatorPicFirmwareMessage"),
                 dandanatorPicFirmwarePath,
                 DandanatorMiniConfiguration.getInstance().dandanatorPicFirmwarePathProperty(),
                 resetDandanatorPicFirmwareButton,
-                this::updateDandanatorPicFirmware);
+                this::updateDandanatorPicFirmware,
+                null);
 
         disableBorderEffect.selectedProperty().bindBidirectional(
                 DandanatorMiniConfiguration.getInstance().disableBorderEffectProperty());
