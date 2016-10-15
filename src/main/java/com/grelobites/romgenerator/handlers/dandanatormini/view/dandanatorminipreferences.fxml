@@ -64,7 +64,7 @@
                   <Insets left="5.0" />
                </padding>
             </HBox>
-            <HBox alignment="CENTER_LEFT" layoutY="200.0" prefHeight="26.0" prefWidth="543.0" spacing="10.0">
+            <HBox alignment="CENTER_LEFT" layoutY="200.0" prefHeight="26.0" prefWidth="543.0" spacing="10.0" visible="false">
                <children>
                         <Label text="%dandanatorMiniRom" />
                         <Label fx:id="dandanatorMiniRomPath" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS" HBox.hgrow="ALWAYS" />
@@ -75,7 +75,7 @@
                   <Insets left="5.0" />
                </padding>
             </HBox>
-            <HBox alignment="CENTER_LEFT" layoutY="238.0" prefHeight="26.0" prefWidth="543.0" spacing="10.0">
+            <HBox alignment="CENTER_LEFT" layoutY="238.0" prefHeight="26.0" prefWidth="543.0" spacing="10.0" visible="false">
                <children>
                         <Label text="%dandanatorMiniFirmware" />
                         <Label fx:id="dandanatorPicFirmwarePath" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="%builtInMessage" textOverrun="LEADING_ELLIPSIS" HBox.hgrow="ALWAYS" />
