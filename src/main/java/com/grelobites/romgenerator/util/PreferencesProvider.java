@@ -17,17 +17,21 @@ import java.util.stream.Collectors;
 public class PreferencesProvider implements Comparable<PreferencesProvider> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PreferencesProvider.class);
 
+    public static final int PRECEDENCE_GLOBAL = 1;
+    public static final int PRECEDENCE_HANDLERS = 2;
+    public static final int PRECEDENCE_OTHER = 3;
+
     public static final List<PreferencesProvider> providers = new ArrayList<>();
 
     private String name;
     private String fXmlLocation;
-    private boolean globalPreferences;
+    private int precedence;
 
 
-    public PreferencesProvider(String name, String fXmlLocation, boolean globalPreferences) {
+    public PreferencesProvider(String name, String fXmlLocation, int precedence) {
         this.name = name;
         this.fXmlLocation = fXmlLocation;
-        this.globalPreferences = globalPreferences;
+        this.precedence = precedence;
         LOGGER.debug("Adding preferences provider " + this);
         providers.add(this);
     }
@@ -55,8 +59,7 @@ public class PreferencesProvider implements Comparable<PreferencesProvider> {
 
     @Override
     public int compareTo(PreferencesProvider o) {
-        return globalPreferences == o.globalPreferences ? 0 :
-                globalPreferences ? -1 : 1;
+        return Integer.valueOf(precedence).compareTo(o.precedence);
     }
 
     @Override
@@ -64,7 +67,7 @@ public class PreferencesProvider implements Comparable<PreferencesProvider> {
         return "PreferencesProvider{" +
                 "name='" + name + '\'' +
                 ", fXmlLocation='" + fXmlLocation + '\'' +
-                ", globalPreferences=" + globalPreferences +
+                ", precedence=" + precedence +
                 '}';
     }
 

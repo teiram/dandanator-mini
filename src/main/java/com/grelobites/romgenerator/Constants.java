@@ -47,11 +47,11 @@ public class Constants {
     //This is just to register a preferences provider
     private static PreferencesProvider providerRegister = new PreferencesProvider(
             LocaleUtil.i18n("preferencesGeneralTab"),
-            "/com/grelobites/romgenerator/view/preferences.fxml", true);
+            "/com/grelobites/romgenerator/view/preferences.fxml", PreferencesProvider.PRECEDENCE_GLOBAL);
 
     private static PreferencesProvider playerPreferences = new PreferencesProvider(
-            "Player",
-            "/com/grelobites/romgenerator/view/playerconfiguration.fxml", false);
+            LocaleUtil.i18n("loader"),
+            "/com/grelobites/romgenerator/view/playerconfiguration.fxml", PreferencesProvider.PRECEDENCE_OTHER);
 
 
     public static String currentVersion() {

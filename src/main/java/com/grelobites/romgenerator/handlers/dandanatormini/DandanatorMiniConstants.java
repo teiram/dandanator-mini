@@ -54,7 +54,8 @@ public class DandanatorMiniConstants {
     private static byte[] DEFAULT_DANDANATOR_PIC_FW;
 
     private static PreferencesProvider providerRegister = new PreferencesProvider("Dandanator Mini",
-            "/com/grelobites/romgenerator/handlers/dandanatormini/view/dandanatorminipreferences.fxml", false);
+            "/com/grelobites/romgenerator/handlers/dandanatormini/view/dandanatorminipreferences.fxml",
+            PreferencesProvider.PRECEDENCE_HANDLERS);
 
     public static byte[] getDandanatorRom() throws IOException {
         if (DANDANATOR_ROM == null) {
