@@ -16,8 +16,6 @@ public class StandardWavOutputStream extends FilterOutputStream {
     private static final int HEADER_PULSE_LENGTH = 2168;
     private static final int SYNC_P0_LENGTH = 667;
     private static final int SYNC_P1_LENGTH = 735;
-    private static final int ONE_PULSE_LENGTH = Float.valueOf(1710 * 0.875f).intValue();
-    private static final int ZERO_PULSE_LENGTH = Float.valueOf(855 * 0.875f).intValue();
 
     private static final int HIGH_VALUE = 0xc0;
     private static final int LOW_VALUE = 0x40;
@@ -67,7 +65,8 @@ public class StandardWavOutputStream extends FilterOutputStream {
     }
 
     private void writeBit(boolean bit) throws IOException {
-        int pulseSamples = tStatesToSamples(bit ? ONE_PULSE_LENGTH : ZERO_PULSE_LENGTH);
+        int pulseSamples = tStatesToSamples(bit ? format.getOneDurationTStates() :
+                format.getZeroDurationTStates());
         writeSamples(pulseSamples, true);
         writeSamples(pulseSamples, false);
     }

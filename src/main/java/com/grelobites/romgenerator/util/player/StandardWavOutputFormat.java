@@ -4,20 +4,24 @@ public class StandardWavOutputFormat {
     public static final int SRATE_44100 = 44100;
     public static final int SRATE_44800 = 44800;
 
-    private static final int ZERO_DURATON_STANDARD = 10;
-    private static final int ONE_DURATION_STANDARD = 10;
+    private static final int PILOT_DURATION = 3000;
+    private static final int ZERO_DURATION_STANDARD = 748;
+    private static final int ONE_DURATION_STANDARD = 1496;
 
-    private static final int ZERO_DURATON_TURBO_1 = 10;
-    private static final int ONE_DURATION_TURBO_1 = 10;
+    private static final int ZERO_DURATION_TURBO_1 = 392;
+    private static final int ONE_DURATION_TURBO_1 = 784;
 
-    private static final int ZERO_DURATON_TURBO_2 = 10;
-    private static final int ONE_DURATION_TURBO_2 = 10;
+    private static final int ZERO_DURATION_TURBO_2 = 262;
+    private static final int ONE_DURATION_TURBO_2 = 524;
 
-    private int sampleRate;
-    private ChannelType channelType;
-    private int pilotDurationMillis;
-    private int oneDurationTStates;
-    private int zeroDurationTStates;
+    public static final int[] ZERO_DURATIONS = new int[] {ZERO_DURATION_STANDARD, ZERO_DURATION_TURBO_1, ZERO_DURATION_TURBO_2};
+    public static final int[] ONE_DURATIONS = new int[] {ONE_DURATION_STANDARD, ONE_DURATION_TURBO_1, ONE_DURATION_TURBO_2};
+
+    private int sampleRate = SRATE_44100;
+    private ChannelType channelType = ChannelType.STEREOINV;
+    private int pilotDurationMillis = PILOT_DURATION;
+    private int oneDurationTStates = ONE_DURATION_STANDARD;
+    private int zeroDurationTStates = ZERO_DURATION_STANDARD;
 
 
     public static class Builder {
@@ -35,6 +39,16 @@ public class StandardWavOutputFormat {
 
         public Builder withPilotDurationMillis(int pilotDurationMillis) {
             outputFormat.setPilotDurationMillis(pilotDurationMillis);
+            return this;
+        }
+
+        public Builder withZeroDurationTStates(int zeroDurationTStates) {
+            outputFormat.setZeroDurationTStates(zeroDurationTStates);
+            return this;
+        }
+
+        public Builder withOneDurationTStates(int oneDurationTStates) {
+            outputFormat.setOneDurationTStates(oneDurationTStates);
             return this;
         }
 
@@ -80,4 +94,19 @@ public class StandardWavOutputFormat {
         this.pilotDurationMillis = pilotDurationMillis;
     }
 
+    public int getOneDurationTStates() {
+        return oneDurationTStates;
+    }
+
+    public void setOneDurationTStates(int oneDurationTStates) {
+        this.oneDurationTStates = oneDurationTStates;
+    }
+
+    public int getZeroDurationTStates() {
+        return zeroDurationTStates;
+    }
+
+    public void setZeroDurationTStates(int zeroDurationTStates) {
+        this.zeroDurationTStates = zeroDurationTStates;
+    }
 }
