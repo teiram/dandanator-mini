@@ -19,8 +19,8 @@
       <Label layoutX="6.0" layoutY="106.0" text="%audioType" />
       <ComboBox fx:id="audioMode" layoutX="161.0" layoutY="101.0" prefWidth="150.0" />
       <CheckBox fx:id="useSerialPort" layoutX="5.0" layoutY="181.0" mnemonicParsing="false" text="%bySerialPort" />
-      <ComboBox fx:id="serialPort" layoutX="161.0" layoutY="178.0" prefHeight="26.0" prefWidth="217.0" />
-      <Button fx:id="refreshSerialPorts" layoutX="420.0" layoutY="175.0" mnemonicParsing="false">
+      <ComboBox fx:id="serialPort" layoutX="309.0" layoutY="178.0" prefHeight="26.0" prefWidth="165.0" />
+      <Button fx:id="refreshSerialPorts" layoutX="503.0" layoutY="176.0" mnemonicParsing="false">
          <graphic>
             <ImageView fitHeight="25.0" fitWidth="18.0" preserveRatio="true">
                <image>

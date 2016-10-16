@@ -4,7 +4,10 @@ import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.Util;
-import com.grelobites.romgenerator.util.player.*;
+import com.grelobites.romgenerator.util.player.AudioDataPlayer;
+import com.grelobites.romgenerator.util.player.DataPlayer;
+import com.grelobites.romgenerator.util.player.FrequencyDetector;
+import com.grelobites.romgenerator.util.player.SerialDataPlayer;
 import javafx.animation.FadeTransition;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -26,7 +29,9 @@ import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 public class PlayerController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerController.class);
@@ -73,6 +78,11 @@ public class PlayerController {
     @FXML
     private ImageView playerImage;
 
+    @FXML
+    private Label failuresCount;
+
+    private IntegerProperty consecutiveFailures;
+
     private ApplicationContext applicationContext;
 
     private BooleanProperty playing;
@@ -84,8 +94,6 @@ public class PlayerController {
     private BooleanProperty nextBlockRequested;
 
     private IntegerProperty startingBlockProperty;
-
-    private EncodingSpeedPolicy encodingSpeedPolicy;
 
     private ObjectProperty<DataPlayer> currentPlayer;
 
@@ -122,8 +130,8 @@ public class PlayerController {
                 LOADER_BLOCK : 0);
         currentBlock = new SimpleIntegerProperty(startingBlockProperty.get());
         nextBlockRequested = new SimpleBooleanProperty();
-        encodingSpeedPolicy = new EncodingSpeedPolicy(configuration.getEncodingSpeed());
         currentPlayer = new SimpleObjectProperty<>();
+        consecutiveFailures = new SimpleIntegerProperty(0);
     }
 
 
@@ -143,8 +151,7 @@ public class PlayerController {
     }
 
     private DataPlayer getBootstrapMediaPlayer() throws IOException {
-        AudioDataPlayer player = new AudioDataPlayer(mediaView);
-        return player;
+        return new AudioDataPlayer(mediaView);
     }
 
     private DataPlayer getBlockMediaPlayer(int block) throws IOException {
@@ -154,7 +161,7 @@ public class PlayerController {
 
         return configuration.isUseSerialPort() ?
                 new SerialDataPlayer(block, buffer) :
-                new AudioDataPlayer(mediaView, block,  buffer, encodingSpeedPolicy);
+                new AudioDataPlayer(mediaView, block,  buffer);
     }
 
     private void playCurrentBlock() {
@@ -170,7 +177,7 @@ public class PlayerController {
                     .withFrequencyConsumer(f -> f.map(frequency -> {
                         if (frequency == FrequencyDetector.SUCCESS_FREQUENCY) {
                             LOGGER.debug("Detected success tone");
-                            encodingSpeedPolicy.onSuccess();
+                            consecutiveFailures.set(0);
                             if (currentBlock.get() != LOADER_BLOCK) {
                                 playBlinkingTransition(configuration.getRecordingPause());
                             }
@@ -181,15 +188,15 @@ public class PlayerController {
                             });
                         } else {
                             LOGGER.debug("Detected something else");
-                            encodingSpeedPolicy.onFailure();
                             playCurrentBlock();
+                            consecutiveFailures.set(consecutiveFailures.get() + 1);
                         }
                         recordingLed.setVisible(false);
                         return 0;
                     }).orElseGet(() -> {
                         LOGGER.debug("Fallback to repeat current block");
                         recordingLed.setVisible(false);
-                        encodingSpeedPolicy.onFailure();
+                        consecutiveFailures.set(consecutiveFailures.get() + 1);
                         playCurrentBlock();
                         return null;
                     })).build();
@@ -250,8 +257,8 @@ public class PlayerController {
             playButton.getStyleClass().add(PLAY_BUTTON_STYLE);
             LOGGER.debug("Stopping player");
             currentPlayer.get().stop();
+            consecutiveFailures.set(0);
             playing.set(false);
-            encodingSpeedPolicy.reset(configuration.getEncodingSpeed());
         }
     }
 
@@ -310,6 +317,8 @@ public class PlayerController {
         startingBlockProperty.bind(Bindings.createIntegerBinding(() ->
                 configuration.getSendLoader() ? LOADER_BLOCK : 0, configuration.sendLoaderProperty()));
 
+        failuresCount.textProperty().bind(consecutiveFailures.asString());
+
         rewindButton.disableProperty().bind(playing
                 .or(currentBlock.isEqualTo(startingBlockProperty)));
         forwardButton.disableProperty().bind(playing
@@ -322,8 +331,8 @@ public class PlayerController {
                 Math.max(0, currentBlock.doubleValue() / (ROMSET_SIZE /
                         configuration.getBlockSize())), currentBlock));
 
-        currentBlockLabel.textProperty().bind(Bindings.createStringBinding(() ->
-                getCurrentBlockString(), currentBlock));
+        currentBlockLabel.textProperty().bind(Bindings
+                .createStringBinding(this::getCurrentBlockString, currentBlock));
 
         nextBlockRequested.addListener(observable -> {
             LOGGER.debug("nextBlockRequested listener triggered with currentBlock " + currentBlock);

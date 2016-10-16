@@ -45,11 +45,30 @@ public class AudioDataPlayer extends DataPlayerSupport implements DataPlayer {
         }
     }
 
+    private int getLoaderFlagValue() {
+        int flagValue = (configuration.isUseTargetFeedback() ? 1 : 0) |
+                (configuration.isUseSerialPort() ? 2 : 0);
+
+        switch (configuration.getEncodingSpeed()) {
+            case SPEED_STANDARD:
+                flagValue |= 0x04;
+                break;
+            case SPEED_TURBO_1:
+                flagValue |= 0x08;
+                break;
+            case SPEED_TURBO_2:
+                flagValue |= 0x10;
+                break;
+            default:
+                flagValue |= 0x20;
+        }
+        return flagValue;
+    }
+
     private MediaPlayer getBootstrapMediaPlayer() throws IOException {
         FileOutputStream fos = new FileOutputStream(getTemporaryFile());
-        byte[] loaderTap = TapUtil.generateLoaderTap(configuration.getLoaderStream(),
-                configuration.isUseTargetFeedback(),
-                configuration.isUseSerialPort());
+
+        byte[] loaderTap = TapUtil.generateLoaderTap(configuration.getLoaderStream(), getLoaderFlagValue());
 
         TapUtil.tap2wav(StandardWavOutputFormat.builder()
                         .withSampleRate(CompressedWavOutputFormat.SRATE_44100)
@@ -67,8 +86,7 @@ public class AudioDataPlayer extends DataPlayerSupport implements DataPlayer {
         return player;
     }
 
-    private MediaPlayer getBlockMediaPlayer(int block, byte[] data,
-                                            EncodingSpeedPolicy encodingSpeedPolicy) throws IOException {
+    private MediaPlayer getBlockMediaPlayer(int block, byte[] data) throws IOException {
         int blockSize = configuration.getBlockSize();
         byte[] buffer = new byte[blockSize + 3];
         System.arraycopy(data, 0, buffer, 0, blockSize);
@@ -80,7 +98,7 @@ public class AudioDataPlayer extends DataPlayerSupport implements DataPlayer {
         File tempFile = getTemporaryFile();
         LOGGER.debug("Creating new MediaPlayer for block " + block + " on file " + tempFile);
         FileOutputStream fos = new FileOutputStream(tempFile);
-        encodeBuffer(buffer, encodingSpeedPolicy, fos);
+        encodeBuffer(buffer, fos);
         fos.close();
         MediaPlayer player = new MediaPlayer(new Media(tempFile.toURI().toURL().toExternalForm()));
         player.setOnError(() -> LOGGER.error("Player error: " + player.getError()));
@@ -113,10 +131,9 @@ public class AudioDataPlayer extends DataPlayerSupport implements DataPlayer {
         setBindings(mediaView.getMediaPlayer());
     }
 
-    public AudioDataPlayer(MediaView mediaView, int block, byte[] data,
-                           EncodingSpeedPolicy encodingSpeedPolicy) throws IOException {
+    public AudioDataPlayer(MediaView mediaView, int block, byte[] data) throws IOException {
         init(mediaView);
-        mediaView.setMediaPlayer(getBlockMediaPlayer(block, data, encodingSpeedPolicy));
+        mediaView.setMediaPlayer(getBlockMediaPlayer(block, data));
         setBindings(mediaView.getMediaPlayer());
     }
 
