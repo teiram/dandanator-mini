@@ -14,6 +14,8 @@ public class DataPlayerSupport {
     public static final int SPEED_LECHES_2 = 4;
     public static final int SPEED_LECHES_3 = 5;
 
+    private static final int STANDARD_PILOT_DURATION = 2500;
+
     private static final int[] LECHES_MAPPED = new int[] {7, 5, 2};
 
     protected PlayerConfiguration configuration = PlayerConfiguration.getInstance();
@@ -29,7 +31,7 @@ public class DataPlayerSupport {
     private StandardWavOutputFormat getStandardWavOutputFormat() {
         return StandardWavOutputFormat.builder()
                 .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
-                .withPilotDurationMillis(configuration.getPilotLength())
+                .withPilotDurationMillis(STANDARD_PILOT_DURATION)
                 .withSampleRate(StandardWavOutputFormat.SRATE_44100)
                 .withZeroDurationTStates(StandardWavOutputFormat.ZERO_DURATIONS[configuration.getEncodingSpeed()])
                 .withOneDurationTStates(StandardWavOutputFormat.ONE_DURATIONS[configuration.getEncodingSpeed()])
