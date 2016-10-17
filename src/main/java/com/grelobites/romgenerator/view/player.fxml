@@ -60,7 +60,7 @@
             <Image url="@/player/title.png" />
          </image>
       </ImageView>
-      <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="210.0" layoutY="110.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="beeImage" fitHeight="16.0" fitWidth="16.0" layoutX="210.0" layoutY="110.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@/player/bee.png" />
          </image>

@@ -79,6 +79,9 @@ public class PlayerController {
     private ImageView playerImage;
 
     @FXML
+    private ImageView beeImage;
+
+    @FXML
     private Label failuresCount;
 
     private IntegerProperty consecutiveFailures;
@@ -301,6 +304,9 @@ public class PlayerController {
 
         playerImage.setImage(configuration.isUseSerialPort() ? configuration.getKempstonImage() :
             configuration.getCassetteImage());
+
+        beeImage.visibleProperty().bind(consecutiveFailures.greaterThan(0));
+        failuresCount.visibleProperty().bind(consecutiveFailures.greaterThan(0));
 
         configuration.useSerialPortProperty().addListener(
                 (observable, oldValue, newValue) ->
