@@ -6,6 +6,7 @@ import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -147,59 +148,55 @@ public class PlayerConfigurationController {
     }
     @FXML
     private void initialize() throws IOException {
+        PlayerConfiguration configuration = PlayerConfiguration.getInstance();
+
         setupFileBasedParameter(changeLoaderPathButton,
-                "Cargador",
+                LocaleUtil.i18n("loader"),
                 loaderPath,
-                PlayerConfiguration.getInstance().loaderPathProperty(),
+                configuration.loaderPathProperty(),
                 resetLoaderPathButton,
                 LocaleUtil.i18n("builtInMessage"),
                 this::updateLoaderPath);
 
         setupFileBasedParameter(changeCustomRomSetPathButton,
-                "ROMSet forzado",
+                LocaleUtil.i18n("useCustomRomSet"),
                 customRomSetPath,
-                PlayerConfiguration.getInstance().customRomSetPathProperty(),
+                configuration.customRomSetPathProperty(),
                 resetCustomRomSetPathButton,
                 LocaleUtil.i18n("none"),
                 this::updateCustomRomSetPath);
 
         encodingSpeed.setItems(FXCollections.observableArrayList(PlayerConfiguration.ENCODING_SPEEDS));
-        encodingSpeed.getSelectionModel().select((Integer) (PlayerConfiguration.getInstance().getEncodingSpeed()));
+        encodingSpeed.getSelectionModel().select((Integer) (configuration.getEncodingSpeed()));
         encodingSpeed.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> {
-                    PlayerConfiguration.getInstance().setEncodingSpeed(newValue);
-                }
+                (observable, oldValue, newValue) -> configuration.setEncodingSpeed(newValue)
         );
 
         useTargetFeedback.selectedProperty().bindBidirectional(
-                PlayerConfiguration.getInstance().useTargetFeedbackProperty());
+                configuration.useTargetFeedbackProperty());
 
         audioMode.setItems(FXCollections.observableArrayList(PlayerConfiguration.AUDIO_MODES));
-        audioMode.getSelectionModel().select(PlayerConfiguration.getInstance()
-                .getAudioMode());
+        audioMode.getSelectionModel().select(configuration.getAudioMode());
         audioMode.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) ->
-                        PlayerConfiguration.getInstance().setAudioMode(newValue));
+                        configuration.setAudioMode(newValue));
 
         sendLoader.selectedProperty().bindBidirectional(
-                PlayerConfiguration.getInstance().sendLoaderProperty());
-
-        serialPort.setItems(FXCollections.observableArrayList(SerialPortList.getPortNames()));
+                configuration.sendLoaderProperty());
+        useSerialPort.selectedProperty().bindBidirectional(configuration.useSerialPortProperty());
         serialPort.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
-                    PlayerConfiguration.getInstance().setSerialPort(newValue);
+                    configuration.setSerialPort(newValue);
                     if (newValue == null) {
                         useSerialPort.setSelected(false);
                     }
                     useSerialPort.setDisable(newValue == null);
                 });
-        useSerialPort.setDisable(true);
-        useSerialPort.setSelected(false);
-        useSerialPort.selectedProperty().bindBidirectional(
-                PlayerConfiguration.getInstance().useSerialPortProperty());
         useSerialPort.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 useTargetFeedback.setSelected(false);
+            } else {
+                sendLoader.setSelected(true);
             }
             useTargetFeedback.setDisable(newValue);
             encodingSpeed.setDisable(newValue);
@@ -212,5 +209,23 @@ public class PlayerConfigurationController {
             serialPort.getItems().clear();
             serialPort.getItems().addAll(SerialPortList.getPortNames());
         });
+
+        ObservableList<String> serialPortNames = FXCollections.observableArrayList(SerialPortList.getPortNames());
+        serialPort.setItems(serialPortNames);
+        if (serialPortNames.contains(configuration.getSerialPort())) {
+            serialPort.getSelectionModel().select(configuration.getSerialPort());
+        } else {
+            serialPort.getSelectionModel().clearSelection();
+            configuration.setSerialPort(null);
+            configuration.setUseSerialPort(false);
+        }
+
+        serialPort.getSelectionModel().select(configuration.getSerialPort());
+
+
+        useSerialPort.setDisable(serialPort.getSelectionModel().getSelectedItem() == null);
+        sendLoader.setDisable(useSerialPort.isDisable());
+
+
     }
 }
