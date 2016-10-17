@@ -45,14 +45,12 @@ public class TapUtil {
         return compressedStream.toByteArray();
     }
 
-    public static byte[] generateLoaderTap(InputStream loader, boolean beepFeedback,
-                                           boolean serialMode) throws IOException {
+    public static byte[] generateLoaderTap(InputStream loader, int flagValue) throws IOException {
         InputStream uncompressor = TapUtil.class.getResourceAsStream(BOOOTER_RESOURCE);
         if (uncompressor != null) {
             byte[] compressedScreen = compressedByteArrayOf(TapUtil.class.getResourceAsStream(SCREEN_RESOURCE));
             byte[] uncompressorByteArray = Util.fromInputStream(uncompressor);
 
-            int flagValue = (beepFeedback ? 1 : 0) | (serialMode ? 2 : 0);
             uncompressorByteArray[uncompressorByteArray.length - 3] =
                     Integer.valueOf(flagValue).byteValue();
 

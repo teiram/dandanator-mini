@@ -164,7 +164,7 @@ public class PlayerConfigurationController {
                 this::updateCustomRomSetPath);
 
         encodingSpeed.setItems(FXCollections.observableArrayList(PlayerConfiguration.ENCODING_SPEEDS));
-        encodingSpeed.getSelectionModel().select(PlayerConfiguration.getInstance().getEncodingSpeed());
+        encodingSpeed.getSelectionModel().select((Integer) (PlayerConfiguration.getInstance().getEncodingSpeed()));
         encodingSpeed.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
                     PlayerConfiguration.getInstance().setEncodingSpeed(newValue);
