@@ -220,12 +220,7 @@ public class PlayerConfigurationController {
             configuration.setUseSerialPort(false);
         }
 
-        serialPort.getSelectionModel().select(configuration.getSerialPort());
-
-
         useSerialPort.setDisable(serialPort.getSelectionModel().getSelectedItem() == null);
         sendLoader.setDisable(useSerialPort.isDisable());
-
-
     }
 }
