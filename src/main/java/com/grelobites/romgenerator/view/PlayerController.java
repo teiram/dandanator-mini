@@ -299,6 +299,9 @@ public class PlayerController {
             romsetByteArray = null;
         });
 
+        playerImage.setImage(configuration.isUseSerialPort() ? configuration.getKempstonImage() :
+            configuration.getCassetteImage());
+
         configuration.useSerialPortProperty().addListener(
                 (observable, oldValue, newValue) ->
                         playerImage.setImage(newValue ? configuration.getKempstonImage() :
