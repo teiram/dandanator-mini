@@ -283,13 +283,6 @@ public class PlayerConfiguration {
         }
     }
 
-    private static Integer wrapIntegerProperty(Preferences preferences, String key) {
-        String value = preferences.get(key, null);
-        Integer result = value == null ? null : Integer.parseInt(value);
-        LOGGER.debug("Resolving value for key " + key + " as " + result);
-        return result;
-    }
-
     private static PlayerConfiguration setFromPreferences(PlayerConfiguration configuration) {
         Preferences p = getApplicationPreferences();
         configuration.audioMode.set(p.get(AUDIOMODE_PROPERTY, DEFAULT_AUDIOMODE));
