@@ -14,6 +14,8 @@ public class DataPlayerSupport {
     public static final int SPEED_LECHES_2 = 4;
     public static final int SPEED_LECHES_3 = 5;
 
+    private static final int[] LECHES_MAPPED = new int[] {7, 5, 2};
+
     protected PlayerConfiguration configuration = PlayerConfiguration.getInstance();
 
     protected static int getBlockCrc(byte[] data, int blockSize) {
@@ -39,7 +41,7 @@ public class DataPlayerSupport {
                 .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
                 .withPilotDurationMillis(configuration.getPilotLength())
                 .withSampleRate(StandardWavOutputFormat.SRATE_44100)
-                .withSpeed(5 - configuration.getEncodingSpeed())
+                .withSpeed(LECHES_MAPPED[configuration.getEncodingSpeed() - SPEED_LECHES_1])
                 .withFlagByte(CompressedWavOutputFormat.DATA_FLAG_BYTE)
                 .withOffset(CompressedWavOutputFormat.DEFAULT_OFFSET)
                 .withPilotDurationMillis(configuration.getPilotLength())

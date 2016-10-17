@@ -1,6 +1,5 @@
 package com.grelobites.romgenerator.util.player;
 
-import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.Util;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
@@ -15,7 +14,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Optional;
 
 public class AudioDataPlayer extends DataPlayerSupport implements DataPlayer {
