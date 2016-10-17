@@ -47,7 +47,7 @@
             <Font size="10.0" />
          </font>
       </Text>
-      <Text fill="#5ad742" layoutX="51.0" layoutY="65.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Play" />
+      <Text fill="#5ad742" layoutX="51.0" layoutY="65.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Send" />
       <Text fill="#e44444" layoutX="51.0" layoutY="87.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Listen" />
       <Circle fx:id="playingLed" fill="#5fff1f" layoutX="27.0" layoutY="61.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
       <ImageView fx:id="playerImage" fitHeight="58.0" fitWidth="100.0" layoutX="134.0" layoutY="39.0" preserveRatio="true">
