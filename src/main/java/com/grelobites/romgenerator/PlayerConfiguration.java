@@ -37,8 +37,6 @@ public class PlayerConfiguration {
     private static final String CASSETE_IMAGE_RESOURCE = "/player/cassette.jpg";
     private static final String KEMPSTON_IMAGE_RESOURCE = "/player/kempston.png";
 
-    public static final Integer[] ENCODING_SPEEDS = new Integer[] {0, 1, 2, 3, 4, 5};
-
     public static final String[] AUDIO_MODES = new String[] {"MONO", "STEREO", "STEREOINV"};
 
     private StringProperty loaderPath;
