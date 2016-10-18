@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.view;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.LocaleUtil;
+import com.grelobites.romgenerator.util.player.EncodingSpeed;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -39,7 +40,7 @@ public class PlayerConfigurationController {
     private ComboBox<String> audioMode;
 
     @FXML
-    private ComboBox<Integer> encodingSpeed;
+    private ComboBox<EncodingSpeed> encodingSpeed;
 
     @FXML
     private CheckBox useTargetFeedback;
@@ -166,11 +167,10 @@ public class PlayerConfigurationController {
                 LocaleUtil.i18n("none"),
                 this::updateCustomRomSetPath);
 
-        encodingSpeed.setItems(FXCollections.observableArrayList(PlayerConfiguration.ENCODING_SPEEDS));
-        encodingSpeed.getSelectionModel().select((Integer) (configuration.getEncodingSpeed()));
+        encodingSpeed.setItems(FXCollections.observableArrayList(EncodingSpeed.values()));
+        encodingSpeed.getSelectionModel().select(EncodingSpeed.of(configuration.getEncodingSpeed()));
         encodingSpeed.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> configuration.setEncodingSpeed(newValue)
-        );
+                (observable, oldValue, newValue) -> configuration.setEncodingSpeed(newValue.speed()));
 
         useTargetFeedback.selectedProperty().bindBidirectional(
                 configuration.useTargetFeedbackProperty());
@@ -192,6 +192,7 @@ public class PlayerConfigurationController {
                     }
                     useSerialPort.setDisable(newValue == null);
                 });
+
         useSerialPort.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 useTargetFeedback.setSelected(false);
@@ -201,7 +202,10 @@ public class PlayerConfigurationController {
             useTargetFeedback.setDisable(newValue);
             encodingSpeed.setDisable(newValue);
             sendLoader.setDisable(!newValue);
-            audioMode.setDisable(newValue);
+        });
+
+        sendLoader.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            audioMode.setDisable(!newValue);
         });
 
         refreshSerialPorts.setOnAction(e -> {
