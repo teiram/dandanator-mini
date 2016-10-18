@@ -91,7 +91,7 @@ public class AudioDataPlayer extends DataPlayerSupport implements DataPlayer {
 
         buffer[blockSize] = Integer.valueOf(block + 1).byteValue();
 
-        Util.writeAsLittleEndian(buffer, blockSize + 1, getBlockCrc(buffer, blockSize + 1));
+        Util.writeAsLittleEndian(buffer, blockSize + 1, getBlockCrc16(buffer, blockSize + 1));
 
         File tempFile = getTemporaryFile();
         LOGGER.debug("Creating new MediaPlayer for block " + block + " on file " + tempFile);

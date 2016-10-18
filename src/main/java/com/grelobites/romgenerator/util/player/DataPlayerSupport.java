@@ -16,16 +16,26 @@ public class DataPlayerSupport {
 
     private static final int STANDARD_PILOT_DURATION = 2500;
 
+    private static final Integer DATA_HEADER = 0xFF;
+
     private static final int[] LECHES_MAPPED = new int[] {7, 5, 2};
 
     protected PlayerConfiguration configuration = PlayerConfiguration.getInstance();
 
-    protected static int getBlockCrc(byte[] data, int blockSize) {
+    protected static int getBlockCrc16(byte data[], int blockSize) {
         int sum = 0;
         for (int i = 0; i <  blockSize; i++) {
             sum += Byte.toUnsignedInt(data[i]);
         }
         return sum & 0xffff;
+    }
+
+    protected static int getBlockXorCrc(byte[] data, int blockSize) {
+        int crc = 0;
+        for (int i = 0; i < blockSize; i++) {
+            crc ^= Byte.toUnsignedInt(data[i]);
+        }
+        return crc;
     }
 
     private StandardWavOutputFormat getStandardWavOutputFormat() {
@@ -51,13 +61,27 @@ public class DataPlayerSupport {
                 .build();
     }
 
+    private boolean useStandardEncoding() {
+        return configuration.getEncodingSpeed() <= SPEED_TURBO_2;
+    }
 
     protected void encodeBuffer(byte[] buffer, OutputStream out) throws IOException {
-        OutputStream wos = configuration.getEncodingSpeed() <= SPEED_TURBO_2 ?
+        OutputStream wos = useStandardEncoding() ?
                 new StandardWavOutputStream(out, getStandardWavOutputFormat()) :
                 new CompressedWavOutputStream(out, getCompressedWavOutputFormat());
 
+        if (useStandardEncoding()) {
+            wos.write(DATA_HEADER);
+        }
+
         wos.write(buffer);
+
+        if (useStandardEncoding()) {
+            int crc = getBlockXorCrc(buffer, buffer.length);
+            crc ^= Byte.toUnsignedInt(DATA_HEADER.byteValue());
+            wos.write(Integer.valueOf(crc).byteValue());
+        }
+
         wos.flush();
     }
 
