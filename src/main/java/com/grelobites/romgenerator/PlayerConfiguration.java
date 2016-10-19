@@ -39,7 +39,6 @@ public class PlayerConfiguration {
 
     public static final String[] AUDIO_MODES = new String[] {"MONO", "STEREO", "STEREOINV"};
 
-    private StringProperty loaderPath;
     private IntegerProperty blockSize;
     private StringProperty audioMode;
     private IntegerProperty encodingSpeed;
@@ -58,7 +57,6 @@ public class PlayerConfiguration {
     private static PlayerConfiguration INSTANCE;
 
     private PlayerConfiguration() {
-        loaderPath = new SimpleStringProperty();
         blockSize = new SimpleIntegerProperty(DEFAULT_BLOCKSIZE);
         audioMode = new SimpleStringProperty(DEFAULT_AUDIOMODE);
         encodingSpeed = new SimpleIntegerProperty(DEFAULT_ENCODINGSPEED);
@@ -94,11 +92,7 @@ public class PlayerConfiguration {
     }
 
     public InputStream getLoaderStream() throws IOException {
-        if (loaderPath.get() == null) {
-            return PlayerConfiguration.class.getResourceAsStream(DEFAULT_LOADER_BINARY);
-        } else {
-            return new FileInputStream(loaderPath.get());
-        }
+        return PlayerConfiguration.class.getResourceAsStream(DEFAULT_LOADER_BINARY);
     }
 
     public InputStream getRomsetLoaderStream() throws IOException {
@@ -107,18 +101,6 @@ public class PlayerConfiguration {
 
     public InputStream getScreenStream() throws IOException {
         return PlayerConfiguration.class.getResourceAsStream(SCREEN_RESOURCE);
-    }
-
-    public String getLoaderPath() {
-        return loaderPath.get();
-    }
-
-    public StringProperty loaderPathProperty() {
-        return loaderPath;
-    }
-
-    public void setLoaderPath(String loaderPath) {
-        this.loaderPath.set(loaderPath);
     }
 
     public int getBlockSize() {

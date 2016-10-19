@@ -297,11 +297,6 @@ public class PlayerController {
             romsetByteArray = null;
         });
 
-        configuration.loaderPathProperty().addListener(e -> {
-            stop();
-            romsetByteArray = null;
-        });
-
         playerImage.setImage(configuration.isUseSerialPort() ? configuration.getKempstonImage() :
             configuration.getCassetteImage());
 

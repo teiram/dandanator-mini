@@ -10,20 +10,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
 <VBox spacing="15.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PlayerConfigurationController">
    <children>
-      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
-         <children>
-                  <Label alignment="CENTER" text="Cargador" />
-                  <Label fx:id="loaderPath" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" text="Integrado" textOverrun="LEADING_ELLIPSIS" HBox.hgrow="ALWAYS" />
-                  <Button fx:id="changeLoaderPathButton" mnemonicParsing="false" text="%changeButton" />
-                  <Button fx:id="resetLoaderPathButton" mnemonicParsing="false" text="%resetButton" />
-         </children>
-         <padding>
-            <Insets left="5.0" right="5.0" />
-         </padding>
-      </HBox>
       <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
          <children>
             <Label text="%useCustomRomSet" />

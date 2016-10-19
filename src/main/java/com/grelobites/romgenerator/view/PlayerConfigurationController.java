@@ -28,15 +28,6 @@ public class PlayerConfigurationController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerConfigurationController.class);
 
     @FXML
-    private Label loaderPath;
-
-    @FXML
-    private Button changeLoaderPathButton;
-
-    @FXML
-    private Button resetLoaderPathButton;
-
-    @FXML
     private ComboBox<String> audioMode;
 
     @FXML
@@ -68,14 +59,6 @@ public class PlayerConfigurationController {
 
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
-    }
-
-    private void updateLoaderPath(File loaderFile) {
-        if (isReadableFile(loaderFile)) {
-            PlayerConfiguration.getInstance().setLoaderPath(loaderFile.getAbsolutePath());
-        } else {
-            throw new IllegalArgumentException("Invalid Loader File provided");
-        }
     }
 
     private void updateCustomRomSetPath(File romsetFile) {
@@ -151,14 +134,6 @@ public class PlayerConfigurationController {
     private void initialize() throws IOException {
         PlayerConfiguration configuration = PlayerConfiguration.getInstance();
 
-        setupFileBasedParameter(changeLoaderPathButton,
-                LocaleUtil.i18n("loader"),
-                loaderPath,
-                configuration.loaderPathProperty(),
-                resetLoaderPathButton,
-                LocaleUtil.i18n("builtInMessage"),
-                this::updateLoaderPath);
-
         setupFileBasedParameter(changeCustomRomSetPathButton,
                 LocaleUtil.i18n("useCustomRomSet"),
                 customRomSetPath,
@@ -204,9 +179,8 @@ public class PlayerConfigurationController {
             sendLoader.setDisable(!newValue);
         });
 
-        sendLoader.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            audioMode.setDisable(!newValue);
-        });
+        sendLoader.selectedProperty().addListener((observable, oldValue, newValue) ->
+                audioMode.setDisable(!newValue));
 
         refreshSerialPorts.setOnAction(e -> {
             serialPort.getSelectionModel().clearSelection();
