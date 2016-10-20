@@ -232,6 +232,7 @@ public class PlayerController {
     private void unbindPlayer(DataPlayer player) {
         LOGGER.debug("Unbinding player " + player);
         blockProgress.progressProperty().unbind();
+        blockProgress.progressProperty().set(0);
     }
 
     private void bindPlayer(DataPlayer player) {
@@ -262,6 +263,7 @@ public class PlayerController {
             currentPlayer.get().stop();
             consecutiveFailures.set(0);
             playing.set(false);
+            currentPlayer.set(null);
         }
     }
 
