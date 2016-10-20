@@ -10,8 +10,6 @@ import java.nio.ByteOrder;
 public class CompressedWavOutputStream extends FilterOutputStream {
 
     private static final int HEADER_LENGTH = 44;
-    private static final int LOW_VALUE = 0x40;
-    private static final int HIGH_VALUE = 0xc0;
 
     private static int table1[][] = new int[][] {
             new int[] {1, 2, 2, 3},
@@ -73,18 +71,18 @@ public class CompressedWavOutputStream extends FilterOutputStream {
     private ByteArrayOutputStream wavStream;
     private CompressedWavOutputFormat format;
 
-    private static int highLevel(ChannelType channelType) {
-        return channelType.equals(ChannelType.MONO) ? 0xFF : HIGH_VALUE;
+    private int getLowLevel() {
+        return format.isReversePhase() ? format.getHighLevel() : format.getLowLevel();
     }
 
-    private static int lowLevel(ChannelType channelType) {
-        return channelType.equals(ChannelType.MONO) ? 0 : LOW_VALUE;
+    private int getHighLevel() {
+        return format.isReversePhase() ? format.getLowLevel() : format.getHighLevel();
     }
 
     private void writeBits(int value) throws IOException {
         value &= 0xffff;
-        int level = initialBit ? highLevel(format.getChannelType()) : lowLevel(format.getChannelType());
-        int reverseLevel = initialBit ? lowLevel(format.getChannelType()) : highLevel(format.getChannelType());
+        int level = initialBit ? getHighLevel() : getLowLevel();
+        int reverseLevel = initialBit ? getLowLevel() : getHighLevel();
         for (int i = 0; i < value; i++) {
             wavStream.write(level);
             if (format.getChannelType() == ChannelType.STEREO) {

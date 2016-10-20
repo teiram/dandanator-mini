@@ -14,6 +14,11 @@ public class DataPlayerSupport {
     public static final int SPEED_LECHES_2 = 4;
     public static final int SPEED_LECHES_3 = 5;
 
+    protected static final int BOOST_HIGH_LEVEL = 0xff;
+    protected static final int HIGH_LEVEL = 0xc0;
+    protected static final int BOOST_LOW_LEVEL = 0;
+    protected static final int LOW_LEVEL = 0x40;
+
     private static final int STANDARD_PILOT_DURATION = 2500;
 
     private static final Integer DATA_HEADER = 0xFF;
@@ -45,6 +50,9 @@ public class DataPlayerSupport {
                 .withSampleRate(StandardWavOutputFormat.SRATE_44100)
                 .withZeroDurationTStates(StandardWavOutputFormat.ZERO_DURATIONS[configuration.getEncodingSpeed()])
                 .withOneDurationTStates(StandardWavOutputFormat.ONE_DURATIONS[configuration.getEncodingSpeed()])
+                .withHighValue(configuration.isBoostLevel() ? BOOST_HIGH_LEVEL : HIGH_LEVEL)
+                .withLowValue(configuration.isBoostLevel() ? BOOST_LOW_LEVEL : LOW_LEVEL)
+                .withReversePhase(configuration.isReversePhase())
                 .build();
     }
 
@@ -58,6 +66,9 @@ public class DataPlayerSupport {
                 .withOffset(CompressedWavOutputFormat.DEFAULT_OFFSET)
                 .withPilotDurationMillis(configuration.getPilotLength())
                 .withFinalPauseDurationMillis(configuration.getTrailLength())
+                .withHighLevel(configuration.isBoostLevel() ? BOOST_HIGH_LEVEL : HIGH_LEVEL)
+                .withLowLevel(configuration.isBoostLevel() ? BOOST_LOW_LEVEL : LOW_LEVEL)
+                .withReversePhase(configuration.isReversePhase())
                 .build();
     }
 

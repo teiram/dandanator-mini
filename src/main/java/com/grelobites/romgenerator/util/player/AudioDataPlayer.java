@@ -18,6 +18,8 @@ import java.util.Optional;
 
 public class AudioDataPlayer extends DataPlayerSupport implements DataPlayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AudioDataPlayer.class);
+
+
     private MediaView mediaView;
     private DoubleProperty progressProperty;
     private File temporaryFile;
@@ -72,6 +74,9 @@ public class AudioDataPlayer extends DataPlayerSupport implements DataPlayer {
                         .withSampleRate(CompressedWavOutputFormat.SRATE_44100)
                         .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
                         .withPilotDurationMillis(5000)
+                        .withHighValue(configuration.isBoostLevel() ? BOOST_HIGH_LEVEL : HIGH_LEVEL)
+                        .withLowValue(configuration.isBoostLevel() ? BOOST_LOW_LEVEL : LOW_LEVEL)
+                        .withReversePhase(configuration.isReversePhase())
                         .build(),
                 new ByteArrayInputStream(loaderTap),
                 fos);

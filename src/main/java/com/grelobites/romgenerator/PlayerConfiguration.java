@@ -27,6 +27,8 @@ public class PlayerConfiguration {
     private static final String USESERIALPORT_PROPERTY = "useSerialPort";
     private static final String SERIALPORT_PROPERTY = "serialPort";
     private static final String SENDLOADER_PROPERTY = "sendLoader";
+    private static final String BOOSTLEVEL_PROPERTY = "boostLevel";
+    private static final String REVERSEPHASE_PROPERTY = "reversePhase";
 
     private static final int DEFAULT_BLOCKSIZE = 0x8000;
     private static final String DEFAULT_AUDIOMODE = "STEREOINV";
@@ -50,6 +52,8 @@ public class PlayerConfiguration {
     private StringProperty serialPort;
     private StringProperty customRomSetPath;
     private BooleanProperty sendLoader;
+    private BooleanProperty reversePhase;
+    private BooleanProperty boostLevel;
 
     private static Image cassetteImage;
     private static Image kempstonImage;
@@ -68,6 +72,8 @@ public class PlayerConfiguration {
         serialPort = new SimpleStringProperty(null);
         customRomSetPath = new SimpleStringProperty(null);
         sendLoader = new SimpleBooleanProperty(true);
+        reversePhase = new SimpleBooleanProperty(false);
+        boostLevel = new SimpleBooleanProperty(false);
 
         audioMode.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 AUDIOMODE_PROPERTY, newValue));
@@ -81,6 +87,10 @@ public class PlayerConfiguration {
                 SERIALPORT_PROPERTY, newValue));
         sendLoader.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 SENDLOADER_PROPERTY, newValue.toString()));
+        reversePhase.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                REVERSEPHASE_PROPERTY, newValue.toString()));
+        boostLevel.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                BOOSTLEVEL_PROPERTY, newValue.toString()));
 
     }
 
@@ -235,6 +245,30 @@ public class PlayerConfiguration {
         this.sendLoader.set(sendLoader);
     }
 
+    public boolean isReversePhase() {
+        return reversePhase.get();
+    }
+
+    public BooleanProperty reversePhaseProperty() {
+        return reversePhase;
+    }
+
+    public void setReversePhase(boolean reversePhase) {
+        this.reversePhase.set(reversePhase);
+    }
+
+    public boolean isBoostLevel() {
+        return boostLevel.get();
+    }
+
+    public BooleanProperty boostLevelProperty() {
+        return boostLevel;
+    }
+
+    public void setBoostLevel(boolean boostLevel) {
+        this.boostLevel.set(boostLevel);
+    }
+
     public Image getCassetteImage() {
         if (cassetteImage == null) {
             cassetteImage = new Image(PlayerConfiguration.class.getResourceAsStream(CASSETE_IMAGE_RESOURCE));
@@ -271,6 +305,8 @@ public class PlayerConfiguration {
         configuration.useSerialPort.set(p.getBoolean(USESERIALPORT_PROPERTY, false));
         configuration.serialPort.set(p.get(SERIALPORT_PROPERTY, null));
         configuration.sendLoader.set(p.getBoolean(SENDLOADER_PROPERTY, true));
+        configuration.reversePhase.set(p.getBoolean(REVERSEPHASE_PROPERTY, false));
+        configuration.boostLevel.set(p.getBoolean(BOOSTLEVEL_PROPERTY, false));
         return configuration;
     }
 

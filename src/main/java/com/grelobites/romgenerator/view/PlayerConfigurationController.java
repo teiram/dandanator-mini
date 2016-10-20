@@ -55,6 +55,12 @@ public class PlayerConfigurationController {
     private Button resetCustomRomSetPathButton;
 
     @FXML
+    private CheckBox reversePhase;
+
+    @FXML
+    private CheckBox boostLevel;
+
+    @FXML
     private CheckBox sendLoader;
 
     private boolean isReadableFile(File file) {
@@ -176,6 +182,8 @@ public class PlayerConfigurationController {
             }
             useTargetFeedback.setDisable(newValue);
             encodingSpeed.setDisable(newValue);
+            reversePhase.setDisable(newValue);
+            boostLevel.setDisable(newValue);
             sendLoader.setDisable(!newValue);
         });
 
@@ -187,6 +195,9 @@ public class PlayerConfigurationController {
             serialPort.getItems().clear();
             serialPort.getItems().addAll(SerialPortList.getPortNames());
         });
+
+        reversePhase.selectedProperty().bindBidirectional(configuration.reversePhaseProperty());
+        boostLevel.selectedProperty().bindBidirectional(configuration.boostLevelProperty());
 
         ObservableList<String> serialPortNames = FXCollections.observableArrayList(SerialPortList.getPortNames());
         serialPort.setItems(serialPortNames);

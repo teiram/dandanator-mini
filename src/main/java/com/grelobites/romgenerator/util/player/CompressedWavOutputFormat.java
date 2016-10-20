@@ -5,6 +5,8 @@ public class CompressedWavOutputFormat {
     public static final int SRATE_48000 = 48000;
     public static final int HEADER_FLAG_BYTE = 0;
     public static final int DATA_FLAG_BYTE = 0xff;
+    public static final int DEFAULT_LOW_LEVEL = 0x40;
+    public static final int DEFAULT_HIGH_LEVEL = 0xc0;
 
     public static final int DEFAULT_PILOT_DURATION = 250;
     public static final int DEFAULT_PAUSE_DURATION = 0;
@@ -17,6 +19,9 @@ public class CompressedWavOutputFormat {
     private int offset;
     private int pilotDurationMillis;
     private int finalPauseDurationMillis;
+    private boolean reversePhase = false;
+    private int lowLevel = DEFAULT_LOW_LEVEL;
+    private int highLevel = DEFAULT_HIGH_LEVEL;
 
     public static class Builder {
         private CompressedWavOutputFormat outputFormat = new CompressedWavOutputFormat();
@@ -53,6 +58,21 @@ public class CompressedWavOutputFormat {
 
         public Builder withFinalPauseDurationMillis(int finalPauseDurationMillis) {
             outputFormat.setFinalPauseDurationMillis(finalPauseDurationMillis);
+            return this;
+        }
+
+        public Builder withLowLevel(int lowLevel) {
+            outputFormat.setLowLevel(lowLevel);
+            return this;
+        }
+
+        public Builder withHighLevel(int highLevel) {
+            outputFormat.setHighLevel(highLevel);
+            return this;
+        }
+
+        public Builder withReversePhase(boolean reversePhase) {
+            outputFormat.setReversePhase(reversePhase);
             return this;
         }
 
@@ -155,5 +175,29 @@ public class CompressedWavOutputFormat {
 
     public void setFinalPauseDurationMillis(int finalPauseDurationMillis) {
         this.finalPauseDurationMillis = finalPauseDurationMillis;
+    }
+
+    public boolean isReversePhase() {
+        return reversePhase;
+    }
+
+    public void setReversePhase(boolean reversePhase) {
+        this.reversePhase = reversePhase;
+    }
+
+    public int getLowLevel() {
+        return lowLevel;
+    }
+
+    public void setLowLevel(int lowLevel) {
+        this.lowLevel = lowLevel;
+    }
+
+    public int getHighLevel() {
+        return highLevel;
+    }
+
+    public void setHighLevel(int highLevel) {
+        this.highLevel = highLevel;
     }
 }

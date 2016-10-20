@@ -5,6 +5,7 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
@@ -36,6 +37,16 @@
          <children>
             <Label maxWidth="1.7976931348623157E308" prefHeight="17.0" prefWidth="312.0" text="%audioType" HBox.hgrow="ALWAYS" />
             <ComboBox fx:id="audioMode" prefWidth="150.0" />
+         </children>
+         <padding>
+            <Insets left="5.0" right="5.0" />
+         </padding>
+      </HBox>
+      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
+         <children>
+            <CheckBox fx:id="boostLevel" mnemonicParsing="false" text="%boostLevel" />
+            <Separator maxWidth="1.7976931348623157E308" orientation="VERTICAL" HBox.hgrow="ALWAYS" />
+            <CheckBox fx:id="reversePhase" mnemonicParsing="false" text="%reversePhase" />
          </children>
          <padding>
             <Insets left="5.0" right="5.0" />

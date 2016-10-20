@@ -17,9 +17,6 @@ public class StandardWavOutputStream extends FilterOutputStream {
     private static final int SYNC_P0_LENGTH = 667;
     private static final int SYNC_P1_LENGTH = 735;
 
-    private static final int HIGH_VALUE = 0xc0;
-    private static final int LOW_VALUE = 0x40;
-
     private byte[] getWavHeader(int wavDataLength) {
         int byteRate = format.getSampleRate() * format.getChannelType().channels();
         int sampleRate = format.getSampleRate();
@@ -53,13 +50,23 @@ public class StandardWavOutputStream extends FilterOutputStream {
         return upper / SPECTRUM_CLOCK + (upper % SPECTRUM_CLOCK == 0 ? 0 : 1);
     }
 
+    private int getLowValue() {
+        return format.isReversePhase() ? format.getHighValue() : format.getLowValue();
+    }
+
+    private int getHighValue() {
+        return format.isReversePhase() ? format.getLowValue() : format.getHighValue();
+    }
+
     private void writeSamples(int samples, boolean high) throws IOException {
+        int highValue = getHighValue();
+        int lowValue = getLowValue();
         for (int i = 0; i < samples; i++) {
-            wavStream.write(high ? HIGH_VALUE : LOW_VALUE);
+            wavStream.write(high ? highValue : lowValue);
             if (format.getChannelType() == ChannelType.STEREO) {
-                wavStream.write(high ? HIGH_VALUE : LOW_VALUE);
+                wavStream.write(high ? highValue: lowValue);
             } else if (format.getChannelType() == ChannelType.STEREOINV) {
-                wavStream.write(high ? LOW_VALUE : HIGH_VALUE);
+                wavStream.write(high ? lowValue: highValue);
             }
         }
     }

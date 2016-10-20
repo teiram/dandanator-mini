@@ -4,6 +4,9 @@ public class StandardWavOutputFormat {
     public static final int SRATE_44100 = 44100;
     public static final int SRATE_44800 = 44800;
 
+    private static final int DEFAULT_LOW_VALUE = 0x40;
+    private static final int DEFAULT_HIGH_VALUE = 0xC0;
+
     private static final int PILOT_DURATION = 3000;
     private static final int ZERO_DURATION_STANDARD = 748;
     private static final int ONE_DURATION_STANDARD = 1496;
@@ -23,6 +26,9 @@ public class StandardWavOutputFormat {
     private int oneDurationTStates = ONE_DURATION_STANDARD;
     private int zeroDurationTStates = ZERO_DURATION_STANDARD;
 
+    private int lowValue = DEFAULT_LOW_VALUE;
+    private int highValue = DEFAULT_HIGH_VALUE;
+    private boolean reversePhase = false;
 
     public static class Builder {
         private StandardWavOutputFormat outputFormat = new StandardWavOutputFormat();
@@ -49,6 +55,21 @@ public class StandardWavOutputFormat {
 
         public Builder withOneDurationTStates(int oneDurationTStates) {
             outputFormat.setOneDurationTStates(oneDurationTStates);
+            return this;
+        }
+
+        public Builder withReversePhase(boolean reversePhase) {
+            outputFormat.setReversePhase(reversePhase);
+            return this;
+        }
+
+        public Builder withLowValue(int lowValue) {
+            outputFormat.setLowValue(lowValue);
+            return this;
+        }
+
+        public Builder withHighValue(int highValue) {
+            outputFormat.setHighValue(highValue);
             return this;
         }
 
@@ -108,5 +129,29 @@ public class StandardWavOutputFormat {
 
     public void setZeroDurationTStates(int zeroDurationTStates) {
         this.zeroDurationTStates = zeroDurationTStates;
+    }
+
+    public int getLowValue() {
+        return lowValue;
+    }
+
+    public void setLowValue(int lowValue) {
+        this.lowValue = lowValue;
+    }
+
+    public int getHighValue() {
+        return highValue;
+    }
+
+    public void setHighValue(int highValue) {
+        this.highValue = highValue;
+    }
+
+    public boolean isReversePhase() {
+        return reversePhase;
+    }
+
+    public void setReversePhase(boolean reversePhase) {
+        this.reversePhase = reversePhase;
     }
 }
