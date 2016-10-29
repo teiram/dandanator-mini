@@ -178,7 +178,6 @@ public class ApplicationContext {
         romSetHandler.bind(this);
         this.romSetHandler = romSetHandler;
         updateApplicationTitle();
-        updateApplicationTitle();
     }
 
     public Stage getApplicationStage() {

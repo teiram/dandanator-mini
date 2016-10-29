@@ -23,7 +23,7 @@ public class Configuration {
     private static final String CHARSETPATH_PROPERTY = "charSetPath";
     public static final String INTERNAL_CHARSET_PREFIX= "internal://";
 
-    private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V5.name();
+    private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V6.name();
 
     byte[] charSet;
     byte[] backgroundImage;

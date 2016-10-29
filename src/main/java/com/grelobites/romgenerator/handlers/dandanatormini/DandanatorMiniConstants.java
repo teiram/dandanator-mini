@@ -19,6 +19,7 @@ public class DandanatorMiniConstants {
     public static final int POKE_EFFECTIVE_NAME_SIZE = 20;
     public static final int POKE_ZONE_SIZE = 3200;
     public static final int BASEROM_V4_SIZE = 2560;
+    public static final int BASEROM_V5_SIZE = 3072;
     public static final int DANDANATOR_PIC_FW_SIZE = 3072;
     public static final int MAX_POKES_PER_TRAINER = 6;
     public static final int MAX_TRAINERS_PER_GAME = 8;
@@ -42,7 +43,7 @@ public class DandanatorMiniConstants {
     public static final int VERSION_SIZE = 32;
     public static final int FILLER_BYTE = 0xFF;
     public static final int EXTENDED_CHARSET_SIZE = 896;
-    public static final int BASEROM_SIZE = 3072;
+    public static final int BASEROM_SIZE = 3328;
 
     public static final int PORT1FFD_DEFAULT_VALUE = 0x04;
     public static final int AUTHENTIC_VALUE_FLAG = 0x80;

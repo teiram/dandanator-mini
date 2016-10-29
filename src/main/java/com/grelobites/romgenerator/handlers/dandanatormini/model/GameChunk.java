@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.handlers.dandanatormini.v5;
+package com.grelobites.romgenerator.handlers.dandanatormini.model;
 
 public class GameChunk {
     private int address;

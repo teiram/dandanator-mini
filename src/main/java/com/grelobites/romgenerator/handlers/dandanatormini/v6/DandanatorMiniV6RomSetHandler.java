@@ -1,14 +1,16 @@
-package com.grelobites.romgenerator.handlers.dandanatormini.v5;
+package com.grelobites.romgenerator.handlers.dandanatormini.v6;
 
+import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniRamGameCompressor;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniRomSetHandlerSupport;
 import com.grelobites.romgenerator.handlers.dandanatormini.ExtendedCharSet;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniRamGameCompressor;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameChunk;
-import com.grelobites.romgenerator.handlers.dandanatormini.v4.DandanatorMiniV4RomSetHandler;
+import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
@@ -24,14 +26,21 @@ import com.grelobites.romgenerator.util.Z80Opcode;
 import com.grelobites.romgenerator.util.ZxColor;
 import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.compress.Compressor;
-import com.grelobites.romgenerator.ApplicationContext;
+import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.Pane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,23 +55,37 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 
-public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV5RomSetHandler.class);
+public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSupport implements RomSetHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV6RomSetHandler.class);
 
     private static final byte[] EMPTY_CBLOCK = new byte[5];
-    private static final int CBLOCKS_TABLE_OFFSET = 6348;
-    private static final int CBLOCKS_TABLE_SIZE = 16;
     private static final int GAME_STRUCT_OFFSET = 3073;
     private static final int GAME_STRUCT_SIZE = 131;
     private static final int MAX_MENU_PAGES = 3;
     protected static final int GAME_LAUNCH_SIZE = 18;
     protected static final int SNA_HEADER_SIZE = 31;
+    protected static final int SCREEN_THIRD_PIXEL_SIZE = 2048;
+    protected static final int SCREEN_THIRD_ATTRINFO_SIZE = 256;
+
     private static RamGameCompressor ramGameCompressor = new DandanatorMiniRamGameCompressor();
     private DoubleProperty currentRomUsage;
+
+    protected DandanatorMiniFrameController dandanatorMiniFrameController;
+    protected Pane dandanatorMiniFrame;
+    protected MenuItem exportPokesMenuItem;
+    protected MenuItem importPokesMenuItem;
+    private BooleanProperty generationAllowedProperty = new SimpleBooleanProperty(false);
+
 
     private ZxScreen[] menuImages;
     private AnimationTimer previewUpdateTimer;
     private static final long SCREEN_UPDATE_PERIOD_NANOS = 3 * 1000000000L;
+
+    private InvalidationListener updateImageListener =
+            (c) -> updateMenuPreview();
+
+    private InvalidationListener updateRomUsage =
+            (c) -> updateRomUsage();
 
     private static void initializeMenuImages(ZxScreen[] menuImages) throws IOException {
         for (int i = 0; i < menuImages.length; i++) {
@@ -71,7 +94,12 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         }
     }
 
-    public DandanatorMiniV5RomSetHandler() throws IOException {
+    private void updateRomUsage() {
+        getApplicationContext().setRomUsage(calculateRomUsage());
+        getApplicationContext().setRomUsageDetail(generateRomUsageDetail());
+    }
+
+    public DandanatorMiniV6RomSetHandler() throws IOException {
         menuImages = new ZxScreen[MAX_MENU_PAGES];
         initializeMenuImages(menuImages);
         currentRomUsage = new SimpleDoubleProperty();
@@ -118,6 +146,18 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         return target.toByteArray();
     }
 
+    private static byte[] getEepromLoaderCode() throws IOException {
+        PlayerConfiguration configuration = PlayerConfiguration.getInstance();
+        byte[] eewriter = Util.fromInputStream(configuration.getRomsetLoaderStream());
+        return compress(eewriter);
+    }
+
+    private static byte[] getEepromLoaderScreen() throws IOException {
+        PlayerConfiguration configuration = PlayerConfiguration.getInstance();
+        byte[] screen = Util.fromInputStream(configuration.getScreenStream());
+        return compress(screen);
+    }
+
     private static byte[] getEepromLoader(int offset) throws IOException {
         PlayerConfiguration configuration = PlayerConfiguration.getInstance();
         byte[] screen = Util.fromInputStream(configuration.getScreenStream());
@@ -137,7 +177,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            GameHeaderV5Serializer.serialize(ramGame, os);
+            GameHeaderV6Serializer.serialize(ramGame, os);
             byte[] snaHeader = os.toByteArray();
             System.arraycopy(snaHeader, 0, paddedHeader, 0, snaHeader.length);
         }
@@ -416,6 +456,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         }
     }
 
+
     @Override
     public void exportRomSet(OutputStream stream) {
         try {
@@ -430,45 +471,39 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             os.write((byte) games.size());
             LOGGER.debug("Dumped game count. Offset: " + os.size());
 
+            int cblocksOffset = V6Constants.GREY_ZONE_OFFSET;
             ByteArrayOutputStream cBlocksTable = new ByteArrayOutputStream();
-            int cBlockOffset = CBLOCKS_TABLE_OFFSET + CBLOCKS_TABLE_SIZE;
-
             byte[] compressedScreen = compress(getScreenThirdSection(configuration.getBackgroundImage()));
-            cBlocksTable.write(asLittleEndianWord(cBlockOffset));
+            cBlocksTable.write(asLittleEndianWord(cblocksOffset));
             cBlocksTable.write(asLittleEndianWord(compressedScreen.length));
-            cBlockOffset += compressedScreen.length;
+            cblocksOffset += compressedScreen.length;
 
             byte[] compressedScreenTexts = compress(getScreenTexts(dmConfiguration));
-            cBlocksTable.write(asLittleEndianWord(cBlockOffset));
+            cBlocksTable.write(asLittleEndianWord(cblocksOffset));
             cBlocksTable.write(asLittleEndianWord(compressedScreenTexts.length));
-            cBlockOffset += compressedScreenTexts.length;
+            cblocksOffset += compressedScreenTexts.length;
 
             byte[] compressedPokeData = compress(getPokeStructureData(games));
-            cBlocksTable.write(asLittleEndianWord(cBlockOffset));
+            cBlocksTable.write(asLittleEndianWord(cblocksOffset));
             cBlocksTable.write(asLittleEndianWord(compressedPokeData.length));
-            cBlockOffset += compressedPokeData.length;
+            cblocksOffset += compressedPokeData.length;
 
             ExtendedCharSet extendedCharset = new ExtendedCharSet(configuration.getCharSet());
             byte[] compressedCharSetAndFirmware = compress(extendedCharset.getCharSet(),
                     DandanatorMiniConstants.DANDANATOR_PIC_FW_HEADER.getBytes(),
                     dmConfiguration.getDandanatorPicFirmware());
-            cBlocksTable.write(asLittleEndianWord(cBlockOffset));
+            cBlocksTable.write(asLittleEndianWord(cblocksOffset));
             cBlocksTable.write(asLittleEndianWord(compressedCharSetAndFirmware.length));
-            cBlockOffset += compressedCharSetAndFirmware.length;
+            cblocksOffset += compressedCharSetAndFirmware.length;
 
-
-            GameChunk[] gameChunkTable = calculateGameChunkTable(games, cBlockOffset);
-
+            GameChunk[] gameChunkTable = calculateGameChunkTable(games, cblocksOffset);
             dumpGameHeaders(os, gameChunkTable);
+            LOGGER.debug("Dumped game struct. Offset: " + os.size());
 
-            os.write(cBlocksTable.toByteArray());
-            LOGGER.debug("Dumped CBlocks table. Offset " + os.size());
             os.write(compressedScreen);
             os.write(compressedScreenTexts);
             os.write(compressedPokeData);
             os.write(compressedCharSetAndFirmware);
-
-            LOGGER.debug("Dumped compressed data. Offset: " + os.size());
 
             for (GameChunk gameChunk : gameChunkTable) {
                 os.write(gameChunk.getData());
@@ -476,27 +511,41 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
             }
             LOGGER.debug("Dumped all game chunks. Offset: " + os.size());
 
+            //loader if enough room
+            int freeSpace = V6Constants.VERSION_OFFSET - os.size();
+            byte[] eepromLoaderCode = getEepromLoaderCode();
+            byte[] eepromLoaderScreen = getEepromLoaderScreen();
+            int requiredEepromLoaderSpace = eepromLoaderCode.length + eepromLoaderScreen.length;
             int eepromLocation = 0;
-            int freeSpace = Constants.SLOT_SIZE - os.size() - DandanatorMiniConstants.VERSION_SIZE - 1;
-            byte[] eepromLoader = getEepromLoader(os.size());
-            if (eepromLoader.length <= freeSpace) {
+            if (requiredEepromLoaderSpace <= freeSpace) {
                 eepromLocation = os.size();
-                LOGGER.debug("Dumping EEPROM Loader with size " + eepromLoader.length
-                    + " at offset " + eepromLocation + ". Free space was " + freeSpace);
-                os.write(eepromLoader);
+                LOGGER.debug("Dumping EEPROM Loader with size " + requiredEepromLoaderSpace
+                        + " at offset " + eepromLocation + ". Free space was " + freeSpace);
+                cBlocksTable.write(asLittleEndianWord(os.size()));
+                os.write(eepromLoaderScreen);
+                cBlocksTable.write(asLittleEndianWord(os.size()));
+                os.write(eepromLoaderCode);
             } else {
                 LOGGER.debug("Skipping EEPROM Loader. Not enough free space: " +
-                    freeSpace + ". Needed: " + eepromLoader.length);
+                        freeSpace + ". Needed: " + requiredEepromLoaderSpace);
+                cBlocksTable.write(asLittleEndianWord(0));
+                cBlocksTable.write(asLittleEndianWord(0));
             }
-            fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size() - DandanatorMiniConstants.VERSION_SIZE - 1);
-            LOGGER.debug("Dumped padding zone. Offset: " + os.size());
+            fillWithValue(os, (byte) 0, V6Constants.VERSION_OFFSET - os.size());
+            LOGGER.debug("Dumped compressed data. Offset: " + os.size());
+
+            os.write(asNullTerminatedByteArray(getVersionInfo(), V6Constants.VERSION_SIZE));
+            LOGGER.debug("Dumped version info. Offset: " + os.size());
+
+            os.write(cBlocksTable.toByteArray());
+            LOGGER.debug("Dumped CBlocks table. Offset " + os.size());
 
             os.write(dmConfiguration.isDisableBorderEffect() ? 1 : 0);
-            os.write(asNullTerminatedByteArray(getVersionInfo(), VERSION_SIZE - 2));
-            LOGGER.debug("Dumped version info. Offset: " + os.size());
-            Util.writeAsLittleEndian(os, eepromLocation);
-            LOGGER.debug("Dumped EEPROM location. Offset: " + os.size());
+            LOGGER.debug("Dumped border effect flag. Offset: " + os.size());
 
+            fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size());
+
+            LOGGER.debug("Slot zero completed. Offset: " + os.size());
 
             for (Game game : games) {
                 if (isGameCompressed(game)) {
@@ -556,7 +605,6 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
                 .isNotEqualTo(0).and(currentRomUsage.lessThan(1.0));
     }
 
-    @Override
     protected double calculateRomUsage() {
         int size = 0;
         for (Game game : getApplicationContext().getGameList()) {
@@ -576,7 +624,7 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
 
     @Override
     public RomSetHandlerType type() {
-        return RomSetHandlerType.DDNTR_V5;
+        return RomSetHandlerType.DDNTR_V6;
     }
 
     protected String generateRomUsageDetail() {
@@ -677,6 +725,46 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         page.printLine(String.format("R. %s", configuration.getExtraRomMessage()), 23, 0);
     }
 
+    protected MenuItem getExportPokesMenuItem() {
+        if (exportPokesMenuItem == null) {
+            exportPokesMenuItem = new MenuItem(LocaleUtil.i18n("exportPokesMenuEntry"));
+
+            exportPokesMenuItem.setAccelerator(
+                    KeyCombination.keyCombination("SHORTCUT+P")
+            );
+            exportPokesMenuItem.disableProperty().bind(applicationContext
+                    .gameSelectedProperty().not());
+            exportPokesMenuItem.setOnAction(f -> {
+                try {
+                    exportCurrentGamePokes();
+                } catch (Exception e) {
+                    LOGGER.error("Exporting current game pokes", e);
+                }
+            });
+        }
+        return exportPokesMenuItem;
+    }
+
+    protected MenuItem getImportPokesMenuItem() {
+        if (importPokesMenuItem == null) {
+            importPokesMenuItem = new MenuItem(LocaleUtil.i18n("importPokesMenuEntry"));
+
+            importPokesMenuItem.setAccelerator(
+                    KeyCombination.keyCombination("SHORTCUT+L")
+            );
+            importPokesMenuItem.disableProperty().bind(applicationContext
+                    .gameSelectedProperty().not());
+            importPokesMenuItem.setOnAction(f -> {
+                try {
+                    importCurrentGamePokes();
+                } catch (Exception e) {
+                    LOGGER.error("Importing current game pokes", e);
+                }
+            });
+        }
+        return importPokesMenuItem;
+    }
+
     @Override
     public void updateMenuPreview() {
         LOGGER.debug("updateMenuPreview");
@@ -691,16 +779,85 @@ public class DandanatorMiniV5RomSetHandler extends DandanatorMiniV4RomSetHandler
         }
     }
 
+    protected DandanatorMiniFrameController getDandanatorMiniFrameController(ApplicationContext applicationContext) {
+        if (dandanatorMiniFrameController == null) {
+            dandanatorMiniFrameController = new DandanatorMiniFrameController();
+        }
+        dandanatorMiniFrameController.setApplicationContext(applicationContext);
+        return dandanatorMiniFrameController;
+    }
+
+    protected Pane getDandanatorMiniFrame(ApplicationContext applicationContext) {
+        try {
+            if (dandanatorMiniFrame == null) {
+                FXMLLoader loader = new FXMLLoader();
+                loader.setLocation(DandanatorMiniFrameController.class.getResource("dandanatorminiframe.fxml"));
+                loader.setController(getDandanatorMiniFrameController(applicationContext));
+                loader.setResources(LocaleUtil.getBundle());
+                dandanatorMiniFrame = loader.load();
+            } else {
+                dandanatorMiniFrameController.setApplicationContext(applicationContext);
+            }
+            return dandanatorMiniFrame;
+        } catch (Exception e) {
+            LOGGER.error("Creating DandanatorMini frame", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
-    public void bind(ApplicationContext context) {
-        super.bind(context);
+    public BooleanProperty generationAllowedProperty() {
+        return generationAllowedProperty;
+    }
+
+    @Override
+    public void bind(ApplicationContext applicationContext) {
+        LOGGER.debug("Binding RomSetHandler to ApplicationContext");
+        this.applicationContext = applicationContext;
+        generationAllowedProperty.bind(getGenerationAllowedBinding(applicationContext));
+
+        applicationContext.getRomSetHandlerInfoPane().getChildren()
+                .add(getDandanatorMiniFrame(applicationContext));
+        updateMenuPreview();
+
+        DandanatorMiniConfiguration.getInstance().togglePokesMessageProperty()
+                .addListener(updateImageListener);
+        DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
+                .addListener(updateImageListener);
+        Configuration.getInstance().backgroundImagePathProperty()
+                .addListener(updateImageListener);
+        Configuration.getInstance().charSetPathProperty()
+                .addListener(updateImageListener);
+
+        applicationContext.getGameList().addListener(updateImageListener);
+        applicationContext.getGameList().addListener(updateRomUsage);
+
+        applicationContext.getExtraMenu().getItems().addAll(
+                getExportPokesMenuItem(), getImportPokesMenuItem());
+
+        updateRomUsage();
         previewUpdateTimer.start();
         Configuration.getInstance().setRamGameCompressor(ramGameCompressor);
+
     }
 
     @Override
     public void unbind() {
-        super.unbind();
+        LOGGER.debug("Unbinding RomSetHandler from ApplicationContext");
+        DandanatorMiniConfiguration.getInstance().togglePokesMessageProperty()
+                .removeListener(updateImageListener);
+        DandanatorMiniConfiguration.getInstance().extraRomMessageProperty()
+                .removeListener(updateImageListener);
+        generationAllowedProperty.unbind();
+        generationAllowedProperty.set(false);
+        applicationContext.getRomSetHandlerInfoPane().getChildren().clear();
+
+        applicationContext.getExtraMenu().getItems().removeAll(
+                getExportPokesMenuItem(),
+                getImportPokesMenuItem());
+        applicationContext.getGameList().removeListener(updateImageListener);
+        applicationContext.getGameList().removeListener(updateRomUsage);
+        applicationContext = null;
         previewUpdateTimer.stop();
     }
 }

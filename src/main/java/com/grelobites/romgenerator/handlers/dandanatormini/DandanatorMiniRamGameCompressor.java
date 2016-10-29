@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.handlers.dandanatormini.v5;
+package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
