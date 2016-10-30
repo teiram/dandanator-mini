@@ -59,7 +59,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV6RomSetHandler.class);
 
     private static final byte[] EMPTY_CBLOCK = new byte[5];
-    private static final int GAME_STRUCT_OFFSET = 3073;
+    private static final int GAME_STRUCT_OFFSET = 3329;
     private static final int GAME_STRUCT_SIZE = 131;
     private static final int MAX_MENU_PAGES = 3;
     protected static final int GAME_LAUNCH_SIZE = 18;
