@@ -59,11 +59,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     private static final Logger LOGGER = LoggerFactory.getLogger(DandanatorMiniV6RomSetHandler.class);
 
     private static final byte[] EMPTY_CBLOCK = new byte[5];
-    private static final int GAME_STRUCT_OFFSET = 3329;
-    private static final int GAME_STRUCT_SIZE = 131;
     private static final int MAX_MENU_PAGES = 3;
-    protected static final int GAME_LAUNCH_SIZE = 18;
-    protected static final int SNA_HEADER_SIZE = 31;
     protected static final int SCREEN_THIRD_PIXEL_SIZE = 2048;
     protected static final int SCREEN_THIRD_ATTRINFO_SIZE = 256;
 
@@ -172,7 +168,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     }
 
     private static byte[] getGamePaddedSnaHeader(Game game) throws IOException {
-        byte[] paddedHeader = new byte[SNA_HEADER_SIZE];
+        byte[] paddedHeader = new byte[V6Constants.SNA_HEADER_SIZE];
         Arrays.fill(paddedHeader, Constants.B_00);
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
@@ -203,7 +199,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         if (game instanceof RamGame) {
             RamGame ramGame = (RamGame) game;
 
-            int baseAddress = GAME_STRUCT_OFFSET + GAME_STRUCT_SIZE * index;
+            int baseAddress = V6Constants.GAME_STRUCT_OFFSET + V6Constants.GAME_STRUCT_SIZE * index;
             int retLocation = getAnyRetCodeLocation(ramGame);
             os.write(Z80Opcode.LD_IX_NN(baseAddress + SNAHeader.REG_IX));
             os.write(Z80Opcode.LD_SP_NN(baseAddress + SNAHeader.REG_SP));
@@ -217,9 +213,9 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
             os.write(Z80Opcode.JP_NN(retLocation));
 
         } else {
-            os.write(new byte[GAME_LAUNCH_SIZE]);
+            os.write(new byte[V6Constants.GAME_LAUNCH_SIZE]);
         }
-        return GAME_LAUNCH_SIZE;
+        return V6Constants.GAME_LAUNCH_SIZE;
     }
 
     private int dumpUncompressedGameCBlocks(OutputStream os, Game game, int offset)
@@ -329,7 +325,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
             LOGGER.debug("Dumped gamestruct for " + game.getName() + ". Offset: " + os.size());
             index++;
         }
-        fillWithValue(os, (byte) 0, GAME_STRUCT_SIZE * (DandanatorMiniConstants.MAX_GAMES - index));
+        fillWithValue(os, (byte) 0, V6Constants.GAME_STRUCT_SIZE * (DandanatorMiniConstants.MAX_GAMES - index));
         LOGGER.debug("Filled to end of gamestruct. Offset: " + os.size());
     }
 

@@ -64,7 +64,7 @@ public class GameMapperV6 implements GameMapper {
 
         mapper.screenHold = is.read() != 0;
         mapper.activeRom = is.read() != 0;
-        mapper.launchCode = Util.fromInputStream(is, DandanatorMiniV6RomSetHandler.GAME_LAUNCH_SIZE);
+        mapper.launchCode = Util.fromInputStream(is, V6Constants.GAME_LAUNCH_SIZE);
         mapper.gameChunk = new GameChunk();
         mapper.gameChunk.setAddress(is.getAsLittleEndian());
         mapper.gameChunk.setLength(is.getAsLittleEndian());
