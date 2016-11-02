@@ -164,5 +164,14 @@ public class Util {
         }
     }
 
+    public static int getBlockCrc16(byte data[], int blockSize) {
+        int sum = 0;
+        for (int i = 0; i < blockSize; i++) {
+            sum += Byte.toUnsignedInt(data[i]);
+        }
+        return sum & 0xffff;
+    }
+
+
 
 }

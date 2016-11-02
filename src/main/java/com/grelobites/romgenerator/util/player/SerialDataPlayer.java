@@ -47,7 +47,7 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
 
         data[blockSize] = Integer.valueOf(block + 1).byteValue();
 
-        Util.writeAsLittleEndian(data, blockSize + 1, getBlockCrc16(data, blockSize + 1));
+        Util.writeAsLittleEndian(data, blockSize + 1, Util.getBlockCrc16(data, blockSize + 1));
     }
 
     private void serialSendData() {
