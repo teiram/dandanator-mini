@@ -102,4 +102,12 @@ public class TapOutputStream {
         out.write(dataBlock);
     }
 
+    public void addCodeStream(String name, int codeStartAddress, byte[] in) throws IOException {
+        byte[] dataBlock = getTapDataBlock(in);
+        //Program length is the data block length without the length bytes, flag and checksum
+        byte[] header = getTapCodeHeader(name, codeStartAddress, dataBlock.length - 4);
+        out.write(header);
+        out.write(dataBlock);
+    }
+
 }
