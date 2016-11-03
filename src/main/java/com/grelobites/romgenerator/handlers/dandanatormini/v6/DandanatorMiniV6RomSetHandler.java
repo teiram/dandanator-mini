@@ -9,6 +9,7 @@ import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstan
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniRomSetHandlerSupport;
 import com.grelobites.romgenerator.handlers.dandanatormini.ExtendedCharSet;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniRamGameCompressor;
+import com.grelobites.romgenerator.handlers.dandanatormini.RomSetUtil;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameChunk;
 import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
 import com.grelobites.romgenerator.model.Game;
@@ -28,6 +29,8 @@ import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
+import com.grelobites.romgenerator.view.util.DialogUtil;
+import com.grelobites.romgenerator.view.util.DirectoryAwareFileChooser;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
@@ -44,7 +47,10 @@ import javafx.scene.layout.Pane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -70,6 +76,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     protected Pane dandanatorMiniFrame;
     protected MenuItem exportPokesMenuItem;
     protected MenuItem importPokesMenuItem;
+    protected MenuItem exportDivIdeTapMenuItem;
     private BooleanProperty generationAllowedProperty = new SimpleBooleanProperty(false);
 
 
@@ -741,6 +748,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         return exportPokesMenuItem;
     }
 
+
     protected MenuItem getImportPokesMenuItem() {
         if (importPokesMenuItem == null) {
             importPokesMenuItem = new MenuItem(LocaleUtil.i18n("importPokesMenuEntry"));
@@ -760,6 +768,36 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         }
         return importPokesMenuItem;
     }
+
+    public void exportDivIdeTapToFile() {
+        DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
+        chooser.setTitle(LocaleUtil.i18n("exportDivIdeTapMenuEntry"));
+        final File saveFile = chooser.showSaveDialog(applicationContext.getApplicationStage());
+        if (saveFile != null) {
+            try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                exportRomSet(bos);
+                RomSetUtil.exportToDivideAsTap(new ByteArrayInputStream(bos.toByteArray()), fos);
+            } catch (IOException e) {
+                LOGGER.error("Exporting to DivIDE TAP", e);
+            }
+        }
+    }
+
+    protected MenuItem getExportDivIdeTapMenuItem() {
+        if (exportDivIdeTapMenuItem == null) {
+            exportDivIdeTapMenuItem = new MenuItem(LocaleUtil.i18n("exportDivIdeTapMenuEntry"));
+
+            exportDivIdeTapMenuItem.setAccelerator(
+                    KeyCombination.keyCombination("SHORTCUT+D")
+            );
+            exportDivIdeTapMenuItem.disableProperty().bind(generationAllowedProperty.not());
+
+            exportDivIdeTapMenuItem.setOnAction(f -> exportDivIdeTapToFile());
+        }
+        return exportDivIdeTapMenuItem;
+    }
+
 
     @Override
     public void updateMenuPreview() {
@@ -829,7 +867,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         applicationContext.getGameList().addListener(updateRomUsage);
 
         applicationContext.getExtraMenu().getItems().addAll(
-                getExportPokesMenuItem(), getImportPokesMenuItem());
+                getExportPokesMenuItem(), getImportPokesMenuItem(), getExportDivIdeTapMenuItem());
 
         updateRomUsage();
         previewUpdateTimer.start();
@@ -850,7 +888,8 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
         applicationContext.getExtraMenu().getItems().removeAll(
                 getExportPokesMenuItem(),
-                getImportPokesMenuItem());
+                getImportPokesMenuItem(),
+                getExportDivIdeTapMenuItem());
         applicationContext.getGameList().removeListener(updateImageListener);
         applicationContext.getGameList().removeListener(updateRomUsage);
         applicationContext = null;

@@ -37,6 +37,8 @@ public class DandanatorMiniConstants {
     private static final String DANDANATOR_ROM_RESOURCE = "dandanator-mini/dandanator-mini.rom";
     private static final String DANDANATOR_PIC_FW_RESOURCE = "dandanator-mini/dandanator-pic-fw.bin";
     private static final String EXTRA_ROM_RESOURCE = "dandanator-mini/test.rom";
+    private static final String DIVIDE_LOADER_RESOURCE = "dandanator-mini/divide-loader.bin";
+
     public static final int POKE_TARGET_ADDRESS = 49284;
     public static final int GAME_CHUNK_SIZE = 256;
     public static final int GAME_CHUNK_SLOT = 2;
@@ -53,6 +55,7 @@ public class DandanatorMiniConstants {
     private static byte[] DANDANATOR_ROM;
     private static byte[] EXTRA_ROM;
     private static byte[] DEFAULT_DANDANATOR_PIC_FW;
+    private static byte[] DIVIDE_LOADER;
 
     private static PreferencesProvider providerRegister = new PreferencesProvider("Dandanator Mini",
             "/com/grelobites/romgenerator/handlers/dandanatormini/view/dandanatorminipreferences.fxml",
@@ -87,4 +90,14 @@ public class DandanatorMiniConstants {
         }
         return DEFAULT_DANDANATOR_PIC_FW;
     }
+
+    public static byte[] getDivIdeLoader() throws IOException {
+        if (DIVIDE_LOADER == null) {
+            DIVIDE_LOADER = Util.fromInputStream(
+                    DandanatorMiniConstants.class.getClassLoader()
+                            .getResourceAsStream(DIVIDE_LOADER_RESOURCE));
+        }
+        return DIVIDE_LOADER;
+    }
+
 }
