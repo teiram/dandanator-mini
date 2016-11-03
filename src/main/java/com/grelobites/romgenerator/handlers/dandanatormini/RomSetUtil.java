@@ -29,7 +29,7 @@ public class RomSetUtil {
 
             tos.addCodeStream(
                     String.format("%s%02d", BLOCK_NAME_PREFIX, i),
-                    LOAD_ADDRESS, buffer);
+                    LOAD_ADDRESS, false, buffer);
         }
         out.flush();
     }
