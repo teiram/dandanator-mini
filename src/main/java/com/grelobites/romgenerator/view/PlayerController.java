@@ -291,12 +291,14 @@ public class PlayerController {
             if (configuration.getCustomRomSetPath() == null) {
                 stop();
                 romsetByteArray = null;
+                currentBlock.set(startingBlockProperty.get());
             }
         });
 
         configuration.customRomSetPathProperty().addListener(e -> {
             stop();
             romsetByteArray = null;
+            currentBlock.set(startingBlockProperty.get());
         });
 
         playerImage.setImage(configuration.isUseSerialPort() ? configuration.getKempstonImage() :
