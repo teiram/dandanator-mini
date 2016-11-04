@@ -7,8 +7,10 @@ import com.grelobites.romgenerator.util.RamGameCompressor;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +24,7 @@ import java.util.List;
 public class RamGame extends BaseGame implements Game {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RamGame.class);
 
-	private BooleanProperty rom;
+	private ObjectProperty<Game> rom;
 	private BooleanProperty holdScreen;
 	private BooleanProperty compressed;
 	private BooleanProperty force48kMode;
@@ -37,7 +39,7 @@ public class RamGame extends BaseGame implements Game {
 
     public RamGame(GameType gameType, List<byte[]> data) {
         super(gameType, data);
-		rom = new SimpleBooleanProperty();
+		rom = new SimpleObjectProperty<>(null);
 		holdScreen = new SimpleBooleanProperty();
         compressed = new SimpleBooleanProperty(true);
         force48kMode = new SimpleBooleanProperty(false);
@@ -64,15 +66,15 @@ public class RamGame extends BaseGame implements Game {
         this.gameHeader = gameHeader;
     }
 
-    public boolean getRom() {
+    public Game getRom() {
 		return rom.get();
 	}
 	
-	public void setRom(boolean rom) {
+	public void setRom(Game rom) {
 		this.rom.set(rom);
 	}
 	
-	public BooleanProperty romProperty() {
+	public ObjectProperty<Game> romProperty() {
 		return this.rom;
 	}
 

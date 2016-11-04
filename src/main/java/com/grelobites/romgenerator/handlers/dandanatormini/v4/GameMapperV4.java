@@ -84,7 +84,7 @@ public class GameMapperV4 implements GameMapper {
         final RamGame game = new RamGame(GameType.RAM48, getGameSlots());
         game.setName(name);
         game.setHoldScreen(holdScreen);
-        game.setRom(activeRom);
+        game.setRom(activeRom ? null : null); //FIXME
         game.setGameHeader(gameHeader);
         game.setHardwareMode(HardwareMode.HW_48K);
         exportTrainers(game);

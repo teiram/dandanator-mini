@@ -144,7 +144,7 @@ public class GameMapperV6 implements GameMapper {
                 RamGame ramGame = new RamGame(type, getGameSlots());
                 ramGame.setCompressed(isGameCompressed);
                 ramGame.setHoldScreen(screenHold);
-                ramGame.setRom(activeRom);
+                ramGame.setRom(activeRom ? null : null); //FIXME
                 ramGame.setGameHeader(gameHeader);
                 ramGame.setForce48kMode(isGameForce48kMode);
                 ramGame.setHardwareMode(hardwareMode);

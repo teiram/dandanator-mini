@@ -111,7 +111,8 @@ public class DandanatorMiniRomSetHandlerSupport {
     }
 
     protected static boolean isGameRom(Game game) {
-        return game instanceof RamGame && ((RamGame) game).getRom();
+        //TODO: return game instanceof RamGame && ((RamGame) game).getRom();
+        return false;
     }
 
     protected static boolean isGameCompressed(Game game) {

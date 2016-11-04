@@ -558,7 +558,7 @@ public class DandanatorMiniV4RomSetHandler implements RomSetHandler {
     }
 
     protected static boolean isGameRom(Game game) {
-        return game instanceof RamGame && ((RamGame) game).getRom();
+        return game instanceof RamGame && ((RamGame) game).getRom() != null; //FIXME
     }
 
     protected static boolean isGameCompressed(Game game) {

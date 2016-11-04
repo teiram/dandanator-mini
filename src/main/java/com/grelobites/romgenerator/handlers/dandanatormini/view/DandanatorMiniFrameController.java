@@ -20,6 +20,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tab;
@@ -81,7 +82,7 @@ public class DandanatorMiniFrameController {
     private Label gameType;
 
     @FXML
-    private CheckBox gameRomAttribute;
+    private ComboBox<Game> gameRomAttribute;
 
     @FXML
     private CheckBox gameHoldScreenAttribute;
@@ -262,7 +263,7 @@ public class DandanatorMiniFrameController {
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 gameHoldScreenAttribute.selectedProperty().unbindBidirectional(ramGame.holdScreenProperty());
-                gameRomAttribute.selectedProperty().unbindBidirectional(ramGame.romProperty());
+                gameRomAttribute.valueProperty().unbindBidirectional(ramGame.romProperty());
                 gameCompressedAttribute.selectedProperty().unbindBidirectional(ramGame.compressedProperty());
                 gameForced48kModeAttribute.selectedProperty().unbindBidirectional(ramGame.force48kModeProperty());
                 pokeView.setRoot(null);
@@ -280,7 +281,7 @@ public class DandanatorMiniFrameController {
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 gameHoldScreenAttribute.selectedProperty().bindBidirectional(ramGame.holdScreenProperty());
-                gameRomAttribute.selectedProperty().bindBidirectional(ramGame.romProperty());
+                gameRomAttribute.valueProperty().bindBidirectional(ramGame.romProperty());
                 pokeView.setRoot(new RecursiveTreeItem<>(ramGame.getTrainerList(), PokeViewable::getChildren,
                         this::computePokeChange));
                 gameCompressedAttribute.selectedProperty().bindBidirectional(ramGame.compressedProperty());

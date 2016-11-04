@@ -148,7 +148,8 @@ public class GameMapperV5 implements GameMapper {
                 RamGame ramGame = new RamGame(type, getGameSlots());
                 ramGame.setCompressed(isGameCompressed);
                 ramGame.setHoldScreen(screenHold);
-                ramGame.setRom(activeRom);
+                //TODO: Fix this
+                ramGame.setRom(null);
                 ramGame.setGameHeader(gameHeader);
                 ramGame.setForce48kMode(isGameForce48kMode);
                 ramGame.setHardwareMode(hardwareMode);
