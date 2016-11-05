@@ -35,7 +35,7 @@ public class PlayerConfiguration {
     private static final int DEFAULT_ENCODINGSPEED = 5;
     private static final int DEFAULT_PILOTLENGTH = 500;
     private static final int DEFAULT_TRAILLENGTH = 0;
-    private static final int DEFAULT_RECORDINGPAUSE = 8000;
+    private static final int DEFAULT_RECORDINGPAUSE = 2300;
     private static final String CASSETE_IMAGE_RESOURCE = "/player/cassette.jpg";
     private static final String KEMPSTON_IMAGE_RESOURCE = "/player/kempston.png";
 
