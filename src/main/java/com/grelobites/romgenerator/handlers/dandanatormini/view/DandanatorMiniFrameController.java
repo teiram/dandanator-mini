@@ -1,10 +1,12 @@
 package com.grelobites.romgenerator.handlers.dandanatormini.view;
 
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.PokeViewable;
 import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.RomGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.pokeimporter.ImportContext;
@@ -15,6 +17,9 @@ import com.grelobites.romgenerator.view.util.RecursiveTreeItem;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -22,6 +27,8 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -30,9 +37,12 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
+import javafx.util.Callback;
+import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -253,6 +263,48 @@ public class DandanatorMiniFrameController {
                 (observable, oldValue, newValue) -> onGameSelection(oldValue, newValue));
         onGameSelection(applicationContext.selectedGameProperty().get(),
                 applicationContext.selectedGameProperty().get());
+
+        gameRomAttribute.setCellFactory(new Callback<ListView<Game>, ListCell<Game>>() {
+            @Override
+            public ListCell<Game> call(ListView<Game> arg0) {
+                return new ListCell<Game>() {
+                    @Override
+                    protected void updateItem(Game item, boolean empty) {
+                        super.updateItem(item, empty);
+
+                        if (item == null || empty) {
+                            setGraphic(null);
+                        } else {
+                            setText(item.getName());
+                        }
+                    }
+                };
+            }
+        });
+        gameRomAttribute.setButtonCell(new TextFieldListCell<>(new StringConverter<Game>() {
+            @Override
+            public String toString(Game object) {
+                return object.getName();
+            }
+
+            @Override
+            public Game fromString(String string) {
+                return null;
+            }
+        }));
+
+        try {
+            RomGame extraRom = new RomGame(DandanatorMiniConfiguration.getInstance().getExtraRom());
+            extraRom.setName("Extra Rom");
+            RomGame defaultRom = new RomGame(new byte[0]);
+            defaultRom.setName("Spectrum");
+
+            ObservableList<Game> items = applicationContext.getGameList()
+                    .filtered(e -> e.getType().equals(GameType.ROM));
+            gameRomAttribute.setItems(items);
+        } catch (Exception e) {
+            LOGGER.debug("Creating dandanator mini frame", e);
+        }
     }
 
     private void unbindInfoPropertiesFromGame(Game game) {

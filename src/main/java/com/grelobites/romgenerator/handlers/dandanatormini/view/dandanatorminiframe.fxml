@@ -37,7 +37,8 @@
                         <CheckBox fx:id="gameForced48kModeAttribute" layoutX="10.0" layoutY="143.0" mnemonicParsing="false" text="%game48kModeProperty" />
                         <Label layoutX="150.0" layoutY="45.0" text="HW:" />
                         <Label fx:id="hardwareMode" layoutX="197.0" layoutY="45.0" text="-" />
-                        <ComboBox fx:id="gameRomAttribute" layoutX="1.0" layoutY="62.0" prefWidth="150.0" />
+                        <ComboBox fx:id="gameRomAttribute" layoutX="91.0" layoutY="62.0" prefWidth="150.0" />
+                        <Label layoutX="10.0" layoutY="67.0" text="ROM Activa" />
                             </children>
                         </AnchorPane>
                     </content>
