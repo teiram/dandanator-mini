@@ -68,7 +68,7 @@ public class AudioDataPlayer extends DataPlayerSupport implements DataPlayer {
     private MediaPlayer getBootstrapMediaPlayer() throws IOException {
         FileOutputStream fos = new FileOutputStream(getTemporaryFile());
 
-        byte[] loaderTap = TapUtil.generateLoaderTap(configuration.getLoaderStream(), getLoaderFlagValue());
+        byte[] loaderTap = TapUtil.getLoaderTapByteArray(configuration.getLoaderStream(), getLoaderFlagValue());
 
         TapUtil.tap2wav(StandardWavOutputFormat.builder()
                         .withSampleRate(CompressedWavOutputFormat.SRATE_44100)
