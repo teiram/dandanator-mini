@@ -84,11 +84,6 @@ public class VirtualGame implements Game {
     }
 
     @Override
-    public boolean isVirtual() {
-        return true;
-    }
-
-    @Override
     public String toString() {
         return "VirtualGame{" +
                 "gameType=" + gameType +

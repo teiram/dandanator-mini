@@ -331,8 +331,8 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         } else if (game.getRom() == DandanatorMiniConstants.EXTRA_ROM_GAME) {
             romSlot =  32;
         } else {
-            int activeRomIndex = getApplicationContext().getGameList().filtered(g ->
-                    !g.isVirtual() && g.getType().equals(GameType.ROM)).indexOf(game.getRom());
+            int activeRomIndex = getApplicationContext().getGameList().filtered(g -> g.getType().equals(GameType.ROM))
+                    .indexOf(game.getRom());
             romSlot = 31 - activeRomIndex;
         }
         LOGGER.debug("Calculated ROM slot as " + romSlot + " for ROM " + game.getRom());
@@ -362,7 +362,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         int forwardOffset = Constants.SLOT_SIZE;
         //backwardsOffset starts before the test ROM
         int backwardsOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1);
-        for (Game game : getApplicationContext().getGameList().filtered(g -> !g.isVirtual())) {
+        for (Game game : getApplicationContext().getGameList()) {
             if (isGameCompressed(game)) {
                 forwardOffset = dumpGameHeader(os, index, game, gameChunkTable[index], forwardOffset);
             } else {
@@ -505,7 +505,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
             DandanatorMiniConfiguration dmConfiguration = DandanatorMiniConfiguration.getInstance();
 
             ByteArrayOutputStream os = new ByteArrayOutputStream();
-            List<Game> games = getApplicationContext().getGameList().filtered(g -> !g.isVirtual());
+            List<Game> games = getApplicationContext().getGameList();
             os.write(dmConfiguration.getDandanatorRom(), 0, DandanatorMiniConstants.BASEROM_SIZE);
             LOGGER.debug("Dumped base ROM. Offset: " + os.size());
 
@@ -648,7 +648,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
     protected double calculateRomUsage() {
         int size = 0;
-        for (Game game : getApplicationContext().getGameList().filtered(g -> !g.isVirtual())) {
+        for (Game game : getApplicationContext().getGameList()) {
             try {
                 size += getGameSize(game);
             } catch (Exception e) {
@@ -850,7 +850,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     public void updateMenuPreview() {
         LOGGER.debug("updateMenuPreview");
         try {
-            List<Game> gameList = getApplicationContext().getGameList().filtered(g -> !g.isVirtual());
+            List<Game> gameList = getApplicationContext().getGameList();
             int numPages = 1 + ((gameList.size() - 1) / DandanatorMiniConstants.SLOT_COUNT);
             for (int i = 0; i < numPages; i++) {
                 updateMenuPage(gameList, i, numPages);
