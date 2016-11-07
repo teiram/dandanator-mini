@@ -214,6 +214,7 @@ public class PlayerConfigurationController {
             serialPort.getSelectionModel().clearSelection();
             configuration.setSerialPort(null);
             configuration.setUseSerialPort(false);
+            useSerialPort.setDisable(true);
         }
     }
 }
