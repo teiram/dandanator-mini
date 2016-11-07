@@ -10,12 +10,15 @@ import jssc.SerialPortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.Optional;
 
 public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(SerialDataPlayer.class);
-
+    private static final String SERVICE_THREAD_NAME = "SerialPortServiceThread";
     private static PlayerConfiguration configuration = PlayerConfiguration.getInstance();
+    private static final int SEND_BUFFER_SIZE = 1024;
 
     private Thread serviceThread;
     private SerialPort serialPort;
@@ -32,7 +35,7 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
     private void init() {
         progressProperty = new SimpleDoubleProperty(0.0);
         serialPort =  new SerialPort(configuration.getSerialPort());
-        serviceThread = new Thread(this::serialSendData);
+        serviceThread = new Thread(null, this::serialSendData, SERVICE_THREAD_NAME);
     }
 
     public SerialDataPlayer(int block, byte[] data) {
@@ -56,25 +59,33 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
             serialPort.setParams(SerialPort.BAUDRATE_57600, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
 
-            int counter = 0;
-            for (byte value : data) {
-                serialPort.writeByte(value);
-                if (++counter % 25 == 0) {
-                    final double progress = 1.0 * counter / data.length;
-                    Platform.runLater(() -> progressProperty.set(progress));
+            int sent = 0;
+            ByteArrayInputStream bis = new ByteArrayInputStream(data);
+            byte[] sendBuffer = new byte[SEND_BUFFER_SIZE];
+            while (sent < data.length) {
+                int count = bis.read(sendBuffer);
+                LOGGER.debug("Sending block of " + count + " bytes");
+                if (count > SEND_BUFFER_SIZE) {
+                    serialPort.writeBytes(Arrays.copyOfRange(sendBuffer, 0, count));
+                } else {
+                    serialPort.writeBytes(sendBuffer);
                 }
+                sent += count;
+                final double progress = 1.0 * sent / data.length;
+                Platform.runLater(() -> progressProperty.set(progress));
                 if (state != State.RUNNING) {
-                    LOGGER.debug("No more in RUNNING state");
+                    LOGGER.debug("No more in running state");
                     break;
                 }
             }
+
             if (state == State.RUNNING && onFinalization != null) {
                 Platform.runLater(onFinalization);
             }
             state = State.STOPPED;
             LOGGER.debug("State is now STOPPED");
-        } catch (SerialPortException e) {
-            LOGGER.error("Serial port exception", e);
+        } catch (Exception e) {
+            LOGGER.error("Exception during send process", e);
             state = State.STOPPED;
         } finally {
             try {

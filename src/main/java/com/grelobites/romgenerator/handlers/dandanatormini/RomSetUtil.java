@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.player.TapOutputStream;
+import com.grelobites.romgenerator.util.player.TapUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -16,9 +17,8 @@ public class RomSetUtil {
     private static final String BLOCK_NAME_PREFIX = "block";
 
     public static void exportToDivideAsTap(InputStream romsetStream, OutputStream out) throws IOException {
-        TapOutputStream tos = new TapOutputStream(out);
-        tos.addProgramStream(LOADER_NAME, 10, new ByteArrayInputStream(
-                DandanatorMiniConstants.getDivIdeLoader()));
+        TapOutputStream tos = TapUtil.getLoaderTap(new ByteArrayInputStream(DandanatorMiniConstants
+                .getDivIdeLoader()), out, 0);
 
         byte[] buffer = new byte[BLOCK_SIZE + 3];
         for (int i = 0; i <  BLOCK_COUNT; i++) {

@@ -149,7 +149,12 @@ public class PlayerConfigurationController {
                 this::updateCustomRomSetPath);
 
         encodingSpeed.setItems(FXCollections.observableArrayList(EncodingSpeed.values()));
-        encodingSpeed.getSelectionModel().select(EncodingSpeed.of(configuration.getEncodingSpeed()));
+        try {
+            encodingSpeed.getSelectionModel().select(EncodingSpeed.of(configuration.getEncodingSpeed()));
+        } catch (Exception e) {
+            LOGGER.warn("Invalid persisted encoding speed", e);
+        }
+
         encodingSpeed.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> configuration.setEncodingSpeed(newValue.speed()));
 
@@ -161,18 +166,6 @@ public class PlayerConfigurationController {
         audioMode.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) ->
                         configuration.setAudioMode(newValue));
-
-        sendLoader.selectedProperty().bindBidirectional(
-                configuration.sendLoaderProperty());
-        useSerialPort.selectedProperty().bindBidirectional(configuration.useSerialPortProperty());
-        serialPort.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> {
-                    configuration.setSerialPort(newValue);
-                    if (newValue == null) {
-                        useSerialPort.setSelected(false);
-                    }
-                    useSerialPort.setDisable(newValue == null);
-                });
 
         useSerialPort.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
@@ -189,6 +182,20 @@ public class PlayerConfigurationController {
 
         sendLoader.selectedProperty().addListener((observable, oldValue, newValue) ->
                 audioMode.setDisable(!newValue));
+
+        sendLoader.selectedProperty().bindBidirectional(
+                configuration.sendLoaderProperty());
+        useSerialPort.selectedProperty().bindBidirectional(configuration.useSerialPortProperty());
+
+        serialPort.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    configuration.setSerialPort(newValue);
+                    if (newValue == null) {
+                        useSerialPort.setSelected(false);
+                    }
+                    useSerialPort.setDisable(newValue == null);
+                });
+
 
         refreshSerialPorts.setOnAction(e -> {
             serialPort.getSelectionModel().clearSelection();
@@ -208,8 +215,5 @@ public class PlayerConfigurationController {
             configuration.setSerialPort(null);
             configuration.setUseSerialPort(false);
         }
-
-        useSerialPort.setDisable(serialPort.getSelectionModel().getSelectedItem() == null);
-        sendLoader.setDisable(useSerialPort.isDisable());
     }
 }
