@@ -34,7 +34,7 @@ public class GameMapperV5 implements GameMapper {
     private boolean isGameCompressed;
     private boolean isGameForce48kMode;
     private HardwareMode hardwareMode;
-    private int gameType;
+    private GameType gameType;
     private boolean screenHold;
     private boolean activeRom;
     private byte[] launchCode;
@@ -42,6 +42,7 @@ public class GameMapperV5 implements GameMapper {
     private List<GameBlock> blocks = new ArrayList<>();
     private TrainerList trainerList = new TrainerList(null);
     private int trainerCount;
+    private Game game;
 
     private static boolean isSlotCompressed(int slotIndex, int size) {
         return size > 0 && ((slotIndex != DandanatorMiniConstants.GAME_CHUNK_SLOT) ?
@@ -62,9 +63,10 @@ public class GameMapperV5 implements GameMapper {
             mapper.hardwareMode = HardwareMode.fromIntValueMode(is.read());
         }
         mapper.isGameCompressed = is.read() != 0;
-        mapper.gameType = is.read();
+        int gameType = is.read();
+        mapper.gameType = GameType.byTypeId(gameType);
         if (minorVersion < 3) {
-            mapper.hardwareMode = mapper.gameType > 3 ? HardwareMode.HW_PLUS2A : HardwareMode.HW_48K;
+            mapper.hardwareMode = gameType > 3 ? HardwareMode.HW_PLUS2A : HardwareMode.HW_48K;
         }
         mapper.screenHold = is.read() != 0;
         mapper.activeRom = is.read() != 0;
@@ -135,36 +137,41 @@ public class GameMapperV5 implements GameMapper {
     }
 
     @Override
-    public Game createGame() {
-        GameType type = GameType.byTypeId(gameType);
-        Game game;
-        switch (type) {
-            case ROM:
-                game = new RomGame(getGameSlots().get(0));
-                break;
-            case RAM16:
-            case RAM48:
-            case RAM128:
-                RamGame ramGame = new RamGame(type, getGameSlots());
-                ramGame.setCompressed(isGameCompressed);
-                ramGame.setHoldScreen(screenHold);
-                //TODO: Fix this
-                ramGame.setRom(null);
-                ramGame.setGameHeader(gameHeader);
-                ramGame.setForce48kMode(isGameForce48kMode);
-                ramGame.setHardwareMode(hardwareMode);
-                ramGame.setTrainerList(trainerList);
-                ramGame.setCompressedData(getGameCompressedData());
-                //Extract the PC from SP
-                ramGame.getGameHeader().setPCRegister(GameUtil.popPC(ramGame));
-                GameUtil.pushPC(ramGame);
-                game = ramGame;
-                break;
-            default:
-                LOGGER.error("Unsupported type of game " + type.screenName());
-                throw new IllegalArgumentException("Unsupported game type");
+    public GameType getGameType() {
+        return gameType;
+    }
+
+    @Override
+    public Game getGame() {
+        if (game == null) {
+            switch (gameType) {
+                case ROM:
+                    game = new RomGame(getGameSlots().get(0));
+                    break;
+                case RAM16:
+                case RAM48:
+                case RAM128:
+                    RamGame ramGame = new RamGame(gameType, getGameSlots());
+                    ramGame.setCompressed(isGameCompressed);
+                    ramGame.setHoldScreen(screenHold);
+                    ramGame.setRom(activeRom ? DandanatorMiniConstants.EXTRA_ROM_GAME :
+                            DandanatorMiniConstants.INTERNAL_ROM_GAME);
+                    ramGame.setGameHeader(gameHeader);
+                    ramGame.setForce48kMode(isGameForce48kMode);
+                    ramGame.setHardwareMode(hardwareMode);
+                    ramGame.setTrainerList(trainerList);
+                    ramGame.setCompressedData(getGameCompressedData());
+                    //Extract the PC from SP
+                    ramGame.getGameHeader().setPCRegister(GameUtil.popPC(ramGame));
+                    GameUtil.pushPC(ramGame);
+                    game = ramGame;
+                    break;
+                default:
+                    LOGGER.error("Unsupported type of game " + gameType.screenName());
+                    throw new IllegalArgumentException("Unsupported game type");
+            }
+            game.setName(name);
         }
-        game.setName(name);
         return game;
     }
 

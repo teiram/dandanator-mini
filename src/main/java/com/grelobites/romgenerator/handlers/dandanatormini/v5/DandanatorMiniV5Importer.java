@@ -35,7 +35,7 @@ public class DandanatorMiniV5Importer implements DandanatorMiniImporter {
         games.clear();
         applicationContext.addBackgroundTask(() -> {
             slotZero.getGameMappers().forEach(holder -> {
-                final Game game = holder.createGame();
+                final Game game = holder.getGame();
                 Future<OperationResult> result = applicationContext.getRomSetHandler().addGame(game);
                 try {
                     result.get();
@@ -80,7 +80,7 @@ public class DandanatorMiniV5Importer implements DandanatorMiniImporter {
 
         applicationContext.addBackgroundTask(() -> {
             slotZero.getGameMappers().forEach(holder -> {
-                final Game game = holder.createGame();
+                final Game game = holder.getGame();
                 Future<OperationResult> futureResult = applicationContext.getRomSetHandler().addGame(game);
                 try {
                     futureResult.get();

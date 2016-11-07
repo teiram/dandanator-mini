@@ -38,7 +38,7 @@
                         <Label layoutX="150.0" layoutY="45.0" text="HW:" />
                         <Label fx:id="hardwareMode" layoutX="197.0" layoutY="45.0" text="-" />
                         <ComboBox fx:id="gameRomAttribute" layoutX="91.0" layoutY="62.0" prefWidth="150.0" />
-                        <Label layoutX="10.0" layoutY="67.0" text="ROM Activa" />
+                        <Label fx:id="romActiveAttributeLabel" layoutX="10.0" layoutY="67.0" text="%activeRomProperty" />
                             </children>
                         </AnchorPane>
                     </content>

@@ -13,4 +13,10 @@ public class RomGame extends BaseGame implements Game {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "RomGame{name='" + getName() + "'"
+            + ", type=" + getType()
+                + "}";
+    }
 }

@@ -12,4 +12,7 @@ public class V6Constants {
     protected static final int SNA_HEADER_SIZE = 31;
     protected static final int GAME_LAUNCH_SIZE = 18;
     protected static final int GAME_STRUCT_OFFSET = 3585;
+
+    protected static int EXTRA_ROM_SLOT = 32;
+    protected static int INTERNAL_ROM_SLOT = 33;
 }

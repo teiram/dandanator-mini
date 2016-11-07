@@ -1,6 +1,9 @@
 package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameType;
+import com.grelobites.romgenerator.model.VirtualGame;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.PreferencesProvider;
 import com.grelobites.romgenerator.util.Util;
@@ -57,6 +60,9 @@ public class DandanatorMiniConstants {
     private static byte[] EXTRA_ROM;
     private static byte[] DEFAULT_DANDANATOR_PIC_FW;
     private static byte[] DIVIDE_LOADER;
+
+    public static final Game INTERNAL_ROM_GAME = new VirtualGame(GameType.ROM, "Internal ROM");
+    public static final Game EXTRA_ROM_GAME = new VirtualGame(GameType.ROM, "Extra ROM");
 
     private static PreferencesProvider providerRegister = new PreferencesProvider("Dandanator Mini",
             "/com/grelobites/romgenerator/handlers/dandanatormini/view/dandanatorminipreferences.fxml",

@@ -27,7 +27,7 @@ public abstract class SlotZeroBase implements SlotZero {
         return new ByteArrayInputStream(data);
     }
 
-    protected int getMajorVersion() throws IOException {
+    public int getMajorVersion() throws IOException {
 
         String majorVersion = getVersion();
         int index;
@@ -38,7 +38,7 @@ public abstract class SlotZeroBase implements SlotZero {
         return Integer.parseInt(majorVersion);
     }
 
-    protected int getMinorVersion() throws IOException {
+    public int getMinorVersion() throws IOException {
         String version = getVersion();
         String minorVersion;
         int index;
@@ -51,7 +51,7 @@ public abstract class SlotZeroBase implements SlotZero {
         return Integer.parseInt(minorVersion);
     }
 
-    protected String getVersion() throws IOException {
+    public String getVersion() throws IOException {
         ByteArrayInputStream stream = new ByteArrayInputStream(data, VERSION_OFFSET,
                 DandanatorMiniConstants.VERSION_SIZE);
 

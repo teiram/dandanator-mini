@@ -38,4 +38,6 @@ public interface Game {
 
     int getSize();
 
+    boolean isVirtual();
+
 }

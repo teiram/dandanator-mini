@@ -93,4 +93,8 @@ public class BaseGame {
     public Observable[] getObservable() {
         return new Observable[] {name};
     }
+
+    public boolean isVirtual() {
+        return false;
+    }
 }

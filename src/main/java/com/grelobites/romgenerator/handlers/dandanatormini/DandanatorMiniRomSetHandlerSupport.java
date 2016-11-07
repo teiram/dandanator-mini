@@ -110,9 +110,9 @@ public class DandanatorMiniRomSetHandlerSupport {
         return game instanceof RamGame && ((RamGame) game).getHoldScreen();
     }
 
-    protected static boolean isGameRom(Game game) {
-        //TODO: return game instanceof RamGame && ((RamGame) game).getRom();
-        return false;
+    protected static boolean isGameRomActive(Game game) {
+        return game instanceof RamGame && !((RamGame) game).getRom().equals(
+                DandanatorMiniConstants.INTERNAL_ROM_GAME);
     }
 
     protected static boolean isGameCompressed(Game game) {
@@ -121,7 +121,7 @@ public class DandanatorMiniRomSetHandlerSupport {
 
     protected static void dumpGameName(OutputStream os, Game game, int index) throws IOException {
         String gameName = String.format("%d%c %s", (index + 1) % DandanatorMiniConstants.SLOT_COUNT,
-                isGameRom(game) ? 'r' : '.',
+                isGameRomActive(game) ? 'r' : '.',
                 game.getName());
         os.write(asNullTerminatedByteArray(gameName, DandanatorMiniConstants.GAMENAME_SIZE));
     }

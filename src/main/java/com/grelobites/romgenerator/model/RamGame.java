@@ -251,4 +251,17 @@ public class RamGame extends BaseGame implements Game {
         getCompressedSize(Configuration.getInstance().getRamGameCompressor(), true);
         screenshot = null;
     }
+
+    @Override
+    public String toString() {
+        return "RamGame{" +
+                "gameType=" + getType() +
+                ", name=" + getName() +
+                ", rom=" + rom.get() +
+                ", holdScreen=" + holdScreen.get() +
+                ", compressed=" + compressed.get() +
+                ", force48kMode=" + force48kMode.get() +
+                ", hardwareMode=" + hardwareMode +
+                '}';
+    }
 }
