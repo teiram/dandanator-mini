@@ -162,18 +162,6 @@ public class PlayerConfigurationController {
                 (observable, oldValue, newValue) ->
                         configuration.setAudioMode(newValue));
 
-        sendLoader.selectedProperty().bindBidirectional(
-                configuration.sendLoaderProperty());
-        useSerialPort.selectedProperty().bindBidirectional(configuration.useSerialPortProperty());
-        serialPort.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> {
-                    configuration.setSerialPort(newValue);
-                    if (newValue == null) {
-                        useSerialPort.setSelected(false);
-                    }
-                    useSerialPort.setDisable(newValue == null);
-                });
-
         useSerialPort.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 useTargetFeedback.setSelected(false);
@@ -189,6 +177,20 @@ public class PlayerConfigurationController {
 
         sendLoader.selectedProperty().addListener((observable, oldValue, newValue) ->
                 audioMode.setDisable(!newValue));
+
+        sendLoader.selectedProperty().bindBidirectional(
+                configuration.sendLoaderProperty());
+        useSerialPort.selectedProperty().bindBidirectional(configuration.useSerialPortProperty());
+
+        serialPort.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> {
+                    configuration.setSerialPort(newValue);
+                    if (newValue == null) {
+                        useSerialPort.setSelected(false);
+                    }
+                    useSerialPort.setDisable(newValue == null);
+                });
+
 
         refreshSerialPorts.setOnAction(e -> {
             serialPort.getSelectionModel().clearSelection();
@@ -208,8 +210,5 @@ public class PlayerConfigurationController {
             configuration.setSerialPort(null);
             configuration.setUseSerialPort(false);
         }
-
-        useSerialPort.setDisable(serialPort.getSelectionModel().getSelectedItem() == null);
-        sendLoader.setDisable(useSerialPort.isDisable());
     }
 }
