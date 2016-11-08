@@ -144,6 +144,11 @@ public class GameMapperV6 implements GameMapper {
     private Game getRomFromSlot(int slot) {
         LOGGER.debug("getRomFromSlot " + slot);
         Game activeRom;
+        //Compatibility with 6.n n < 1
+        if (slot == 0) {
+            slot = V6Constants.INTERNAL_ROM_SLOT;
+        }
+
         if (slot >= V6Constants.EXTRA_ROM_SLOT) {
             activeRom =  slot == V6Constants.EXTRA_ROM_SLOT ? DandanatorMiniConstants.EXTRA_ROM_GAME :
                     DandanatorMiniConstants.INTERNAL_ROM_GAME;
