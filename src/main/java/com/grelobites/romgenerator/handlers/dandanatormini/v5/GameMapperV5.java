@@ -67,6 +67,13 @@ public class GameMapperV5 implements GameMapper {
         mapper.gameType = GameType.byTypeId(gameType);
         if (minorVersion < 3) {
             mapper.hardwareMode = gameType > 3 ? HardwareMode.HW_PLUS2A : HardwareMode.HW_48K;
+            //Reset 1FFD (TRDOS is stored here in 5.n n<3 versions)
+            mapper.gameHeader.setPort1ffdValue(null);
+        } else {
+            mapper.gameHeader.setPort1ffdValue(
+                    GameUtil.resetNonAuthentic(mapper.gameHeader.getPort1ffdValue(0)));
+            mapper.gameHeader.setPort7ffdValue(
+                    GameUtil.resetNonAuthentic(mapper.gameHeader.getPort7ffdValue(0)));
         }
         mapper.screenHold = is.read() != 0;
         mapper.activeRom = is.read() != 0;

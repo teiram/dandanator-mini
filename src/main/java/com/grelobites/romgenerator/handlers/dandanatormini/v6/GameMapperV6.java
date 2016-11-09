@@ -65,6 +65,12 @@ public class GameMapperV6 implements GameMapper {
                     DandanatorMiniConstants.PORT7FFD_FORCED_48KMODE_BITS) != 0;
         mapper.hardwareMode = HardwareMode.fromIntValueMode(is.read());
 
+        //Reset 7FFD/1FFD values on no authenticity bit
+        mapper.gameHeader.setPort1ffdValue(
+                GameUtil.resetNonAuthentic(mapper.gameHeader.getPort1ffdValue(0)));
+        mapper.gameHeader.setPort7ffdValue(
+                GameUtil.resetNonAuthentic(mapper.gameHeader.getPort7ffdValue(0)));
+
         mapper.isGameCompressed = is.read() != 0;
         mapper.gameType = GameType.byTypeId(is.read());
 
