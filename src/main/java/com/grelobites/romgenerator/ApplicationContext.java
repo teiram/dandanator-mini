@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator;
 
 import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.OperationResult;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -54,6 +56,7 @@ public class ApplicationContext {
     private Menu extraMenu;
     private StringProperty applicationTitle;
     private DirectoryAwareFileChooser fileChooser;
+    private StringProperty exportGameMenuEntryMessage;
 
     private void updateApplicationTitle() {
         StringBuilder title = new StringBuilder(APPLICATION_TITLE);
@@ -78,6 +81,7 @@ public class ApplicationContext {
         this.romUsageDetail = new SimpleStringProperty();
         this.backgroundTaskCount = new SimpleIntegerProperty();
         this.applicationTitle = new SimpleStringProperty();
+        this.exportGameMenuEntryMessage = new SimpleStringProperty(LocaleUtil.i18n("exportGameMenuEntry"));
         updateApplicationTitle();
     }
 
@@ -196,7 +200,11 @@ public class ApplicationContext {
             final File saveFile = chooser.showSaveDialog(menuPreview.getScene().getWindow());
             if (saveFile != null) {
                 try {
-                    GameUtil.exportGameAsZ80(game, saveFile);
+                    if (game.getType() == GameType.ROM) {
+                        GameUtil.exportGameAsRom(game, saveFile);
+                    } else {
+                        GameUtil.exportGameAsZ80(game, saveFile);
+                    }
                 } catch (IOException e) {
                     LOGGER.error("Exporting Game", e);
                 }
@@ -214,6 +222,18 @@ public class ApplicationContext {
 
     public void setExtraMenu(Menu extraMenu) {
         this.extraMenu = extraMenu;
+    }
+
+    public String getExportGameMenuEntryMessage() {
+        return exportGameMenuEntryMessage.get();
+    }
+
+    public StringProperty exportGameMenuEntryMessageProperty() {
+        return exportGameMenuEntryMessage;
+    }
+
+    public void setExportGameMenuEntryMessage(String exportGameMenuEntryMessage) {
+        this.exportGameMenuEntryMessage.set(exportGameMenuEntryMessage);
     }
 
     private static boolean confirmRomSetDeletion() {

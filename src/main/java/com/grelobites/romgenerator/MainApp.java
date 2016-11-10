@@ -79,6 +79,9 @@ public class MainApp extends Application {
         );
         exportGame.disableProperty().bind(applicationContext
                 .gameSelectedProperty().not());
+        exportGame.textProperty().bind(applicationContext
+                .exportGameMenuEntryMessageProperty());
+
         exportGame.setOnAction(f -> {
             try {
                 applicationContext.exportCurrentGame();
@@ -88,6 +91,7 @@ public class MainApp extends Application {
         });
         return exportGame;
     }
+
 
     private MenuItem importRomSetMenuItem(Scene scene, ApplicationContext applicationContext) {
         MenuItem importRomSet = new MenuItem(LocaleUtil.i18n("importRomSetMenuEntry"));

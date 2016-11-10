@@ -25,4 +25,5 @@ public interface RomSetHandler {
 
     BooleanProperty generationAllowedProperty();
     Future<OperationResult> addGame(Game game);
+    void removeGame(Game game);
 }

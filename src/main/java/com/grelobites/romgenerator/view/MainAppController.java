@@ -340,8 +340,8 @@ public class MainAppController {
         });
 
         removeSelectedRomButton.setOnAction(c -> {
-            Optional<Integer> selectedIndex = Optional.of(gameTable.getSelectionModel().getSelectedIndex());
-            selectedIndex.ifPresent(index -> applicationContext.getGameList().remove(index.intValue()));
+            Optional<Game> selectedGame = Optional.of(gameTable.getSelectionModel().getSelectedItem());
+            selectedGame.ifPresent(index -> applicationContext.getRomSetHandler().removeGame(selectedGame.get()));
         });
 
         clearRomsetButton.setOnAction(c -> {
@@ -361,10 +361,18 @@ public class MainAppController {
     }
 
 
+    private void updateExportGameMenuEntryMessage(Game selectedGame) {
+        applicationContext.setExportGameMenuEntryMessage(
+                selectedGame == null ? LocaleUtil.i18n("exportGameMenuEntry") :
+                selectedGame.getType() == GameType.ROM ?
+                    LocaleUtil.i18n("exportGameAsRomMenuEntry") :
+                    LocaleUtil.i18n("exportGameAsZ80MenuEntry"));
+    }
 
     private void onGameSelection(Game oldGame, Game newGame) {
         LOGGER.debug("onGameSelection oldGame=" + oldGame+ ", newGame=" + newGame);
         gameRenderer.previewGame(newGame);
+        updateExportGameMenuEntryMessage(newGame);
         if (newGame == null) {
             removeSelectedRomButton.setDisable(true);
         } else {
