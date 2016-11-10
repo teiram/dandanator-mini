@@ -1,9 +1,9 @@
 package com.grelobites.romgenerator.zxspectrum.mmu;
 
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
-import com.grelobites.dandanator.util.emulator.zxspectrum.MMU;
-import com.grelobites.dandanator.util.emulator.zxspectrum.OutputPort;
+import com.grelobites.romgenerator.zxspectrum.Z80VirtualMachine;
+import com.grelobites.romgenerator.zxspectrum.MMU;
+import com.grelobites.romgenerator.zxspectrum.OutputPort;
 
 public class BankMMU implements MMU, OutputPort {
     public static final int PAGESIZE = 4096;

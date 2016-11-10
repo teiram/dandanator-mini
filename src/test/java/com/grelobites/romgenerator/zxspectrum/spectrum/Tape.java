@@ -48,6 +48,7 @@ public class Tape implements Peripheral, InputPort {
     private int getNextBitFromTap() {
         int deltaCycles = cpu.cycleCounter - cycleOnLastInput;
 
+        return 0;
     }
 
     @Override

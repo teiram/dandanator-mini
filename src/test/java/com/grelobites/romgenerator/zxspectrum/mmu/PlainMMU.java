@@ -1,8 +1,8 @@
 package com.grelobites.romgenerator.zxspectrum.mmu;
 
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.Z80VirtualMachine;
-import com.grelobites.dandanator.util.emulator.zxspectrum.MMU;
+import com.grelobites.romgenerator.zxspectrum.Z80VirtualMachine;
+import com.grelobites.romgenerator.zxspectrum.MMU;
 
 public class PlainMMU implements MMU {
     private int memory[] = new int[0x10000];

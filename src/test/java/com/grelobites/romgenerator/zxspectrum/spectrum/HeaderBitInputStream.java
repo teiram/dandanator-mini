@@ -1,14 +1,20 @@
 package com.grelobites.romgenerator.zxspectrum.spectrum;
 
-public class ConstantBitInputStream implements BitInputStream {
+public class HeaderBitInputStream implements BitInputStream {
+    private static final int HEADER_PULSE_LENGTH = 2168;
+    private static final int SYNC_P0_TSTATES = 667;
+    private static final int SYNC_P1_TSTATES = 735;
+
 
     private final int value;
     private int remaining;
 
-    public ConstantBitInputStream(int value, int length) {
-        this.remaining = length;
+
+    public HeaderBitInputStream(int value) {
+        this.remaining = 0;
         this.value = value;
     }
+
 
     @Override
     public int read() {

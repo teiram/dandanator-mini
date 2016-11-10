@@ -71,6 +71,11 @@ public class GameMapperV6 implements GameMapper {
         mapper.gameHeader.setPort7ffdValue(
                 GameUtil.resetNonAuthentic(mapper.gameHeader.getPort7ffdValue(0)));
 
+        //Zero values makes no sense and could have been injected by some erroneous ROM version
+        if (GameUtil.decodeAsAuthentic(mapper.gameHeader.getPort1ffdValue(0)) == 0) {
+            mapper.gameHeader.setPort1ffdValue(null);
+        }
+
         mapper.isGameCompressed = is.read() != 0;
         mapper.gameType = GameType.byTypeId(is.read());
 

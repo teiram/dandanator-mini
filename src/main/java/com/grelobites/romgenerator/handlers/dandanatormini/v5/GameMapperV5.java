@@ -72,6 +72,10 @@ public class GameMapperV5 implements GameMapper {
         } else {
             mapper.gameHeader.setPort1ffdValue(
                     GameUtil.resetNonAuthentic(mapper.gameHeader.getPort1ffdValue(0)));
+            //Zero values makes no sense and could have been injected by some erroneous ROM version
+            if (GameUtil.decodeAsAuthentic(mapper.gameHeader.getPort1ffdValue(0)) == 0) {
+                mapper.gameHeader.setPort1ffdValue(null);
+            }
             mapper.gameHeader.setPort7ffdValue(
                     GameUtil.resetNonAuthentic(mapper.gameHeader.getPort7ffdValue(0)));
         }

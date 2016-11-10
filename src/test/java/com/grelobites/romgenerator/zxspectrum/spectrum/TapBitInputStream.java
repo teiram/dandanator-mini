@@ -41,7 +41,11 @@ public class TapBitInputStream {
                 currentBlockPosition = 0;
             }
         }
+
+        return false;
     }
+
+/*
 
     private int tStatesToSamples(int tstates) {
         int upper = tstates * format.getSampleRate();
@@ -99,5 +103,6 @@ public class TapBitInputStream {
         writeSamples(tStatesToSamples(SYNC_P0_LENGTH), true);
         writeSamples(tStatesToSamples(SYNC_P1_LENGTH), false);
     }
+*/
 
 }

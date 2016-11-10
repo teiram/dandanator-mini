@@ -1,7 +1,7 @@
 package com.grelobites.romgenerator.zxspectrum.cpm;
 
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.Disk;
+import com.grelobites.romgenerator.zxspectrum.Disk;
 
 import java.util.Vector;
 

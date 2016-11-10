@@ -23,7 +23,7 @@ package com.grelobites.romgenerator.zxspectrum.cpm;
  * RC		Number of record used in the last extension.<p>
  * A0..AF	Block allocation map 1 if BSM < 256.<p>
  *
- * @see com.grelobites.dandanator.util.emulator.zxspectrum.cpm.DPB
+ * @see com.grelobites.romgenerator.zxspectrum.cpm.DPB
  * <p>
  * $Log: FCB.java,v $
  * Revision 1.2  2004/06/20 16:26:45  mviara

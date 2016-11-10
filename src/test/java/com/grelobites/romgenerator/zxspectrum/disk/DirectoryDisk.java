@@ -1,8 +1,8 @@
 package com.grelobites.romgenerator.zxspectrum.disk;
 
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.cpm.CpmDisk;
-import com.grelobites.dandanator.util.emulator.zxspectrum.cpm.DPBHD4MB;
+import com.grelobites.romgenerator.zxspectrum.cpm.CpmDisk;
+import com.grelobites.romgenerator.zxspectrum.cpm.DPBHD4MB;
 
 import java.io.File;
 import java.io.FileInputStream;

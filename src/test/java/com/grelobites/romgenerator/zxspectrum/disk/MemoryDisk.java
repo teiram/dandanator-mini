@@ -1,7 +1,7 @@
 package com.grelobites.romgenerator.zxspectrum.disk;
 
 
-import com.grelobites.dandanator.util.emulator.zxspectrum.cpm.DPB;
+import com.grelobites.romgenerator.zxspectrum.cpm.DPB;
 
 /**
  * $Id: MemoryDisk.java 331 2010-09-14 10:30:13Z mviara $
