@@ -15,12 +15,17 @@ import com.grelobites.romgenerator.view.util.RecursiveTreeItem;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -29,9 +34,12 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
+import javafx.util.Callback;
+import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +89,10 @@ public class DandanatorMiniFrameController {
     private Label gameType;
 
     @FXML
-    private CheckBox gameRomAttribute;
+    private Label romActiveAttributeLabel;
+
+    @FXML
+    private ComboBox<Game> gameRomAttribute;
 
     @FXML
     private CheckBox gameHoldScreenAttribute;
@@ -241,7 +252,6 @@ public class DandanatorMiniFrameController {
         applicationContext.getGameList().addListener((InvalidationListener) c -> {
             double pokeUsage = GameUtil.getOverallPokeUsage(applicationContext.getGameList());
             pokesCurrentSizeBar.setProgress(pokeUsage);
-            //TODO: Avoid references to RomSetHandler stuff
             String pokeUsageDetailString = String.format(LocaleUtil.i18n("pokeUsageDetail"),
                     pokeUsage * 100,
                     DandanatorMiniConstants.POKE_ZONE_SIZE);
@@ -252,6 +262,51 @@ public class DandanatorMiniFrameController {
                 (observable, oldValue, newValue) -> onGameSelection(oldValue, newValue));
         onGameSelection(applicationContext.selectedGameProperty().get(),
                 applicationContext.selectedGameProperty().get());
+
+        gameRomAttribute.setCellFactory(new Callback<ListView<Game>, ListCell<Game>>() {
+            @Override
+            public ListCell<Game> call(ListView<Game> arg0) {
+                return new ListCell<Game>() {
+                    @Override
+                    protected void updateItem(Game item, boolean empty) {
+                        super.updateItem(item, empty);
+
+                        if (item == null || empty) {
+                            setGraphic(null);
+                        } else {
+                            setText(item.getName());
+                        }
+                    }
+                };
+            }
+        });
+        gameRomAttribute.setButtonCell(new TextFieldListCell<>(new StringConverter<Game>() {
+            @Override
+            public String toString(Game object) {
+                LOGGER.debug("Executing toString of " + object);
+                return object.getName();
+            }
+
+            @Override
+            public Game fromString(String string) {
+                LOGGER.debug("Executing fromString of " + string);
+                return null;
+            }
+        }));
+
+        updateActiveRomComboItems();
+        applicationContext.getGameList().addListener((InvalidationListener) e -> {
+            updateActiveRomComboItems();
+        });
+
+    }
+
+    private void updateActiveRomComboItems() {
+        ObservableList<Game> items = FXCollections.observableArrayList(
+                DandanatorMiniConstants.INTERNAL_ROM_GAME,
+                DandanatorMiniConstants.EXTRA_ROM_GAME);
+        items.addAll(applicationContext.getGameList().filtered(e -> e.getType() == GameType.ROM));
+        gameRomAttribute.setItems(items);
     }
 
     private void unbindInfoPropertiesFromGame(Game game) {
@@ -262,7 +317,7 @@ public class DandanatorMiniFrameController {
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 gameHoldScreenAttribute.selectedProperty().unbindBidirectional(ramGame.holdScreenProperty());
-                gameRomAttribute.selectedProperty().unbindBidirectional(ramGame.romProperty());
+                gameRomAttribute.valueProperty().unbindBidirectional(ramGame.romProperty());
                 gameCompressedAttribute.selectedProperty().unbindBidirectional(ramGame.compressedProperty());
                 gameForced48kModeAttribute.selectedProperty().unbindBidirectional(ramGame.force48kModeProperty());
                 pokeView.setRoot(null);
@@ -273,14 +328,14 @@ public class DandanatorMiniFrameController {
 
     private void bindInfoPropertiesToGame(Game game) {
         if (game != null) {
-            LOGGER.debug("Binding bidirectionally name property to game " + game);
             gameName.textProperty().bindBidirectional(game.nameProperty());
             gameType.textProperty().set(game.getType().screenName());
             compressedSize.textProperty().bind(getGameSizeProperty(game).asString());
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
                 gameHoldScreenAttribute.selectedProperty().bindBidirectional(ramGame.holdScreenProperty());
-                gameRomAttribute.selectedProperty().bindBidirectional(ramGame.romProperty());
+                gameRomAttribute.valueProperty().bindBidirectional(ramGame.romProperty());
+                LOGGER.debug("gameRomAttribute list is " + gameRomAttribute.getItems());
                 pokeView.setRoot(new RecursiveTreeItem<>(ramGame.getTrainerList(), PokeViewable::getChildren,
                         this::computePokeChange));
                 gameCompressedAttribute.selectedProperty().bindBidirectional(ramGame.compressedProperty());
@@ -325,6 +380,7 @@ public class DandanatorMiniFrameController {
                 gameRomAttribute.setVisible(true);
                 gameHoldScreenAttribute.setVisible(true);
                 gameCompressedAttribute.setVisible(true);
+                romActiveAttributeLabel.setVisible(true);
                 if (ramGame.getTrainerList().getChildren().size() > 0) {
                     removeAllGamePokesButton.setDisable(false);
                 } else {
@@ -339,6 +395,7 @@ public class DandanatorMiniFrameController {
                 gameCompressedAttribute.setVisible(false);
                 gameForced48kModeAttribute.setVisible(false);
                 hardwareMode.setVisible(false);
+                romActiveAttributeLabel.setVisible(false);
             }
             gameInfoTabPane.setVisible(true);
         }

@@ -209,6 +209,9 @@ public class GameUtil {
         return value != null ? value | DandanatorMiniConstants.AUTHENTIC_VALUE_FLAG : defaultValue;
     }
 
+    public static Integer resetNonAuthentic(Integer value) {
+        return (value & DandanatorMiniConstants.AUTHENTIC_VALUE_FLAG) == 0 ? null : value;
+    }
     public static Integer decodeAsAuthentic(int value) {
         return value & (DandanatorMiniConstants.AUTHENTIC_VALUE_FLAG - 1);
     }

@@ -186,8 +186,10 @@ public class PlayerController {
                             }
                             doAfterDelay(currentBlock.get() == LOADER_BLOCK ?
                                     PAUSE_AFTER_LOADER : configuration.getRecordingPause(), () -> {
-                                currentBlock.set(currentBlock.get() + 1);
-                                playCurrentBlock();
+                                if (playing.get()) {
+                                    currentBlock.set(currentBlock.get() + 1);
+                                    playCurrentBlock();
+                                }
                             });
                         } else {
                             LOGGER.debug("Detected something else");
@@ -199,8 +201,10 @@ public class PlayerController {
                     }).orElseGet(() -> {
                         LOGGER.debug("Fallback to repeat current block");
                         recordingLed.setVisible(false);
-                        consecutiveFailures.set(consecutiveFailures.get() + 1);
-                        playCurrentBlock();
+                        if (playing.get()) {
+                            consecutiveFailures.set(consecutiveFailures.get() + 1);
+                            playCurrentBlock();
+                        }
                         return null;
                     })).build();
 
@@ -214,8 +218,10 @@ public class PlayerController {
             }
             doAfterDelay(currentBlock.get() == LOADER_BLOCK ?
                     PAUSE_AFTER_LOADER : configuration.getRecordingPause(), () -> {
-                currentBlock.set(currentBlock.get() + 1);
-                playCurrentBlock();
+                if (playing.get()) {
+                    currentBlock.set(currentBlock.get() + 1);
+                    playCurrentBlock();
+                }
             });
         }
     }

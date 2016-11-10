@@ -16,8 +16,8 @@ public class TapUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(TapUtil.class);
 
     private static final String LOADER_NAME = "EEP Writer";
-    private static final String BOOOTER_RESOURCE = "/player/boot.bin";
-    private static final String SCREEN_RESOURCE = "/player/screen.scr";
+    public static final String BOOTER_RESOURCE = "/player/boot.bin";
+    public static final String SCREEN_RESOURCE = "/player/screen.scr";
 
     public static void tap2wav(StandardWavOutputFormat format, InputStream tapStream, OutputStream wavStream)
     throws IOException {
@@ -45,8 +45,14 @@ public class TapUtil {
         return compressedStream.toByteArray();
     }
 
-    public static byte[] generateLoaderTap(InputStream loader, int flagValue) throws IOException {
-        InputStream uncompressor = TapUtil.class.getResourceAsStream(BOOOTER_RESOURCE);
+    public static byte[] getLoaderTapByteArray(InputStream loader, int flagValue) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final TapOutputStream loaderTap = getLoaderTap(loader, out, flagValue);
+        return out.toByteArray();
+    }
+
+    public static TapOutputStream getLoaderTap(InputStream loader, OutputStream out, int flagValue) throws IOException {
+        InputStream uncompressor = TapUtil.class.getResourceAsStream(BOOTER_RESOURCE);
         if (uncompressor != null) {
             byte[] compressedScreen = compressedByteArrayOf(TapUtil.class.getResourceAsStream(SCREEN_RESOURCE));
             byte[] uncompressorByteArray = Util.fromInputStream(uncompressor);
@@ -58,14 +64,13 @@ public class TapUtil {
 
             byte[] loaderByteArray = compressedByteArrayOf(loader);
 
-            ByteArrayOutputStream tapStream = new ByteArrayOutputStream();
-            TapOutputStream tos = new TapOutputStream(tapStream);
+            TapOutputStream tos = new TapOutputStream(out);
             tos.addProgramStream(LOADER_NAME, 10, new ByteArrayInputStream(ByteBuffer
                     .allocate(uncompressorByteArray.length + compressedScreen.length + loaderByteArray.length)
                     .put(uncompressorByteArray)
                     .put(compressedScreen)
                     .put(loaderByteArray).array()));
-            return tapStream.toByteArray();
+            return tos;
         } else {
             throw new IllegalStateException("No uncompressor resource found");
         }

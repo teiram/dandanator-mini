@@ -29,19 +29,25 @@ public class GameMapperV6 implements GameMapper {
     private static final int COMPRESSED_CHUNKSLOT_MAXSIZE = Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE;
     private static final int INVALID_SLOT_ID = DandanatorMiniConstants.FILLER_BYTE;
 
+    private SlotZeroV6 slotZero;
     private GameHeader gameHeader;
     private String name;
     private boolean isGameCompressed;
     private boolean isGameForce48kMode;
     private HardwareMode hardwareMode;
-    private int gameType;
+    private GameType gameType;
     private boolean screenHold;
-    private boolean activeRom;
+    private int activeRom;
     private byte[] launchCode;
     private GameChunk gameChunk;
     private List<GameBlock> blocks = new ArrayList<>();
     private TrainerList trainerList = new TrainerList(null);
     private int trainerCount;
+    private Game game;
+
+    private GameMapperV6(SlotZeroV6 slotZero) {
+        this.slotZero = slotZero;
+    }
 
     private static boolean isSlotCompressed(int slotIndex, int size) {
         return size > 0 && ((slotIndex != DandanatorMiniConstants.GAME_CHUNK_SLOT) ?
@@ -49,9 +55,9 @@ public class GameMapperV6 implements GameMapper {
                 size < COMPRESSED_CHUNKSLOT_MAXSIZE);
     }
 
-    public static GameMapperV6 fromRomSet(PositionAwareInputStream is) throws IOException {
+    public static GameMapperV6 fromRomSet(PositionAwareInputStream is, SlotZeroV6 slotZero) throws IOException {
         LOGGER.debug("About to read game data. Offset is " + is.position());
-        GameMapperV6 mapper = new GameMapperV6();
+        GameMapperV6 mapper = new GameMapperV6(slotZero);
         mapper.gameHeader = GameHeaderV6Serializer.deserialize(is);
         mapper.name = Util.getNullTerminatedString(is, 3, DandanatorMiniConstants.GAMENAME_SIZE);
 
@@ -59,11 +65,27 @@ public class GameMapperV6 implements GameMapper {
                     DandanatorMiniConstants.PORT7FFD_FORCED_48KMODE_BITS) != 0;
         mapper.hardwareMode = HardwareMode.fromIntValueMode(is.read());
 
+        //Reset 7FFD/1FFD values on no authenticity bit
+        mapper.gameHeader.setPort1ffdValue(
+                GameUtil.resetNonAuthentic(mapper.gameHeader.getPort1ffdValue(0)));
+        mapper.gameHeader.setPort7ffdValue(
+                GameUtil.resetNonAuthentic(mapper.gameHeader.getPort7ffdValue(0)));
+
+        //Zero values makes no sense and could have been injected by some erroneous ROM version
+        if (GameUtil.decodeAsAuthentic(mapper.gameHeader.getPort1ffdValue(0)) == 0) {
+            mapper.gameHeader.setPort1ffdValue(null);
+        }
+
         mapper.isGameCompressed = is.read() != 0;
-        mapper.gameType = is.read();
+        mapper.gameType = GameType.byTypeId(is.read());
 
         mapper.screenHold = is.read() != 0;
-        mapper.activeRom = is.read() != 0;
+
+        if (slotZero.getMinorVersion() > 0) {
+            mapper.activeRom = is.read();
+        } else {
+            mapper.activeRom = is.read() == 0 ? V6Constants.INTERNAL_ROM_SLOT : V6Constants.EXTRA_ROM_SLOT;
+        }
         mapper.launchCode = Util.fromInputStream(is, V6Constants.GAME_LAUNCH_SIZE);
         mapper.gameChunk = new GameChunk();
         mapper.gameChunk.setAddress(is.getAsLittleEndian());
@@ -130,36 +152,65 @@ public class GameMapperV6 implements GameMapper {
         return trainerCount;
     }
 
-    @Override
-    public Game createGame() {
-        GameType type = GameType.byTypeId(gameType);
-        Game game;
-        switch (type) {
-            case ROM:
-                game = new RomGame(getGameSlots().get(0));
-                break;
-            case RAM16:
-            case RAM48:
-            case RAM128:
-                RamGame ramGame = new RamGame(type, getGameSlots());
-                ramGame.setCompressed(isGameCompressed);
-                ramGame.setHoldScreen(screenHold);
-                ramGame.setRom(activeRom);
-                ramGame.setGameHeader(gameHeader);
-                ramGame.setForce48kMode(isGameForce48kMode);
-                ramGame.setHardwareMode(hardwareMode);
-                ramGame.setTrainerList(trainerList);
-                ramGame.setCompressedData(getGameCompressedData());
-                //Extract the PC from SP
-                ramGame.getGameHeader().setPCRegister(GameUtil.popPC(ramGame));
-                GameUtil.pushPC(ramGame);
-                game = ramGame;
-                break;
-            default:
-                LOGGER.error("Unsupported type of game " + type.screenName());
-                throw new IllegalArgumentException("Unsupported game type");
+    private Game getRomFromSlot(int slot) {
+        LOGGER.debug("getRomFromSlot " + slot);
+        Game activeRom;
+        //Compatibility with 6.n n < 1
+        if (slot == 0) {
+            slot = V6Constants.INTERNAL_ROM_SLOT;
         }
-        game.setName(name);
+
+        if (slot >= V6Constants.EXTRA_ROM_SLOT) {
+            activeRom =  slot == V6Constants.EXTRA_ROM_SLOT ? DandanatorMiniConstants.EXTRA_ROM_GAME :
+                    DandanatorMiniConstants.INTERNAL_ROM_GAME;
+        } else {
+            activeRom = slotZero.getGameMappers().stream()
+                    .filter(g -> g.getGameType().equals(GameType.ROM))
+                    .limit(V6Constants.EXTRA_ROM_SLOT - slot)
+                    .reduce((a, b) -> b)
+                    .orElseThrow(() -> new RuntimeException("Unable to find assigned ROM"))
+                    .getGame();
+        }
+        LOGGER.debug("Calculated Active ROM as " + activeRom);
+        return activeRom;
+    }
+
+    @Override
+    public GameType getGameType() {
+        return gameType;
+    }
+
+    @Override
+    public Game getGame() {
+        if (game == null) {
+            switch (gameType) {
+                case ROM:
+                    game = new RomGame(getGameSlots().get(0));
+                    break;
+                case RAM16:
+                case RAM48:
+                case RAM128:
+                    RamGame ramGame = new RamGame(gameType, getGameSlots());
+                    ramGame.setCompressed(isGameCompressed);
+                    ramGame.setHoldScreen(screenHold);
+                    ramGame.setRom(getRomFromSlot(activeRom));
+                    ramGame.setGameHeader(gameHeader);
+                    ramGame.setForce48kMode(isGameForce48kMode);
+                    ramGame.setHardwareMode(hardwareMode);
+                    ramGame.setTrainerList(trainerList);
+                    ramGame.setCompressedData(getGameCompressedData());
+                    //Extract the PC from SP
+                    ramGame.getGameHeader().setPCRegister(GameUtil.popPC(ramGame));
+                    GameUtil.pushPC(ramGame);
+                    game = ramGame;
+                    break;
+                default:
+                    LOGGER.error("Unsupported type of game " + gameType.screenName());
+                    throw new IllegalArgumentException("Unsupported game type");
+            }
+            game.setName(name);
+        }
+        LOGGER.debug("Game generated as " + game);
         return game;
     }
 

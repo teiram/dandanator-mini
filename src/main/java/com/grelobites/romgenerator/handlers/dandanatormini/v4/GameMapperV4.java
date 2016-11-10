@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator.handlers.dandanatormini.v4;
 
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
@@ -80,11 +81,17 @@ public class GameMapperV4 implements GameMapper {
     }
 
     @Override
-    public Game createGame() {
+    public GameType getGameType() {
+        return GameType.RAM48;
+    }
+
+    @Override
+    public Game getGame() {
         final RamGame game = new RamGame(GameType.RAM48, getGameSlots());
         game.setName(name);
         game.setHoldScreen(holdScreen);
-        game.setRom(activeRom);
+        game.setRom(activeRom ? DandanatorMiniConstants.EXTRA_ROM_GAME :
+                DandanatorMiniConstants.INTERNAL_ROM_GAME);
         game.setGameHeader(gameHeader);
         game.setHardwareMode(HardwareMode.HW_48K);
         exportTrainers(game);

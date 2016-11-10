@@ -95,10 +95,30 @@ public class TapOutputStream {
     }
 
     public void addCodeStream(String name, int codeStartAddress, InputStream in) throws IOException {
+        addCodeStream(name, codeStartAddress, true, in);
+    }
+
+    public void addCodeStream(String name, int codeStartAddress, boolean withHeader, InputStream in) throws IOException {
         byte[] dataBlock = getTapDataBlock(Util.fromInputStream(in));
         //Program length is the data block length without the length bytes, flag and checksum
-        byte[] header = getTapCodeHeader(name, codeStartAddress, dataBlock.length - 4);
-        out.write(header);
+        if (withHeader) {
+            byte[] header = getTapCodeHeader(name, codeStartAddress, dataBlock.length - 4);
+            out.write(header);
+        }
+        out.write(dataBlock);
+    }
+
+    public void addCodeStream(String name, int codeStartAddress, byte[] in) throws IOException {
+        addCodeStream(name, codeStartAddress, true, in);
+    }
+
+    public void addCodeStream(String name, int codeStartAddress, boolean withHeader, byte[] in) throws IOException {
+        byte[] dataBlock = getTapDataBlock(in);
+        //Program length is the data block length without the length bytes, flag and checksum
+        if (withHeader) {
+            byte[] header = getTapCodeHeader(name, codeStartAddress, dataBlock.length - 4);
+            out.write(header);
+        }
         out.write(dataBlock);
     }
 

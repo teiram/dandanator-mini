@@ -93,4 +93,5 @@ public class BaseGame {
     public Observable[] getObservable() {
         return new Observable[] {name};
     }
+
 }

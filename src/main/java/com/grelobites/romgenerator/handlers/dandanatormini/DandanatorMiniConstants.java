@@ -1,6 +1,9 @@
 package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.model.Game;
+import com.grelobites.romgenerator.model.GameType;
+import com.grelobites.romgenerator.model.VirtualGame;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.PreferencesProvider;
 import com.grelobites.romgenerator.util.Util;
@@ -37,12 +40,15 @@ public class DandanatorMiniConstants {
     private static final String DANDANATOR_ROM_RESOURCE = "dandanator-mini/dandanator-mini.rom";
     private static final String DANDANATOR_PIC_FW_RESOURCE = "dandanator-mini/dandanator-pic-fw.bin";
     private static final String EXTRA_ROM_RESOURCE = "dandanator-mini/test.rom";
+    private static final String DIVIDE_LOADER_RESOURCE = "dandanator-mini/divide-loader.bin";
+
     public static final int POKE_TARGET_ADDRESS = 49284;
     public static final int GAME_CHUNK_SIZE = 256;
     public static final int GAME_CHUNK_SLOT = 2;
     public static final int VERSION_SIZE = 32;
     public static final int FILLER_BYTE = 0xFF;
     public static final int EXTENDED_CHARSET_SIZE = 896;
+    public static final int GAME_LAUNCH_SIZE = 18;
     public static final int BASEROM_SIZE = 3584;
 
     public static final int PORT1FFD_DEFAULT_VALUE = 0x04;
@@ -53,6 +59,10 @@ public class DandanatorMiniConstants {
     private static byte[] DANDANATOR_ROM;
     private static byte[] EXTRA_ROM;
     private static byte[] DEFAULT_DANDANATOR_PIC_FW;
+    private static byte[] DIVIDE_LOADER;
+
+    public static final Game INTERNAL_ROM_GAME = new VirtualGame(GameType.ROM, "Internal ROM");
+    public static final Game EXTRA_ROM_GAME = new VirtualGame(GameType.ROM, "Extra ROM");
 
     private static PreferencesProvider providerRegister = new PreferencesProvider("Dandanator Mini",
             "/com/grelobites/romgenerator/handlers/dandanatormini/view/dandanatorminipreferences.fxml",
@@ -87,4 +97,14 @@ public class DandanatorMiniConstants {
         }
         return DEFAULT_DANDANATOR_PIC_FW;
     }
+
+    public static byte[] getDivIdeLoader() throws IOException {
+        if (DIVIDE_LOADER == null) {
+            DIVIDE_LOADER = Util.fromInputStream(
+                    DandanatorMiniConstants.class.getClassLoader()
+                            .getResourceAsStream(DIVIDE_LOADER_RESOURCE));
+        }
+        return DIVIDE_LOADER;
+    }
+
 }

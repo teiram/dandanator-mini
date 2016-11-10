@@ -9,6 +9,7 @@ import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstan
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniRomSetHandlerSupport;
 import com.grelobites.romgenerator.handlers.dandanatormini.ExtendedCharSet;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniRamGameCompressor;
+import com.grelobites.romgenerator.handlers.dandanatormini.RomSetUtil;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameChunk;
 import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
 import com.grelobites.romgenerator.model.Game;
@@ -28,6 +29,7 @@ import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
+import com.grelobites.romgenerator.view.util.DirectoryAwareFileChooser;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
@@ -37,6 +39,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCombination;
@@ -44,7 +47,10 @@ import javafx.scene.layout.Pane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -70,6 +76,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     protected Pane dandanatorMiniFrame;
     protected MenuItem exportPokesMenuItem;
     protected MenuItem importPokesMenuItem;
+    protected MenuItem exportDivIdeTapMenuItem;
     private BooleanProperty generationAllowedProperty = new SimpleBooleanProperty(false);
 
 
@@ -80,13 +87,36 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     private InvalidationListener updateImageListener =
             (c) -> updateMenuPreview();
 
-    private InvalidationListener updateRomUsage =
+    private InvalidationListener updateRomUsageListener =
             (c) -> updateRomUsage();
+
+    private ListChangeListener<Game> refreshRomsListener =
+            (change) -> {
+                while (change.next()) {
+                    LOGGER.debug("Processing change " + change);
+                    if (change.wasRemoved()) {
+                        refreshActiveRoms(change.getRemoved());
+                    }
+                }
+            };
 
     private static void initializeMenuImages(ZxScreen[] menuImages) throws IOException {
         for (int i = 0; i < menuImages.length; i++) {
             menuImages[i] = new ZxScreen();
             updateBackgroundImage(menuImages[i]);
+        }
+    }
+
+    private void refreshActiveRoms(List<? extends Game> removedRoms) {
+        LOGGER.debug("refreshActiveRoms " + removedRoms);
+        Collection<Game> gameList = getApplicationContext().getGameList();
+        for (Game game : gameList) {
+            if (game instanceof RamGame) {
+                RamGame ramGame = (RamGame) game;
+                if (removedRoms.contains(ramGame.getRom())) {
+                    ramGame.setRom(DandanatorMiniConstants.INTERNAL_ROM_GAME);
+                }
+            }
         }
     }
 
@@ -293,6 +323,22 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         }
     }
 
+    private int getActiveRomSlot(RamGame game) {
+        int romSlot;
+
+        if (game.getRom() == DandanatorMiniConstants.INTERNAL_ROM_GAME) {
+            romSlot = 33;
+        } else if (game.getRom() == DandanatorMiniConstants.EXTRA_ROM_GAME) {
+            romSlot =  32;
+        } else {
+            int activeRomIndex = getApplicationContext().getGameList().filtered(g -> g.getType().equals(GameType.ROM))
+                    .indexOf(game.getRom());
+            romSlot = 31 - activeRomIndex;
+        }
+        LOGGER.debug("Calculated ROM slot as " + romSlot + " for ROM " + game.getRom());
+        return romSlot;
+    }
+
     private int dumpGameHeader(OutputStream os, int index, Game game,
                                GameChunk gameChunk, int offset) throws IOException {
         os.write(getGamePaddedSnaHeader(game));
@@ -301,7 +347,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         os.write(isGameCompressed(game) ? Constants.B_01 : Constants.B_00);
         os.write(game.getType().typeId());
         os.write(isGameScreenHold(game) ? Constants.B_01 : Constants.B_00);
-        os.write(isGameRom(game) ? Constants.B_10 : Constants.B_00);
+        os.write(game instanceof RamGame ? getActiveRomSlot((RamGame) game) : Constants.B_00);
         dumpGameLaunchCode(os, game, index);
         os.write(asLittleEndianWord(gameChunk.getAddress()));
         os.write(asLittleEndianWord(gameChunk.getData().length));
@@ -452,7 +498,6 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         }
     }
 
-
     @Override
     public void exportRomSet(OutputStream stream) {
         try {
@@ -598,7 +643,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
     protected BooleanBinding getGenerationAllowedBinding(ApplicationContext ctx) {
         return Bindings.size(ctx.getGameList())
-                .isNotEqualTo(0).and(currentRomUsage.lessThan(1.0));
+                .greaterThan(2).and(currentRomUsage.lessThan(1.0));
     }
 
     protected double calculateRomUsage() {
@@ -606,7 +651,6 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         for (Game game : getApplicationContext().getGameList()) {
             try {
                 size += getGameSize(game);
-                LOGGER.debug("After adding size of game " + game.getName() + ", subtotal: " + size);
             } catch (Exception e) {
                 LOGGER.warn("Calculating game size usage", e);
             }
@@ -630,12 +674,22 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 calculateRomUsage() * 100);
     }
 
+    private void prepareAddedGame(Game game) throws IOException {
+        getGameSize(game);
+        if (game instanceof RamGame) {
+            RamGame ramGame = (RamGame) game;
+            if (ramGame.getRom() == null) {
+                ramGame.setRom(DandanatorMiniConstants.INTERNAL_ROM_GAME);
+            }
+        }
+    }
+
     @Override
     public Future<OperationResult> addGame(Game game) {
         return getApplicationContext().addBackgroundTask(() -> {
                 try {
                     //Force compression calculation
-                    getGameSize(game);
+                    prepareAddedGame(game);
                     Platform.runLater(() -> getApplicationContext().getGameList().add(game));
                 } catch (Exception e) {
                     LOGGER.error("Calculating game size", e);
@@ -741,6 +795,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         return exportPokesMenuItem;
     }
 
+
     protected MenuItem getImportPokesMenuItem() {
         if (importPokesMenuItem == null) {
             importPokesMenuItem = new MenuItem(LocaleUtil.i18n("importPokesMenuEntry"));
@@ -760,6 +815,36 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         }
         return importPokesMenuItem;
     }
+
+    public void exportDivIdeTapToFile() {
+        DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
+        chooser.setTitle(LocaleUtil.i18n("exportDivIdeTapMenuEntry"));
+        final File saveFile = chooser.showSaveDialog(applicationContext.getApplicationStage());
+        if (saveFile != null) {
+            try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                exportRomSet(bos);
+                RomSetUtil.exportToDivideAsTap(new ByteArrayInputStream(bos.toByteArray()), fos);
+            } catch (IOException e) {
+                LOGGER.error("Exporting to DivIDE TAP", e);
+            }
+        }
+    }
+
+    protected MenuItem getExportDivIdeTapMenuItem() {
+        if (exportDivIdeTapMenuItem == null) {
+            exportDivIdeTapMenuItem = new MenuItem(LocaleUtil.i18n("exportDivIdeTapMenuEntry"));
+
+            exportDivIdeTapMenuItem.setAccelerator(
+                    KeyCombination.keyCombination("SHORTCUT+D")
+            );
+            exportDivIdeTapMenuItem.disableProperty().bind(generationAllowedProperty.not());
+
+            exportDivIdeTapMenuItem.setOnAction(f -> exportDivIdeTapToFile());
+        }
+        return exportDivIdeTapMenuItem;
+    }
+
 
     @Override
     public void updateMenuPreview() {
@@ -826,10 +911,11 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 .addListener(updateImageListener);
 
         applicationContext.getGameList().addListener(updateImageListener);
-        applicationContext.getGameList().addListener(updateRomUsage);
+        applicationContext.getGameList().addListener(updateRomUsageListener);
+        applicationContext.getGameList().addListener(refreshRomsListener);
 
         applicationContext.getExtraMenu().getItems().addAll(
-                getExportPokesMenuItem(), getImportPokesMenuItem());
+                getExportPokesMenuItem(), getImportPokesMenuItem(), getExportDivIdeTapMenuItem());
 
         updateRomUsage();
         previewUpdateTimer.start();
@@ -850,9 +936,11 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
         applicationContext.getExtraMenu().getItems().removeAll(
                 getExportPokesMenuItem(),
-                getImportPokesMenuItem());
+                getImportPokesMenuItem(),
+                getExportDivIdeTapMenuItem());
         applicationContext.getGameList().removeListener(updateImageListener);
-        applicationContext.getGameList().removeListener(updateRomUsage);
+        applicationContext.getGameList().removeListener(updateRomUsageListener);
+        applicationContext.getGameList().removeListener(refreshRomsListener);
         applicationContext = null;
         previewUpdateTimer.stop();
     }
