@@ -122,6 +122,12 @@ public class GameUtil {
         }
     }
 
+    public static void exportGameAsRom(Game selectedGame, File saveFile) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+            fos.write(selectedGame.getSlot(0));
+        }
+    }
+
     public static boolean gameHasPokes(Game game) {
         return game instanceof RamGame && ((RamGame) game).hasPokes();
     }
