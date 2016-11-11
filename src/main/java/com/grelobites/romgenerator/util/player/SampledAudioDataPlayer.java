@@ -101,7 +101,6 @@ public class SampledAudioDataPlayer extends AudioDataPlayerSupport implements Da
             state = State.STOPPED;
         } finally {
             if (soundLine != null) {
-                //soundLine.drain();
                 soundLine.close();
             }
         }
