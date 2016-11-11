@@ -29,6 +29,7 @@ public class PlayerConfiguration {
     private static final String SENDLOADER_PROPERTY = "sendLoader";
     private static final String BOOSTLEVEL_PROPERTY = "boostLevel";
     private static final String REVERSEPHASE_PROPERTY = "reversePhase";
+    private static final String AUDIOMIXERNAME_PROPERTY = "audioMixerName";
 
     private static final int DEFAULT_BLOCKSIZE = 0x8000;
     private static final String DEFAULT_AUDIOMODE = "STEREOINV";
@@ -54,6 +55,7 @@ public class PlayerConfiguration {
     private BooleanProperty sendLoader;
     private BooleanProperty reversePhase;
     private BooleanProperty boostLevel;
+    private StringProperty audioMixerName;
 
     private static Image cassetteImage;
     private static Image kempstonImage;
@@ -74,6 +76,7 @@ public class PlayerConfiguration {
         sendLoader = new SimpleBooleanProperty(true);
         reversePhase = new SimpleBooleanProperty(false);
         boostLevel = new SimpleBooleanProperty(false);
+        audioMixerName = new SimpleStringProperty(null);
 
         audioMode.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 AUDIOMODE_PROPERTY, newValue));
@@ -91,6 +94,8 @@ public class PlayerConfiguration {
                 REVERSEPHASE_PROPERTY, newValue.toString()));
         boostLevel.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 BOOSTLEVEL_PROPERTY, newValue.toString()));
+        audioMixerName.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                AUDIOMIXERNAME_PROPERTY, newValue.toString()));
 
     }
 
@@ -269,6 +274,18 @@ public class PlayerConfiguration {
         this.boostLevel.set(boostLevel);
     }
 
+    public String getAudioMixerName() {
+        return audioMixerName.get();
+    }
+
+    public StringProperty audioMixerNameProperty() {
+        return audioMixerName;
+    }
+
+    public void setAudioMixerName(String audioMixerName) {
+        this.audioMixerName.set(audioMixerName);
+    }
+
     public Image getCassetteImage() {
         if (cassetteImage == null) {
             cassetteImage = new Image(PlayerConfiguration.class.getResourceAsStream(CASSETE_IMAGE_RESOURCE));
@@ -307,6 +324,7 @@ public class PlayerConfiguration {
         configuration.sendLoader.set(p.getBoolean(SENDLOADER_PROPERTY, true));
         configuration.reversePhase.set(p.getBoolean(REVERSEPHASE_PROPERTY, false));
         configuration.boostLevel.set(p.getBoolean(BOOSTLEVEL_PROPERTY, false));
+        configuration.audioMixerName.set(p.get(AUDIOMIXERNAME_PROPERTY, null));
         return configuration;
     }
 

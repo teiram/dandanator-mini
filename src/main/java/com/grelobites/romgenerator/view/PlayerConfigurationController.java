@@ -19,13 +19,25 @@ import jssc.SerialPortList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Mixer;
+import javax.sound.sampled.SourceDataLine;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class PlayerConfigurationController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PlayerConfigurationController.class);
+
+    private static final AudioFormat NEEDED_AUDIO_FORMAT = new AudioFormat(AudioFormat.Encoding.PCM_UNSIGNED,
+            44100, 8, 2, 2, 44100, false);
 
     @FXML
     private ComboBox<String> audioMode;
@@ -62,6 +74,9 @@ public class PlayerConfigurationController {
 
     @FXML
     private CheckBox sendLoader;
+
+    @FXML
+    private ComboBox<String> audioMixer;
 
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
@@ -136,6 +151,18 @@ public class PlayerConfigurationController {
             configurationProperty.set(null));
 
     }
+
+    private static ObservableList<String> getMixerNames() {
+
+        DataLine.Info neededLineInfo = new DataLine.Info(SourceDataLine.class, NEEDED_AUDIO_FORMAT);
+        return FXCollections.observableArrayList(Arrays.stream(AudioSystem.getMixerInfo())
+                .filter(m -> {
+                    Mixer mixer = AudioSystem.getMixer(m);
+                    return mixer.isLineSupported(neededLineInfo);
+                })
+                .map(Mixer.Info::getName).collect(Collectors.toList()));
+    }
+
     @FXML
     private void initialize() throws IOException {
         PlayerConfiguration configuration = PlayerConfiguration.getInstance();
@@ -185,6 +212,7 @@ public class PlayerConfigurationController {
 
         sendLoader.selectedProperty().bindBidirectional(
                 configuration.sendLoaderProperty());
+        sendLoader.setDisable(!configuration.isUseSerialPort());
         useSerialPort.selectedProperty().bindBidirectional(configuration.useSerialPortProperty());
 
         serialPort.getSelectionModel().selectedItemProperty().addListener(
@@ -216,5 +244,19 @@ public class PlayerConfigurationController {
             configuration.setUseSerialPort(false);
             useSerialPort.setDisable(true);
         }
+
+        ObservableList<String> mixerNames = getMixerNames();
+        audioMixer.setItems(getMixerNames());
+        if (mixerNames.contains(configuration.getAudioMixerName())) {
+            audioMixer.getSelectionModel().select(configuration.getAudioMixerName());
+        } else {
+            audioMixer.getSelectionModel().clearSelection();
+            configuration.setAudioMixerName(null);
+        }
+        audioMixer.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> configuration.setAudioMixerName(newValue));
+        audioMixer.disableProperty().bind(sendLoader.selectedProperty().not()
+                .and(useSerialPort.disabledProperty().not()));
+
     }
 }

@@ -7,6 +7,7 @@ import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.player.AudioDataPlayer;
 import com.grelobites.romgenerator.util.player.DataPlayer;
 import com.grelobites.romgenerator.util.player.FrequencyDetector;
+import com.grelobites.romgenerator.util.player.SampledAudioDataPlayer;
 import com.grelobites.romgenerator.util.player.SerialDataPlayer;
 import javafx.animation.FadeTransition;
 import javafx.beans.InvalidationListener;
@@ -154,7 +155,8 @@ public class PlayerController {
     }
 
     private DataPlayer getBootstrapMediaPlayer() throws IOException {
-        return new AudioDataPlayer(mediaView);
+        //return new AudioDataPlayer(mediaView);
+        return new SampledAudioDataPlayer();
     }
 
     private DataPlayer getBlockMediaPlayer(int block) throws IOException {
@@ -164,7 +166,8 @@ public class PlayerController {
 
         return configuration.isUseSerialPort() ?
                 new SerialDataPlayer(block, buffer) :
-                new AudioDataPlayer(mediaView, block,  buffer);
+                //new AudioDataPlayer(mediaView, block,  buffer);
+                new SampledAudioDataPlayer(block, buffer);
     }
 
     private void playCurrentBlock() {

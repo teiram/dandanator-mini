@@ -26,6 +26,15 @@
       </HBox>
       <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
          <children>
+            <Label maxWidth="1.7976931348623157E308" text="%audioMixerName" HBox.hgrow="ALWAYS" />
+            <ComboBox fx:id="audioMixer" prefWidth="150.0" />
+         </children>
+         <padding>
+            <Insets left="5.0" right="5.0" />
+         </padding>
+      </HBox>
+      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
+         <children>
             <Label maxWidth="1.7976931348623157E308" prefHeight="17.0" prefWidth="311.0" text="%encodingSpeed" HBox.hgrow="ALWAYS" />
             <ComboBox fx:id="encodingSpeed" prefWidth="150.0" />
          </children>
