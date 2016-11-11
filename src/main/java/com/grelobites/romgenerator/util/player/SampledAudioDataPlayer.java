@@ -77,6 +77,7 @@ public class SampledAudioDataPlayer extends AudioDataPlayerSupport implements Da
             soundLine = (SourceDataLine) mixer.getLine(info);
             soundLine.open(audioFormat);
             soundLine.start();
+
             int nBytesRead = 0;
             byte[] sampledData = new byte[AUDIO_BUFFER_SIZE];
             while (nBytesRead != -1) {
@@ -94,14 +95,15 @@ public class SampledAudioDataPlayer extends AudioDataPlayerSupport implements Da
             if (state == State.RUNNING && onFinalization != null) {
                 Platform.runLater(onFinalization);
             }
-            state = State.STOPPED;
-            LOGGER.debug("State is now STOPPED");
         } catch (Exception e) {
             LOGGER.error("Playing audio", e);
-            state = State.STOPPED;
         } finally {
             if (soundLine != null) {
-                soundLine.close();
+                LOGGER.debug("Draining line");
+                soundLine.drain();
+                soundLine.stop();
+                state = State.STOPPED;
+                LOGGER.debug("State is now STOPPED");
             }
         }
     }
