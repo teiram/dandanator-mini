@@ -1,16 +1,11 @@
-package com.grelobites.romgenerator.zxspectrum.spectrum;
+package com.grelobites.romgenerator.zxspectrum.tape;
 
 import com.grelobites.romgenerator.util.Util;
-import com.grelobites.romgenerator.util.player.ChannelType;
-import com.grelobites.romgenerator.util.player.StandardWavOutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
 
 public class TapBitInputStream {
     private static final Logger LOGGER = LoggerFactory.getLogger(TapBitInputStream.class);

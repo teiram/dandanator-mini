@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.zxspectrum.spectrum;
+package com.grelobites.romgenerator.zxspectrum.tape;
 
 import com.grelobites.romgenerator.zxspectrum.InputPort;
 import com.grelobites.romgenerator.zxspectrum.Peripheral;

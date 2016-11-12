@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.zxspectrum.spectrum;
+package com.grelobites.romgenerator.zxspectrum.tape;
 
 public interface BitInputStream {
     int read();

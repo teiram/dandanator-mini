@@ -64,7 +64,6 @@ public class SampledAudioDataPlayer extends AudioDataPlayerSupport implements Da
     }
 
     private void playAudioFile() {
-        SourceDataLine soundLine = null;
         try {
             Mixer mixer = getMixer();
             LOGGER.debug("Playing audio on mixer " + mixer.getMixerInfo());
@@ -74,7 +73,7 @@ public class SampledAudioDataPlayer extends AudioDataPlayerSupport implements Da
             AudioFormat audioFormat = audioInputStream.getFormat();
             LOGGER.debug("Audio format from media file is " + audioFormat);
             DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
-            soundLine = (SourceDataLine) mixer.getLine(info);
+            SourceDataLine soundLine = (SourceDataLine) mixer.getLine(info);
             soundLine.open(audioFormat);
             soundLine.start();
 
@@ -92,19 +91,17 @@ public class SampledAudioDataPlayer extends AudioDataPlayerSupport implements Da
                     break;
                 }
             }
+            soundLine.drain();
+            soundLine.stop();
             if (state == State.RUNNING && onFinalization != null) {
+                //Only when we are not stopped programmatically (end of stream)
                 Platform.runLater(onFinalization);
             }
         } catch (Exception e) {
             LOGGER.error("Playing audio", e);
         } finally {
-            if (soundLine != null) {
-                LOGGER.debug("Draining line");
-                soundLine.drain();
-                soundLine.stop();
-                state = State.STOPPED;
-                LOGGER.debug("State is now STOPPED");
-            }
+            state = State.STOPPED;
+            LOGGER.debug("State is now STOPPED");
         }
     }
 
@@ -124,9 +121,10 @@ public class SampledAudioDataPlayer extends AudioDataPlayerSupport implements Da
                 try {
                     serviceThread.join();
                 } catch (InterruptedException e) {
-                    LOGGER.debug("Serial thread was interrupted", e);
+                    LOGGER.debug("Joining thread was interrupted", e);
                 }
             }
+            LOGGER.debug("Stop operation acknowledged");
         }
     }
 

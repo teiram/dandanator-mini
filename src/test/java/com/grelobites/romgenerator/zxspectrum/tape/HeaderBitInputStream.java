@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.zxspectrum.spectrum;
+package com.grelobites.romgenerator.zxspectrum.tape;
 
 public class HeaderBitInputStream implements BitInputStream {
     private static final int HEADER_PULSE_LENGTH = 2168;
