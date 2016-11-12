@@ -105,6 +105,11 @@ public class StandardWavOutputStream extends FilterOutputStream {
         }
     }
 
+    private void writeLeadOut() throws IOException {
+        int leadOutSamples = new Double(format.getLeadOutDurationMillis() * format.getSampleRate() / 1000).intValue();
+        writeSamples(leadOutSamples, true);
+    }
+
     private void writeSync() throws IOException {
         writeSamples(tStatesToSamples(SYNC_P0_LENGTH), true);
         writeSamples(tStatesToSamples(SYNC_P1_LENGTH), false);
@@ -134,7 +139,7 @@ public class StandardWavOutputStream extends FilterOutputStream {
                 }
             }
         }
-
+        writeLeadOut();
         wavStream.flush();
         out.write(getWavHeader(wavStream.size()));
         out.write(wavStream.toByteArray());

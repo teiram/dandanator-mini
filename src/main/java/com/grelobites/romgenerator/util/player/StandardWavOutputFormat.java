@@ -20,12 +20,14 @@ public class StandardWavOutputFormat {
     public static final int[] ZERO_DURATIONS = new int[] {ZERO_DURATION_STANDARD, ZERO_DURATION_TURBO_1, ZERO_DURATION_TURBO_2};
     public static final int[] ONE_DURATIONS = new int[] {ONE_DURATION_STANDARD, ONE_DURATION_TURBO_1, ONE_DURATION_TURBO_2};
 
+    private static final int LEAD_OUT_DURATION = 250;
+
     private int sampleRate = SRATE_44100;
     private ChannelType channelType = ChannelType.STEREOINV;
     private int pilotDurationMillis = PILOT_DURATION;
     private int oneDurationTStates = ONE_DURATION_STANDARD;
     private int zeroDurationTStates = ZERO_DURATION_STANDARD;
-
+    private int leadOutDurationMillis = LEAD_OUT_DURATION;
     private int lowValue = DEFAULT_LOW_VALUE;
     private int highValue = DEFAULT_HIGH_VALUE;
     private boolean reversePhase = false;
@@ -70,6 +72,11 @@ public class StandardWavOutputFormat {
 
         public Builder withHighValue(int highValue) {
             outputFormat.setHighValue(highValue);
+            return this;
+        }
+
+        public Builder withLeadOutDurationMillis(int leadOutDurationMillis) {
+            outputFormat.setLeadOutDurationMillis(leadOutDurationMillis);
             return this;
         }
 
@@ -153,5 +160,13 @@ public class StandardWavOutputFormat {
 
     public void setReversePhase(boolean reversePhase) {
         this.reversePhase = reversePhase;
+    }
+
+    public int getLeadOutDurationMillis() {
+        return leadOutDurationMillis;
+    }
+
+    public void setLeadOutDurationMillis(int leadOutDurationMillis) {
+        this.leadOutDurationMillis = leadOutDurationMillis;
     }
 }
