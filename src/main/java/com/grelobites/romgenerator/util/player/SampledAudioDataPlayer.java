@@ -20,7 +20,7 @@ import java.util.Optional;
 public class SampledAudioDataPlayer extends AudioDataPlayerSupport implements DataPlayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(SampledAudioDataPlayer.class);
     private static final String SERVICE_THREAD_NAME = "AudioPlayerServiceThread";
-    private static final int AUDIO_BUFFER_SIZE = 8192;
+    private static final int AUDIO_BUFFER_SIZE = 4096;
     private DoubleProperty progressProperty;
     private Runnable onFinalization;
     private File mediaFile;
@@ -76,12 +76,12 @@ public class SampledAudioDataPlayer extends AudioDataPlayerSupport implements Da
             SourceDataLine soundLine = (SourceDataLine) mixer.getLine(info);
             soundLine.open(audioFormat);
             soundLine.start();
-
             int nBytesRead = 0;
             byte[] sampledData = new byte[AUDIO_BUFFER_SIZE];
             while (nBytesRead != -1) {
                 nBytesRead = audioInputStream.read(sampledData, 0, sampledData.length);
-                if (nBytesRead >= 0) {
+
+                if (nBytesRead > 0) {
                     written += soundLine.write(sampledData, 0, nBytesRead);
                 }
                 final double progress = 1.0 * written / length;
