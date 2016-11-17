@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.zxspectrum.spectrum;
 import com.grelobites.romgenerator.zxspectrum.InputPort;
 import com.grelobites.romgenerator.zxspectrum.Peripheral;
 import com.grelobites.romgenerator.zxspectrum.Z80VirtualMachine;
+import com.grelobites.romgenerator.zxspectrum.tape.TapBitInputStream;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -10,6 +11,8 @@ import javafx.scene.input.KeyEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
 import java.util.Map;
@@ -18,8 +21,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class FxKeyboard implements InputPort, Peripheral {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FxKeyboard.class);
+public class FxULA implements InputPort, Peripheral {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FxULA.class);
     private static final int RESET_VALUE = 0xff;
 
     private static <K, V> Map.Entry<K, V> entry(K key, V value) {
@@ -29,11 +32,11 @@ public class FxKeyboard implements InputPort, Peripheral {
     private static int row(int value) {
         return (value - 1) << 3;
     }
-    
+
     private static int column(int value) {
         return value - 1;
     }
-    
+
     /**
      * Spectrum keyboard mapped to JavaFx keycodes
      */
@@ -88,8 +91,12 @@ public class FxKeyboard implements InputPort, Peripheral {
     ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
     private int keystate[] = new int[8];
+    private int cycleOnLastInput = 0;
+    private boolean playing = false;
+    private Z80VirtualMachine cpu;
+    private TapBitInputStream tapStream;
 
-    public FxKeyboard() {
+    public FxULA() {
         reset();
     }
 
@@ -119,25 +126,50 @@ public class FxKeyboard implements InputPort, Peripheral {
         LOGGER.debug("doKey code: " + code + ", pressed: " + pressed);
         Optional.ofNullable(KEYCODE_MAP.get(code)).ifPresent(it -> {
             if (pressed) {
-                keystate[it >> 3] &= (1 << (it & 0x7));
+                keystate[it >> 3] &= ~(1 << (it & 0x07));
             } else {
                 keystate[it >> 3] |= (1 << (it & 0x07));
             }
+            LOGGER.debug("keystate at " + (it >> 3) + " set to " + keystate[it >> 3]);
+
         });
     }
 
     @Override
     public void onCpuReset(Z80VirtualMachine cpu) {
         reset();
+        cycleOnLastInput = cpu.cycleCounter;
     }
 
     @Override
     public void bind(Z80VirtualMachine cpu) {
+        this.cpu = cpu;
         cpu.addInPort(SpectrumConstants.KEYBOARD_PORT, this);
     }
 
     @Override
-    public void unbind(Z80VirtualMachine cpu) {}
+    public void unbind(Z80VirtualMachine cpu) {
+        this.cpu = null;
+        stop();
+    }
+
+    private int getNextBitFromTap() {
+        int currentCpuCycle = cpu.getCycle();
+        int deltaCycles = cycleOnLastInput > 0 ? currentCpuCycle - cycleOnLastInput : 0;
+        cycleOnLastInput = currentCpuCycle;
+
+        tapStream.skip(deltaCycles);
+        int value = tapStream.read();
+
+        if (value < 0) {
+            LOGGER.debug("Stopping tap on data exhausted");
+            playing = false;
+            cpu.setTurbo(false);
+            return 0;
+        } else {
+            return value;
+        }
+    }
 
     @Override
     public int inb(int port, int hi) {
@@ -151,7 +183,28 @@ public class FxKeyboard implements InputPort, Peripheral {
                 result &= keystate[i];
             }
         }
+        if (playing) {
+            result &= ~(1 << 6);
+            result |= (getNextBitFromTap() & 0x01) << 6;
+        }
         return result;
+    }
+
+    public void play(InputStream tap) throws IOException {
+        if (cpu != null) {
+            this.tapStream = new TapBitInputStream(tap);
+            LOGGER.debug("Adding tape stream with CPU cycle counter " + cycleOnLastInput);
+            cpu.setTurbo(true);
+            playing = true;
+        } else {
+            throw new IllegalStateException("ULA not bound to CPU");
+        }
+    }
+
+    public void stop() {
+        playing = false;
+        cpu.setTurbo(false);
+        this.tapStream = null;
     }
 
 }

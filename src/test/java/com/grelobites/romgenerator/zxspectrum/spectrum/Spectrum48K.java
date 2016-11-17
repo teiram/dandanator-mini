@@ -6,6 +6,9 @@ import com.grelobites.romgenerator.zxspectrum.MMU;
 import com.grelobites.romgenerator.zxspectrum.Peripheral;
 import com.grelobites.romgenerator.zxspectrum.PollingTarget;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
  * Sinclair spectrum emulator.
  */
@@ -14,13 +17,13 @@ public class Spectrum48K implements Peripheral, MMU, PollingTarget {
 
     protected FxScreen screen;
     protected ZXSnapshotLoader snapshot;
-    protected FxKeyboard keyboard;
+    protected FxULA keyboard;
     private byte[] memory;
 
     public Spectrum48K() {
         screen = new FxScreen();
         snapshot = new ZXSnapshotLoader();
-        keyboard = new FxKeyboard();
+        keyboard = new FxULA();
         memory = new byte[0x10000];
     }
 
@@ -42,7 +45,7 @@ public class Spectrum48K implements Peripheral, MMU, PollingTarget {
 
     @Override
     public int peekb(int address) {
-        return memory[address] & 0xff;
+        return memory[address & 0xffff] & 0xff;
     }
 
     @Override
@@ -76,7 +79,7 @@ public class Spectrum48K implements Peripheral, MMU, PollingTarget {
         return snapshot;
     }
 
-    public FxKeyboard getKeyboard() {
+    public FxULA getKeyboard() {
         return keyboard;
     }
 
@@ -84,4 +87,15 @@ public class Spectrum48K implements Peripheral, MMU, PollingTarget {
         return "Spectrum 48K";
     }
 
+    public void play(InputStream is) throws IOException {
+        keyboard.play(is);
+    }
+
+    public byte[] getMemory() {
+        return this.memory;
+    }
+
+    public void stop() {
+        keyboard.stop();
+    }
 }

@@ -4,19 +4,22 @@ import com.grelobites.romgenerator.zxspectrum.InputPort;
 import com.grelobites.romgenerator.zxspectrum.Peripheral;
 import com.grelobites.romgenerator.zxspectrum.Z80VirtualMachine;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public class Tape implements Peripheral, InputPort {
 
     private int cycleOnLastInput = 0;
     private static final int DEFAULT_IN_VALUE = 0;
     private boolean playing = false;
     private Z80VirtualMachine cpu;
-    private byte[] tap;
+    private TapBitInputStream tapStream;
     private int currentTapPos = 0;
 
 
-    public void play(byte[] tap) {
+    public void play(InputStream tap) throws IOException {
         if (cpu != null) {
-            this.tap = tap;
+            this.tapStream = new TapBitInputStream(tap);
             currentTapPos = 0;
             cycleOnLastInput = cpu.cycleCounter;
             playing = true;
@@ -27,7 +30,7 @@ public class Tape implements Peripheral, InputPort {
 
     public void stop() {
         playing = false;
-        this.tap = null;
+        this.tapStream = null;
     }
 
     @Override
@@ -42,13 +45,13 @@ public class Tape implements Peripheral, InputPort {
 
     @Override
     public void onCpuReset(Z80VirtualMachine cpu) throws Exception {
-
+        cycleOnLastInput = cpu.cycleCounter;
     }
 
     private int getNextBitFromTap() {
         int deltaCycles = cpu.cycleCounter - cycleOnLastInput;
-
-        return 0;
+        tapStream.skip(deltaCycles);
+        return tapStream.read();
     }
 
     @Override

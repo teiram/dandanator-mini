@@ -4,6 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 interface Z80debug {
 
@@ -249,15 +252,15 @@ public class Z80 implements Z80debug {
     private static final int SZHV_dec[] = new int[256];
     private static final int SZHVC_Add[] = new int[2 * 256 * 256];
     private static final int SZHVC_sub[] = new int[2 * 256 * 256];
-    private static final int SF = 0x80;
-    private static final int ZF = 0x40;
-    private static final int YF = 0x20;
-    private static final int HF = 0x10;
-    private static final int XF = 0x08;
-    private static final int VF = 0x04;
-    private static final int PF = 0x04;
-    private static final int NF = 0x02;
-    private static final int CF = 0x01;
+    public static final int SF = 0x80;
+    public static final int ZF = 0x40;
+    public static final int YF = 0x20;
+    public static final int HF = 0x10;
+    public static final int XF = 0x08;
+    public static final int VF = 0x04;
+    public static final int PF = 0x04;
+    public static final int NF = 0x02;
+    public static final int CF = 0x01;
     // Debug info
     static int debugLevel = 0;
     static int debugBreakPoint = 0;
@@ -446,6 +449,8 @@ public class Z80 implements Z80debug {
     private int PPC = 0;                // previous PC - used by debugger
     private String tag;
 
+    private Map<Integer, Interceptor> interceptorMap = new HashMap<>();
+
     /**
      * Default constructor
      * debugging disabled
@@ -485,6 +490,10 @@ public class Z80 implements Z80debug {
         return PC;
     }
 
+    public final void setPC(int PC) {
+        this.PC = PC;
+    }
+
     public final void setDebug(boolean debug) {
         debugEnabled = debug;
     }
@@ -494,6 +503,14 @@ public class Z80 implements Z80debug {
         if (property == PROPERTY_Z80_IRQ_VECTOR) {
             this.I_Vector = value;
         }
+    }
+
+    public void addInterceptor(int address, Interceptor interceptor) {
+        interceptorMap.put(address, interceptor);
+    }
+
+    public void removeInterceptor(int address) {
+        interceptorMap.remove(address);
     }
 
     /**
@@ -576,6 +593,8 @@ public class Z80 implements Z80debug {
                     }
                 }
             }
+
+            Optional.ofNullable(interceptorMap.get(PC)).ifPresent(i -> i.intercept(this));
 
             instruction = peekb(PC);
             PPC = PC;
@@ -1358,6 +1377,7 @@ public class Z80 implements Z80debug {
             if (DEBUG) debug(instruction, PPC, A, F, B, C, D, E, H, L, SP, IX, IY, I, cycle);
 
         }    // end if (cycle ==0)
+        cycleCounter -= cycle;
 
     }    // end void exec()
 
@@ -4754,21 +4774,38 @@ public class Z80 implements Z80debug {
         cpA_8(peekb(PC++), A);
     }
 
-    private int AF() {
+    public int AF() {
         return (A << 8) | F;
     }
 
-    private int BC() {
+    public int BC() {
         return (B << 8) | C;
     }
 
-    private int DE() {
+    public int DE() {
         return (D << 8) | E;
     }
 
-    private int HL() {
+    public int HL() {
         return (H << 8) | L;
     }
+
+    public int AF1() {
+        return (A1 << 8) | F1;
+    }
+
+    public int HL1() {
+        return (H1 << 8) | L1;
+    }
+
+    public int BC1() {
+        return (B1 << 8) | C1;
+    }
+
+    public int DE1() {
+        return (D1 << 8) | E1;
+    }
+
 
     private int HLi() {
         return peekb(HL());

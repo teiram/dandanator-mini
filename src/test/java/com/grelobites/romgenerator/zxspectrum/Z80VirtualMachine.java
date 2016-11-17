@@ -2,7 +2,6 @@ package com.grelobites.romgenerator.zxspectrum;
 
 import com.grelobites.romgenerator.zxspectrum.disk.DirectoryDisk;
 import com.grelobites.romgenerator.zxspectrum.disk.ImageDisk;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +58,8 @@ public class Z80VirtualMachine extends Z80 {
     private boolean trapOutput = false;
     private boolean trapInput = false;
 
+    private boolean turbo = false;
+
     public Z80VirtualMachine() {
         for (int i = 0; i < 64 * 1024; i++) {
             inport[i] = null;
@@ -76,6 +77,22 @@ public class Z80VirtualMachine extends Z80 {
         for (Peripheral peripheral : peripherals) {
             println(peripheral.toString());
         }
+    }
+
+    public boolean isTrapOutput() {
+        return trapOutput;
+    }
+
+    public void setTrapOutput(boolean trapOutput) {
+        this.trapOutput = trapOutput;
+    }
+
+    public boolean isTrapInput() {
+        return trapInput;
+    }
+
+    public void setTrapInput(boolean trapInput) {
+        this.trapInput = trapInput;
     }
 
     public void addPeripheral(Peripheral p) throws Exception {
@@ -136,6 +153,10 @@ public class Z80VirtualMachine extends Z80 {
 
     public long getNumOutput() {
         return numOutput;
+    }
+
+    public void setMhz(float mhz) {
+        this.mhz = mhz;
     }
 
     @Override
@@ -646,7 +667,6 @@ public class Z80VirtualMachine extends Z80 {
 
         int tmp = 0;
         int states = (int) (mhz * (float) 1000);
-
         while (state != State.STOPPING) {
             if (state == State.PAUSING) {
                 LOGGER.debug("Entering pause state");
@@ -667,44 +687,49 @@ public class Z80VirtualMachine extends Z80 {
             exec(states);
             counter += 1;
 
+
             // Check polling device
             pollers.stream().filter(PollingTargetContext::needsAttention)
                     .forEach(ctx -> ctx.poll(this));
 
-            long now = System.currentTimeMillis();
+            if (!turbo) {
+                long now = System.currentTimeMillis();
 
-            if (now - start100ms > 100) {
-                if (vdu != null) {
-                    if (idle != lastIdle) {
-                        vdu.showIdle(idle);
+                if (now - start100ms > 100) {
+                    if (vdu != null) {
+                        if (idle != lastIdle) {
+                            vdu.showIdle(idle);
+                        }
+                    }
+
+                    lastIdle = idle;
+                    idle = false;
+                    start100ms = now;
+                }
+
+                long elapsed = now - start;
+
+                if (elapsed < counter) {
+                    stateLock.unlock();
+                    sleep();
+                    stateLock.lock();
+                }
+
+                if (elapsed + sleeped > 1000) {
+                    if (vdu != null) {
+                        elapsed = ((elapsed - sleeped) * 100) / (counter);
+                        vdu.showUtilization((int) elapsed);
+                        counter = 0;
+                        sleeped = 0;
+                        start = System.currentTimeMillis();
+                        if (vdu.isTerminate()) {
+                            state = State.STOPPING;
+                            vdu.println("\nTerminated by user");
+                        }
                     }
                 }
-                lastIdle = idle;
-                idle = false;
-                start100ms = now;
             }
 
-            long elapsed = now - start;
-
-            if (elapsed < counter) {
-                stateLock.unlock();
-                sleep();
-                stateLock.lock();
-            }
-
-            if (elapsed + sleeped > 1000) {
-                if (vdu != null) {
-                    elapsed = ((elapsed - sleeped) * 100) / (counter);
-                    vdu.showUtilization((int) elapsed);
-                    counter = 0;
-                    sleeped = 0;
-                    start = System.currentTimeMillis();
-                    if (vdu.isTerminate()) {
-                        state = State.STOPPING;
-                        vdu.println("\nTerminated by user");
-                    }
-                }
-            }
         }
 
         state = State.STOPPED;
@@ -787,6 +812,10 @@ public class Z80VirtualMachine extends Z80 {
 
     public void poppc() {
         PC = pop();
+    }
+
+    public void setTurbo(boolean turbo) {
+        this.turbo = turbo;
     }
 
     private static class PollingTargetContext {
