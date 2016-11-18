@@ -635,7 +635,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
     protected BooleanBinding getGenerationAllowedBinding(ApplicationContext ctx) {
         return Bindings.size(ctx.getGameList())
-                .greaterThan(2).and(currentRomUsage.lessThan(1.0));
+                .greaterThan(0).and(currentRomUsage.lessThan(1.0));
     }
 
     protected double calculateRomUsage() {
