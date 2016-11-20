@@ -57,7 +57,7 @@ public class AudioDataPlayerSupport extends DataPlayerSupport {
         byte[] loaderTap = TapUtil.getLoaderTapByteArray(configuration.getLoaderStream(), getLoaderFlagValue());
 
         TapUtil.tap2wav(StandardWavOutputFormat.builder()
-                        .withSampleRate(CompressedWavOutputFormat.SRATE_44100)
+                        .withSampleRate(configuration.getPreferredAudioSampleRate())
                         .withChannelType(ChannelType.valueOf(configuration.getAudioMode()))
                         .withPilotDurationMillis(2500)
                         .withHighValue(configuration.isBoostLevel() ? BOOST_HIGH_LEVEL : HIGH_LEVEL)

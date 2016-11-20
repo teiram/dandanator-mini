@@ -25,6 +25,8 @@ public class LineInfo {
                 Line line = mixer.getLine(lineInfo);
                 System.out.println(" -      Line is " + line + ", for lineInfo " + lineInfo);
                 if (line instanceof DataLine) {
+                    AudioFormat format = ((DataLine) line).getFormat();
+                    System.out.println("Sample rate " + format.getSampleRate());
                     System.out.println(" -      Line format is " + ((DataLine) line).getFormat());
                 }
             }

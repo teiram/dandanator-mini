@@ -2,7 +2,7 @@ package com.grelobites.romgenerator.util.player;
 
 public class StandardWavOutputFormat {
     public static final int SRATE_44100 = 44100;
-    public static final int SRATE_44800 = 44800;
+    public static final int SRATE_48000 = 48000;
 
     private static final int DEFAULT_LOW_VALUE = 0x40;
     private static final int DEFAULT_HIGH_VALUE = 0xC0;
@@ -22,7 +22,7 @@ public class StandardWavOutputFormat {
 
     private static final int LEAD_OUT_DURATION = 250;
 
-    private int sampleRate = SRATE_44100;
+    private int sampleRate = SRATE_48000;
     private ChannelType channelType = ChannelType.STEREOINV;
     private int pilotDurationMillis = PILOT_DURATION;
     private int oneDurationTStates = ONE_DURATION_STANDARD;

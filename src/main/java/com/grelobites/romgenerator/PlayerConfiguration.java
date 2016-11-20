@@ -10,6 +10,12 @@ import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.Mixer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.prefs.Preferences;
@@ -30,6 +36,7 @@ public class PlayerConfiguration {
     private static final String REVERSEPHASE_PROPERTY = "reversePhase";
     private static final String AUDIOMIXERNAME_PROPERTY = "audioMixerName";
 
+    private static final int DEFAULT_AUDIO_SAMPLE_RATE = 48000;
     private static final int DEFAULT_BLOCKSIZE = 0x8000;
     private static final String DEFAULT_AUDIOMODE = "STEREOINV";
     private static final int DEFAULT_ENCODINGSPEED = 5;
@@ -279,6 +286,40 @@ public class PlayerConfiguration {
 
     public StringProperty audioMixerNameProperty() {
         return audioMixerName;
+    }
+
+    private static Mixer getAudioMixer(String mixerName) {
+        Mixer.Info[] mixerInfos =  AudioSystem.getMixerInfo();
+        if (mixerName != null) {
+            for (Mixer.Info mixerInfo : mixerInfos) {
+                LOGGER.debug("Mixer " + mixerInfo);
+                if (mixerInfo.getName().equals(mixerName)) {
+                    return AudioSystem.getMixer(mixerInfo);
+                }
+            }
+            LOGGER.warn("Unable to find configured mixer " + mixerName + ". Using default mixer " + mixerInfos[0]);
+        }
+        return AudioSystem.getMixer(mixerInfos[0]);
+    }
+
+    public int getPreferredAudioSampleRate() {
+        int sampleRate = DEFAULT_AUDIO_SAMPLE_RATE;
+        Mixer mixer =  getAudioMixer(getAudioMixerName());
+        if (mixer != null) {
+            Line.Info[] lineInfos = mixer.getSourceLineInfo();
+            for (Line.Info lineInfo : lineInfos) {
+                try {
+                    Line line = mixer.getLine(lineInfo);
+                    if (line instanceof DataLine) {
+                        AudioFormat format = ((DataLine) line).getFormat();
+                        LOGGER.debug("Overwriting sample rate to " + format.getSampleRate());
+                        sampleRate = new Double(format.getSampleRate()).intValue();
+                        break;
+                    }
+                } catch (LineUnavailableException lue) {}
+            }
+        }
+        return sampleRate;
     }
 
     public void setAudioMixerName(String audioMixerName) {
