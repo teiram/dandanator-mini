@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package com.grelobites.romgenerator.z80core;
+package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 
 /**
  *

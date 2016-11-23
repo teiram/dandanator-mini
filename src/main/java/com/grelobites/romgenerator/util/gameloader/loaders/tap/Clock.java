@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.grelobites.romgenerator.z80core;
+package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -114,7 +114,11 @@ public class Clock {
         }
 
         timeout = ntstates > 10 ? ntstates : 10;
-    } 
+    }
+
+    public void clearTimeout() {
+        timeout = 0;
+    }
     
     @Override
     public String toString() {

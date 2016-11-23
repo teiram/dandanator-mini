@@ -131,11 +131,15 @@
  *          la emulación de MEMPTR era incompleta (por no estar completamente descrita).
  *
  */
-package com.grelobites.romgenerator.z80core;
+package com.grelobites.romgenerator.util.gameloader.loaders.tap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
 public class Z80 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Z80.class);
 
     private final Clock clock;
     private final Z80operations Z80opsImpl;
@@ -1342,14 +1346,14 @@ public class Z80 {
     }
 
     // POP
-    private int pop() {
+    protected int pop() {
         int word = Z80opsImpl.peek16(regSP);
         regSP = (regSP + 2) & 0xffff;
         return word;
     }
 
     // PUSH
-    private void push(int word) {
+    protected void push(int word) {
         regSP = (regSP - 1) & 0xffff;
         Z80opsImpl.poke8(regSP, word >>> 8);
         regSP = (regSP - 1) & 0xffff;
@@ -1630,8 +1634,8 @@ public class Z80 {
      */
     private void interruption() {
 
-        //System.out.println(String.format("INT at %d T-States", tEstados));
-//        int tmp = tEstados; // peek8 modifica los tEstados
+        //LOGGER.debug(String.format("INT at %d T-States", clock.getTstates()));
+
         // Si estaba en un HALT esperando una INT, lo saca de la espera
         if (halted) {
             halted = false;

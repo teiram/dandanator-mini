@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.z80core;
+package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 
 import com.grelobites.romgenerator.util.Util;
 import org.slf4j.Logger;
@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,8 +37,8 @@ public class Tape implements ClockTimeoutListener {
 
 
     private State state;
+    private boolean playing;
     private int earBit;
-    private boolean micBit;
     private byte[] tapeBuffer;
     private int idxHeader;
     private int tapePos;
@@ -55,6 +56,7 @@ public class Tape implements ClockTimeoutListener {
         tapePos = 0;
         earBit = EAR_ON;
         idxHeader = 0;
+        playing = false;
         blockOffsets = new ArrayList<>();
     }
 
@@ -83,6 +85,7 @@ public class Tape implements ClockTimeoutListener {
             if (offset + len + 2 > tapeBuffer.length) {
                 return false;
             }
+            LOGGER.debug("Adding tape block with length " + len + " at offset " + offset);
 
             blockOffsets.add(offset);
             offset += len + 2;
@@ -92,10 +95,19 @@ public class Tape implements ClockTimeoutListener {
     }
 
     public boolean insert(File fileName) {
-        try (FileInputStream fis = new FileInputStream(fileName)){
-            tapeBuffer = Util.fromInputStream(fis);
-        } catch (IOException e) {
-            LOGGER.error("Inserting tape", e);
+        try (FileInputStream is = new FileInputStream(fileName)) {
+            return insert(is);
+        } catch (IOException ioe) {
+            LOGGER.error("Inserting tape", ioe);
+        }
+        return false;
+    }
+
+    public boolean insert(InputStream is) {
+        try {
+            tapeBuffer = Util.fromInputStream(is);
+        } catch (IOException ioe) {
+            LOGGER.error("Inserting tape", ioe);
             return false;
         }
 
@@ -104,7 +116,6 @@ public class Tape implements ClockTimeoutListener {
         if (!findTapBlockOffsets()) {
             return false;
         }
-
         return true;
     }
 
@@ -116,6 +127,8 @@ public class Tape implements ClockTimeoutListener {
             case START:
                 tapePos = blockOffsets.get(idxHeader);
                 blockLen = readInt(tapeBuffer, tapePos, 2);
+                LOGGER.debug("Starting tape block " + idxHeader + " of len " + blockLen);
+
                 tapePos += 2;
                 leaderPulses = tapeBuffer[tapePos] >= 0 ? HEADER_PULSES : DATA_PULSES;
                 earBit = EAR_OFF;
@@ -185,21 +198,35 @@ public class Tape implements ClockTimeoutListener {
     }
 
     public boolean play() {
-        if (idxHeader >= blockOffsets.size()) {
-            return false;
+        if (!playing) {
+            if (idxHeader >= blockOffsets.size()) {
+                return false;
+            }
+
+            state = State.START;
+            tapePos = blockOffsets.get(idxHeader);
+            clock.addClockTimeoutListener(this);
+            clockTimeout();
+            playing = true;
         }
-
-        state = State.START;
-
-        tapePos = blockOffsets.get(idxHeader);
-        clock.addClockTimeoutListener(this);
-        clockTimeout();
         return true;
+
     }
 
+
     public void stop() {
-        state = State.STOP;
-        clock.removeClockTimeoutListener(this);
+        if (playing) {
+            if (state == State.PAUSE_STOP) {
+                idxHeader++;
+            }
+            state = State.STOP;
+            clock.removeClockTimeoutListener(this);
+            playing = false;
+        }
+    }
+
+    public boolean isPlaying() {
+        return playing;
     }
 
     public State getState() {
@@ -215,14 +242,16 @@ public class Tape implements ClockTimeoutListener {
         playTap();
     }
 
-    public boolean flashLoad(Z80 cpu, FlatMemory memory) {
+    public boolean flashLoad(Z80 cpu, Memory memory) {
+        LOGGER.debug("Tape.flashLoad with status " + this);
+        clock.clearTimeout();
+        stop();
         if (idxHeader >= blockOffsets.size()) {
             return false;
         }
 
         tapePos = blockOffsets.get(idxHeader);
         blockLen = readInt(tapeBuffer, tapePos, 2);
-//        System.out.println(String.format("tapePos: %X. blockLen: %X", tapePos, blockLen));
         tapePos += 2;
         if (cpu.getRegA() != (tapeBuffer[tapePos] & 0xff)) {
             cpu.xor(tapeBuffer[tapePos]);
@@ -230,12 +259,14 @@ public class Tape implements ClockTimeoutListener {
             idxHeader++;
             return true;
         }
-        // La paridad incluye el byte de flag
+        //Parity includes flag byte
         cpu.setRegA(tapeBuffer[tapePos]);
 
         int count = 0;
         int addr = cpu.getRegIX();    // Address start
-        int nBytes = cpu.getRegDE();  // Lenght
+        int nBytes = cpu.getRegDE();  // Length
+        LOGGER.debug("Flash loading " + nBytes + " bytes on address " + Integer.toHexString(addr));
+
         while (count < nBytes && count < blockLen - 1) {
             memory.poke8(addr, tapeBuffer[tapePos + count + 1]);
             cpu.xor(tapeBuffer[tapePos + count + 1]);
@@ -243,15 +274,15 @@ public class Tape implements ClockTimeoutListener {
             count++;
         }
 
-        // Se cargarán los bytes pedidos en DE
+        //Load DE byte count
         if (count == nBytes) {
-            cpu.xor(tapeBuffer[tapePos + count + 1]); // Byte de paridad
+            cpu.xor(tapeBuffer[tapePos + count + 1]); //Parity byte
             cpu.cp(0x01);
         }
 
-        // Hay menos bytes en la cinta de los indicados en DE
-        // En ese caso habrá dado un error de timeout en LD-SAMPLE (0x05ED)
-        // que se señaliza con CARRY==reset & ZERO==set
+        //Less bytes on tape than requested on DE
+        //It should have failed with timeout in LD-SAMPLE (0x05ED)
+        // signalled as CARRY==reset & ZERO==set
         if (count < nBytes) {
             cpu.setFlags(0x50); // when B==0xFF, then INC B, B=0x00, F=0x50
         }
@@ -259,8 +290,24 @@ public class Tape implements ClockTimeoutListener {
         cpu.setRegIX(addr);
         cpu.setRegDE(nBytes - count);
         idxHeader++;
+        if (idxHeader >= blockOffsets.size()) {
+            LOGGER.debug("Tape marked as finished");
+            finishing = true;
+        }
 
         return true;
+    }
 
+    @Override
+    public String toString() {
+        return "Tape{" +
+                "state=" + state +
+                ", playing=" + playing +
+                ", earBit=" + earBit +
+                ", idxHeader=" + idxHeader +
+                ", tapePos=" + tapePos +
+                ", blockLen=" + blockLen +
+                ", finishing=" + finishing +
+                '}';
     }
 }
