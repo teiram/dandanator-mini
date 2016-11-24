@@ -35,7 +35,7 @@
                                 <Label fx:id="gameType" layoutX="74.0" layoutY="45.0" text="RAM" textFill="WHITE" />
                         <CheckBox fx:id="gameCompressedAttribute" layoutX="10.0" layoutY="117.0" mnemonicParsing="false" text="%gameCompressedProperty" />
                         <CheckBox fx:id="gameForced48kModeAttribute" layoutX="10.0" layoutY="143.0" mnemonicParsing="false" text="%game48kModeProperty" />
-                        <Label layoutX="150.0" layoutY="45.0" text="HW:" />
+                        <Label layoutX="150.0" layoutY="45.0" text="HW:" textFill="WHITE" />
                         <Label fx:id="hardwareMode" layoutX="197.0" layoutY="45.0" text="-" />
                         <ComboBox fx:id="gameRomAttribute" layoutX="91.0" layoutY="62.0" prefWidth="150.0" />
                         <Label fx:id="romActiveAttributeLabel" layoutX="10.0" layoutY="67.0" text="%activeRomProperty" />

@@ -52,6 +52,10 @@ public class DandanatorMiniFrameController {
 
     private static final String BLUE_BAR_STYLE = "blue-bar";
     private static final String RED_BAR_STYLE = "red-bar";
+
+    private static final String HW_MODE_SUPPORTED = "white-text";
+    private static final String HW_MODE_UNSUPPORTED = "red-text";
+
     @FXML
     private TreeView<PokeViewable> pokeView;
 
@@ -363,6 +367,13 @@ public class DandanatorMiniFrameController {
         }
     }
 
+    private void styleHardwareMode(RamGame game) {
+        hardwareMode.getStyleClass().removeAll(
+                game.getHardwareMode().supported() ? HW_MODE_UNSUPPORTED : HW_MODE_SUPPORTED);
+        hardwareMode.getStyleClass().add(game.getHardwareMode().supported() ?
+            HW_MODE_SUPPORTED : HW_MODE_UNSUPPORTED);
+    }
+
     private void onGameSelection(Game oldGame, Game newGame) {
         LOGGER.debug("onGameSelection oldGame=" + oldGame+ ", newGame=" + newGame);
         unbindInfoPropertiesFromGame(oldGame);
@@ -388,6 +399,7 @@ public class DandanatorMiniFrameController {
                 }
                 gameForced48kModeAttribute.setVisible(ramGame.getType() != GameType.RAM128);
                 hardwareMode.setVisible(true);
+                styleHardwareMode(ramGame);
             } else {
                 pokesTab.setDisable(true);
                 gameRomAttribute.setVisible(false);

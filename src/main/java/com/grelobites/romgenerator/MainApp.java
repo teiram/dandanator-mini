@@ -296,6 +296,7 @@ public class MainApp extends Application {
             primaryStage.setScene(scene);
             applicationContext.setApplicationStage(primaryStage);
 
+            /*
             scene.setOnKeyPressed(e -> {
                 if (e.getCode() == KeyCode.ALT) {
                     LOGGER.debug("ALT key pressed");
@@ -309,6 +310,7 @@ public class MainApp extends Application {
                     Configuration.getInstance().setAllowExperimentalGames(false);
                 }
             });
+            */
 
             if (menuToolkit != null) {
                 menuToolkit.setMenuBar(primaryStage, menuBar);

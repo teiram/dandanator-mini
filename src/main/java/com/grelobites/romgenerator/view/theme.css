@@ -130,6 +130,14 @@
     -fx-accent: red;
 }
 
+.white-text {
+    -fx-text-fill: white;
+}
+
+.red-text {
+    -fx-text-fill : red;
+}
+
 .pagination-simple {
     -fx-arrows-visible: false;
     -fx-tooltip-visible: false;
