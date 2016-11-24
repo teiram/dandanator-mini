@@ -1,6 +1,5 @@
 package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 
-import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.HardwareMode;
@@ -44,7 +43,8 @@ public class TapeLoaderTest implements Z80operations {
     private boolean breakOnScreenRamWrites = false;
     private int ulaPort;
     private Z80State lastValidState;
-    private long intCount = 0;
+    private int lastPC = 0;
+    private boolean breakpointReached = false;
 
     public TapeLoaderTest() {
         z80Ram = new FlatMemory(0x10000);
@@ -203,23 +203,44 @@ public class TapeLoaderTest implements Z80operations {
         z80.execute(frameTStates);
     }
 
+    private void loadTape(File tapeFile, int lastPC) {
+        initialize();
+        z80.reset();
+        z80.setBreakpoint(lastPC, true);
+        tape.insert(tapeFile);
+
+        detectScreenRamWrites = breakOnScreenRamWrites = false;
+        while (!tape.isEOT() && !breakpointReached) {
+            executeFrame();
+        }
+    }
+
     public void loadTape(File tapeFile) {
         initialize();
         z80.setBreakpoint(LD_BYTES_ADDR, true);
         tape.insert(tapeFile);
         loadSnaLoader();
         int stoppedFrames = 0;
-        while (!tape.isFinishing()) {
-            executeFrame();
+        try {
+            while (!tape.isEOT()) {
+                executeFrame();
 
-            if (tape.getState() == Tape.State.STOP || tape.getState() == Tape.State.PAUSE_STOP) {
-                if (++stoppedFrames > 1000) {
-                    break;
+                if (tape.getReadBytes() >= 10 * 1024) {
+                    detectScreenRamWrites = breakOnScreenRamWrites = true;
                 }
-            } else {
-                stoppedFrames = 0;
-            }
 
+                if (tape.getState() == Tape.State.STOP || tape.getState() == Tape.State.PAUSE_STOP) {
+                    if (++stoppedFrames > 1000) {
+                        break;
+                    }
+                } else {
+                    stoppedFrames = 0;
+                }
+            }
+        } catch (Exception e) {
+            lastPC = z80.getRegPC() - 1;
+            LOGGER.debug("Detected screen write on " + Integer.toHexString(lastPC), e);
+            loadTape(tapeFile, lastPC);
         }
 
         LOGGER.debug("Z80 State before save " + z80.getZ80State());
@@ -314,9 +335,8 @@ public class TapeLoaderTest implements Z80operations {
             if (tape.flashLoad(z80, z80Ram)) {
                 z80.setRegPC(z80.pop());
             }
-        } else if (z80.getRegPC() == 0x1f3d) {
-            LOGGER.debug("State on 1f3d: " + z80.getZ80State());
-            intCount = 0;
+        } else if (z80.getRegPC() == lastPC) {
+            breakpointReached = true;
         }
 
     }

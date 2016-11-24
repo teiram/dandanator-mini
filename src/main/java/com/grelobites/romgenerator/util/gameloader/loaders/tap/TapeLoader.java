@@ -10,8 +10,6 @@ import com.grelobites.romgenerator.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -215,7 +213,7 @@ public class TapeLoader implements Z80operations {
         tape.insert(is);
         loadSnaLoader();
         int frameLimit = 100;
-        while (!tape.isFinishing() && frameLimit-- >= 0) {
+        while (!tape.isEOT() && frameLimit-- >= 0) {
             executeFrame();
         }
         frameLimit = 100;
@@ -238,7 +236,7 @@ public class TapeLoader implements Z80operations {
         loadSnaLoader();
         int lastTapePos = 0;
         long lastTstates = clock.getTstates();
-        while (!tape.isFinishing()) {
+        while (!tape.isEOT()) {
             runProcessor();
             if (tape.getTapePos() - lastTapePos == 0) {
                 if (clock.getTstates() - lastTstates > 100000000) {
