@@ -8,6 +8,7 @@ import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
+import com.grelobites.romgenerator.util.OperationResult;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gamerenderer.GameRenderer;
 import com.grelobites.romgenerator.util.gamerenderer.GameRendererFactory;
@@ -97,27 +98,29 @@ public class MainAppController {
     }
 
     private void addGamesFromFiles(List<File> files) {
-        files.forEach(file -> {
-            Optional<Game> gameOptional = GameUtil.createGameFromFile(file);
-            if (gameOptional.isPresent()) {
-                getRomSetHandler().addGame(gameOptional.get());
-            } else {
-                try (FileInputStream fis = new FileInputStream(file)) {
-                    if (getApplicationContext().getGameList().isEmpty()) {
-                        getRomSetHandler().importRomSet(fis);
-                    } else {
-                        getRomSetHandler().mergeRomSet(fis);
+        files.forEach(file ->
+            applicationContext.addBackgroundTask(() -> {
+                Optional<Game> gameOptional = GameUtil.createGameFromFile(file);
+                if (gameOptional.isPresent()) {
+                    getRomSetHandler().addGame(gameOptional.get());
+                } else {
+                    try (FileInputStream fis = new FileInputStream(file)) {
+                        if (getApplicationContext().getGameList().isEmpty()) {
+                            getRomSetHandler().importRomSet(fis);
+                        } else {
+                            getRomSetHandler().mergeRomSet(fis);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("Importing ROMSet", e);
+                        DialogUtil.buildErrorAlert(
+                                LocaleUtil.i18n("fileImportError"),
+                                LocaleUtil.i18n("fileImportErrorHeader"),
+                                LocaleUtil.i18n("fileImportErrorContent"))
+                                .showAndWait();
                     }
-                } catch (Exception e) {
-                    LOGGER.error("Importing ROMSet", e);
-                    DialogUtil.buildErrorAlert(
-                            LocaleUtil.i18n("fileImportError"),
-                            LocaleUtil.i18n("fileImportErrorHeader"),
-                            LocaleUtil.i18n("fileImportErrorContent"))
-                            .showAndWait();
                 }
-            }
-            });
+                return OperationResult.successResult();
+            }));
     }
 
     private void updateRomSetHandler() {
