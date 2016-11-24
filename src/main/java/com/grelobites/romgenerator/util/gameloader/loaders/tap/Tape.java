@@ -49,6 +49,7 @@ public class Tape implements ClockTimeoutListener {
     private int mask;
     private List<Integer> blockOffsets;
     private boolean finishing = false;
+    private int timeoutCount = 0;
 
     public Tape() {
         clock = Clock.getInstance();
@@ -71,6 +72,10 @@ public class Tape implements ClockTimeoutListener {
 
     public boolean isFinishing() {
         return finishing;
+    }
+
+    public int getTimeoutCount() {
+        return timeoutCount;
     }
 
     private boolean findTapBlockOffsets() {
@@ -247,6 +252,7 @@ public class Tape implements ClockTimeoutListener {
     @Override
     public void clockTimeout() {
         playTap();
+        timeoutCount++;
     }
 
     public boolean flashLoad(Z80 cpu, Memory memory) {
