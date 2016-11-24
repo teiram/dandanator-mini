@@ -204,14 +204,15 @@ public class TapeLoaderTest implements Z80operations {
     }
 
     private void loadTape(File tapeFile, int lastPC) {
-        initialize();
         z80.reset();
+        clock.reset();
         z80.setBreakpoint(lastPC, true);
         tape.insert(tapeFile);
-
+        loadSnaLoader();
         detectScreenRamWrites = breakOnScreenRamWrites = false;
         while (!tape.isEOT() && !breakpointReached) {
             executeFrame();
+            LOGGER.debug("PC: " + Integer.toHexString(z80.getRegPC()));
         }
     }
 
@@ -338,7 +339,6 @@ public class TapeLoaderTest implements Z80operations {
         } else if (z80.getRegPC() == lastPC) {
             breakpointReached = true;
         }
-
     }
 
     @Override
@@ -348,7 +348,7 @@ public class TapeLoaderTest implements Z80operations {
 
     public static void main(String[] args) {
         TapeLoaderTest loader = new TapeLoaderTest();
-        loader.loadTape(new File("/Users/mteira/Desktop/tap/nonworking/livingstone.tap"));
+        loader.loadTape(new File("/home/mteira/Escritorio/livingstone.tap"));
     }
 
 }

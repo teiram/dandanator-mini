@@ -114,6 +114,7 @@ public class Tape implements ClockTimeoutListener {
         }
 
         tapePos = idxHeader = readBytes = 0;
+        blockOffsets.clear();
         state = State.STOP;
         if (!findTapBlockOffsets()) {
             return false;
