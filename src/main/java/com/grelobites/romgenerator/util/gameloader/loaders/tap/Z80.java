@@ -133,6 +133,7 @@
  */
 package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 
+import com.grelobites.romgenerator.util.compress.z80.Z80OutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -294,7 +295,7 @@ public class Z80 {
     // Un true en una dirección indica que se debe notificar que se va a
     // ejecutar la instrucción que está en esa direción.
     private final boolean breakpointAt[] = new boolean[65536];
-    
+
     // Constructor de la clase
     public Z80(Z80operations z80ops) {
         this.clock = Clock.getInstance();
@@ -1736,7 +1737,7 @@ public class Z80 {
      * ciclos de máquina reales que se ejecutan. Esa es la única forma de poder
      * simular la contended memory del Spectrum.
      */
-    public final void execute(int statesLimit) {
+    public final void execute(long statesLimit) {
 
         while (clock.getTstates() < statesLimit) {
             execute();

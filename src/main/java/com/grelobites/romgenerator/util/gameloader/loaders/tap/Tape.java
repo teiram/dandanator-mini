@@ -90,6 +90,7 @@ public class Tape implements ClockTimeoutListener {
             blockOffsets.add(offset);
             offset += len + 2;
         }
+        LOGGER.debug("Number of blocks in tape " + blockOffsets.size());
 
         return true;
     }
@@ -171,14 +172,12 @@ public class Tape implements ClockTimeoutListener {
                         state = State.NEWBYTE;
                     } else {
                         state = State.PAUSE;
+
                     }
                 } else {
                     state = State.NEWBIT;
                 }
-                if (tapePos == tapeBuffer.length - 1) {
-                    LOGGER.debug("Last byte detected");
-                    finishing = true;
-                }
+
                 break;
             case PAUSE:
                 earBit ^= EAR_MASK;
@@ -188,6 +187,8 @@ public class Tape implements ClockTimeoutListener {
             case PAUSE_STOP:
                 idxHeader++;
                 if (tapePos == tapeBuffer.length) {
+                    LOGGER.debug("Last byte detected");
+                    finishing = true;
                     stop();
                 } else {
                     state = State.START; // START
@@ -218,6 +219,9 @@ public class Tape implements ClockTimeoutListener {
         if (playing) {
             if (state == State.PAUSE_STOP) {
                 idxHeader++;
+                if (idxHeader >= blockOffsets.size()) {
+                    finishing = true;
+                }
             }
             state = State.STOP;
             clock.removeClockTimeoutListener(this);
@@ -225,6 +229,9 @@ public class Tape implements ClockTimeoutListener {
         }
     }
 
+    public int getTapePos() {
+        return tapePos;
+    }
     public boolean isPlaying() {
         return playing;
     }

@@ -5,6 +5,7 @@ import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,19 +22,16 @@ import java.util.List;
 
 public class TapeLoader implements Z80operations {
     private static final Logger LOGGER = LoggerFactory.getLogger(TapeLoader.class);
-    private static final int LAST_K = 23560;
-    private static final int FLAGS = 23611;
     private static final int LD_BYTES_ADDR = 0x556;
     private static final int BANK_SIZE = 0x4000;
+    private static final int FRAME_TSTATES = 69888;
+    private static final int INTERRUPT_TSTATES = 32;
     private final Z80 z80;
     private final Clock clock;
     private final Memory z80Ram;
     private Tape tape;
     private LoaderDetector loaderDetector;
     private final byte z80Ports[] = new byte[0x10000];
-    private boolean detectScreenRamWrites = false;
-    private boolean screenRamWritten = false;
-    private boolean breakOnScreenRamWrites = false;
     private int ulaPort;
 
     public TapeLoader() {
@@ -56,12 +54,6 @@ public class TapeLoader implements Z80operations {
 
     @Override
     public void poke8(int address, int value) {
-        if (detectScreenRamWrites) {
-            if (address >= 0x4000 && address <= (0x4000 + 0x1b00)) {
-                //LOGGER.debug("Attempt to write on " + Integer.toHexString(address));
-                screenRamWritten = true;
-            }
-        }
         z80Ram.poke8(address, value);
     }
 
@@ -163,43 +155,21 @@ public class TapeLoader implements Z80operations {
     }
 
     private void executeFrame() {
+        long intTStates = clock.getTstates() + INTERRUPT_TSTATES;
+        long frameTStates = clock.getTstates() + FRAME_TSTATES;
         z80.setINTLine(true);
-        executeStates(32);
+        z80.execute(intTStates);
         z80.setINTLine(false);
-        executeStates(69888 - 32);
+        z80.execute(frameTStates);
     }
 
-    private boolean exitCondition() {
-        return (screenRamWritten && breakOnScreenRamWrites) || tape.isFinishing();
-    }
-    private void executeStates(long states) {
-        while (states-- > 0) {
-            if (exitCondition()) {
-                break;
-            }
-            z80.execute();
-        }
-    }
-
-    public void loadTape(File tapeFile) {
-        initialize();
-        z80.setBreakpoint(LD_BYTES_ADDR, true);
-        tape.insert(tapeFile);
-        loadSnaLoader();
-        detectScreenRamWrites = true;
-        int frameLimit = 100;
-        while (!tape.isFinishing() && frameLimit-- >= 0) {
-            executeFrame();
-        }
-        breakOnScreenRamWrites = true;
-        frameLimit = 100;
-        while (!screenRamWritten && frameLimit-- >= 0) {
-            executeFrame();
-        }
-
-        LOGGER.debug("Exited loop with frameLimit " + frameLimit
-                + ". Z80 State before save " + z80.getZ80State());
-        saveSna();
+    private void runProcessor() {
+        long intTStates = clock.getTstates() + INTERRUPT_TSTATES;
+        long frameTStates = clock.getTstates() + 1000;
+        z80.setINTLine(true);
+        z80.execute(intTStates);
+        z80.setINTLine(false);
+        z80.execute(frameTStates);
     }
 
     private List<byte[]> getRamBanks() {
@@ -211,7 +181,7 @@ public class TapeLoader implements Z80operations {
         return banks;
     }
 
-    public Game contextAsGame() {
+    private RamGame contextAsGame() {
         GameHeader header = new GameHeader();
         Z80State z80state = z80.getZ80State();
         header.setAFRegister(z80state.getRegAF());
@@ -239,65 +209,56 @@ public class TapeLoader implements Z80operations {
         return game;
     }
 
-    public Game loadTape(InputStream is) {
+    public Game loadTape0(InputStream is) {
         initialize();
         z80.setBreakpoint(LD_BYTES_ADDR, true);
         tape.insert(is);
         loadSnaLoader();
-        detectScreenRamWrites = true;
         int frameLimit = 100;
         while (!tape.isFinishing() && frameLimit-- >= 0) {
             executeFrame();
         }
-        breakOnScreenRamWrites = true;
         frameLimit = 100;
-        while (!screenRamWritten && frameLimit-- >= 0) {
+        while (frameLimit-- >= 0) {
             executeFrame();
         }
 
         LOGGER.debug("Exited loop with frameLimit " + frameLimit
                 + ". Z80 State before save " + z80.getZ80State());
         tape.stop();
-        return contextAsGame();
+        RamGame ramGame = contextAsGame();
+        GameUtil.pushPC(ramGame);
+        return ramGame;
     }
 
-    public void saveSna() {
-        try (FileOutputStream fos = new FileOutputStream("/Users/mteira/Desktop/output.sna")) {
-            Z80State state = z80.getZ80State();
-            int pc = state.getRegPC();
-            int sp = state.getRegSP();
-            LOGGER.debug("Saving SNA with PC: 0x" + Integer.toHexString(pc) +
-                    ", SP: 0x" + Integer.toHexString(sp) +
-                    ", ULA Port : 0x" + Integer.toHexString(ulaPort));
-
-            z80Ram.poke8(--sp, (pc >> 8) & 0xff);
-            z80Ram.poke8(--sp, pc & 0xff);
-
-            fos.write(
-                    ByteBuffer.allocate(49179)
-                            .order(ByteOrder.LITTLE_ENDIAN)
-                            .put(Integer.valueOf(state.getRegI()).byteValue())
-                            .putShort(Integer.valueOf(state.getRegHLx()).shortValue())
-                            .putShort(Integer.valueOf(state.getRegDEx()).shortValue())
-                            .putShort(Integer.valueOf(state.getRegBCx()).shortValue())
-                            .putShort(Integer.valueOf(state.getRegAFx()).shortValue())
-                            .putShort(Integer.valueOf(state.getRegHL()).shortValue())
-                            .putShort(Integer.valueOf(state.getRegDE()).shortValue())
-                            .putShort(Integer.valueOf(state.getRegBC()).shortValue())
-                            .putShort(Integer.valueOf(state.getRegIY()).shortValue())
-                            .putShort(Integer.valueOf(state.getRegIX()).shortValue())
-                            .put(Integer.valueOf(state.isIFF2() ? 0xFF : 0).byteValue())
-                            .put(Integer.valueOf(state.getRegR()).byteValue())
-                            .putShort(Integer.valueOf(state.getRegAF()).shortValue())
-                            .putShort(Integer.valueOf(sp).shortValue())
-                            .put(Integer.valueOf(state.getIM().ordinal()).byteValue())
-                            .put(Integer.valueOf(ulaPort).byteValue())
-                            .put(Arrays.copyOfRange(z80Ram.asByteArray(), 0x4000, 0x10000))
-                            .array());
-        } catch (Exception e) {
-            LOGGER.error("Writing SNA", e);
+    public Game loadTape(InputStream is) {
+        initialize();
+        z80.setBreakpoint(LD_BYTES_ADDR, true);
+        tape.insert(is);
+        loadSnaLoader();
+        int lastTapePos = 0;
+        long lastTstates = clock.getTstates();
+        while (!tape.isFinishing()) {
+            runProcessor();
+            if (tape.getTapePos() - lastTapePos == 0) {
+                if (clock.getTstates() - lastTstates > 100000000) {
+                    LOGGER.debug("Tape stays stopped. Position: " + tape.getTapePos()
+                            + ", tstates: " + clock.getTstates());
+                    break;
+                }
+            } else {
+                lastTapePos = tape.getTapePos();
+                lastTstates = clock.getTstates();
+            }
         }
+
+        LOGGER.debug("Exited loop with Z80 State " + z80.getZ80State());
+        tape.stop();
+        RamGame ramGame = contextAsGame();
+        GameUtil.pushPC(ramGame);
+        return ramGame;
     }
+
 
     @Override
     public void breakpoint() {
@@ -306,19 +267,12 @@ public class TapeLoader implements Z80operations {
             if (tape.flashLoad(z80, z80Ram)) {
                 z80.setRegPC(z80.pop());
             }
-        } else {
-            LOGGER.debug("Reached address " + Integer.toHexString(z80.getRegPC()));
         }
     }
 
     @Override
     public void execDone() {
         LOGGER.debug("execDone!!");
-    }
-
-    public static void main(String[] args) {
-        TapeLoader loader = new TapeLoader();
-        loader.loadTape(new File("/Users/mteira/Desktop/DANDARE1.TAP"));
     }
 
 }
