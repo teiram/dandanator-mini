@@ -143,7 +143,9 @@ public class DandanatorMiniFrameController {
                     LOGGER.debug("Changing bar style on romUsage change to " + newValue.doubleValue());
                     romUsage.getStyleClass().removeAll(BLUE_BAR_STYLE, RED_BAR_STYLE);
                     romUsage.getStyleClass().add(
-                            newValue.doubleValue() > 1.0 ? RED_BAR_STYLE : BLUE_BAR_STYLE);
+                            (newValue.doubleValue() > 1.0 ||
+                                    applicationContext.getGameList().size() > DandanatorMiniConstants.MAX_GAMES) ?
+                                    RED_BAR_STYLE : BLUE_BAR_STYLE);
 
                 });
 
