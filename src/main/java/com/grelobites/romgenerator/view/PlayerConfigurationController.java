@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.player.EncodingSpeed;
+import com.grelobites.romgenerator.util.player.SerialPortInterfaces;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -28,7 +29,9 @@ import javax.sound.sampled.SourceDataLine;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -163,6 +166,12 @@ public class PlayerConfigurationController {
                 .map(Mixer.Info::getName).collect(Collectors.toList()));
     }
 
+    private static String[] getSerialPortNames() {
+        String[] serialPortNames = SerialPortInterfaces.getPortNames();
+        LOGGER.debug("Serial Port Names are " + Arrays.asList(serialPortNames));
+        return serialPortNames;
+    }
+
     @FXML
     private void initialize() throws IOException {
         PlayerConfiguration configuration = PlayerConfiguration.getInstance();
@@ -228,13 +237,13 @@ public class PlayerConfigurationController {
         refreshSerialPorts.setOnAction(e -> {
             serialPort.getSelectionModel().clearSelection();
             serialPort.getItems().clear();
-            serialPort.getItems().addAll(SerialPortList.getPortNames());
+            serialPort.getItems().addAll(getSerialPortNames());
         });
 
         reversePhase.selectedProperty().bindBidirectional(configuration.reversePhaseProperty());
         boostLevel.selectedProperty().bindBidirectional(configuration.boostLevelProperty());
 
-        ObservableList<String> serialPortNames = FXCollections.observableArrayList(SerialPortList.getPortNames());
+        ObservableList<String> serialPortNames = FXCollections.observableArrayList(getSerialPortNames());
         serialPort.setItems(serialPortNames);
         if (serialPortNames.contains(configuration.getSerialPort())) {
             serialPort.getSelectionModel().select(configuration.getSerialPort());
