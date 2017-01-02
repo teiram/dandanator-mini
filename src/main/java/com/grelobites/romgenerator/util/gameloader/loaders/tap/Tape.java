@@ -115,6 +115,8 @@ public class Tape implements ClockTimeoutListener {
 
         tapePos = idxHeader = readBytes = 0;
         blockOffsets.clear();
+        eot = playing = false;
+
         state = State.STOP;
         if (!findTapBlockOffsets()) {
             return false;
@@ -122,9 +124,16 @@ public class Tape implements ClockTimeoutListener {
         return true;
     }
 
+    public void rewind() {
+        state = State.STOP;
+        tapePos = idxHeader = readBytes = 0;
+        eot = playing = false;
+    }
+
     public void eject() {
         stop();
         tapePos = idxHeader = readBytes = 0;
+        eot = false;
         state = State.STOP;
     }
 
@@ -259,7 +268,8 @@ public class Tape implements ClockTimeoutListener {
     }
 
     public boolean flashLoad(Z80 cpu, Memory memory) {
-        LOGGER.debug("Tape.flashLoad with status " + this);
+        LOGGER.debug("Tape.flashLoad with status " + this
+            + ", CPU status " + cpu.getZ80State());
         clock.clearTimeout();
         stop();
         if (idxHeader >= blockOffsets.size()) {
@@ -269,7 +279,8 @@ public class Tape implements ClockTimeoutListener {
         tapePos = blockOffsets.get(idxHeader);
         blockLen = readInt(tapeBuffer, tapePos, 2);
         tapePos += 2;
-        if (cpu.getRegA() != (tapeBuffer[tapePos] & 0xff)) {
+        //AF and AF have been already switched here
+        if (cpu.getRegAx() != (tapeBuffer[tapePos] & 0xff)) {
             cpu.xor(tapeBuffer[tapePos]);
             cpu.setCarryFlag(false);
             idxHeader++;

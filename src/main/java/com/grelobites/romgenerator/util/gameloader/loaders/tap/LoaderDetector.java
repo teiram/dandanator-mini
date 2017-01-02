@@ -16,6 +16,11 @@ public class LoaderDetector {
         this.clock = Clock.getInstance();
     }
 
+    public void reset() {
+        lastTstates = clock.getTstates();
+        lastB = 0;
+    }
+
     public void onAudioInput(Z80 processor) {
         long tstatesDelta = clock.getTstates() - lastTstates;
         int bdiff = (processor.getRegB() - lastB) & 0xff;

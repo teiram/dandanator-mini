@@ -52,6 +52,12 @@ public class FlatMemory implements Memory {
         }
     }
 
+    public void reset() {
+        for (int i = ROM_TOP; i < memoryMap.length; i++) {
+            memoryMap[i] = 0;
+        }
+    }
+
     @Override
     public byte[] asByteArray() {
         return memoryMap;

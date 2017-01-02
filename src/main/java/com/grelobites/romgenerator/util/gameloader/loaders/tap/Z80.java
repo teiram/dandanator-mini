@@ -296,6 +296,8 @@ public class Z80 {
     // ejecutar la instrucción que está en esa direción.
     private final boolean breakpointAt[] = new boolean[65536];
 
+    private int lastPC = 0;
+
     // Constructor de la clase
     public Z80(Z80operations z80ops) {
         this.clock = Clock.getInstance();
@@ -425,6 +427,10 @@ public class Z80 {
 
     public final void setRegLx(int value) {
         regLx = value & 0xff;
+    }
+
+    public final int getLastPC() {
+        return lastPC;
     }
 
     // Acceso a registros de 16 bits
@@ -884,7 +890,7 @@ public class Z80 {
         regIX = state.getRegIX();
         regIY = state.getRegIY();
         regSP = state.getRegSP();
-        regPC = state.getRegPC();
+        regPC = lastPC = state.getRegPC();
         regI = state.getRegI();
         setRegR(state.getRegR());
         memptr = state.getMemPtr();
@@ -935,7 +941,7 @@ public class Z80 {
             memptr = 0xffff;
         }
 
-        regPC = 0;
+        regPC = lastPC = 0;
         regI = regR = 0;
         regRbit7 = false;
         ffIFF1 = false;
@@ -1693,6 +1699,9 @@ public class Z80 {
     
 
     public void execute() {
+        //Used to trace executing PC while handling exceptions
+        lastPC = regPC;
+
         // Primero se comprueba NMI
         if (activeNMI) {
             activeNMI = false;
@@ -4745,7 +4754,9 @@ public class Z80 {
                 // Sin esto, además de emular mal, falla el test
                 // ld <bcdexya>,<bcdexya> de ZEXALL.
 
-//                System.out.println("Error instrucción DD/FD" + Integer.toHexString(opCode));
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.warn("Found opcode " + Integer.toHexString(opCode));
+                };
 
                 if (breakpointAt[regPC]) {
                     Z80opsImpl.breakpoint();

@@ -28,23 +28,18 @@ public class TapeLoaderTest implements Z80operations {
     private static final int SCREEN_SIZE = 0x1b00;
     private static final int SCREEN_START = BANK_SIZE;
     private static final int SCREEN_END = SCREEN_START + SCREEN_SIZE;
-    private static final int SCREEN_SET_THRESHOLD = 1000;
     private static final int FRAME_TSTATES = 69888;
     private static final int INTERRUPT_TSTATES = 32;
+    private static final int DETECTION_THRESHOLD = 1024 * 12;
     private final Z80 z80;
     private final Clock clock;
     private final Memory z80Ram;
-    private final byte[] screenMemory = new byte[SCREEN_SIZE];
     private Tape tape;
     private LoaderDetector loaderDetector;
     private final byte z80Ports[] = new byte[0x10000];
-    private boolean detectScreenRamWrites = false;
-    private boolean screenRamWritten = false;
     private boolean breakOnScreenRamWrites = false;
     private int ulaPort;
-    private Z80State lastValidState;
-    private int lastPC = 0;
-    private boolean breakpointReached = false;
+    private Integer breakpointPC;
 
     public TapeLoaderTest() {
         z80Ram = new FlatMemory(0x10000);
@@ -66,25 +61,14 @@ public class TapeLoaderTest implements Z80operations {
 
     @Override
     public void poke8(int address, int value) {
-        if (detectScreenRamWrites) {
-            if (address >= SCREEN_START && address < SCREEN_END) {
-                //LOGGER.debug("Attempt to write on " + Integer.toHexString(address));
-                screenMemory[address - SCREEN_START] = Integer.valueOf(value).byteValue();
-                if (breakOnScreenRamWrites) {
-                    throw new ExecutionForbiddenException("Attempt to write on screen");
-                }
+        if (breakOnScreenRamWrites && (address >= SCREEN_START && address < SCREEN_END)) {
+            if (z80.getRegPC() >= 0x4000) {
+                throw new ExecutionForbiddenException("Attempt to write on screen");
+            } else {
+                LOGGER.debug("Ignoring write attempt from ROM 0x" + Integer.toHexString(z80.getRegPC()));
             }
         }
         z80Ram.poke8(address, value);
-    }
-
-    private boolean isScreenSet() {
-        int nonZeroValues = 0;
-        for (byte value : screenMemory) {
-            nonZeroValues += value == 0 ? 0 : 1;
-        }
-        LOGGER.debug("Screen values set " + nonZeroValues);
-        return nonZeroValues > SCREEN_SET_THRESHOLD;
     }
 
     @Override
@@ -104,8 +88,9 @@ public class TapeLoaderTest implements Z80operations {
             loaderDetector.onAudioInput(z80);
             return tape.getEarBit();
         } else {
-            LOGGER.debug("IN " + Integer.toHexString(port));
-            return z80Ports[port] & 0xff;
+            LOGGER.debug("IN " + Integer.toHexString(port) + "@ 0x" + Integer.toHexString(z80.getRegPC()));
+            //return z80Ports[port] & 0xff;
+            return 0xff;
         }
     }
 
@@ -183,6 +168,7 @@ public class TapeLoaderTest implements Z80operations {
         z80.reset();
         clock.reset();
         loadSpectrumRom();
+        loaderDetector.reset();
     }
 
     private void executeFrame() {
@@ -203,51 +189,56 @@ public class TapeLoaderTest implements Z80operations {
         z80.execute(frameTStates);
     }
 
-    private void loadTape(File tapeFile, int lastPC) {
-        z80.reset();
-        clock.reset();
-        z80.setBreakpoint(lastPC, true);
-        tape.insert(tapeFile);
-        loadSnaLoader();
-        detectScreenRamWrites = breakOnScreenRamWrites = false;
-        while (!tape.isEOT() && !breakpointReached) {
-            executeFrame();
-            LOGGER.debug("PC: " + Integer.toHexString(z80.getRegPC()));
-        }
-    }
-
-    public void loadTape(File tapeFile) {
+    public void loadTapeInternal(File tapeFile) {
         initialize();
-        z80.setBreakpoint(LD_BYTES_ADDR, true);
-        tape.insert(tapeFile);
+        z80.setBreakpoint(0x056b, true); //LD-BREAK
+        if (breakpointPC != null) {
+            z80.setBreakpoint(breakpointPC, true);
+            tape.rewind();
+        } else {
+            tape.insert(tapeFile);
+        }
         loadSnaLoader();
+        breakOnScreenRamWrites = false;
         int stoppedFrames = 0;
         try {
             while (!tape.isEOT()) {
                 executeFrame();
 
-                if (tape.getReadBytes() >= 10 * 1024) {
-                    detectScreenRamWrites = breakOnScreenRamWrites = true;
+                if (tape.getReadBytes() >= DETECTION_THRESHOLD) {
+                    breakOnScreenRamWrites = true;
                 }
 
                 if (tape.getState() == Tape.State.STOP || tape.getState() == Tape.State.PAUSE_STOP) {
                     if (++stoppedFrames > 1000) {
+                        LOGGER.debug("Detected tape stopped with state " + z80.getZ80State());
                         break;
                     }
                 } else {
                     stoppedFrames = 0;
                 }
             }
-        } catch (Exception e) {
-            lastPC = z80.getRegPC() - 1;
-            LOGGER.debug("Detected screen write on " + Integer.toHexString(lastPC), e);
-            loadTape(tapeFile, lastPC);
+        } catch (ExecutionForbiddenException efe) {
+            if (breakpointPC == null && !tape.isEOT()) {
+                LOGGER.debug("Detected screen write on 0x" + Integer.toHexString(z80.getLastPC())
+                        + ", after reading " + tape.getReadBytes() + " bytes", efe);
+                breakpointPC = z80.getLastPC();
+                loadTapeInternal(null);
+            } else {
+                LOGGER.error("ExecutionForbidden with breakpointPC = " + breakpointPC);
+            }
+        } catch (BreakpointReachedException bre) {
+            LOGGER.debug("Breakpoint reached. Finishing");
+            z80.setRegPC(z80.getLastPC());
         }
+    }
 
+    private void loadTape(File tapeFile) {
+        loadTapeInternal(tapeFile);
         LOGGER.debug("Z80 State before save " + z80.getZ80State());
         try (FileOutputStream fos = new FileOutputStream(new File(tapeFile.getPath() + ".z80"))) {
             GameImageLoader loader = new Z80GameImageLoader();
-            RamGame ramGame = contextAsGame(lastValidState != null ? lastValidState : z80.getZ80State());
+            RamGame ramGame = contextAsGame(z80.getZ80State());
             GameUtil.pushPC(ramGame);
             loader.save(ramGame, fos);
         } catch (IOException ioe) {
@@ -331,13 +322,22 @@ public class TapeLoaderTest implements Z80operations {
 
     @Override
     public void breakpoint() {
-        if (z80.getRegPC() == LD_BYTES_ADDR) {
+        LOGGER.debug("In breakpoint!!!!");
+        if (z80.getRegPC() == 0x056b) {
             LOGGER.debug("LD_BYTES_ADDR Breakpoint reached with tape in state " + tape.getState());
+            LOGGER.debug("SP points to 0x" + Integer.toHexString(peek16(z80.getRegSP())));
             if (tape.flashLoad(z80, z80Ram)) {
-                z80.setRegPC(z80.pop());
+                for (int i = 0; i < 10; i += 2) {
+                    LOGGER.debug("SP Points to 0x" + Integer.toHexString(peek16(z80.getRegSP() - i)));
+                }
+                //z80.setRegPC(z80.pop());
+                z80.setRegPC(0x05e2);
+            } else {
+                LOGGER.debug("flashload returned false!!");
             }
-        } else if (z80.getRegPC() == lastPC) {
-            breakpointReached = true;
+        } else if (z80.getRegPC() == breakpointPC) {
+            LOGGER.debug("Reached breakpoint PC");
+            throw new BreakpointReachedException("LastPC reached");
         }
     }
 
@@ -348,7 +348,7 @@ public class TapeLoaderTest implements Z80operations {
 
     public static void main(String[] args) {
         TapeLoaderTest loader = new TapeLoaderTest();
-        loader.loadTape(new File("/home/mteira/Escritorio/livingstone.tap"));
+        loader.loadTape(new File("/Users/mteira/Desktop/tap/nonworking/dark sceptre.tap"));
     }
 
 }

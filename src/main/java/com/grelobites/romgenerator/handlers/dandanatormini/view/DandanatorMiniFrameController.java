@@ -5,6 +5,7 @@ import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.PokeViewable;
 import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.RomGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.pokeimporter.ImportContext;
@@ -15,7 +16,9 @@ import com.grelobites.romgenerator.view.util.RecursiveTreeItem;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -134,6 +137,7 @@ public class DandanatorMiniFrameController {
 
     @FXML
     private void initialize() {
+        LOGGER.debug("Initializing DandanatorMiniFrameController");
         romUsage.progressProperty().bind(applicationContext.romUsageProperty());
         Tooltip romUsageDetail = new Tooltip();
         romUsage.setTooltip(romUsageDetail);
@@ -280,12 +284,14 @@ public class DandanatorMiniFrameController {
                         if (item == null || empty) {
                             setGraphic(null);
                         } else {
+                            LOGGER.debug("Setting name of ROM in combo to " + item.getName());
                             setText(item.getName());
                         }
                     }
                 };
             }
         });
+
         gameRomAttribute.setButtonCell(new TextFieldListCell<>(new StringConverter<Game>() {
             @Override
             public String toString(Game object) {
@@ -301,18 +307,36 @@ public class DandanatorMiniFrameController {
         }));
 
         updateActiveRomComboItems();
+
         applicationContext.getGameList().addListener((InvalidationListener) e -> {
             updateActiveRomComboItems();
+        });
+
+        applicationContext.getGameList().addListener((ListChangeListener<Game>) c -> {
+            while (c.next()) {
+                gameRomAttribute.getItems().removeAll(c.getRemoved());
+                c.getAddedSubList().forEach(g -> {
+                    if (g instanceof RomGame) {
+                        gameRomAttribute.getItems().add(g);
+                    }
+                });
+            }
+            LOGGER.debug("After computing changes. ComboBox list is " +
+                gameRomAttribute.getItems());
         });
 
     }
 
     private void updateActiveRomComboItems() {
+        LOGGER.debug("updateActiveRomComboItems");
+
         ObservableList<Game> items = FXCollections.observableArrayList(
                 DandanatorMiniConstants.INTERNAL_ROM_GAME,
                 DandanatorMiniConstants.EXTRA_ROM_GAME);
         items.addAll(applicationContext.getGameList().filtered(e -> e.getType() == GameType.ROM));
+        LOGGER.debug("Items in ROM combo list " + items);
         gameRomAttribute.setItems(items);
+
     }
 
     private void unbindInfoPropertiesFromGame(Game game) {
@@ -342,6 +366,8 @@ public class DandanatorMiniFrameController {
                 gameHoldScreenAttribute.selectedProperty().bindBidirectional(ramGame.holdScreenProperty());
                 gameRomAttribute.valueProperty().bindBidirectional(ramGame.romProperty());
                 LOGGER.debug("gameRomAttribute list is " + gameRomAttribute.getItems());
+                //updateActiveRomComboItems();
+
                 pokeView.setRoot(new RecursiveTreeItem<>(ramGame.getTrainerList(), PokeViewable::getChildren,
                         this::computePokeChange));
                 gameCompressedAttribute.selectedProperty().bindBidirectional(ramGame.compressedProperty());
