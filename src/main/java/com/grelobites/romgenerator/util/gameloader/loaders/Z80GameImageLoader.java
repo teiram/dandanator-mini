@@ -168,6 +168,7 @@ public class Z80GameImageLoader implements GameImageLoader {
         if (!version1) {
             //Version 2 or 3
             int headerLength = Util.readAsLittleEndian(is);
+            LOGGER.debug("Header size: " + headerLength);
             version = headerLength == 23 ? 2 : 3;
             header.setPCRegister(Util.readAsLittleEndian(is));
             hwMode = is.read();
@@ -180,7 +181,8 @@ public class Z80GameImageLoader implements GameImageLoader {
                 is.skip(headerLength - 5);
                 header.setPort1ffdValue(is.read());
                 if ((header.getPort1ffdValue() & 1) != 0) {
-                    throw new IllegalArgumentException("Unsupported 1FFD port value");
+                    throw new IllegalArgumentException("Unsupported 1FFD port value: "
+                        + header.getPort1ffdValue());
                 }
             }
         }
