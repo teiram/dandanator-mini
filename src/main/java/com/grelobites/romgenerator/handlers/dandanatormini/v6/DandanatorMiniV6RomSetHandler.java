@@ -78,6 +78,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     protected MenuItem exportPokesMenuItem;
     protected MenuItem importPokesMenuItem;
     protected MenuItem exportDivIdeTapMenuItem;
+    protected MenuItem exportToWavsMenuItem;
     protected MenuItem exportExtraRomMenuItem;
     private BooleanProperty generationAllowedProperty = new SimpleBooleanProperty(false);
 
@@ -878,6 +879,34 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         return exportDivIdeTapMenuItem;
     }
 
+    protected MenuItem getExportToWavsMenuItem() {
+        if (exportToWavsMenuItem == null) {
+            exportToWavsMenuItem = new MenuItem(LocaleUtil.i18n("exportToWavsMenuEntry"));
+
+            exportToWavsMenuItem.setAccelerator(
+                    KeyCombination.keyCombination("SHORTCUT+W")
+            );
+            exportToWavsMenuItem.disableProperty().bind(generationAllowedProperty.not());
+
+            exportToWavsMenuItem.setOnAction(f -> exportToWavs());
+        }
+        return exportToWavsMenuItem;
+    }
+
+    public void exportToWavs() {
+        DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
+        chooser.setTitle(LocaleUtil.i18n("exportToWavsMenuEntry"));
+        final File saveFile = chooser.showSaveDialog(applicationContext.getApplicationStage());
+        if (saveFile != null) {
+            try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                exportRomSet(bos);
+                RomSetUtil.exportToZippedWavFiles(new ByteArrayInputStream(bos.toByteArray()), fos);
+            } catch (IOException e) {
+                LOGGER.error("Exporting to Wavs", e);
+            }
+        }
+    }
 
     @Override
     public void updateMenuPreview() {
@@ -948,7 +977,8 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
         applicationContext.getExtraMenu().getItems().addAll(
                 getExportPokesMenuItem(), getImportPokesMenuItem(),
-                getExportDivIdeTapMenuItem(), getExportExtraRomMenuItem());
+                getExportDivIdeTapMenuItem(), getExportExtraRomMenuItem(),
+                getExportToWavsMenuItem());
 
         updateRomUsage();
         previewUpdateTimer.start();
@@ -971,7 +1001,8 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 getExportPokesMenuItem(),
                 getImportPokesMenuItem(),
                 getExportDivIdeTapMenuItem(),
-                getExportExtraRomMenuItem());
+                getExportExtraRomMenuItem(),
+                getExportToWavsMenuItem());
         applicationContext.getGameList().removeListener(updateImageListener);
         applicationContext.getGameList().removeListener(updateRomUsageListener);
         applicationContext = null;

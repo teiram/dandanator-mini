@@ -50,7 +50,7 @@ public class AudioDataPlayerSupport extends DataPlayerSupport {
         return flagValue;
     }
 
-    protected File getBootstrapAudioFile() throws IOException {
+    public File getBootstrapAudioFile() throws IOException {
         File targetFile = getTemporaryFile();
         FileOutputStream fos = new FileOutputStream(targetFile);
 
@@ -71,7 +71,7 @@ public class AudioDataPlayerSupport extends DataPlayerSupport {
     }
 
 
-    protected File getBlockAudioFile(int block, byte[] data) throws IOException {
+    public File getBlockAudioFile(int block, byte[] data) throws IOException {
         int blockSize = configuration.getBlockSize();
         byte[] buffer = new byte[blockSize + 3];
         System.arraycopy(data, 0, buffer, 0, blockSize);
