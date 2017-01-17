@@ -59,13 +59,16 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
             serialPort.setParams(SerialPort.BAUDRATE_57600, SerialPort.DATABITS_8, SerialPort.STOPBITS_2,
                     SerialPort.PARITY_NONE);
 
+            //Give time to some crappy serial ports to stabilize
+            Thread.sleep(50);
+
             int sent = 0;
             ByteArrayInputStream bis = new ByteArrayInputStream(data);
             byte[] sendBuffer = new byte[SEND_BUFFER_SIZE];
             while (sent < data.length) {
                 int count = bis.read(sendBuffer);
                 LOGGER.debug("Sending block of " + count + " bytes");
-                if (count > SEND_BUFFER_SIZE) {
+                if (count < SEND_BUFFER_SIZE) {
                     serialPort.writeBytes(Arrays.copyOfRange(sendBuffer, 0, count));
                 } else {
                     serialPort.writeBytes(sendBuffer);
