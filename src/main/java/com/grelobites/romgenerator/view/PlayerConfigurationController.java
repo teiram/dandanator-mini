@@ -266,6 +266,5 @@ public class PlayerConfigurationController {
                 (observable, oldValue, newValue) -> configuration.setAudioMixerName(newValue));
         audioMixer.disableProperty().bind(sendLoader.selectedProperty().not()
                 .and(useSerialPort.disabledProperty().not()));
-
     }
 }

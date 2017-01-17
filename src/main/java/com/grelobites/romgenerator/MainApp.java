@@ -296,21 +296,8 @@ public class MainApp extends Application {
             primaryStage.setScene(scene);
             applicationContext.setApplicationStage(primaryStage);
 
-            /*
-            scene.setOnKeyPressed(e -> {
-                if (e.getCode() == KeyCode.ALT) {
-                    LOGGER.debug("ALT key pressed");
-                    Configuration.getInstance().setAllowExperimentalGames(true);
-                }
-            });
-
-            scene.setOnKeyReleased(e -> {
-                if (e.getCode() == KeyCode.ALT) {
-                    LOGGER.debug("ALT key released");
-                    Configuration.getInstance().setAllowExperimentalGames(false);
-                }
-            });
-            */
+            //Force preference controllers initialization
+            getPreferencesPane();
 
             if (menuToolkit != null) {
                 menuToolkit.setMenuBar(primaryStage, menuBar);
