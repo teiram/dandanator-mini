@@ -62,7 +62,6 @@ public class TapeLoader implements Z80operations {
     public void poke8(int address, int value) {
         if (breakOnScreenRamWrites && (address >= SCREEN_START && address < SCREEN_END)) {
             if (z80.getRegPC() >= SCREEN_START) {
-                //LOGGER.debug("Attempt to write on " + Integer.toHexString(address));
                 throw new ExecutionForbiddenException("Attempt to write on screen");
             } else {
                 LOGGER.debug("Ignoring write attempt from ROM 0x" + Integer.toHexString(z80.getRegPC()));
