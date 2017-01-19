@@ -195,8 +195,8 @@ public class GameUtil {
         LOGGER.debug("Before pushing PC. Header: " + game.getGameHeader());
         GameHeader header = game.getGameHeader();
         int pcValue = header.getPCRegister();
-        int low = pushByte(game, (pcValue >> 8) & 0xff);
-        int high = pushByte(game, pcValue & 0xff);
+        int high = pushByte(game, (pcValue >> 8) & 0xff);
+        int low = pushByte(game, pcValue & 0xff);
         header.setSavedStackData((high << 8) | low);
 
         LOGGER.debug("Injected PC 0x" + Integer.toHexString(pcValue) + " into Stack moved to 0x"
