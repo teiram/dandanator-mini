@@ -1,5 +1,7 @@
 package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 
+import java.util.Arrays;
+
 public class MemoryBank {
 
     private final byte[] data;
@@ -22,4 +24,11 @@ public class MemoryBank {
         return data;
     }
 
+    @Override
+    public String toString() {
+        return "MemoryBank{" +
+                "data.length=" + data.length +
+                ", type=" + type +
+                '}';
+    }
 }
