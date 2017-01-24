@@ -8,6 +8,7 @@ import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.memory.FlatMemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

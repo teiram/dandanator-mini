@@ -1,6 +1,5 @@
-package com.grelobites.romgenerator.util.gameloader.loaders.tap;
+package com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader;
 
-import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.HardwareMode;
@@ -8,65 +7,38 @@ import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.BreakpointReachedException;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.ExecutionForbiddenException;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.memory.SpectrumPlus2Memory;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.Tape;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.Z80State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-public class TapeLoader128Test implements Z80operations {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TapeLoader128Test.class);
-    private static final int LD_BYTES_RET_NZ_ADDR = 0x56b;
-    private static final int LD_BYTES_RET_POINT = 0x05e2;
-    private static final int BANK_SIZE = 0x4000;
-    private static final int FRAME_TSTATES = 69888;
-    private static final int INTERRUPT_TSTATES = 32;
-    private static final int DETECTION_THRESHOLD = 1024 * 12;
-    private static final int SCREEN_SIZE = 0x1b00;
+public class TapeLoaderPlus2A extends TapeLoaderBase {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TapeLoaderPlus2A.class);
 
-    private final Z80 z80;
-    private final Clock clock;
     private final SpectrumPlus2Memory z80Ram;
-    private Tape tape;
-    private LoaderDetector loaderDetector;
-    private final byte z80Ports[] = new byte[0x10000];
-    private int ulaPort;
     private int last7ffd;
     private int last1ffd;
-    boolean breakOnScreenRamWrites;
-    private Integer breakpointPC;
-    private int lastInstruction = 0;
-    private int lastAddress = 0;
-    private Date lastTimestamp;
 
-    public TapeLoader128Test() {
+    public TapeLoaderPlus2A() {
+        super();
         z80Ram = new SpectrumPlus2Memory(last7ffd, last1ffd);
-        z80 = new Z80(this);
-        tape = new Tape();
-        loaderDetector = new LoaderDetector(tape);
-        this.clock = Clock.getInstance();
     }
 
     private int getScreenStartAddress() {
         return z80Ram.getRamBankAddress((last7ffd & 0x08) != 0 ? 7 : 5);
     }
 
-    private int getScreenEndAddress() {
-        return getScreenStartAddress() + SCREEN_SIZE;
-    }
-
     @Override
     public int fetchOpcode(int address) {
-        lastAddress = address;
-        lastInstruction = peek8(address);
-        lastTimestamp = new Date();
-        return lastInstruction;
+        return peek8(address);
     }
 
     @Override
@@ -91,13 +63,13 @@ public class TapeLoader128Test implements Z80operations {
 
     @Override
     public int peek16(int address) {
-        clock.addTstates(6);
+        clock.addTstates(3);
         return z80Ram.peek16(address);
     }
 
     @Override
     public void poke16(int address, int word) {
-        clock.addTstates(6);
+        clock.addTstates(3);
         z80Ram.poke16(address, word);
     }
 
@@ -147,53 +119,25 @@ public class TapeLoader128Test implements Z80operations {
     }
 
     private void loadSpectrumRom(String resource, int index) {
-        try (InputStream romis = TapeLoader128Test.class.getResourceAsStream(resource)) {
+        try (InputStream romis = TapeLoaderPlus2A.class.getResourceAsStream(resource)) {
             z80Ram.loadBank(Util.fromInputStream(romis), index);
         } catch (IOException ioe) {
             LOGGER.debug("Loading Spectrum ROM", ioe);
         }
     }
 
-    private Z80.IntMode fromOrdinal(int mode) {
-        switch (mode) {
-            case 0:
-                return Z80.IntMode.IM0;
-            case 1:
-                return Z80.IntMode.IM1;
-            case 2:
-                return Z80.IntMode.IM2;
-        }
-        throw new IllegalArgumentException("Invalid Interrupt mode: " + mode);
-    }
-
-    private void loadTapeLoader() {
-        try (InputStream loaderStream = TapeLoader128Test.class
+    @Override
+    protected void loadTapeLoader() {
+        try (InputStream loaderStream = TapeLoaderPlus2A.class
                 .getResourceAsStream("/loader/loader.+2a.z80")) {
             RamGame game = (RamGame) new Z80GameImageLoader().load(loaderStream);
             GameUtil.popPC(game);
-
-            Z80State z80state = new Z80State();
             GameHeader header = game.getGameHeader();
-            z80state.setRegI(header.getIRegister());
-            z80state.setRegHLx(header.getAlternateHLRegister());
-            z80state.setRegDEx(header.getAlternateDERegister());
-            z80state.setRegBCx(header.getAlternateBCRegister());
-            z80state.setRegAFx(header.getAlternateAFRegister());
-            z80state.setRegHL(header.getHLRegister());
-            z80state.setRegDE(header.getDERegister());
-            z80state.setRegBC(header.getBCRegister());
-            z80state.setRegIY(header.getIYRegister());
-            z80state.setRegIX(header.getIXRegister());
-            z80state.setIFF2(header.getInterruptEnable() != 0);
-            z80state.setRegR(header.getRRegister());
-            z80state.setRegAF(header.getAFRegister());
-            z80state.setIM(fromOrdinal(header.getInterruptMode()));
-            z80state.setRegPC(header.getPCRegister());
-            z80state.setRegSP(header.getSPRegister());
+            Z80State z80state = getStateFromHeader(header);
 
             int slot = 0;
             for (int i : new int[] {5, 2, 0, 1, 3, 4, 6, 7}) {
-                z80Ram.loadBank(game.getSlot(slot++), 4 + i);
+                z80Ram.loadBank(game.getSlot(slot++), SpectrumPlus2Memory.RAM_1STBANK + i);
             }
 
             z80Ram.setLast1ffd(header.getPort1ffdValue(0));
@@ -207,50 +151,25 @@ public class TapeLoader128Test implements Z80operations {
         }
     }
 
-    private void initialize() {
-        z80.reset();
+    @Override
+    protected void initialize() {
+        super.initialize();
         clock.reset();
         loadSpectrumRoms();
     }
 
-    private void executeFrame() {
-        long intTStates = clock.getTstates() + INTERRUPT_TSTATES;
-        long frameTStates = clock.getTstates() + FRAME_TSTATES;
-        z80.setINTLine(true);
-        z80.execute(intTStates);
-        z80.setINTLine(false);
-        z80.execute(frameTStates);
-    }
-
-    private List<byte[]> getRamBanks() {
+    @Override
+    protected List<byte[]> getRamBanks() {
         List<byte[]> banks = new ArrayList<>();
         for (int i : new int[]{5, 2, 0, 1, 3, 4, 6, 7}) {
-            banks.add(z80Ram.getBank(4 + i));
+            banks.add(z80Ram.getBank(SpectrumPlus2Memory.RAM_1STBANK + i));
         }
         return banks;
     }
 
-    private RamGame contextAsGame() {
-        GameHeader header = new GameHeader();
-        Z80State z80state = z80.getZ80State();
-        header.setAFRegister(z80state.getRegAF());
-        header.setBCRegister(z80state.getRegBC());
-        header.setHLRegister(z80state.getRegHL());
-        header.setPCRegister(z80state.getRegPC());
-        header.setSPRegister(z80state.getRegSP());
-        header.setIRegister(z80state.getRegI());
-        header.setRRegister(z80state.getRegR());
-        header.setBorderColor(ulaPort & 0x7);
-        header.setDERegister(z80state.getRegDE());
-        header.setAlternateBCRegister(z80state.getRegBCx());
-        header.setAlternateDERegister(z80state.getRegDEx());
-        header.setAlternateHLRegister(z80state.getRegHLx());
-        header.setAlternateAFRegister(z80state.getRegAFx());
-        header.setIYRegister(z80state.getRegIY());
-        header.setIXRegister(z80state.getRegIX());
-        header.setInterruptEnable(z80state.isIFF1() ? 0xff : 0x00);
-        header.setInterruptMode(z80state.getIM().ordinal());
-
+    @Override
+    protected RamGame contextAsGame() {
+        GameHeader header = fromZ80State(z80.getZ80State());
         header.setPort1ffdValue(last1ffd);
         header.setPort7ffdValue(last7ffd);
 
@@ -304,44 +223,6 @@ public class TapeLoader128Test implements Z80operations {
         }
     }
 
-    private class Z80Monitor implements Runnable {
-        private Thread thread;
-        private boolean running = false;
-        public void start() {
-            thread = new Thread(this, "Z80 Monitor");
-            running = true;
-            thread.start();
-        }
-        public void stop() {
-            running = false;
-            thread.interrupt();
-        }
-        public void run() {
-            try {
-                while (running) {
-                    LOGGER.debug("Z80 Running with status " + z80.getZ80State());
-                    LOGGER.debug("Memory " + z80Ram);
-                    LOGGER.debug("Clock: " + clock);
-                    LOGGER.debug(String.format("Last instruction decoded 0x%02x @ 0x%04x on %tc",
-                            lastInstruction, lastAddress, lastTimestamp));
-                    Thread.sleep(5000);
-                }
-            } catch (InterruptedException ie) {}
-        }
-    }
-
-    public Game loadTape(InputStream tapeFile) {
-        Z80Monitor monitor = new Z80Monitor();
-        monitor.start();
-        loadTapeInternal(tapeFile);
-        monitor.stop();
-        LOGGER.debug("Z80 State before save " + z80.getZ80State());
-        tape.stop();
-        RamGame ramGame = contextAsGame();
-        GameUtil.pushPC(ramGame);
-        return ramGame;
-    }
-
     @Override
     public void breakpoint() {
         if (z80.getRegPC() == LD_BYTES_RET_NZ_ADDR) {
@@ -356,17 +237,4 @@ public class TapeLoader128Test implements Z80operations {
         }
     }
 
-    @Override
-    public void execDone() {
-        LOGGER.debug("execDone!!");
-    }
-
-    public static void main(String[] args) throws Exception {
-        TapeLoader128Test loader = new TapeLoader128Test();
-        Game game = loader.loadTape(new FileInputStream("/Users/mteira/Desktop/Dandanator/tap/128/rhs.tap"));
-
-        try (FileOutputStream fos = new FileOutputStream("/Users/mteira/Desktop/Dandanator/tap/128/rhs.z80")) {
-            new Z80GameImageLoader().save(game, fos);
-        }
-    }
 }

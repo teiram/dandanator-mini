@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Tape implements ClockTimeoutListener {
@@ -74,8 +75,14 @@ public class Tape implements ClockTimeoutListener {
         return eot;
     }
 
+    private static String readBlockName(byte[] buffer, int offset, int length) {
+        return new String(Arrays.copyOfRange(buffer, offset, offset + length));
+    }
+
     private boolean findTapBlockOffsets() {
         int offset = 0;
+
+        int blocksToBlackList = 0;
 
         while (offset < tapeBuffer.length) {
             if ((tapeBuffer.length - offset) < 2) {
@@ -86,10 +93,17 @@ public class Tape implements ClockTimeoutListener {
             if (offset + len + 2 > tapeBuffer.length) {
                 return false;
             }
-            LOGGER.debug("Adding tape block with length " + len + " at offset " + offset);
+            String name = readBlockName(tapeBuffer, offset + 4, 10);
 
-            blockOffsets.add(offset);
+            if (name.equals("128Museum ")) {
+                blocksToBlackList = 2;
+                LOGGER.debug("Skipping 128Museum blocks");
+            } else if (--blocksToBlackList <= 0) {
+                blockOffsets.add(offset);
+                LOGGER.debug("Adding tape block with length " + len + " and name " + name + " at offset " + offset);
+            }
             offset += len + 2;
+
         }
         LOGGER.debug("Number of blocks in tape " + blockOffsets.size());
 
@@ -217,6 +231,7 @@ public class Tape implements ClockTimeoutListener {
     public boolean play() {
         if (!playing) {
             if (idxHeader >= blockOffsets.size()) {
+                LOGGER.warn("Trying to play with blocks exhausted");
                 return false;
             }
             state = State.START;
@@ -293,7 +308,7 @@ public class Tape implements ClockTimeoutListener {
         int addr = cpu.getRegIX();    // Address start
         int nBytes = cpu.getRegDE();  // Length
         LOGGER.debug("Flash loading " + nBytes + " bytes on address " + Integer.toHexString(addr));
-
+        LOGGER.debug("In header " + idxHeader + " from set of blocks of size " + blockOffsets.size());
         while (count < nBytes && count < blockLen - 1) {
             memory.poke8(addr, tapeBuffer[tapePos + count + 1]);
             cpu.xor(tapeBuffer[tapePos + count + 1]);

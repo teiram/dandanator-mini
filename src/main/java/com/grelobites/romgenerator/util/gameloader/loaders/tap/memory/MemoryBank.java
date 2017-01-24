@@ -1,6 +1,4 @@
-package com.grelobites.romgenerator.util.gameloader.loaders.tap;
-
-import java.util.Arrays;
+package com.grelobites.romgenerator.util.gameloader.loaders.tap.memory;
 
 public class MemoryBank {
 

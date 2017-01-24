@@ -1750,49 +1750,7 @@ public class Z80 {
 
         while (clock.getTstates() < statesLimit) {
             execute();
-//            // Primero se comprueba NMI
-//            if (activeNMI) {
-//                activeNMI = false;
-//                lastFlagQ = false;
-//                nmi();
-//                continue;
-//            }
-//
-//            // Ahora se comprueba si al final de la instrucción anterior se
-//            // encontró una interrupción enmascarable y, de ser así, se procesa.
-//            if (activeINT) {
-//                if (ffIFF1 && !pendingEI) {
-//                    lastFlagQ = false;
-//                    interruption();
-//                }
-//            }
-//
-//            regR++;
-//            opCode = MemIoImpl.fetchOpcode(regPC);
-//            
-//            if (breakpointAt[regPC]) {
-//                opCode = NotifyImpl.atAddress(regPC, opCode);
-//            }
-//            
-//            regPC = (regPC + 1) & 0xffff;
-//
-//            flagQ = false;
-//            
-//            decodeOpcode(opCode);
-//            
-//            lastFlagQ = flagQ;
-//
-//            // Si está pendiente la activación de la interrupciones y el
-//            // código que se acaba de ejecutar no es el propio EI
-//            if (pendingEI && opCode != 0xFB) {
-//                pendingEI = false;
-//            }
-//
-//            if (execDone) {
-//                NotifyImpl.execDone();
-//            }
-
-        } /* del while */
+        }
     }
 
     private void decodeOpcode(int opCode) {

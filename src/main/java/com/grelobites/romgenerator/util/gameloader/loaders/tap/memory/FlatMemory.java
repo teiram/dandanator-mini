@@ -1,5 +1,7 @@
-package com.grelobites.romgenerator.util.gameloader.loaders.tap;
+package com.grelobites.romgenerator.util.gameloader.loaders.tap.memory;
 
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.Clock;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.Memory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

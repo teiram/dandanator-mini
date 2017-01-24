@@ -1,8 +1,8 @@
-package com.grelobites.romgenerator.util.gameloader.loaders.tap;
+package com.grelobites.romgenerator.util.gameloader.loaders.tap.memory;
 
 public class SpectrumPlus2Memory extends BankedMemory {
     private static final int BANK_SIZE = 0x4000;
-    private static final int RAM_1STBANK = 4;
+    public static final int RAM_1STBANK = 4;
 
     private static final int[][] RAM_BANKS = new int[][] {
             new int[] {0, 1, 2, 3},
