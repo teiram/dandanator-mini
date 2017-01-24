@@ -37,7 +37,7 @@ public class TapeLoader128 extends TapeLoaderBase {
 
     @Override
     public int fetchOpcode(int address) {
-        return peek8(address);
+        return z80Ram.peek8(address);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class TapeLoader128 extends TapeLoaderBase {
         clock.addTstates(4); // 4 clocks for write byte to bus
         if ((port & 0x0001) == 0) {
             ulaPort = value;
-        } else if ((port & 0x8001) == 0) {
+        } else if ((port & 0x8002) == 0) {
             //Port 7FFD decoding
             last7ffd = value;
             LOGGER.debug("Setting 7FFD to 0x" + Integer.toHexString(last7ffd));
