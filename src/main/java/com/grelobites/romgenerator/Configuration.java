@@ -1,5 +1,6 @@
 package com.grelobites.romgenerator;
 
+import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.util.CharSetFactory;
 import com.grelobites.romgenerator.util.RamGameCompressor;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
@@ -21,6 +22,8 @@ public class Configuration {
     private static final String MODE_PROPERTY = "mode";
     private static final String BACKGROUNDIMAGEPATH_PROPERTY = "backgroundImagePath";
     private static final String CHARSETPATH_PROPERTY = "charSetPath";
+    private static final String TAPLOADERTARGET_PROPERTY = "tapLoaderTarget";
+    private static final String DEFAULT_TAPLOADER_TARGET = HardwareMode.HW_48K.name();
     public static final String INTERNAL_CHARSET_PREFIX= "internal://";
 
     private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V6.name();
@@ -35,6 +38,7 @@ public class Configuration {
     private CharSetFactory charSetFactory;
     private RamGameCompressor ramGameCompressor;
     private BooleanProperty allowExperimentalGames;
+    private StringProperty tapLoaderTarget;
 
     private static Configuration INSTANCE;
 
@@ -43,7 +47,6 @@ public class Configuration {
     }
 
     private static boolean isCharSetExternallyProvided(String value) {
-        //TODO: Fix this to detect paths from CharSetFactory
         return Constants.ROMSET_PROVIDED.equals(value) || !isInternalCharSetPath(value);
     }
 
@@ -58,6 +61,7 @@ public class Configuration {
            charSetPathExternallyProvided.set(isCharSetExternallyProvided(newValue));
         });
         this.charSetFactory = new CharSetFactory();
+        this.tapLoaderTarget = new SimpleStringProperty(DEFAULT_TAPLOADER_TARGET);
     }
 
     public static Configuration getInstance() {
@@ -86,7 +90,6 @@ public class Configuration {
 
     public void setMode(String mode) {
         this.mode.set(mode);
-        persistConfigurationValue(MODE_PROPERTY, mode);
     }
 
     public StringProperty modeProperty() {
@@ -106,7 +109,6 @@ public class Configuration {
         //enter before the property is set to null
         if (!Constants.ROMSET_PROVIDED.equals(backgroundImagePath)) {
             backgroundImage = null;
-            persistConfigurationValue(BACKGROUNDIMAGEPATH_PROPERTY, backgroundImagePath);
         }
 
         this.backgroundImagePath.set(backgroundImagePath);
@@ -183,7 +185,6 @@ public class Configuration {
     public void setCharSetPath(String charSetPath) {
         if (!Constants.ROMSET_PROVIDED.equals(charSetPath)) {
             charSet = null;
-            persistConfigurationValue(CHARSETPATH_PROPERTY, charSetPath);
         }
         this.charSetPath.set(charSetPath);
     }
@@ -208,37 +209,44 @@ public class Configuration {
         this.allowExperimentalGames.set(allowExperimentalGames);
     }
 
+    public String getTapLoaderTarget() {
+        return tapLoaderTarget.get();
+    }
+
+    public StringProperty tapLoaderTargetProperty() {
+        return tapLoaderTarget;
+    }
+
+    public void setTapLoaderTarget(String tapLoaderTarget) {
+        this.tapLoaderTarget.set(tapLoaderTarget);
+        persistConfigurationValue(TAPLOADERTARGET_PROPERTY, tapLoaderTarget);
+    }
+
     public static Preferences getApplicationPreferences() {
         return Preferences.userNodeForPackage(Configuration.class);
     }
 
     public static void persistConfigurationValue(String key, String value) {
-        if (false) {
-            LOGGER.debug("persistConfigurationValue " + key + ", " + value);
-            if (!Constants.ROMSET_PROVIDED.equals(value)) {
-                Preferences p = getApplicationPreferences();
-                if (value != null) {
-                    p.put(key, value);
-                } else {
-                    p.remove(key);
-                }
+        LOGGER.debug("persistConfigurationValue " + key + ", " + value);
+        if (!Constants.ROMSET_PROVIDED.equals(value)) {
+            Preferences p = getApplicationPreferences();
+            if (value != null) {
+                p.put(key, value);
+            } else {
+                p.remove(key);
             }
         }
     }
 
     private static Configuration setFromPreferences(Configuration configuration) {
         Preferences p = getApplicationPreferences();
-        configuration.mode.set(p.get(MODE_PROPERTY, null));
-        configuration.backgroundImagePath.set(
-                p.get(BACKGROUNDIMAGEPATH_PROPERTY, null));
-        configuration.charSetPath.set(
-                p.get(CHARSETPATH_PROPERTY, null));
+        configuration.tapLoaderTarget.set(p.get(TAPLOADERTARGET_PROPERTY,
+                DEFAULT_TAPLOADER_TARGET));
         return configuration;
     }
 
     synchronized private static Configuration newInstance() {
         final Configuration configuration = new Configuration();
-        //return setFromPreferences(configuration);
-        return configuration;
+        return setFromPreferences(configuration);
     }
 }

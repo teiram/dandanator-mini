@@ -5,9 +5,12 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Pagination?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PreferencesController">
@@ -53,6 +56,22 @@
          <padding>
             <Insets left="5.0" />
          </padding>
+      </HBox>
+      <HBox alignment="CENTER" layoutX="273.0" layoutY="153.0" prefHeight="100.0" prefWidth="272.0" spacing="20.0">
+         <children>
+            <Label maxWidth="1.7976931348623157E308" text="%tapLoaderTarget" HBox.hgrow="ALWAYS" />
+            <VBox alignment="CENTER_LEFT" prefHeight="200.0" prefWidth="100.0" spacing="5.0">
+               <children>
+                  <RadioButton fx:id="tapMode48K" mnemonicParsing="false" selected="true" text="48K">
+                     <toggleGroup>
+                        <ToggleGroup fx:id="tapLoaderToggleGroup" />
+                     </toggleGroup>
+                  </RadioButton>
+                  <RadioButton fx:id="tapMode128K" mnemonicParsing="false" text="128K" toggleGroup="$tapLoaderToggleGroup" />
+                  <RadioButton fx:id="tapModePlus2A" mnemonicParsing="false" text="+2A" toggleGroup="$tapLoaderToggleGroup" />
+               </children>
+            </VBox>
+         </children>
       </HBox>
       <HBox alignment="CENTER_RIGHT" layoutX="270.0" layoutY="264.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="26.0" prefWidth="264.0" spacing="10.0" visible="false">
          <children>
