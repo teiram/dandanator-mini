@@ -204,6 +204,7 @@ public class RamGame extends BaseGame implements Game {
                 counter.await();
             } catch (InterruptedException ie) {
                 LOGGER.warn("Compressing thread interrupted", ie);
+                throw new IOException("Compressing thread interrupted", ie);
             }
             compressedData = new ArrayList<>();
             for (CompressingContext context : compressingTasks) {
