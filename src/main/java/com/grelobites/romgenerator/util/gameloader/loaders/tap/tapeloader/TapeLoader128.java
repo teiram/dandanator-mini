@@ -20,6 +20,7 @@ import java.util.List;
 public class TapeLoader128 extends TapeLoaderBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(TapeLoader128.class);
 
+    private static final int[] SPECTRUM_BANKS = new int[] {5, 2, 0, 1, 3, 4, 6, 7};
     private final Spectrum128KMemory z80Ram;
     private int last7ffd;
 
@@ -114,7 +115,7 @@ public class TapeLoader128 extends TapeLoaderBase {
             Z80State z80state = getStateFromHeader(header);
 
             int slot = 0;
-            for (int i : new int[] {5, 2, 0, 1, 3, 4, 6, 7}) {
+            for (int i : SPECTRUM_BANKS) {
                 z80Ram.loadBank(game.getSlot(slot++), Spectrum128KMemory.RAM_1STBANK + i);
             }
 
@@ -138,7 +139,7 @@ public class TapeLoader128 extends TapeLoaderBase {
     @Override
     protected List<byte[]> getRamBanks() {
         List<byte[]> banks = new ArrayList<>();
-        for (int i : new int[]{5, 2, 0, 1, 3, 4, 6, 7}) {
+        for (int i : SPECTRUM_BANKS) {
             banks.add(z80Ram.getBank(Spectrum128KMemory.RAM_1STBANK + i));
         }
         return banks;

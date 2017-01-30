@@ -21,6 +21,7 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(TapeLoaderPlus2A.class);
 
     private final SpectrumPlus2Memory z80Ram;
+    private final static int[] SPECTRUM_BANKS =  new int[] {5, 2, 0, 1, 3, 4, 6, 7};
     private int last7ffd;
     private int last1ffd;
 
@@ -121,7 +122,7 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
             Z80State z80state = getStateFromHeader(header);
 
             int slot = 0;
-            for (int i : new int[] {5, 2, 0, 1, 3, 4, 6, 7}) {
+            for (int i : SPECTRUM_BANKS) {
                 z80Ram.loadBank(game.getSlot(slot++), SpectrumPlus2Memory.RAM_1STBANK + i);
             }
 
@@ -146,7 +147,7 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
     @Override
     protected List<byte[]> getRamBanks() {
         List<byte[]> banks = new ArrayList<>();
-        for (int i : new int[]{5, 2, 0, 1, 3, 4, 6, 7}) {
+        for (int i : SPECTRUM_BANKS) {
             banks.add(z80Ram.getBank(SpectrumPlus2Memory.RAM_1STBANK + i));
         }
         return banks;
