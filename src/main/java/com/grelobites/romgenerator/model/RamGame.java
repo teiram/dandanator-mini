@@ -20,9 +20,15 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class RamGame extends BaseGame implements Game {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RamGame.class);
+
+	private static ExecutorService compressingService =
+            Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 	private ObjectProperty<Game> rom;
 	private BooleanProperty holdScreen;
@@ -163,15 +169,40 @@ public class RamGame extends BaseGame implements Game {
 	    return new Observable[]{name, rom, holdScreen, compressed, compressedSize};
     }
 
+    private class CompressingContext {
+        public final byte[] data;
+        public final  int slot;
+        public byte[] compressedData;
+        private final CountDownLatch counter;
+        public CompressingContext(CountDownLatch counter, byte[] data, int slot) {
+            this.data = data;
+            this.slot = slot;
+            this.counter = counter;
+        }
+    }
+
 	public List<byte[]> getCompressedData(RamGameCompressor compressor) throws IOException {
 	    if (compressedData == null) {
-            compressedData = new ArrayList<>();
+            CountDownLatch counter =  new CountDownLatch(getSlotCount());
+            ArrayList<CompressingContext> compressingTasks = new ArrayList<>();
             for (int i = 0; i < getSlotCount(); i++) {
-                if (!isSlotZeroed(i)) {
-                    compressedData.add(compressor.compressSlot(i, getSlot(i)));
-                } else {
-                    compressedData.add(null);
-                }
+                final CompressingContext context = new CompressingContext(counter, getSlot(i), i);
+                compressingTasks.add(context);
+                compressingService.submit(() -> {
+                    if (!isSlotZeroed(context.slot)) {
+                        context.compressedData = compressor.compressSlot(context.slot, context.data);
+                    }
+                    context.counter.countDown();
+                });
+            }
+            try {
+                counter.await();
+            } catch (InterruptedException ie) {
+                LOGGER.warn("Compressing thread interrupted", ie);
+            }
+            compressedData = new ArrayList<>();
+            for (CompressingContext context : compressingTasks) {
+                compressedData.add(context.compressedData);
             }
         }
         return compressedData;
