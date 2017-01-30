@@ -28,7 +28,12 @@ public class RamGame extends BaseGame implements Game {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RamGame.class);
 
 	private static ExecutorService compressingService =
-            Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+                    r -> {
+                        Thread t = new Thread(r, "Compressing Service Thread");
+                        t.setDaemon(true);
+                        return t;
+                    });
 
 	private ObjectProperty<Game> rom;
 	private BooleanProperty holdScreen;
