@@ -7,11 +7,8 @@ import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
-import com.grelobites.romgenerator.util.gameloader.loaders.tap.BreakpointReachedException;
-import com.grelobites.romgenerator.util.gameloader.loaders.tap.ExecutionForbiddenException;
-import com.grelobites.romgenerator.util.gameloader.loaders.tap.memory.Spectrum128KMemory;
-import com.grelobites.romgenerator.util.gameloader.loaders.tap.Tape;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Z80State;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.memory.Spectrum128KMemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +28,6 @@ public class TapeLoader128 extends TapeLoaderBase {
         z80Ram = new Spectrum128KMemory(last7ffd);
     }
 
-    private int getScreenStartAddress() {
-        return z80Ram.getRamBankAddress((last7ffd & 0x08) != 0 ? 7 : 5);
-    }
-
     @Override
     public int fetchOpcode(int address) {
         return z80Ram.peek8(address);
@@ -49,14 +42,6 @@ public class TapeLoader128 extends TapeLoaderBase {
     @Override
     public void poke8(int address, int value) {
         clock.addTstates(3);
-        int screenStartAddress = getScreenStartAddress();
-        if (breakOnScreenRamWrites && (address >= screenStartAddress && address < (screenStartAddress + SCREEN_SIZE))) {
-            if (z80.getRegPC() >= BANK_SIZE) {
-                throw new ExecutionForbiddenException("Attempt to write on screen");
-            } else {
-                LOGGER.debug("Ignoring write attempt from ROM 0x" + Integer.toHexString(z80.getRegPC()));
-            }
-        }
         z80Ram.poke8(address, value);
     }
 
@@ -171,47 +156,6 @@ public class TapeLoader128 extends TapeLoaderBase {
         return game;
     }
 
-    public void loadTapeInternal(InputStream tapeFile) {
-        initialize();
-        z80.setBreakpoint(LD_BYTES_RET_NZ_ADDR, true);
-        if (breakpointPC != null) {
-            z80.setBreakpoint(breakpointPC, true);
-            tape.rewind();
-        } else {
-            tape.insert(tapeFile);
-        }
-        loadTapeLoader();
-        breakOnScreenRamWrites = false;
-        int stoppedFrames = 0;
-        try {
-            while (!tape.isEOT()) {
-                executeFrame();
-/*
-                if (tape.getReadBytes() >= DETECTION_THRESHOLD) {
-                    breakOnScreenRamWrites = true;
-                }
-*/
-                if (tape.getState() == Tape.State.STOP || tape.getState() == Tape.State.PAUSE_STOP) {
-                    if (++stoppedFrames > 1000) {
-                        LOGGER.debug("Detected tape stopped with state " + z80.getZ80State());
-                        break;
-                    }
-                } else {
-                    stoppedFrames = 0;
-                }
-            }
-        } catch (ExecutionForbiddenException efe) {
-            if (breakpointPC == null && !tape.isEOT()) {
-                LOGGER.debug("Detected screen write with cpu status " + z80.getZ80State()
-                        + ", after reading " + tape.getReadBytes() + " bytes", efe);
-                breakpointPC = z80.getLastPC();
-                loadTapeInternal(null);
-            }
-        } catch (BreakpointReachedException bre) {
-            z80.setRegPC(z80.getLastPC());
-        }
-    }
-
     @Override
     public void breakpoint() {
         if (z80.getRegPC() == LD_BYTES_RET_NZ_ADDR) {
@@ -219,10 +163,6 @@ public class TapeLoader128 extends TapeLoaderBase {
             if (tape.flashLoad(z80, z80Ram)) {
                 z80.setRegPC(LD_BYTES_RET_POINT);
             }
-        } else if (z80.getRegPC() == breakpointPC) {
-            //Stop execution and save state
-            LOGGER.debug("Reached breakpoint PC");
-            throw new BreakpointReachedException("Breakpoint PC");
         }
     }
 

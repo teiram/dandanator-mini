@@ -9,13 +9,13 @@ public class FlatMemory implements Memory {
     private static final Logger LOGGER = LoggerFactory.getLogger(FlatMemory.class);
 
     private static final int ROM_TOP = 0x4000;
-    private Clock clock;
+    private final Clock clock;
     private byte[] memoryMap;
 
-    public FlatMemory(int size) {
+    public FlatMemory(Clock clock, int size) {
         LOGGER.debug("Initializing memory with size " + size);
         memoryMap = new byte[size];
-        clock = Clock.getInstance();
+        this.clock = clock;
     }
 
     @Override

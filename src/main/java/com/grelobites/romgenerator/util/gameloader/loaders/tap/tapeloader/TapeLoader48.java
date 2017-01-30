@@ -10,6 +10,7 @@ import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.BreakpointReachedException;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.ExecutionForbiddenException;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.TapeFinishedException;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.memory.FlatMemory;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Memory;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Tape;
@@ -30,10 +31,12 @@ public class TapeLoader48 extends TapeLoaderBase {
     private static final int SCREEN_END = SCREEN_START + SCREEN_SIZE;
 
     private final Memory z80Ram;
+    private boolean breakOnScreenRamWrites;
+    private Integer breakpointPC;
 
     public TapeLoader48() {
         super();
-        z80Ram = new FlatMemory(0x10000);
+        z80Ram = new FlatMemory(clock, 0x10000);
     }
 
     @Override
@@ -191,6 +194,8 @@ public class TapeLoader48 extends TapeLoaderBase {
             }
         } catch (BreakpointReachedException bre) {
             z80.setRegPC(z80.getLastPC());
+        } catch (TapeFinishedException tfe) {
+            LOGGER.debug("Tape finished with cpu status " + z80.getZ80State(), tfe);
         }
     }
 

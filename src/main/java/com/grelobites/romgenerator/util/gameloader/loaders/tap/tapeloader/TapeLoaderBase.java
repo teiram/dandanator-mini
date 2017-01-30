@@ -4,11 +4,10 @@ import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.util.GameUtil;
-import com.grelobites.romgenerator.util.gameloader.loaders.tap.BreakpointReachedException;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Clock;
-import com.grelobites.romgenerator.util.gameloader.loaders.tap.ExecutionForbiddenException;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.LoaderDetector;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Tape;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.TapeFinishedException;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.TapeLoader;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Z80;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Z80State;
@@ -29,20 +28,19 @@ public abstract class TapeLoaderBase implements Z80operations, TapeLoader {
     protected static final int DETECTION_THRESHOLD = 1024 * 12;
     protected static final int SCREEN_SIZE = 0x1b00;
 
+    protected static final int MAXIMUM_LOAD_FRAMES = 10000;
     protected final Z80 z80;
     protected final Clock clock;
     protected Tape tape;
     protected LoaderDetector loaderDetector;
     protected final byte z80Ports[] = new byte[0x10000];
     protected int ulaPort;
-    protected boolean breakOnScreenRamWrites;
-    protected  Integer breakpointPC;
 
     public TapeLoaderBase() {
-        z80 = new Z80(this);
-        tape = new Tape();
+        clock = new Clock();
+        z80 = new Z80(clock, this);
+        tape = new Tape(clock, true);
         loaderDetector = new LoaderDetector(tape);
-        this.clock = Clock.getInstance();
     }
 
     protected static Z80.IntMode fromOrdinal(int mode) {
@@ -120,48 +118,25 @@ public abstract class TapeLoaderBase implements Z80operations, TapeLoader {
         return header;
     }
 
-    public void loadTapeInternal(InputStream tapeFile) {
+    protected abstract RamGame contextAsGame();
+
+    protected void loadTapeInternal(InputStream tapeFile) {
         initialize();
         z80.setBreakpoint(LD_BYTES_RET_NZ_ADDR, true);
-        if (breakpointPC != null) {
-            z80.setBreakpoint(breakpointPC, true);
-            tape.rewind();
-        } else {
-            tape.insert(tapeFile);
-        }
+        tape.insert(tapeFile);
+
         loadTapeLoader();
-        breakOnScreenRamWrites = false;
-        int stoppedFrames = 0;
+        int executedFrames = 0;
         try {
-            while (!tape.isEOT()) {
+            while (!tape.isEOT() && executedFrames++ < MAXIMUM_LOAD_FRAMES) {
                 executeFrame();
-
-                if (tape.getReadBytes() >= DETECTION_THRESHOLD) {
-                    breakOnScreenRamWrites = true;
-                }
-
-                if (tape.getState() == Tape.State.STOP || tape.getState() == Tape.State.PAUSE_STOP) {
-                    if (++stoppedFrames > 1000) {
-                        LOGGER.debug("Detected tape stopped with state " + z80.getZ80State());
-                        break;
-                    }
-                } else {
-                    stoppedFrames = 0;
-                }
             }
-        } catch (ExecutionForbiddenException efe) {
-            if (breakpointPC == null && !tape.isEOT()) {
-                LOGGER.debug("Detected screen write with cpu status " + z80.getZ80State()
-                        + ", after reading " + tape.getReadBytes() + " bytes", efe);
-                breakpointPC = z80.getLastPC();
-                loadTapeInternal(null);
-            }
-        } catch (BreakpointReachedException bre) {
-            z80.setRegPC(z80.getLastPC());
+            LOGGER.debug("Tape didn't reach eof in " + executedFrames + " frames");
+            throw new RuntimeException("Unable to convert TAP");
+        } catch (TapeFinishedException tfe) {
+            LOGGER.debug("Tape finished with cpu status " + z80.getZ80State(), tfe);
         }
     }
-
-    protected abstract RamGame contextAsGame();
 
     @Override
     public Game loadTape(InputStream tapeFile) {

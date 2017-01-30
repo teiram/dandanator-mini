@@ -4,6 +4,9 @@
  */
 package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -12,20 +15,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author jsanchez
  */
 public class Clock {
-    private static final Clock instance = new Clock();
+    private static final Logger LOGGER = LoggerFactory.getLogger(Clock.class);
+
     private long tstates;
     private long frames;
     private long timeout;
     private final CopyOnWriteArrayList<ClockTimeoutListener> clockListeners;
 
-    // Clock class implements a Singleton pattern.
-    private Clock() {
+    public Clock() {
         this.clockListeners = new CopyOnWriteArrayList<>();
     }
 
-    public static Clock getInstance() {
-        return instance;
-    }
     /**
      * Adds a new event listener to the list of event listeners.
      *

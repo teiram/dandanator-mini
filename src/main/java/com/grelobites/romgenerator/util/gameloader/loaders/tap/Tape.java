@@ -45,21 +45,27 @@ public class Tape implements ClockTimeoutListener {
     private int tapePos;
     private int blockLen;
     private int bitTime;
-    private Clock clock;
+    private final Clock clock;
     private int leaderPulses;
     private int mask;
     private List<Integer> blockOffsets;
     private boolean eot = false;
     private int readBytes = 0;
+    private boolean throwOnEot = false;
 
-    public Tape() {
-        clock = Clock.getInstance();
+    public Tape(Clock clock) {
+        this.clock = clock;
         state = State.STOP;
         tapePos = 0;
         earBit = EAR_ON;
         idxHeader = 0;
         playing = false;
         blockOffsets = new ArrayList<>();
+    }
+
+    public Tape(Clock clock, boolean throwOnEot) {
+        this(clock);
+        this.throwOnEot = throwOnEot;
     }
 
     private static int readInt(byte buffer[], int start, int len) {
@@ -69,6 +75,10 @@ public class Tape implements ClockTimeoutListener {
             res |= ((buffer[start + idx] << (idx * 8)) & (0xff << idx * 8));
         }
         return res;
+    }
+
+    public Clock getClock() {
+        return clock;
     }
 
     public boolean isEOT() {
@@ -216,10 +226,10 @@ public class Tape implements ClockTimeoutListener {
                 break;
             case PAUSE_STOP:
                 idxHeader++;
-                if (tapePos == tapeBuffer.length) {
-                    LOGGER.debug("Last byte detected");
-                    eot = true;
+                if (idxHeader == blockOffsets.size()) {
+                    LOGGER.debug("Last tape byte detected");
                     stop();
+                    onEot();
                 } else {
                     state = State.START; // START
                     playTap();
@@ -334,11 +344,17 @@ public class Tape implements ClockTimeoutListener {
         cpu.setRegDE(nBytes - count);
         idxHeader++;
         if (idxHeader >= blockOffsets.size()) {
-            LOGGER.debug("Tape marked as finished");
-            eot = true;
+            onEot();
         }
 
         return true;
+    }
+
+    private void onEot() {
+        eot = true;
+        if (throwOnEot) {
+            throw new TapeFinishedException("Tape completed");
+        }
     }
 
     @Override
@@ -350,6 +366,8 @@ public class Tape implements ClockTimeoutListener {
                 ", idxHeader=" + idxHeader +
                 ", tapePos=" + tapePos +
                 ", blockLen=" + blockLen +
+                ", blockOffsets= " + blockOffsets +
+                ", tapeBuffer.length=" + (tapeBuffer != null ? tapeBuffer.length : "nil") +
                 ", eot=" + eot +
                 '}';
     }

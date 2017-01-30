@@ -13,7 +13,7 @@ public class LoaderDetector {
 
     public LoaderDetector(Tape tape) {
         this.tape = tape;
-        this.clock = Clock.getInstance();
+        this.clock = tape.getClock();
     }
 
     public void reset() {

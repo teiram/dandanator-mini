@@ -46,11 +46,11 @@ public class TapeLoader128Test implements Z80operations {
     private Date lastTimestamp;
 
     public TapeLoader128Test() {
+        clock = new Clock();
         z80Ram = new SpectrumPlus2Memory(last7ffd, last1ffd);
-        z80 = new Z80(this);
-        tape = new Tape();
+        z80 = new Z80(clock, this);
+        tape = new Tape(clock, true);
         loaderDetector = new LoaderDetector(tape);
-        this.clock = Clock.getInstance();
     }
 
     private int getScreenStartAddress() {
@@ -91,13 +91,13 @@ public class TapeLoader128Test implements Z80operations {
 
     @Override
     public int peek16(int address) {
-        clock.addTstates(6);
+        clock.addTstates(3);
         return z80Ram.peek16(address);
     }
 
     @Override
     public void poke16(int address, int word) {
-        clock.addTstates(6);
+        clock.addTstates(3);
         z80Ram.poke16(address, word);
     }
 
@@ -261,6 +261,25 @@ public class TapeLoader128Test implements Z80operations {
         return game;
     }
 
+    private boolean frameOnRom(int stackDepth) {
+        int address = z80.getRegSP();
+        for (int i = 0; i < stackDepth; i++) {
+            if (peek16(address) < 0x4000) {
+                LOGGER.debug("Found return addres on ROM at address 0x" +
+                    Integer.toHexString(address));
+                return false;
+            }
+            address += 2;
+        }
+        return true;
+    }
+
+    private boolean exitConditionsMet() {
+        return z80.getRegPC() >= 0x4000 &&
+                z80.getRegHL() >= 0x4000 &&
+                !frameOnRom(5);
+    }
+
     public void loadTapeInternal(InputStream tapeFile) {
         initialize();
         z80.setBreakpoint(LD_BYTES_RET_NZ_ADDR, true);
@@ -272,17 +291,17 @@ public class TapeLoader128Test implements Z80operations {
         }
         loadTapeLoader();
         breakOnScreenRamWrites = false;
-        int stoppedFrames = 0;
+        int executedFrames = 0;
         try {
             while (!tape.isEOT()) {
-                LOGGER.debug("About to execute frame with Tape " + tape);
 
                 executeFrame();
+                executedFrames++;
 /*
                 if (tape.getReadBytes() >= DETECTION_THRESHOLD) {
                     breakOnScreenRamWrites = true;
                 }
-*/
+
                 if (tape.getState() == Tape.State.STOP || tape.getState() == Tape.State.PAUSE_STOP) {
                     if (++stoppedFrames > 1000) {
                         LOGGER.debug("Detected tape stopped with state " + z80.getZ80State());
@@ -291,6 +310,7 @@ public class TapeLoader128Test implements Z80operations {
                 } else {
                     stoppedFrames = 0;
                 }
+                */
             }
         } catch (ExecutionForbiddenException efe) {
             if (breakpointPC == null && !tape.isEOT()) {
@@ -299,6 +319,14 @@ public class TapeLoader128Test implements Z80operations {
                 breakpointPC = z80.getLastPC();
                 loadTapeInternal(null);
             }
+        } catch (TapeFinishedException tfe) {
+            LOGGER.debug("Tape is finished after " + executedFrames + " executed frames");
+            /*
+            int maxWaitFrames = 100000;
+            while (maxWaitFrames-- > 0 && !exitConditionsMet()) {
+                z80.execute();
+            }
+            */
         } catch (BreakpointReachedException bre) {
             z80.setRegPC(z80.getLastPC());
         }
@@ -363,9 +391,9 @@ public class TapeLoader128Test implements Z80operations {
 
     public static void main(String[] args) throws Exception {
         TapeLoader128Test loader = new TapeLoader128Test();
-        Game game = loader.loadTape(new FileInputStream("/Users/mteira/Desktop/Dandanator/tap/128/rhs.tap"));
+        Game game = loader.loadTape(new FileInputStream("/Users/mteira/Desktop/Dandanator/tap/128/wime.tap"));
 
-        try (FileOutputStream fos = new FileOutputStream("/Users/mteira/Desktop/Dandanator/tap/128/rhs.z80")) {
+        try (FileOutputStream fos = new FileOutputStream("/Users/mteira/Desktop/Dandanator/tap/128/wime.z80")) {
             new Z80GameImageLoader().save(game, fos);
         }
     }

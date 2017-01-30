@@ -43,11 +43,11 @@ public class TapeLoaderTest implements Z80operations {
     private Integer breakpointPC;
 
     public TapeLoaderTest() {
-        z80Ram = new FlatMemory(0x10000);
-        z80 = new Z80(this);
-        tape = new Tape();
+        clock = new Clock();
+        z80Ram = new FlatMemory(clock, 0x10000);
+        z80 = new Z80(clock, this);
+        tape = new Tape(clock);
         loaderDetector = new LoaderDetector(tape);
-        this.clock = Clock.getInstance();
     }
 
     @Override

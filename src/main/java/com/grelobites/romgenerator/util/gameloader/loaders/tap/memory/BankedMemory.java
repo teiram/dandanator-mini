@@ -30,7 +30,7 @@ public class BankedMemory implements Memory {
     }
 
     public void setBankMappings(int[] bankMappings) {
-        LOGGER.debug("Setting mappings as " + Arrays.toString(bankMappings));
+        //LOGGER.debug("Setting mappings as " + Arrays.toString(bankMappings));
         this.bankMappings = bankMappings;
         topAddress = bankSize * bankMappings.length;
     }

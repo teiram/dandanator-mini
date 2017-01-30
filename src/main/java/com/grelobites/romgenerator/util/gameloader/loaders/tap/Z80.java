@@ -299,8 +299,8 @@ public class Z80 {
     private int lastPC = 0;
 
     // Constructor de la clase
-    public Z80(Z80operations z80ops) {
-        this.clock = Clock.getInstance();
+    public Z80(Clock clock, Z80operations z80ops) {
+        this.clock = clock;
         Z80opsImpl = z80ops;
         execDone = false;
         Arrays.fill(breakpointAt, false);
