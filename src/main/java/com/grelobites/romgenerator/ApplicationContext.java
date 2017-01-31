@@ -20,7 +20,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.Scene;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.image.ImageView;
@@ -31,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;

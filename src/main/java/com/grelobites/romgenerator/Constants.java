@@ -4,8 +4,6 @@ import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstan
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.PreferencesProvider;
 import com.grelobites.romgenerator.util.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -23,7 +21,6 @@ public class Constants {
 	public static final int SPECTRUM_SCREEN_WIDTH = 256;
 	public static final int SPECTRUM_SCREEN_HEIGHT = 192;
 	public static final int SPECTRUM_SCREEN_SIZE = 6144;
-	public static final int SPECTRUM_SCREEN_OFFSET = 0x4000;
 	public static final int SPECTRUM_COLORINFO_SIZE = 768;
 	public static final int SPECTRUM_FULLSCREEN_SIZE = SPECTRUM_SCREEN_SIZE +
 			SPECTRUM_COLORINFO_SIZE;
@@ -36,7 +33,6 @@ public class Constants {
 
     public static final byte B_01 = 1;
 	public static final byte B_00 = 0;
-	public static final byte B_10 = 0x10;
 
     private static byte[] DEFAULT_DANDANATOR_SCREEN;
     private static byte[] SINCLAIR_SCREEN;

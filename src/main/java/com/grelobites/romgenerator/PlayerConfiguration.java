@@ -101,7 +101,7 @@ public class PlayerConfiguration {
         boostLevel.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 BOOSTLEVEL_PROPERTY, newValue.toString()));
         audioMixerName.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
-                AUDIOMIXERNAME_PROPERTY, newValue.toString()));
+                AUDIOMIXERNAME_PROPERTY, newValue));
 
     }
 

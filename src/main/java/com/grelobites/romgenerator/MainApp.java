@@ -21,7 +21,6 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -41,7 +40,6 @@ public class MainApp extends Application {
     private TabPane aboutPane;
     private MenuToolkit menuToolkit;
     private ApplicationContext applicationContext;
-    private String themeResourceUrl;
 
     private void populateMenuBar(MenuBar menuBar, Scene scene, ApplicationContext applicationContext) {
         Menu fileMenu = new Menu(LocaleUtil.i18n("fileMenuTitle"));
@@ -276,9 +274,7 @@ public class MainApp extends Application {
 		try {
 		    applicationContext = new ApplicationContext();
             primaryStage.titleProperty().bind(applicationContext.applicationTitleProperty());
-            primaryStage.setOnCloseRequest(e -> {
-               Platform.exit();
-            });
+            primaryStage.setOnCloseRequest(e -> Platform.exit());
             BorderPane mainPane = new BorderPane();
             Scene scene = new Scene(mainPane);
             scene.getStylesheets().add(Constants.getThemeResourceUrl());
