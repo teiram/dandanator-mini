@@ -102,7 +102,8 @@ public class ExtendedCharSet {
             (byte) 0x7E
     };
 
-    public static final int CHARSET_OFFSET = 32;
+    public static final int SYMBOL_SPACE = 32;
+    public static final int CHARSET_OFFSET = SYMBOL_SPACE;
 
     public static final int SYMBOL_128K_0_CODE = 128;
     public static final int SYMBOL_128K_1_CODE = 129;

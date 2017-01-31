@@ -729,7 +729,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 return ExtendedCharSet.SYMBOL_128K_0_CODE;
             default:
                 LOGGER.error("Unable to get a symbol for game of type " + game.getType());
-                return 32;
+                return ExtendedCharSet.SYMBOL_SPACE;
         }
     }
 
