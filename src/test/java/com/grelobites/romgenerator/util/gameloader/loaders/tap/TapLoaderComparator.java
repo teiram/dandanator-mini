@@ -11,7 +11,7 @@ public class TapLoaderComparator {
 
 
     public static void main(String[] args) throws Exception {
-        FileInputStream tapStream = new FileInputStream("/Users/mteira/Desktop/Dandanator/tap/128/dizzy4.tap");
+        FileInputStream tapStream = new FileInputStream("/Users/mteira/Desktop/Dandanator/tap/128/addams.tap");
         new CompositePlus2ATapeLoader().loadTape(tapStream);
 
     }

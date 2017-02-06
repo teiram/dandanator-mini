@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.VersionedRamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
@@ -176,7 +177,7 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
         header.setPort1ffdValue(last1ffd);
         header.setPort7ffdValue(last7ffd);
 
-        RamGame game =  new RamGame(GameType.RAM128, getRamBanks());
+        RamGame game =  new VersionedRamGame(GameType.RAM128, getRamBanks());
         game.setGameHeader(header);
         game.setHoldScreen(true);
         game.setHardwareMode(HardwareMode.HW_PLUS2A);
