@@ -15,13 +15,27 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TapeLoaderPlus2A extends TapeLoaderBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(TapeLoaderPlus2A.class);
 
-    private final SpectrumPlus2Memory z80Ram;
+    private static final String[] DEFAULT_ROM_RESOURCES =
+            new String[]{
+                    "/loader/plus23-40-0.rom",
+                    "/loader/plus23-40-1.rom",
+                    "/loader/plus23-40-2.rom",
+                    "/loader/plus23-40-3.rom"
+    };
+    private static final String DEFAULT_TAPELOADER_RESOURCE = "/loader/loader.+2a-40.rom";
+
     private final static int[] SPECTRUM_BANKS =  new int[] {5, 2, 0, 1, 3, 4, 6, 7};
+
+    private final SpectrumPlus2Memory z80Ram;
+    private String[] romResources = DEFAULT_ROM_RESOURCES;
+    private String tapeLoaderResource = DEFAULT_TAPELOADER_RESOURCE;
+
     private int last7ffd;
     private int last1ffd;
 
@@ -98,13 +112,14 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
     }
 
     private void loadSpectrumRoms() {
-        loadSpectrumRom("/loader/plus23-0.rom", 0);
-        loadSpectrumRom("/loader/plus23-1.rom", 1);
-        loadSpectrumRom("/loader/plus23-2.rom", 2);
-        loadSpectrumRom("/loader/plus23-3.rom", 3);
+        int index = 0;
+        for (String rom : romResources) {
+            loadSpectrumRom(rom, index++);
+        }
     }
 
     private void loadSpectrumRom(String resource, int index) {
+        LOGGER.debug("Loading rom " + resource + " in position " + index);
         try (InputStream romis = TapeLoaderPlus2A.class.getResourceAsStream(resource)) {
             z80Ram.loadBank(Util.fromInputStream(romis), index);
         } catch (IOException ioe) {
@@ -114,8 +129,9 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
 
     @Override
     protected void loadTapeLoader() {
+        LOGGER.debug("Loading tape loader from resource " + tapeLoaderResource);
         try (InputStream loaderStream = TapeLoaderPlus2A.class
-                .getResourceAsStream("/loader/loader.+2a.z80")) {
+                .getResourceAsStream(tapeLoaderResource)) {
             RamGame game = (RamGame) new Z80GameImageLoader().load(loaderStream);
             GameUtil.popPC(game);
             GameHeader header = game.getGameHeader();
@@ -148,7 +164,8 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
     protected List<byte[]> getRamBanks() {
         List<byte[]> banks = new ArrayList<>();
         for (int i : SPECTRUM_BANKS) {
-            banks.add(z80Ram.getBank(SpectrumPlus2Memory.RAM_1STBANK + i));
+            byte[] ramData = z80Ram.getBank(SpectrumPlus2Memory.RAM_1STBANK + i);
+            banks.add(Arrays.copyOf(ramData, ramData.length));
         }
         return banks;
     }
@@ -177,4 +194,15 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
         }
     }
 
+    public void setRomResources(String[] romResources) {
+        if (romResources != null && romResources.length == 4) {
+            this.romResources = romResources;
+        } else {
+            throw new IllegalArgumentException("Invalid rom resources provided");
+        }
+    }
+
+    public void setTapeLoaderResource(String tapeLoaderResource) {
+        this.tapeLoaderResource = tapeLoaderResource;
+    }
 }

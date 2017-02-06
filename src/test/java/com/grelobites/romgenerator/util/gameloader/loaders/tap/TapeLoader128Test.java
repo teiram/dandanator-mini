@@ -140,10 +140,10 @@ public class TapeLoader128Test implements Z80operations {
     }
 
     private void loadSpectrumRoms() {
-        loadSpectrumRom("/loader/plus23-0.rom", 0);
-        loadSpectrumRom("/loader/plus23-1.rom", 1);
-        loadSpectrumRom("/loader/plus23-2.rom", 2);
-        loadSpectrumRom("/loader/plus23-3.rom", 3);
+        loadSpectrumRom("/loader/plus23-40-0.rom", 0);
+        loadSpectrumRom("/loader/plus23-40-1.rom", 1);
+        loadSpectrumRom("/loader/plus23-40-2.rom", 2);
+        loadSpectrumRom("/loader/plus23-40-3.rom", 3);
     }
 
     private void loadSpectrumRom(String resource, int index) {
@@ -168,7 +168,7 @@ public class TapeLoader128Test implements Z80operations {
 
     private void loadTapeLoader() {
         try (InputStream loaderStream = TapeLoader128Test.class
-                .getResourceAsStream("/loader/loader.+2a.z80")) {
+                .getResourceAsStream("/loader/loader.+2a-40.z80")) {
             RamGame game = (RamGame) new Z80GameImageLoader().load(loaderStream);
             GameUtil.popPC(game);
 
