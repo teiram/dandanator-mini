@@ -31,13 +31,13 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
                     "/loader/plus23-40-2.rom",
                     "/loader/plus23-40-3.rom"
     };
-    private static final String DEFAULT_TAPELOADER_RESOURCE = "/loader/loader.+2a-40.rom";
+    private static final int ULA_AUDIO_MASK = 0x40;
+    private static final int ULA_KEYS_MASK = 0x1F;
 
     private final static int[] SPECTRUM_BANKS =  new int[] {5, 2, 0, 1, 3, 4, 6, 7};
 
     private final SpectrumPlus2Memory z80Ram;
     private String[] romResources = DEFAULT_ROM_RESOURCES;
-    private String tapeLoaderResource = DEFAULT_TAPELOADER_RESOURCE;
 
     private Keyboard keyboard;
     private int last7ffd;
@@ -83,8 +83,7 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
         clock.addTstates(4); // 4 clocks for read byte from bus
         if ((port & 0x0001) == 0) {
             loaderDetector.onAudioInput(z80);
-            int value = (tape.getEarBit() & 0x40) | (keyboard.getUlaBits(port) & 0x1f);
-            return value;
+            return (tape.getEarBit() & ULA_AUDIO_MASK) | (keyboard.getUlaBits(port) & ULA_KEYS_MASK);
         } else {
             return 0xff;
         }
@@ -135,39 +134,17 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
 
     @Override
     protected void prepareForLoading() {
-        executeFrame();
-        keyboard.pressKey(1000, Key.KEY_ENTER);
+        keyboard.pressKey(2000, Key.KEY_ENTER);
     }
 
-    protected void prepareForLoading0() {
-        LOGGER.debug("Loading tape loader from resource " + tapeLoaderResource);
-        try (InputStream loaderStream = TapeLoaderPlus2A.class
-                .getResourceAsStream(tapeLoaderResource)) {
-            RamGame game = (RamGame) new Z80GameImageLoader().load(loaderStream);
-            GameUtil.popPC(game);
-            GameHeader header = game.getGameHeader();
-            Z80State z80state = getStateFromHeader(header);
-
-            int slot = 0;
-            for (int i : SPECTRUM_BANKS) {
-                z80Ram.loadBank(game.getSlot(slot++), SpectrumPlus2Memory.RAM_1STBANK + i);
-            }
-
-            z80Ram.setLast1ffd(header.getPort1ffdValue(0));
-            z80Ram.setLast7ffd(header.getPort7ffdValue(0));
-
-            LOGGER.debug("Calculated Z80State as " + z80state);
-            z80.setZ80State(z80state);
-
-        } catch (IOException ioe) {
-            LOGGER.debug("Loading Tape Loader", ioe);
-        }
-    }
 
     @Override
     protected void initialize() {
         super.initialize();
         clock.reset();
+        last1ffd = last7ffd = 0;
+        z80Ram.setLast1ffd(last1ffd);
+        z80Ram.setLast7ffd(last7ffd);
         loadSpectrumRoms();
     }
 
@@ -206,14 +183,10 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
     }
 
     public void setRomResources(String[] romResources) {
-        if (romResources != null && romResources.length == 4) {
+        if (romResources != null && romResources.length == DEFAULT_ROM_RESOURCES.length) {
             this.romResources = romResources;
         } else {
             throw new IllegalArgumentException("Invalid rom resources provided");
         }
-    }
-
-    public void setTapeLoaderResource(String tapeLoaderResource) {
-        this.tapeLoaderResource = tapeLoaderResource;
     }
 }

@@ -110,6 +110,12 @@ public class BankedMemory implements Memory {
         }
     }
 
+    public void reset() {
+        for (int i = romBankCount; i < memoryBanks.size(); i++) {
+            memoryBanks.get(i).zero();
+        }
+    }
+
     @Override
     public byte[] asByteArray() {
         return new byte[0];

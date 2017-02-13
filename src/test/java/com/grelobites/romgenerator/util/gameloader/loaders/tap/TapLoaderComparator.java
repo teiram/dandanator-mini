@@ -9,8 +9,8 @@ import com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader.TapeLo
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -53,7 +53,7 @@ public class TapLoaderComparator {
 
     @Test
     public void testDifferences() throws Exception {
-        FileInputStream tapStream = new FileInputStream("/Users/mteira/Desktop/Dandanator/tap/128/addams.tap");
+        InputStream tapStream = TapLoaderComparator.class.getResourceAsStream("/loader/addams.tap");
 
         byte [] tapByteArray = Util.fromInputStream(tapStream);
 
@@ -64,7 +64,6 @@ public class TapLoaderComparator {
                 "/loader/plus23-40-2.rom",
                 "/loader/plus23-40-3.rom"});
 
-        tapeLoader.setTapeLoaderResource("/loader/loader.+2a-40.z80");
         Game game0 = tapeLoader
                 .loadTape(new ByteArrayInputStream(tapByteArray));
 
@@ -75,18 +74,15 @@ public class TapLoaderComparator {
                 "/loader/plus23-41-1.rom",
                 "/loader/plus23-41-2.rom",
                 "/loader/plus23-41-3.rom"});
-        tapeLoader.setTapeLoaderResource("/loader/loader.+2a-41.z80");
         Game game1 = tapeLoader.loadTape(new ByteArrayInputStream(tapByteArray));
 
         saveGameAsZ80(game1, "/var/tmp/addams-41-en.z80");
-
 
         tapeLoader.setRomResources(new String[]{
                 "/loader/plus23-41-0-es.rom",
                 "/loader/plus23-41-1-es.rom",
                 "/loader/plus23-41-2-es.rom",
                 "/loader/plus23-41-3-es.rom"});
-        tapeLoader.setTapeLoaderResource("/loader/loader.+2a-41-es.z80");
         Game game2 = tapeLoader.loadTape(new ByteArrayInputStream(tapByteArray));
         saveGameAsZ80(game2, "/var/tmp/addams-41-es.z80");
 

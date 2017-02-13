@@ -22,6 +22,12 @@ public class MemoryBank {
         return data;
     }
 
+    public void zero() {
+        for (int i = 0; i < data.length; i++) {
+            data[i] = 0;
+        }
+    }
+
     @Override
     public String toString() {
         return "MemoryBank{" +

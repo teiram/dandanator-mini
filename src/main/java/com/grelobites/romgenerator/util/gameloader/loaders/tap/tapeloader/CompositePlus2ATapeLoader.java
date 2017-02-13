@@ -87,13 +87,11 @@ public class CompositePlus2ATapeLoader implements TapeLoader {
             byte[] tapeByteArray = Util.fromInputStream(tapeFile);
 
             tapeLoader.setRomResources(ROM40_ROMS);
-            tapeLoader.setTapeLoaderResource(ROM40_LOADER);
             VersionedRamGame game40 = (VersionedRamGame) tapeLoader
                     .loadTape(new ByteArrayInputStream(tapeByteArray));
             game40.setVersion(RomId.ROM_PLUS2A_40);
 
             tapeLoader.setRomResources(ROM41_ROMS);
-            tapeLoader.setTapeLoaderResource(ROM41_LOADER);
             Game game41 = tapeLoader.loadTape(new ByteArrayInputStream(tapeByteArray));
 
             ChangeData version41Data = getGameRomDifferences(game40, game41);

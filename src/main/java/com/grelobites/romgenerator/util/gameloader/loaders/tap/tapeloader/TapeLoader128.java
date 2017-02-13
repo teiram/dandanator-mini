@@ -4,10 +4,9 @@ import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
-import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
-import com.grelobites.romgenerator.util.gameloader.loaders.tap.Z80State;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.Key;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.Keyboard;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.memory.Spectrum128KMemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +22,25 @@ public class TapeLoader128 extends TapeLoaderBase {
     private static final int[] SPECTRUM_BANKS = new int[] {5, 2, 0, 1, 3, 4, 6, 7};
     private final Spectrum128KMemory z80Ram;
     private int last7ffd;
+    private Keyboard keyboard;
+    private String[] romResources = DEFAULT_ROM_RESOURCES;
+
+    private static final int ULA_PORT_MASK = 0x01;
+
+    private static final String[] DEFAULT_ROM_RESOURCES =
+            new String[]{
+                    "/loader/128-0.rom",
+                    "/loader/128-1.rom"
+            };
+
+    private static final int ULA_AUDIO_MASK = 0x40;
+    private static final int ULA_KEYS_MASK = 0x1F;
+
 
     public TapeLoader128() {
         super();
         z80Ram = new Spectrum128KMemory(last7ffd);
+        keyboard = new Keyboard(clock);
     }
 
     @Override
@@ -61,9 +75,9 @@ public class TapeLoader128 extends TapeLoaderBase {
     @Override
     public int inPort(int port) {
         clock.addTstates(4); // 4 clocks for read byte from bus
-        if ((port & 0x0001) == 0) {
+        if ((port & ULA_PORT_MASK) == 0) {
             loaderDetector.onAudioInput(z80);
-            return tape.getEarBit();
+            return (tape.getEarBit() & ULA_AUDIO_MASK) | (keyboard.getUlaBits(port) & ULA_KEYS_MASK);
         } else {
             return 0xff;
         }
@@ -73,7 +87,7 @@ public class TapeLoader128 extends TapeLoaderBase {
     public void outPort(int port, int value) {
         //LOGGER.debug(String.format("OUT 0x%04x -> 0x%04x", value, port));
         clock.addTstates(4); // 4 clocks for write byte to bus
-        if ((port & 0x0001) == 0) {
+        if ((port & ULA_PORT_MASK) == 0) {
             ulaPort = value;
         } else if ((port & 0x8002) == 0) {
             //Port 7FFD decoding
@@ -93,11 +107,14 @@ public class TapeLoader128 extends TapeLoaderBase {
     }
 
     private void loadSpectrumRoms() {
-        loadSpectrumRom("/loader/128-0.rom", 0);
-        loadSpectrumRom("/loader/128-1.rom", 1);
+        int index = 0;
+        for (String rom : romResources) {
+            loadSpectrumRom(rom, index++);
+        }
     }
 
     private void loadSpectrumRom(String resource, int index) {
+        LOGGER.debug("Loading rom " + resource + " in position " + index);
         try (InputStream romis = TapeLoader128.class.getResourceAsStream(resource)) {
             z80Ram.loadBank(Util.fromInputStream(romis), index);
         } catch (IOException ioe) {
@@ -107,32 +124,15 @@ public class TapeLoader128 extends TapeLoaderBase {
 
     @Override
     protected void prepareForLoading() {
-        try (InputStream loaderStream = TapeLoader128.class
-                .getResourceAsStream("/loader/loader.128.z80")) {
-            RamGame game = (RamGame) new Z80GameImageLoader().load(loaderStream);
-            GameUtil.popPC(game);
-            GameHeader header = game.getGameHeader();
-            Z80State z80state = getStateFromHeader(header);
-
-            int slot = 0;
-            for (int i : SPECTRUM_BANKS) {
-                z80Ram.loadBank(game.getSlot(slot++), Spectrum128KMemory.RAM_1STBANK + i);
-            }
-
-            z80Ram.setLast7ffd(header.getPort7ffdValue(0));
-
-            LOGGER.debug("Calculated Z80State as " + z80state);
-            z80.setZ80State(z80state);
-
-        } catch (IOException ioe) {
-            LOGGER.debug("Loading Tape Loader", ioe);
-        }
+        keyboard.pressKey(2000, Key.KEY_ENTER);
     }
 
     @Override
     protected void initialize() {
         super.initialize();
         clock.reset();
+        last7ffd = 0;
+        z80Ram.setLast7ffd(last7ffd);
         loadSpectrumRoms();
     }
 
@@ -167,4 +167,11 @@ public class TapeLoader128 extends TapeLoaderBase {
         }
     }
 
+    public void setRomResources(String[] romResources) {
+        if (romResources != null && romResources.length == DEFAULT_ROM_RESOURCES.length) {
+            this.romResources = romResources;
+        } else {
+            throw new IllegalArgumentException("Invalid rom resources provided");
+        }
+    }
 }
