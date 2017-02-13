@@ -8,6 +8,8 @@ import com.grelobites.romgenerator.model.VersionedRamGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.Key;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.Keyboard;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Z80State;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.memory.SpectrumPlus2Memory;
 import org.slf4j.Logger;
@@ -37,12 +39,14 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
     private String[] romResources = DEFAULT_ROM_RESOURCES;
     private String tapeLoaderResource = DEFAULT_TAPELOADER_RESOURCE;
 
+    private Keyboard keyboard;
     private int last7ffd;
     private int last1ffd;
 
     public TapeLoaderPlus2A() {
         super();
         z80Ram = new SpectrumPlus2Memory(last7ffd, last1ffd);
+        keyboard = new Keyboard(clock);
     }
 
     @Override
@@ -79,7 +83,8 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
         clock.addTstates(4); // 4 clocks for read byte from bus
         if ((port & 0x0001) == 0) {
             loaderDetector.onAudioInput(z80);
-            return tape.getEarBit();
+            int value = (tape.getEarBit() & 0x40) | (keyboard.getUlaBits(port) & 0x1f);
+            return value;
         } else {
             return 0xff;
         }
@@ -129,7 +134,12 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
     }
 
     @Override
-    protected void loadTapeLoader() {
+    protected void prepareForLoading() {
+        executeFrame();
+        keyboard.pressKey(1000, Key.KEY_ENTER);
+    }
+
+    protected void prepareForLoading0() {
         LOGGER.debug("Loading tape loader from resource " + tapeLoaderResource);
         try (InputStream loaderStream = TapeLoaderPlus2A.class
                 .getResourceAsStream(tapeLoaderResource)) {

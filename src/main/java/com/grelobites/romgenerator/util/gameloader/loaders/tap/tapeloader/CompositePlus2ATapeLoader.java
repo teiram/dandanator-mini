@@ -39,8 +39,7 @@ public class CompositePlus2ATapeLoader implements TapeLoader {
         for (int i = 0; i < bank0.length; i++) {
             if (bank0[i] != bank1[i]) {
                 differences++;
-                changeData.getChangeValues().add(
-                        new ChangeValue(bank, i, bank1[i]));
+                changeData.addChangeValue(bank, new ChangeValue(i, bank1[i]));
             }
         }
         LOGGER.debug("Slots have " + differences + " differences");
@@ -91,13 +90,14 @@ public class CompositePlus2ATapeLoader implements TapeLoader {
             tapeLoader.setTapeLoaderResource(ROM40_LOADER);
             VersionedRamGame game40 = (VersionedRamGame) tapeLoader
                     .loadTape(new ByteArrayInputStream(tapeByteArray));
+            game40.setVersion(RomId.ROM_PLUS2A_40);
 
             tapeLoader.setRomResources(ROM41_ROMS);
             tapeLoader.setTapeLoaderResource(ROM41_LOADER);
             Game game41 = tapeLoader.loadTape(new ByteArrayInputStream(tapeByteArray));
 
             ChangeData version41Data = getGameRomDifferences(game40, game41);
-            game40.getChangeDataMap().put(RomId.ROM_PLUS2A_40, version41Data);
+            game40.getChangeDataMap().put(version41Data.getVersion(), version41Data);
 
             return game40;
 

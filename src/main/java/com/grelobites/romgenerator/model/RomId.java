@@ -2,7 +2,8 @@ package com.grelobites.romgenerator.model;
 
 public enum RomId {
     ROM_PLUS2A_40(0),
-    ROM_PLUS2A_41(1);
+    ROM_PLUS2A_41(1),
+    ROM_128K(2);
 
     private int romid;
 

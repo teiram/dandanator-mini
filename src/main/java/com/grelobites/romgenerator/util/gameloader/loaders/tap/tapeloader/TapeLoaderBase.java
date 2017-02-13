@@ -93,7 +93,7 @@ public abstract class TapeLoaderBase implements Z80operations, TapeLoader {
 
     abstract protected List<byte[]> getRamBanks();
 
-    abstract void loadTapeLoader();
+    abstract void prepareForLoading();
 
     protected  GameHeader fromZ80State(Z80State z80state) {
         GameHeader header = new GameHeader();
@@ -125,7 +125,7 @@ public abstract class TapeLoaderBase implements Z80operations, TapeLoader {
         z80.setBreakpoint(LD_BYTES_RET_NZ_ADDR, true);
         tape.insert(tapeFile);
 
-        loadTapeLoader();
+        prepareForLoading();
         int executedFrames = 0;
         try {
             while (!tape.isEOT() && executedFrames++ < MAXIMUM_LOAD_FRAMES) {
@@ -136,6 +136,12 @@ public abstract class TapeLoaderBase implements Z80operations, TapeLoader {
         } catch (TapeFinishedException tfe) {
             LOGGER.debug("Tape finished with cpu status " + z80.getZ80State(), tfe);
         }
+        LOGGER.debug("Executing while PC in ROM");
+        while (z80.getRegPC() < 0x4000) {
+            z80.execute();
+        }
+        LOGGER.debug("PC left ROM with status " + z80.getZ80State());
+
     }
 
     @Override

@@ -127,7 +127,7 @@ public class TapeLoader48 extends TapeLoaderBase {
     }
 
     @Override
-    void loadTapeLoader() {
+    void prepareForLoading() {
         try (InputStream loaderStream = TapeLoader48.class
                 .getResourceAsStream("/loader/loader.48.z80")) {
             RamGame game = (RamGame) new Z80GameImageLoader().load(loaderStream);
@@ -165,7 +165,7 @@ public class TapeLoader48 extends TapeLoaderBase {
         } else {
             tape.insert(tapeFile);
         }
-        loadTapeLoader();
+        prepareForLoading();
         breakOnScreenRamWrites = false;
         int stoppedFrames = 0;
         try {

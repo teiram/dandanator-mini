@@ -106,7 +106,7 @@ public class TapeLoader128 extends TapeLoaderBase {
     }
 
     @Override
-    protected void loadTapeLoader() {
+    protected void prepareForLoading() {
         try (InputStream loaderStream = TapeLoader128.class
                 .getResourceAsStream("/loader/loader.128.z80")) {
             RamGame game = (RamGame) new Z80GameImageLoader().load(loaderStream);
