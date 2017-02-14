@@ -140,10 +140,10 @@ public class TapeLoader128Test implements Z80operations {
     }
 
     private void loadSpectrumRoms() {
-        loadSpectrumRom("/loader/plus23-40-0.rom", 0);
-        loadSpectrumRom("/loader/plus23-40-1.rom", 1);
-        loadSpectrumRom("/loader/plus23-40-2.rom", 2);
-        loadSpectrumRom("/loader/plus23-40-3.rom", 3);
+        loadSpectrumRom("/loader/plus23-40-en-0.rom", 0);
+        loadSpectrumRom("/loader/plus23-40-en-1.rom", 1);
+        loadSpectrumRom("/loader/plus23-40-en-2.rom", 2);
+        loadSpectrumRom("/loader/plus23-40-en-3.rom", 3);
     }
 
     private void loadSpectrumRom(String resource, int index) {

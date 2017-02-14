@@ -73,14 +73,14 @@
             </VBox>
          </children>
       </HBox>
-      <HBox alignment="CENTER_RIGHT" layoutX="270.0" layoutY="264.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="26.0" prefWidth="264.0" spacing="10.0" visible="false">
+      <HBox alignment="CENTER_RIGHT" layoutX="142.0" layoutY="264.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="26.0" prefWidth="392.0" spacing="10.0">
          <children>
-            <Label text="%romSetTypeMessage">
+            <Label maxWidth="1.7976931348623157E308" text="%plus2ARomset">
                <font>
                   <Font size="12.0" />
                </font>
             </Label>
-            <ComboBox fx:id="romSetModeCombo" />
+            <ComboBox fx:id="plus2ARomSetCombo" maxHeight="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
          </children>
          <padding>
             <Insets right="5.0" />

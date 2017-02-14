@@ -20,16 +20,16 @@ import java.io.InputStream;
 public class CompositePlus2ATapeLoader implements TapeLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(CompositePlus2ATapeLoader.class);
     private static final String[] ROM40_ROMS = new String[]{
-            "/loader/plus23-40-0.rom",
-            "/loader/plus23-40-1.rom",
-            "/loader/plus23-40-2.rom",
-            "/loader/plus23-40-3.rom"};
+            "/loader/plus23-40-en-0.rom",
+            "/loader/plus23-40-en-1.rom",
+            "/loader/plus23-40-en-2.rom",
+            "/loader/plus23-40-en-3.rom"};
 
     private static final String[] ROM41_ROMS = new String[]{
-            "/loader/plus23-41-0.rom",
-            "/loader/plus23-41-1.rom",
-            "/loader/plus23-41-2.rom",
-            "/loader/plus23-41-3.rom"};
+            "/loader/plus23-41-en-0.rom",
+            "/loader/plus23-41-en-1.rom",
+            "/loader/plus23-41-en-2.rom",
+            "/loader/plus23-41-en-3.rom"};
 
     private static final String ROM40_LOADER = "/loader/loader.+2a-40.z80";
     private static final String ROM41_LOADER = "/loader/loader.+2a-41.z80";

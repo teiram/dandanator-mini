@@ -1,16 +1,9 @@
 package com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader;
 
-import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.model.VersionedRamGame;
-import com.grelobites.romgenerator.util.GameUtil;
+import com.grelobites.romgenerator.model.*;
 import com.grelobites.romgenerator.util.Util;
-import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Key;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Keyboard;
-import com.grelobites.romgenerator.util.gameloader.loaders.tap.Z80State;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.memory.SpectrumPlus2Memory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +18,8 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(TapeLoaderPlus2A.class);
 
     private static final String[] DEFAULT_ROM_RESOURCES =
-            new String[]{
-                    "/loader/plus23-40-0.rom",
-                    "/loader/plus23-40-1.rom",
-                    "/loader/plus23-40-2.rom",
-                    "/loader/plus23-40-3.rom"
-    };
+            RomSet.PLUS2A_40_EN.getResources();
+
     private static final int ULA_AUDIO_MASK = 0x40;
     private static final int ULA_KEYS_MASK = 0x1F;
 

@@ -59,10 +59,10 @@ public class TapLoaderComparator {
 
         TapeLoaderPlus2A tapeLoader = new TapeLoaderPlus2A();
         tapeLoader.setRomResources(new String[]{
-                "/loader/plus23-40-0.rom",
-                "/loader/plus23-40-1.rom",
-                "/loader/plus23-40-2.rom",
-                "/loader/plus23-40-3.rom"});
+                "/loader/plus23-40-en-0.rom",
+                "/loader/plus23-40-en-1.rom",
+                "/loader/plus23-40-en-2.rom",
+                "/loader/plus23-40-en-3.rom"});
 
         Game game0 = tapeLoader
                 .loadTape(new ByteArrayInputStream(tapByteArray));
@@ -70,10 +70,10 @@ public class TapLoaderComparator {
         saveGameAsZ80(game0, "/var/tmp/addams-40-en.z80");
 
         tapeLoader.setRomResources(new String[]{
-                "/loader/plus23-41-0.rom",
-                "/loader/plus23-41-1.rom",
-                "/loader/plus23-41-2.rom",
-                "/loader/plus23-41-3.rom"});
+                "/loader/plus23-41-en-0.rom",
+                "/loader/plus23-41-en-1.rom",
+                "/loader/plus23-41-en-2.rom",
+                "/loader/plus23-41-en-3.rom"});
         Game game1 = tapeLoader.loadTape(new ByteArrayInputStream(tapByteArray));
 
         saveGameAsZ80(game1, "/var/tmp/addams-41-en.z80");

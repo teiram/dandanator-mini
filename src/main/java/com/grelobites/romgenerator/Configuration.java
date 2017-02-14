@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator;
 
 import com.grelobites.romgenerator.model.HardwareMode;
+import com.grelobites.romgenerator.model.RomSet;
 import com.grelobites.romgenerator.util.CharSetFactory;
 import com.grelobites.romgenerator.util.RamGameCompressor;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
@@ -39,6 +40,7 @@ public class Configuration {
     private RamGameCompressor ramGameCompressor;
     private BooleanProperty allowExperimentalGames;
     private StringProperty tapLoaderTarget;
+    private RomSet plus2ARomSet = RomSet.PLUS2A_40_EN;
 
     private static Configuration INSTANCE;
 
@@ -215,6 +217,14 @@ public class Configuration {
 
     public StringProperty tapLoaderTargetProperty() {
         return tapLoaderTarget;
+    }
+
+    public RomSet getPlus2ARomSet() {
+        return plus2ARomSet;
+    }
+
+    public void setPlus2ARomSet(RomSet plus2ARomSet) {
+        this.plus2ARomSet = plus2ARomSet;
     }
 
     public void setTapLoaderTarget(String tapLoaderTarget) {

@@ -1,5 +1,6 @@
 package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 
+import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader.TapeLoader128;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader.TapeLoader48;
@@ -14,7 +15,9 @@ public class TapeLoaderFactory {
             case HW_128K:
                 return new TapeLoader128();
             case HW_PLUS2A:
-                return new TapeLoaderPlus2A();
+                TapeLoaderPlus2A tapeLoader = new TapeLoaderPlus2A();
+                tapeLoader.setRomResources(Configuration.getInstance().getPlus2ARomSet().getResources());
+                return tapeLoader;
             default:
                 throw new IllegalArgumentException("Unsupported Hardware by TapeLoader");
         }

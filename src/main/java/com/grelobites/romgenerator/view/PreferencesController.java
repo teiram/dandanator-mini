@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.view;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.HardwareMode;
+import com.grelobites.romgenerator.model.RomSet;
 import com.grelobites.romgenerator.util.*;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import com.grelobites.romgenerator.view.util.DialogUtil;
@@ -53,7 +54,7 @@ public class PreferencesController {
     private Button resetCharSetButton;
 
     @FXML
-    private ComboBox<String> romSetModeCombo;
+    private ComboBox<RomSet> plus2ARomSetCombo;
 
     @FXML
     private RadioButton tapMode48K;
@@ -216,17 +217,14 @@ public class PreferencesController {
 
     }
 
-    private void romSetModeSetup() {
-        romSetModeCombo.setItems(FXCollections.observableArrayList(
-                Stream.of(RomSetHandlerType.values())
-                        .filter(RomSetHandlerType::isEnabled)
-                        .map(Enum::name)
-                        .collect(Collectors.toList())));
-        romSetModeCombo.getSelectionModel().select(Configuration.getInstance()
-                .getMode());
-        romSetModeCombo.getSelectionModel().selectedItemProperty().addListener(
+    private void plus2ARomSetComboSetup() {
+        plus2ARomSetCombo.setItems(FXCollections.observableArrayList(
+                RomSet.values()));
+        plus2ARomSetCombo.getSelectionModel().select(Configuration.getInstance()
+                .getPlus2ARomSet());
+        plus2ARomSetCombo.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
-                    Configuration.getInstance().setMode(newValue);
+                    Configuration.getInstance().setPlus2ARomSet(newValue);
                 });
     }
 
@@ -273,7 +271,7 @@ public class PreferencesController {
 
         charSetSetup();
 
-        romSetModeSetup();
+        plus2ARomSetComboSetup();
 
         tapTargetModeSetup();
 

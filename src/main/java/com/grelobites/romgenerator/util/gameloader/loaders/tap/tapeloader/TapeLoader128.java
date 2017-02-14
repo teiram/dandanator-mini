@@ -92,7 +92,6 @@ public class TapeLoader128 extends TapeLoaderBase {
         } else if ((port & 0x8002) == 0) {
             //Port 7FFD decoding
             last7ffd = value;
-            LOGGER.debug("Setting 7FFD to 0x" + Integer.toHexString(last7ffd));
             z80Ram.setLast7ffd(last7ffd);
             if ((value & 0x20) != 0) {
                 LOGGER.debug("DISABLING FURTHER MAPPING CHANGE!!!!");
