@@ -45,7 +45,7 @@ public class TapeLoader128 extends TapeLoaderBase {
 
     @Override
     public int fetchOpcode(int address) {
-        return z80Ram.peek8(address);
+        return peek8(address);
     }
 
     @Override
