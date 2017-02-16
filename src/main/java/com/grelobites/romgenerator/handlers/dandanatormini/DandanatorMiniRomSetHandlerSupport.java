@@ -148,6 +148,7 @@ public class DandanatorMiniRomSetHandlerSupport {
             if (GameUtil.gameHasPokes(game)) {
                 DirectoryAwareFileChooser chooser = getApplicationContext().getFileChooser();
                 chooser.setTitle(LocaleUtil.i18n("exportCurrentGamePokes"));
+                chooser.setInitialFileName(game.getName() + ".pok");
                 final File saveFile = chooser.showSaveDialog(applicationContext.getApplicationStage());
                 if (saveFile != null) {
                     try {

@@ -82,6 +82,10 @@ public class Util {
         }
     }
 
+    public static String nameWithExtension(String name, String extension) {
+        return stripSuffix(String.format(".%s", extension), String.format(".%s", extension));
+    }
+
     public static String stripSnapshotVersion(String value) {
         return stripSuffix(value, SNAPSHOT_SUFFIX);
     }

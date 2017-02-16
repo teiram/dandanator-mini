@@ -52,6 +52,10 @@ public class DirectoryAwareFileChooser {
         return result;
     }
 
+    public void setInitialFileName(String name) {
+        delegate.setInitialFileName(name);
+    }
+
     public void setTitle(String title) {
         delegate.setTitle(title);
     }

@@ -107,6 +107,7 @@ public class ApplicationContext {
         if (this.fileChooser == null) {
             this.fileChooser = new DirectoryAwareFileChooser();
         }
+        fileChooser.setInitialFileName(null);
         return fileChooser;
     }
     public void setRomUsage(double romUsage) {
@@ -195,6 +196,7 @@ public class ApplicationContext {
         if (game != null) {
             DirectoryAwareFileChooser chooser = getFileChooser();
             chooser.setTitle(LocaleUtil.i18n("exportCurrentGame"));
+            chooser.setInitialFileName(game.getName() + "." +  (game.getType() == GameType.ROM ? "rom" : "z80"));
             final File saveFile = chooser.showSaveDialog(menuPreview.getScene().getWindow());
             if (saveFile != null) {
                 try {

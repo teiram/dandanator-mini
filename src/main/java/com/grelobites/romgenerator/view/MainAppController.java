@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Configuration;
+import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
@@ -322,6 +323,7 @@ public class MainAppController {
         createRomButton.setOnAction(c -> {
             DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
             chooser.setTitle(LocaleUtil.i18n("saveRomSet"));
+            chooser.setInitialFileName("dandanator_" + Constants.currentVersion() + ".rom");
             final File saveFile = chooser.showSaveDialog(createRomButton.getScene().getWindow());
             if (saveFile != null) {
                 try (FileOutputStream fos = new FileOutputStream(saveFile)) {

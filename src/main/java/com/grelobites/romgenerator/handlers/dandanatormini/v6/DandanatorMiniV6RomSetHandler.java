@@ -14,6 +14,7 @@ import com.grelobites.romgenerator.handlers.dandanatormini.model.GameChunk;
 import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
+import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.RomGame;
 import com.grelobites.romgenerator.util.GameUtil;
@@ -718,18 +719,34 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     }
 
     private static int getGameSymbolCode(Game game) {
-        switch (game.getType()) {
-            case ROM :
-                return ExtendedCharSet.SYMBOL_ROM_0_CODE;
-            case RAM16:
-                return ExtendedCharSet.SYMBOL_16K_0_CODE;
-            case RAM48:
-                return ExtendedCharSet.SYMBOL_48K_0_CODE;
-            case RAM128:
-                return ExtendedCharSet.SYMBOL_128K_0_CODE;
-            default:
-                LOGGER.error("Unable to get a symbol for game of type " + game.getType());
-                return ExtendedCharSet.SYMBOL_SPACE;
+        if (game instanceof RamGame) {
+            switch (((RamGame) game).getHardwareMode()) {
+                case HW_48K:
+                case HW_48K_IF1:
+                case HW_48K_MGT:
+                    return ExtendedCharSet.SYMBOL_48K_0_CODE;
+                case HW_128K:
+                case HW_128K_IF1:
+                case HW_128K_MGT:
+                case HW_PLUS2:
+                    return ExtendedCharSet.SYMBOL_128K_0_CODE;
+                case HW_PLUS2A:
+                case HW_PLUS3:
+                    return ExtendedCharSet.SYMBOL_PLUS2A_0_CODE;
+                default:
+                    LOGGER.error("Unable to get symbol for hardware mode in game " + game);
+                    return ExtendedCharSet.SYMBOL_SPACE;
+            }
+        } else {
+            switch (game.getType()) {
+                case ROM:
+                    return ExtendedCharSet.SYMBOL_ROM_0_CODE;
+                case RAM16:
+                    return ExtendedCharSet.SYMBOL_16K_0_CODE;
+                default:
+                    LOGGER.error("Unable to get a symbol for game " + game);
+                    return ExtendedCharSet.SYMBOL_SPACE;
+            }
         }
     }
 
@@ -840,6 +857,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     public void exportDivIdeTapToFile() {
         DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
         chooser.setTitle(LocaleUtil.i18n("exportDivIdeTapMenuEntry"));
+        chooser.setInitialFileName("dandanator_divide_romset.tap");
         final File saveFile = chooser.showSaveDialog(applicationContext.getApplicationStage());
         if (saveFile != null) {
             try (FileOutputStream fos = new FileOutputStream(saveFile)) {
@@ -855,6 +873,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     private void exportExtraRom() {
         DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
         chooser.setTitle(LocaleUtil.i18n("exportExtraRomMenuEntry"));
+        chooser.setInitialFileName("dandanator_extra_rom.rom");
         final File saveFile = chooser.showSaveDialog(applicationContext.getApplicationStage());
         if (saveFile != null) {
             try (FileOutputStream fos = new FileOutputStream(saveFile)) {
@@ -896,6 +915,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     public void exportToWavs() {
         DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
         chooser.setTitle(LocaleUtil.i18n("exportToWavsMenuEntry"));
+        chooser.setInitialFileName("dandanator_wav_romset.zip");
         final File saveFile = chooser.showSaveDialog(applicationContext.getApplicationStage());
         if (saveFile != null) {
             try (FileOutputStream fos = new FileOutputStream(saveFile)) {
