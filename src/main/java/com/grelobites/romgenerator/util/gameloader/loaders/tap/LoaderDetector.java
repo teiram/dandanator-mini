@@ -22,38 +22,40 @@ public class LoaderDetector {
     }
 
     public void onAudioInput(Z80 processor) {
-        long tstatesDelta = clock.getTstates() - lastTstates;
-        int bdiff = (processor.getRegB() - lastB) & 0xff;
+        if (!tape.isEOT()) {
+            long tstatesDelta = clock.getTstates() - lastTstates;
+            int bdiff = (processor.getRegB() - lastB) & 0xff;
 
-        //LOGGER.debug("On audio detector with bdiff " + bdiff + " and tstatesDelta " + tstatesDelta);
-        if (tape.isPlaying()) {
-            if (tstatesDelta > 1000 ||
-                    (bdiff != 1 && bdiff != 0 && bdiff != 0xff)) {
-                successiveReads++;
-                if (successiveReads >= 2) {
-                    LOGGER.debug("LoaderDetector stops tape " + tape
-                            + " on tstatesDelta "
-                            + tstatesDelta + ", bdiff " + bdiff);
-                    tape.stop();
+            //LOGGER.debug("On audio detector with bdiff " + bdiff + " and tstatesDelta " + tstatesDelta);
+            if (tape.isPlaying()) {
+                if (tstatesDelta > 1000 ||
+                        (bdiff != 1 && bdiff != 0 && bdiff != 0xff)) {
+                    successiveReads++;
+                    if (successiveReads >= 2) {
+                        LOGGER.debug("LoaderDetector stops tape " + tape
+                                + " on tstatesDelta "
+                                + tstatesDelta + ", bdiff " + bdiff);
+                        tape.stop();
+                    }
+                } else {
+                    successiveReads = 0;
                 }
             } else {
-                successiveReads = 0;
-            }
-        } else {
-            if (tstatesDelta <= 500 && (bdiff == 1 || bdiff == 0xff)) {
-                successiveReads++;
-                if (successiveReads >= 10) {
-                    LOGGER.debug("LoaderDetector starts tape " + tape
-                            + " on tstatesDelta "
-                            + tstatesDelta + ", bdiff " + bdiff);
-                    tape.play();
+                if (tstatesDelta <= 500 && (bdiff == 1 || bdiff == 0xff)) {
+                    successiveReads++;
+                    if (successiveReads >= 10) {
+                        LOGGER.debug("LoaderDetector starts tape " + tape
+                                + " on tstatesDelta "
+                                + tstatesDelta + ", bdiff " + bdiff);
+                        tape.play();
+                    }
+                } else {
+                    successiveReads = 0;
                 }
-            } else {
-                successiveReads = 0;
             }
+            lastB = processor.getRegB();
+            lastTstates = clock.getTstates();
         }
-        lastB = processor.getRegB();
-        lastTstates = clock.getTstates();
     }
 
 }

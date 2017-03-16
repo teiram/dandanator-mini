@@ -165,9 +165,8 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
     public void breakpoint() {
         if (z80.getRegPC() == LD_BYTES_RET_NZ_ADDR) {
             LOGGER.debug("LD_BYTES_ADDR Breakpoint reached with tape in state " + tape.getState());
-            if (tape.flashLoad(z80, z80Ram)) {
-                z80.setRegPC(LD_BYTES_RET_POINT);
-            }
+            tape.flashLoad(z80, z80Ram);
+            z80.setRegPC(LD_BYTES_RET_POINT);
         }
     }
 
