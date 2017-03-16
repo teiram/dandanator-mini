@@ -12,7 +12,7 @@ public class Constants {
     public static final String ROMSET_PROVIDED = "__ROMSET_PROVIDED__";
     public static final int SLOT_SIZE = 0x4000;
 
-    private static final String DEFAULT_VERSION = "6.3";
+    private static final String DEFAULT_VERSION = "6.3.1";
 
     public static final int CHARSET_SIZE = 768;
 
