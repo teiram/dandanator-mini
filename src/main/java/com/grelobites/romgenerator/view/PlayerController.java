@@ -307,7 +307,11 @@ public class PlayerController {
 
         DandanatorMiniConfiguration.getInstance().autobootProperty()
                 .addListener(e -> {
-                    romsetByteArray = null;
+                    if (configuration.getCustomRomSetPath() == null) {
+                        stop();
+                        romsetByteArray = null;
+                        currentBlock.set(startingBlockProperty.get());
+                    }
                 });
 
         configuration.customRomSetPathProperty().addListener(e -> {
