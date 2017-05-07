@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.view;
 import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.player.AudioDataPlayer;
 import com.grelobites.romgenerator.util.player.DataPlayer;
@@ -303,6 +304,11 @@ public class PlayerController {
                 currentBlock.set(startingBlockProperty.get());
             }
         });
+
+        DandanatorMiniConfiguration.getInstance().autobootProperty()
+                .addListener(e -> {
+                    romsetByteArray = null;
+                });
 
         configuration.customRomSetPathProperty().addListener(e -> {
             stop();
