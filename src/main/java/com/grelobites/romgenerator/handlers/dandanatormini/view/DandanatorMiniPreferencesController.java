@@ -77,6 +77,9 @@ public class DandanatorMiniPreferencesController {
     @FXML
     private CheckBox disableBorderEffect;
 
+    @FXML
+    private CheckBox autoboot;
+
     private static String getRomFileName(String name) {
         int extensionLocation = name.lastIndexOf(".");
         return extensionLocation > 0 ? name.substring(0, extensionLocation) : name;
@@ -266,5 +269,7 @@ public class DandanatorMiniPreferencesController {
         disableBorderEffect.selectedProperty().bindBidirectional(
                 DandanatorMiniConfiguration.getInstance().disableBorderEffectProperty());
 
+        autoboot.selectedProperty().bindBidirectional(
+                DandanatorMiniConfiguration.getInstance().autobootProperty());
     }
 }
