@@ -41,6 +41,7 @@ public class DandanatorMiniConstants {
     private static final String DANDANATOR_PIC_FW_RESOURCE = "dandanator-mini/dandanator-pic-fw.bin";
     private static final String EXTRA_ROM_RESOURCE = "dandanator-mini/test.rom";
     private static final String DIVIDE_LOADER_RESOURCE = "dandanator-mini/divide-loader.bin";
+    private static final String SLOT1_ROM_RESOURCE = "dandanator-mini/slot1.rom";
 
     public static final int POKE_TARGET_ADDRESS = 49284;
     public static final int GAME_CHUNK_SIZE = 256;
@@ -56,10 +57,12 @@ public class DandanatorMiniConstants {
     public static final int PORT7FFD_DEFAULT_VALUE = 0x10;
     public static final int PORT7FFD_FORCED_48KMODE_BITS = 0x20;
 
+    public static final int SLOT1_RESERVED_SIZE = 300;
     private static byte[] DANDANATOR_ROM;
     private static byte[] EXTRA_ROM;
     private static byte[] DEFAULT_DANDANATOR_PIC_FW;
     private static byte[] DIVIDE_LOADER;
+    private static byte[] SLOT1_ROM;
 
     public static final Game INTERNAL_ROM_GAME = new VirtualGame(GameType.ROM, "Internal ROM");
     public static final Game EXTRA_ROM_GAME = new VirtualGame(GameType.ROM, "Extra ROM");
@@ -76,6 +79,16 @@ public class DandanatorMiniConstants {
                     BASEROM_SIZE);
         }
         return DANDANATOR_ROM;
+    }
+
+    public static byte[] getSlot1Rom() throws IOException {
+        if (SLOT1_ROM == null) {
+            SLOT1_ROM = Util.fromInputStream(
+                    DandanatorMiniConstants.class.getClassLoader()
+                            .getResourceAsStream(SLOT1_ROM_RESOURCE),
+                    SLOT1_RESERVED_SIZE);
+        }
+        return SLOT1_ROM;
     }
 
     public static byte[] getExtraRom() throws IOException {

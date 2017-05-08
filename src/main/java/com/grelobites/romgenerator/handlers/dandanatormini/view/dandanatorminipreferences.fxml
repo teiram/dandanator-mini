@@ -94,6 +94,14 @@
                   <Insets left="5.0" />
                </padding>
             </HBox>
+            <HBox layoutY="299.0" prefHeight="18.0" prefWidth="544.0" spacing="10.0">
+               <children>
+                  <CheckBox fx:id="autoboot" mnemonicParsing="false" text="%autoboot" />
+               </children>
+               <padding>
+                  <Insets left="5.0" />
+               </padding>
+            </HBox>
           </children>
       </AnchorPane>
    </content>

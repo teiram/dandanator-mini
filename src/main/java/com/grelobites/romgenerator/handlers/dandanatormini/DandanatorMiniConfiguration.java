@@ -35,6 +35,7 @@ public class DandanatorMiniConfiguration {
     private StringProperty launchGameMessage;
     private StringProperty selectPokesMessage;
     private BooleanProperty disableBorderEffect;
+    private BooleanProperty autoboot;
 
     private byte[] dandanatorRom;
     private byte[] extraRom;
@@ -73,6 +74,7 @@ public class DandanatorMiniConfiguration {
         launchGameMessage = new SimpleStringProperty();
         selectPokesMessage = new SimpleStringProperty();
         disableBorderEffect = new SimpleBooleanProperty(false);
+        autoboot = new SimpleBooleanProperty(false);
 
 
         /*
@@ -252,6 +254,18 @@ public class DandanatorMiniConfiguration {
 
     public void setDisableBorderEffect(boolean disableBorderEffect) {
         this.disableBorderEffect.set(disableBorderEffect);
+    }
+
+    public boolean isAutoboot() {
+        return autoboot.get();
+    }
+
+    public BooleanProperty autobootProperty() {
+        return autoboot;
+    }
+
+    public void setAutoboot(boolean autoboot) {
+        this.autoboot.set(autoboot);
     }
 
     public void setDandanatorPicFirmware(byte[] dandanatorPicFirmware) {

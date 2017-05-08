@@ -14,7 +14,6 @@ import com.grelobites.romgenerator.handlers.dandanatormini.model.GameChunk;
 import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RamGame;
 import com.grelobites.romgenerator.model.RomGame;
 import com.grelobites.romgenerator.util.GameUtil;
@@ -58,9 +57,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Future;
 
 public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSupport implements RomSetHandler {
@@ -353,7 +350,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     private void dumpGameHeaders(ByteArrayOutputStream os, GameChunk[] gameChunkTable) throws IOException {
         int index = 0;
         //forwardOffset after the slot zero
-        int forwardOffset = Constants.SLOT_SIZE;
+        int forwardOffset = Constants.SLOT_SIZE + DandanatorMiniConstants.SLOT1_RESERVED_SIZE;
         //backwardsOffset starts before the test ROM
         int backwardsOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1);
         for (Game game : getApplicationContext().getGameList()) {
@@ -578,9 +575,16 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
             os.write(dmConfiguration.isDisableBorderEffect() ? 1 : 0);
             LOGGER.debug("Dumped border effect flag. Offset: " + os.size());
 
+            os.write(dmConfiguration.isAutoboot() ? 1 : 0);
+            LOGGER.debug("Dumped autoboot configuration. Offset: " + os.size());
+
             fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size());
 
             LOGGER.debug("Slot zero completed. Offset: " + os.size());
+
+            byte[] slot1Rom = DandanatorMiniConstants.getSlot1Rom();
+            os.write(slot1Rom);
+            LOGGER.debug("Slot one header completed. Offset: " + os.size());
 
             for (Game game : games) {
                 if (isGameCompressed(game)) {
@@ -643,7 +647,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     }
 
     protected double calculateRomUsage() {
-        int size = 0;
+        int size = DandanatorMiniConstants.SLOT1_RESERVED_SIZE;
         for (Game game : getApplicationContext().getGameList()) {
             try {
                 size += getGameSize(game);

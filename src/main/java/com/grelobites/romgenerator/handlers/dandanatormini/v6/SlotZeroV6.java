@@ -33,6 +33,7 @@ public class SlotZeroV6 extends SlotZeroBase implements SlotZero {
     private String launchGameMessage;
     private String selectPokesMessage;
     private boolean disableBorderEffect;
+    private boolean autoboot;
     List<GameBlock> gameBlocks;
 
     public SlotZeroV6(byte[] data) {
@@ -146,6 +147,7 @@ public class SlotZeroV6 extends SlotZeroBase implements SlotZero {
         zis.safeSkip(V6Constants.BORDER_EFFECT_OFFSET - zis.position());
         LOGGER.debug("Before version. Position " + zis.position());
         disableBorderEffect = zis.read() == 1 ? true : false;
+        autoboot = zis.read() == 1 ? true : false;
         zis.safeSkip(Constants.SLOT_SIZE - zis.position());
         LOGGER.debug("After version. Position " + zis.position());
     }
@@ -226,4 +228,8 @@ public class SlotZeroV6 extends SlotZeroBase implements SlotZero {
         return disableBorderEffect;
     }
 
+    @Override
+    public boolean getAutoboot() {
+        return autoboot;
+    }
 }
