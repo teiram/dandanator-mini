@@ -575,14 +575,16 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
             os.write(dmConfiguration.isDisableBorderEffect() ? 1 : 0);
             LOGGER.debug("Dumped border effect flag. Offset: " + os.size());
 
+            os.write(dmConfiguration.isAutoboot() ? 1 : 0);
+            LOGGER.debug("Dumped autoboot configuration. Offset: " + os.size());
+
             fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size());
 
             LOGGER.debug("Slot zero completed. Offset: " + os.size());
 
             byte[] slot1Rom = DandanatorMiniConstants.getSlot1Rom();
-            //Last byte controls which game to autoboot (0 = disabled)
-            slot1Rom[slot1Rom.length - 1] = (byte) (dmConfiguration.isAutoboot() ? 1 : 0);
             os.write(slot1Rom);
+            LOGGER.debug("Slot one header completed. Offset: " + os.size());
 
             for (Game game : games) {
                 if (isGameCompressed(game)) {
