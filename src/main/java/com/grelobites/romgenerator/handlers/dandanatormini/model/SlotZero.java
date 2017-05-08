@@ -66,4 +66,8 @@ public interface SlotZero {
     String getSelectPokesMessage();
 
     boolean getDisableBorderEffect();
+
+    default boolean getAutoboot() {
+        return false;
+    }
 }
