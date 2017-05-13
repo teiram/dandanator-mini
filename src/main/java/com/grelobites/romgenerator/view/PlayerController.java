@@ -291,6 +291,13 @@ public class PlayerController {
         }
     }
 
+    private void resetPlayerAndRomSet() {
+        LOGGER.debug("Resetting player and RomSet on invalidating changes");
+        stop();
+        romsetByteArray = null;
+        currentBlock.set(startingBlockProperty.get());
+    }
+
     @FXML
     void initialize() throws IOException {
         playingLed.setVisible(false);
@@ -298,26 +305,21 @@ public class PlayerController {
 
         //React to changes in the game list
         applicationContext.getGameList().addListener((InvalidationListener) e -> {
-            if (configuration.getCustomRomSetPath() == null) {
-                stop();
-                romsetByteArray = null;
-                currentBlock.set(startingBlockProperty.get());
-            }
+            resetPlayerAndRomSet();
         });
 
         DandanatorMiniConfiguration.getInstance().autobootProperty()
                 .addListener(e -> {
-                    if (configuration.getCustomRomSetPath() == null) {
-                        stop();
-                        romsetByteArray = null;
-                        currentBlock.set(startingBlockProperty.get());
-                    }
+                    resetPlayerAndRomSet();
+                });
+
+        DandanatorMiniConfiguration.getInstance().extraRomPathProperty()
+                .addListener(e -> {
+                    resetPlayerAndRomSet();
                 });
 
         configuration.customRomSetPathProperty().addListener(e -> {
-            stop();
-            romsetByteArray = null;
-            currentBlock.set(startingBlockProperty.get());
+            resetPlayerAndRomSet();
         });
 
         playerImage.setImage(configuration.isUseSerialPort() ? configuration.getKempstonImage() :
