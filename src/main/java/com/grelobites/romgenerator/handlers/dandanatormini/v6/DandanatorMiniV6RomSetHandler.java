@@ -78,6 +78,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
     protected MenuItem exportDivIdeTapMenuItem;
     protected MenuItem exportToWavsMenuItem;
     protected MenuItem exportExtraRomMenuItem;
+    protected MenuItem upgradeDivIdeTapMenuItem;
     private BooleanProperty generationAllowedProperty = new SimpleBooleanProperty(false);
 
 
@@ -874,6 +875,18 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         }
     }
 
+    public void upgradeDivIdeTap() {
+        DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
+        chooser.setTitle(LocaleUtil.i18n("upgradeDivIdeTapMenuEntry"));
+        final File tapFile = chooser.showOpenDialog(applicationContext.getApplicationStage());
+        if (tapFile != null) {
+            try {
+                RomSetUtil.upgradeDivideTapLoader(tapFile.toPath());
+            } catch (IOException e) {
+                LOGGER.error("Upgrading DivIDE TAP", e);
+            }
+        }
+    }
     private void exportExtraRom() {
         DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
         chooser.setTitle(LocaleUtil.i18n("exportExtraRomMenuEntry"));
@@ -900,6 +913,19 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
             exportDivIdeTapMenuItem.setOnAction(f -> exportDivIdeTapToFile());
         }
         return exportDivIdeTapMenuItem;
+    }
+
+    protected MenuItem getUpgradeDivIdeTapMenuItem() {
+        if (upgradeDivIdeTapMenuItem == null) {
+            upgradeDivIdeTapMenuItem = new MenuItem(LocaleUtil.i18n("upgradeDivIdeTapMenuEntry"));
+
+            upgradeDivIdeTapMenuItem.setAccelerator(
+                    KeyCombination.keyCombination("SHORTCUT+U")
+            );
+
+            upgradeDivIdeTapMenuItem.setOnAction(f -> upgradeDivIdeTap());
+        }
+        return upgradeDivIdeTapMenuItem;
     }
 
     protected MenuItem getExportToWavsMenuItem() {
@@ -1001,7 +1027,8 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
         applicationContext.getExtraMenu().getItems().addAll(
                 getExportPokesMenuItem(), getImportPokesMenuItem(),
-                getExportDivIdeTapMenuItem(), getExportExtraRomMenuItem(),
+                getExportDivIdeTapMenuItem(), getUpgradeDivIdeTapMenuItem(),
+                getExportExtraRomMenuItem(),
                 getExportToWavsMenuItem());
 
         updateRomUsage();

@@ -10,11 +10,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -45,6 +48,15 @@ public class RomSetUtil {
                     LOAD_ADDRESS, false, buffer);
         }
         out.flush();
+    }
+
+    public static void upgradeDivideTapLoader(Path divideFile) throws IOException {
+        Path backup = Files.move(divideFile, divideFile
+                .resolveSibling(divideFile.getFileName() + ".back"));
+        try (FileInputStream oldTap = new FileInputStream(backup.toFile());
+                FileOutputStream newTap = new FileOutputStream(divideFile.toFile())) {
+            TapUtil.upgradeTapLoader(oldTap, newTap);
+        }
     }
 
     public static void exportToZippedWavFiles(InputStream romsetStream, OutputStream out) throws IOException {
