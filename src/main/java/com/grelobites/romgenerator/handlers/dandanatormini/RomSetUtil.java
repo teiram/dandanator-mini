@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -56,6 +57,9 @@ public class RomSetUtil {
         try (FileInputStream oldTap = new FileInputStream(backup.toFile());
                 FileOutputStream newTap = new FileOutputStream(divideFile.toFile())) {
             TapUtil.upgradeTapLoader(oldTap, newTap);
+        } catch (Exception e) {
+            Files.move(backup, divideFile, StandardCopyOption.REPLACE_EXISTING);
+            throw e;
         }
     }
 

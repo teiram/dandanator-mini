@@ -29,6 +29,7 @@ import com.grelobites.romgenerator.util.ZxScreen;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
+import com.grelobites.romgenerator.view.util.DialogUtil;
 import com.grelobites.romgenerator.view.util.DirectoryAwareFileChooser;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
@@ -882,8 +883,13 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
         if (tapFile != null) {
             try {
                 RomSetUtil.upgradeDivideTapLoader(tapFile.toPath());
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOGGER.error("Upgrading DivIDE TAP", e);
+                DialogUtil.buildErrorAlert(
+                        LocaleUtil.i18n("fileImportError"),
+                        LocaleUtil.i18n("fileImportErrorHeader"),
+                        LocaleUtil.i18n("fileImportErrorContent"))
+                        .showAndWait();
             }
         }
     }

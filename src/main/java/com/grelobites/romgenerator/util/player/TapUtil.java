@@ -91,8 +91,11 @@ public class TapUtil {
         int length = Short.valueOf(header.getShort()).intValue();
         //Add length bytes, flag and checksum
         length += 4;
-        LOGGER.debug("Found header with length " + headerLength + ", flag " + headerFlag
-            + ", type" + headerType + ", name " + headerName + "dataLength " + length);
+        LOGGER.debug("Found header with length: " + headerLength + ", flag: " + headerFlag
+            + ", type: " + headerType + ", name: " + headerName + ", dataLength: " + length);
+        if (!LOADER_NAME.equals(headerName)) {
+            throw new IllegalArgumentException("The provided file is not a TAP DivIDE Loader");
+        }
         LOGGER.debug("Skipping " + length + " bytes");
         oldTap.skip(length);
 
