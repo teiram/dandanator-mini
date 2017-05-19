@@ -182,8 +182,9 @@ public class SlotZeroV6 extends SlotZeroBase implements SlotZero {
                         block.rawdata = Util.fromInputStream(is, block.size);
                         block.data = uncompressByteArray(block.rawdata);
                     } else {
-                        block.rawdata = block.data = copy(is,
+                        block.data = copy(is,
                                 (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
+                        block.rawdata = null;
                     }
                 } else {
                     block.data = Constants.ZEROED_SLOT;
