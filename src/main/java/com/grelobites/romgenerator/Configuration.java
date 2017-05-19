@@ -24,9 +24,10 @@ public class Configuration {
     private static final String BACKGROUNDIMAGEPATH_PROPERTY = "backgroundImagePath";
     private static final String CHARSETPATH_PROPERTY = "charSetPath";
     private static final String TAPLOADERTARGET_PROPERTY = "tapLoaderTarget";
+    private static final String PLUS2AROMSET_PROPERTY = "plus2ARomSet";
     private static final String DEFAULT_TAPLOADER_TARGET = HardwareMode.HW_48K.name();
+    private static final RomSet DEFAULT_PLUS2AROMSET = RomSet.PLUS2A_40_EN;
     public static final String INTERNAL_CHARSET_PREFIX= "internal://";
-
     private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V6.name();
 
     byte[] charSet;
@@ -40,7 +41,7 @@ public class Configuration {
     private RamGameCompressor ramGameCompressor;
     private BooleanProperty allowExperimentalGames;
     private StringProperty tapLoaderTarget;
-    private RomSet plus2ARomSet = RomSet.PLUS2A_40_EN;
+    private RomSet plus2ARomSet = DEFAULT_PLUS2AROMSET;
 
     private static Configuration INSTANCE;
 
@@ -225,6 +226,7 @@ public class Configuration {
 
     public void setPlus2ARomSet(RomSet plus2ARomSet) {
         this.plus2ARomSet = plus2ARomSet;
+        persistConfigurationValue(PLUS2AROMSET_PROPERTY, plus2ARomSet.name());
     }
 
     public void setTapLoaderTarget(String tapLoaderTarget) {
@@ -252,6 +254,8 @@ public class Configuration {
         Preferences p = getApplicationPreferences();
         configuration.tapLoaderTarget.set(p.get(TAPLOADERTARGET_PROPERTY,
                 DEFAULT_TAPLOADER_TARGET));
+        configuration.plus2ARomSet = RomSet.valueOf(
+                p.get(PLUS2AROMSET_PROPERTY, DEFAULT_PLUS2AROMSET.name()));
         return configuration;
     }
 
