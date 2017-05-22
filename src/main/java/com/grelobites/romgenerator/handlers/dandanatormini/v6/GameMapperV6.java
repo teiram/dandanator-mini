@@ -198,7 +198,9 @@ public class GameMapperV6 implements GameMapper {
                     ramGame.setForce48kMode(isGameForce48kMode);
                     ramGame.setHardwareMode(hardwareMode);
                     ramGame.setTrainerList(trainerList);
-                    ramGame.setCompressedData(getGameCompressedData());
+                    if (isGameCompressed) {
+                        ramGame.setCompressedData(getGameCompressedData());
+                    }
                     //Extract the PC from SP
                     ramGame.getGameHeader().setPCRegister(GameUtil.popPC(ramGame));
                     GameUtil.pushPC(ramGame);
