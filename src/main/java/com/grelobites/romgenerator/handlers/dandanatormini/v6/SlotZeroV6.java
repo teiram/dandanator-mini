@@ -184,7 +184,7 @@ public class SlotZeroV6 extends SlotZeroBase implements SlotZero {
                     } else {
                         block.data = copy(is,
                                 (block.getInitSlot() - 1) * Constants.SLOT_SIZE + block.getStart(), block.size);
-                        block.rawdata = null;
+                        block.rawdata = block.gameCompressed ? block.data : null;
                     }
                 } else {
                     block.data = Constants.ZEROED_SLOT;

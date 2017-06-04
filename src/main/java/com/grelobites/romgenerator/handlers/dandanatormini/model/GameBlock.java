@@ -6,6 +6,7 @@ public class GameBlock {
     public int start;
     public int size;
     public boolean compressed;
+    public boolean gameCompressed;
     public byte[] data;
     public byte[] rawdata;
 
@@ -40,6 +41,14 @@ public class GameBlock {
         this.compressed = compressed;
     }
 
+    public boolean isGameCompressed() {
+        return gameCompressed;
+    }
+
+    public void setGameCompressed(boolean gameCompressed) {
+        this.gameCompressed = gameCompressed;
+    }
+
     public byte[] getData() {
         return data;
     }
@@ -55,6 +64,7 @@ public class GameBlock {
                 ", start=" + start +
                 ", size=" + size +
                 ", compressed=" + compressed +
+                ", gameCompressed=" + gameCompressed +
                 '}';
     }
 
