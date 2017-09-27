@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.util.gamerenderer.renderers;
 
 
 import com.grelobites.romgenerator.Configuration;
+import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.HardwareMode;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 public class ScreenshotGameRenderer extends PassiveGameRendererBase implements GameRenderer  {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScreenshotGameRenderer.class);
@@ -85,5 +87,11 @@ public class ScreenshotGameRenderer extends PassiveGameRendererBase implements G
         } else {
             targetView.setImage(spectrum48kImage);
         }
+    }
+
+    @Override
+    public void loadImage(InputStream resource) throws IOException {
+        targetView.setImage(ImageUtil.scrLoader(
+                ImageUtil.newScreenshot(), resource));
     }
 }

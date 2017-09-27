@@ -29,6 +29,9 @@ public class Constants {
     private static final String DEFAULT_CHARSET_RESOURCE = "charset.rom";
     private static final String THEME_RESOURCE = "view/theme.css";
 
+    public static final String IANNA_MD5 = "6ea7e538518c39a120349728aaaeae89";
+    private static final String IANNA_SCREEN_RESOURCE = "ianna.scr";
+
     public static final byte[] ZEROED_SLOT = new byte[SLOT_SIZE];
 
     public static final byte B_01 = 1;
@@ -36,6 +39,7 @@ public class Constants {
 
     private static byte[] DEFAULT_DANDANATOR_SCREEN;
     private static byte[] SINCLAIR_SCREEN;
+    private static byte[] IANNA_SCREEN;
     private static byte[] DEFAULT_CHARSET;
 
     private static String THEME_RESOURCE_URL;
@@ -77,6 +81,16 @@ public class Constants {
                     Constants.SPECTRUM_FULLSCREEN_SIZE);
         }
         return SINCLAIR_SCREEN;
+    }
+
+    public static byte[] getIannaScreen() throws IOException {
+        if (IANNA_SCREEN == null) {
+            IANNA_SCREEN = Util.fromInputStream(
+                    DandanatorMiniConstants.class.getClassLoader()
+                            .getResourceAsStream(IANNA_SCREEN_RESOURCE),
+                    Constants.SPECTRUM_FULLSCREEN_SIZE);
+        }
+        return IANNA_SCREEN;
     }
 
     public static byte[] getDefaultCharset() throws IOException {

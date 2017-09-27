@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.view;
 import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
@@ -34,10 +35,7 @@ import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,6 +85,8 @@ public class MainAppController {
     private PlayerController playerController;
     private boolean playerVisible = false;
 
+    private boolean iannaMode = false;
+
     public MainAppController(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
@@ -99,32 +99,58 @@ public class MainAppController {
         return getApplicationContext().getRomSetHandler();
     }
 
+    private boolean interceptIannaRomSet(List<File> files) {
+        LOGGER.debug("interceptIannaRomSet " + files);
+        if (files.size() == 1 && Constants.IANNA_MD5.equals(Util.getMD5(files.get(0)))) {
+            PlayerConfiguration.getInstance()
+                    .setCustomRomSetPath(files.get(0).getPath());
+            applicationContext.getGameList().clear();
+            menuPagination.setCurrentPageIndex(1);
+            try {
+                gameRenderer.loadImage(new ByteArrayInputStream(Constants.getIannaScreen()));
+            } catch (Exception e) {
+                LOGGER.error("Loading Ianna screen", e);
+            }
+            iannaMode = true;
+            return true;
+        } else {
+            if (iannaMode == true) {
+                gameRenderer.previewGame(null);
+                menuPagination.setCurrentPageIndex(0);
+                iannaMode = false;
+            }
+            return false;
+        }
+    }
+
     private void addGamesFromFiles(List<File> files) {
-        files.forEach(file ->
-            applicationContext.addBackgroundTask(() -> {
-                Optional<Game> gameOptional = GameUtil.createGameFromFile(file);
-                if (gameOptional.isPresent()) {
-                    Platform.runLater(() -> getRomSetHandler().addGame(gameOptional.get()));
-                } else {
-                    Platform.runLater(() -> {
-                        try (FileInputStream fis = new FileInputStream(file)) {
-                            if (getApplicationContext().getGameList().isEmpty()) {
-                                getRomSetHandler().importRomSet(fis);
-                            } else {
-                                getRomSetHandler().mergeRomSet(fis);
-                            }
-                        } catch (Exception e) {
-                            LOGGER.error("Importing ROMSet", e);
-                            DialogUtil.buildErrorAlert(
-                                    LocaleUtil.i18n("fileImportError"),
-                                    LocaleUtil.i18n("fileImportErrorHeader"),
-                                    LocaleUtil.i18n("fileImportErrorContent"))
-                                    .showAndWait();
+        if (!interceptIannaRomSet(files)) {
+            files.forEach(file ->
+                    applicationContext.addBackgroundTask(() -> {
+                        Optional<Game> gameOptional = GameUtil.createGameFromFile(file);
+                        if (gameOptional.isPresent()) {
+                            Platform.runLater(() -> getRomSetHandler().addGame(gameOptional.get()));
+                        } else {
+                            Platform.runLater(() -> {
+                                try (FileInputStream fis = new FileInputStream(file)) {
+                                    if (getApplicationContext().getGameList().isEmpty()) {
+                                        getRomSetHandler().importRomSet(fis);
+                                    } else {
+                                        getRomSetHandler().mergeRomSet(fis);
+                                    }
+                                } catch (Exception e) {
+                                    LOGGER.error("Importing ROMSet", e);
+                                    DialogUtil.buildErrorAlert(
+                                            LocaleUtil.i18n("fileImportError"),
+                                            LocaleUtil.i18n("fileImportErrorHeader"),
+                                            LocaleUtil.i18n("fileImportErrorContent"))
+                                            .showAndWait();
+                                }
+                            });
                         }
-                    });
-                }
-                return OperationResult.successResult();
-            }));
+                        return OperationResult.successResult();
+                    }));
+        }
     }
 
     private void updateRomSetHandler() {
@@ -170,6 +196,7 @@ public class MainAppController {
                     return null;
             }
         });
+
         applicationContext.setRomSetHandlerInfoPane(romSetHandlerInfoPane);
         applicationContext.setMenuPreview(menuPreview);
         applicationContext.setSelectedGameProperty(gameTable.getSelectionModel().selectedItemProperty());

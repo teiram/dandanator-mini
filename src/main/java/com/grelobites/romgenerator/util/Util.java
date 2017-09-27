@@ -3,11 +3,9 @@ package com.grelobites.romgenerator.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -176,6 +174,21 @@ public class Util {
         return sum & 0xffff;
     }
 
+    public static String getMD5(File file) {
+        try {
+            byte[] fileBytes = Files.readAllBytes(file.toPath());
+            byte[] hash = MessageDigest.getInstance("MD5").digest(fileBytes);
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+            }
+            LOGGER.debug("Generated MD5: " + sb.toString());
+            return sb.toString();
+        } catch (Exception e) {
+            LOGGER.warn("Generating MD5", e);
+            throw new IllegalArgumentException(e);
+        }
+    }
 
 
 }
