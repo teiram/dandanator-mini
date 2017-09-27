@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -862,13 +863,19 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
     public void exportDivIdeTapToFile() {
         DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
+        final PlayerConfiguration configuration = PlayerConfiguration.getInstance();
         chooser.setTitle(LocaleUtil.i18n("exportDivIdeTapMenuEntry"));
         chooser.setInitialFileName("dandanator_divide_romset.tap");
         final File saveFile = chooser.showSaveDialog(applicationContext.getApplicationStage());
         if (saveFile != null) {
             try (FileOutputStream fos = new FileOutputStream(saveFile)) {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                exportRomSet(bos);
+                if (configuration.getCustomRomSetPath() != null) {
+                    bos.write(Util.fromInputStream(new FileInputStream(configuration
+                            .getCustomRomSetPath())));
+                } else {
+                    exportRomSet(bos);
+                }
                 RomSetUtil.exportToDivideAsTap(new ByteArrayInputStream(bos.toByteArray()), fos);
             } catch (IOException e) {
                 LOGGER.error("Exporting to DivIDE TAP", e);
@@ -914,7 +921,9 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
             exportDivIdeTapMenuItem.setAccelerator(
                     KeyCombination.keyCombination("SHORTCUT+D")
             );
-            exportDivIdeTapMenuItem.disableProperty().bind(generationAllowedProperty.not());
+            exportDivIdeTapMenuItem.disableProperty().bind(
+                    generationAllowedProperty.not().and(PlayerConfiguration
+                            .getInstance().customRomSetPathProperty().isEmpty()));
 
             exportDivIdeTapMenuItem.setOnAction(f -> exportDivIdeTapToFile());
         }
