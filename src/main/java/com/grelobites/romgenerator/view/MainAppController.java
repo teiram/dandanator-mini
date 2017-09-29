@@ -117,6 +117,8 @@ public class MainAppController {
             if (iannaMode == true) {
                 gameRenderer.previewGame(null);
                 menuPagination.setCurrentPageIndex(0);
+                PlayerConfiguration.getInstance()
+                        .setCustomRomSetPath(null);
                 iannaMode = false;
             }
             return false;
