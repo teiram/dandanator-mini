@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.prefs.Preferences;
 
 public class DandanatorMiniConfiguration {
@@ -134,7 +135,9 @@ public class DandanatorMiniConfiguration {
     }
 
     public void setExtraRomPath(String extraRomPath) {
-        extraRom = null;
+        if (!Constants.ROMSET_PROVIDED.equals(extraRomPath)) {
+            extraRom = null;
+        }
         this.extraRomPath.set(extraRomPath);
     }
 
@@ -290,6 +293,24 @@ public class DandanatorMiniConfiguration {
             }
         }
         return dandanatorPicFirmware;
+    }
+
+    @Override
+    public String toString() {
+        return "DandanatorMiniConfiguration{" +
+                "dandanatorRomPath=" + dandanatorRomPath +
+                ", extraRomPath=" + extraRomPath +
+                ", dandanatorPicFirmwarePath=" + dandanatorPicFirmwarePath +
+                ", togglePokesMessage=" + togglePokesMessage +
+                ", extraRomMessage=" + extraRomMessage +
+                ", launchGameMessage=" + launchGameMessage +
+                ", selectPokesMessage=" + selectPokesMessage +
+                ", disableBorderEffect=" + disableBorderEffect +
+                ", autoboot=" + autoboot +
+                ", dandanatorRom=" + dandanatorRom +
+                ", extraRom=" + extraRom +
+                ", dandanatorPicFirmware=" + dandanatorPicFirmware +
+                '}';
     }
 
     private static DandanatorMiniConfiguration setFromPreferences(DandanatorMiniConfiguration configuration) {
