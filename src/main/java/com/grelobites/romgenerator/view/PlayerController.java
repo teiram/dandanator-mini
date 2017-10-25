@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.ApplicationContext;
+import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
@@ -317,6 +318,10 @@ public class PlayerController {
                 .addListener(e -> {
                     resetPlayerAndRomSet();
                 });
+
+        Configuration.getInstance().backgroundImagePathProperty().addListener(e -> {
+            resetPlayerAndRomSet();
+        });
 
         configuration.customRomSetPathProperty().addListener(e -> {
             resetPlayerAndRomSet();
