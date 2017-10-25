@@ -508,7 +508,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
             int cblocksOffset = V6Constants.GREY_ZONE_OFFSET;
             ByteArrayOutputStream cBlocksTable = new ByteArrayOutputStream();
-            byte[] compressedScreen = compress(getScreenThirdSection(configuration.getBackgroundImage()));
+            byte[] compressedScreen = compress(configuration.getBackgroundImage());
             cBlocksTable.write(asLittleEndianWord(cblocksOffset));
             cBlocksTable.write(asLittleEndianWord(compressedScreen.length));
             cblocksOffset += compressedScreen.length;
@@ -614,6 +614,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
             os.write(uncompressedStream.toByteArray());
             LOGGER.debug("Dumped uncompressed game data. Offset: " + os.size());
+            LOGGER.debug("About to dump extra rom with configuration " + dmConfiguration);
 
             os.write(dmConfiguration.getExtraRom());
             LOGGER.debug("Dumped custom rom. Offset: " + os.size());
