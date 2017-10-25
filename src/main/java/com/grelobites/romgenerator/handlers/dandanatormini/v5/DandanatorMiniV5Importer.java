@@ -62,8 +62,8 @@ public class DandanatorMiniV5Importer implements DandanatorMiniImporter {
         globalConfiguration.setBackgroundImage(slotZero.getScreen());
         globalConfiguration.setBackgroundImagePath(Constants.ROMSET_PROVIDED);
 
-        dandanatorMiniConfiguration.setExtraRom(extraRom);
         dandanatorMiniConfiguration.setExtraRomPath(Constants.ROMSET_PROVIDED);
+        dandanatorMiniConfiguration.setExtraRom(extraRom);
 
         dandanatorMiniConfiguration.setExtraRomMessage(slotZero.getExtraRomMessage());
         dandanatorMiniConfiguration.setTogglePokesMessage(slotZero.getTogglePokesMessage());
