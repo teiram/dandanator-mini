@@ -99,17 +99,28 @@ public class MainAppController {
         return getApplicationContext().getRomSetHandler();
     }
 
-    private boolean interceptIannaRomSet(List<File> files) {
-        LOGGER.debug("interceptIannaRomSet " + files);
-        if (files.size() == 1 && Constants.IANNA_MD5.equals(Util.getMD5(files.get(0)))) {
+    private static String getKnownRomScreenResource(File file) {
+        for (String[] candidate : Constants.KNOWN_ROMS) {
+            if (candidate[0].equals(Util.getMD5(file))) {
+                return candidate[1];
+            }
+        }
+        return null;
+    }
+
+    private boolean interceptSpecialRomSet(List<File> files) {
+        LOGGER.debug("interceptSpecialRomSet " + files);
+        String screenResource = null;
+        if (files.size() == 1 &&
+                (screenResource = getKnownRomScreenResource(files.get(0))) != null) {
             PlayerConfiguration.getInstance()
                     .setCustomRomSetPath(files.get(0).getPath());
             applicationContext.getGameList().clear();
             menuPagination.setCurrentPageIndex(1);
             try {
-                gameRenderer.loadImage(new ByteArrayInputStream(Constants.getIannaScreen()));
+                gameRenderer.loadImage(Constants.getScreenFromResource(screenResource));
             } catch (Exception e) {
-                LOGGER.error("Loading Ianna screen", e);
+                LOGGER.error("Loading known rom screen", e);
             }
             iannaMode = true;
             return true;
@@ -126,7 +137,7 @@ public class MainAppController {
     }
 
     private void addGamesFromFiles(List<File> files) {
-        if (!interceptIannaRomSet(files)) {
+        if (!interceptSpecialRomSet(files)) {
             files.forEach(file ->
                     applicationContext.addBackgroundTask(() -> {
                         Optional<Game> gameOptional = GameUtil.createGameFromFile(file);

@@ -6,13 +6,14 @@ import com.grelobites.romgenerator.util.PreferencesProvider;
 import com.grelobites.romgenerator.util.Util;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 public class Constants {
 
     public static final String ROMSET_PROVIDED = "__ROMSET_PROVIDED__";
     public static final int SLOT_SIZE = 0x4000;
 
-    private static final String DEFAULT_VERSION = "6.8";
+    private static final String DEFAULT_VERSION = "6.9";
 
     public static final int CHARSET_SIZE = 768;
 
@@ -32,6 +33,14 @@ public class Constants {
     public static final String IANNA_MD5 = "6ea7e538518c39a120349728aaaeae89";
     private static final String IANNA_SCREEN_RESOURCE = "ianna.scr";
 
+    public static final String CASTLEVANIA_MD5 = "a2dea4861b2ef343b5762b1461d90832";
+    public static final String CASTLEVANIA_SCREEN_RESOURCE = "castlevania.scr";
+
+    public static final String[][] KNOWN_ROMS = {
+            {IANNA_MD5, IANNA_SCREEN_RESOURCE},
+            {CASTLEVANIA_MD5, CASTLEVANIA_SCREEN_RESOURCE}
+    };
+
     public static final byte[] ZEROED_SLOT = new byte[SLOT_SIZE];
 
     public static final byte B_01 = 1;
@@ -39,7 +48,6 @@ public class Constants {
 
     private static byte[] DEFAULT_DANDANATOR_SCREEN;
     private static byte[] SINCLAIR_SCREEN;
-    private static byte[] IANNA_SCREEN;
     private static byte[] DEFAULT_CHARSET;
 
     private static String THEME_RESOURCE_URL;
@@ -83,14 +91,9 @@ public class Constants {
         return SINCLAIR_SCREEN;
     }
 
-    public static byte[] getIannaScreen() throws IOException {
-        if (IANNA_SCREEN == null) {
-            IANNA_SCREEN = Util.fromInputStream(
-                    DandanatorMiniConstants.class.getClassLoader()
-                            .getResourceAsStream(IANNA_SCREEN_RESOURCE),
-                    Constants.SPECTRUM_FULLSCREEN_SIZE);
-        }
-        return IANNA_SCREEN;
+    public static InputStream getScreenFromResource(String resource) throws IOException {
+        return DandanatorMiniConstants.class.getClassLoader()
+                .getResourceAsStream(resource);
     }
 
     public static byte[] getDefaultCharset() throws IOException {
