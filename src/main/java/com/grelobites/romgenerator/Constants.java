@@ -30,15 +30,20 @@ public class Constants {
     private static final String DEFAULT_CHARSET_RESOURCE = "charset.rom";
     private static final String THEME_RESOURCE = "view/theme.css";
 
-    public static final String IANNA_MD5 = "6ea7e538518c39a120349728aaaeae89";
+    public static final String IANNA_MD5_V1 = "6ea7e538518c39a120349728aaaeae89";
+    public static final String IANNA_MD5_V11 = "d8f112937f9a6b242f8654c1f9d6d2b2";
+
     private static final String IANNA_SCREEN_RESOURCE = "ianna.scr";
 
-    public static final String CASTLEVANIA_MD5 = "a2dea4861b2ef343b5762b1461d90832";
+    public static final String CASTLEVANIA_MD5_V1 = "1ee9b70e785157511f62547150cf3f15";
+    public static final String CASTLEVANIA_MD5_V2 = "a2dea4861b2ef343b5762b1461d90832";
     public static final String CASTLEVANIA_SCREEN_RESOURCE = "castlevania.scr";
 
     public static final String[][] KNOWN_ROMS = {
-            {IANNA_MD5, IANNA_SCREEN_RESOURCE},
-            {CASTLEVANIA_MD5, CASTLEVANIA_SCREEN_RESOURCE}
+            {IANNA_MD5_V1, IANNA_SCREEN_RESOURCE},
+            {IANNA_MD5_V11, IANNA_SCREEN_RESOURCE},
+            {CASTLEVANIA_MD5_V1, CASTLEVANIA_SCREEN_RESOURCE},
+            {CASTLEVANIA_MD5_V2, CASTLEVANIA_SCREEN_RESOURCE}
     };
 
     public static final byte[] ZEROED_SLOT = new byte[SLOT_SIZE];

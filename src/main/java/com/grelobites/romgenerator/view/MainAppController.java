@@ -100,8 +100,9 @@ public class MainAppController {
     }
 
     private static String getKnownRomScreenResource(File file) {
+        String md5 = Util.getMD5(file);
         for (String[] candidate : Constants.KNOWN_ROMS) {
-            if (candidate[0].equals(Util.getMD5(file))) {
+            if (candidate[0].equals(md5)) {
                 return candidate[1];
             }
         }
