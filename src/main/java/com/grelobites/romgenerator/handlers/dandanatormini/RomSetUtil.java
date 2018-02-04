@@ -1,24 +1,22 @@
 package com.grelobites.romgenerator.handlers.dandanatormini;
 
+import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.Util;
+import com.grelobites.romgenerator.util.compress.zx7.Zx7InputStream;
 import com.grelobites.romgenerator.util.player.AudioDataPlayerSupport;
 import com.grelobites.romgenerator.util.player.TapOutputStream;
 import com.grelobites.romgenerator.util.player.TapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -32,6 +30,7 @@ public class RomSetUtil {
     private static final int BLOCK_SIZE = 0x8000;
     private static final int BLOCK_COUNT = 16;
     private static final String BLOCK_NAME_PREFIX = "block";
+    private static final String MULTILOADER_SIGNATURE = "MLD";
 
     public static void exportToDivideAsTap(InputStream romsetStream, OutputStream out) throws IOException {
         TapOutputStream tos = TapUtil.getLoaderTap(new ByteArrayInputStream(DandanatorMiniConstants
@@ -104,4 +103,56 @@ public class RomSetUtil {
         zos.flush();
         zos.close();
     }
+
+    private static Optional<InputStream> getRomScreenResource(ByteBuffer buffer, int slot) {
+        buffer.position(Constants.SLOT_SIZE * slot);
+        byte[] magic = new byte[3];
+        buffer.get(magic);
+        if (MULTILOADER_SIGNATURE.equals(new String(magic))) {
+            int version = Byte.toUnsignedInt(buffer.get());
+            int offset = Short.toUnsignedInt(buffer.getShort());
+            int size = Short.toUnsignedInt(buffer.getShort());
+            LOGGER.debug("Detected Multiload ROMSet with version " + version);
+            LOGGER.debug("Compressed screen at offset " + offset + ", size " + size);
+            return Optional.of(new Zx7InputStream(new ByteArrayInputStream(buffer.array(),
+                    offset + Constants.SLOT_SIZE * slot, size)));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<InputStream> getRomScreenResource(File file) {
+        if (file.isFile() && file.length() == Constants.SLOT_SIZE * 32) {
+            try {
+                ByteBuffer buffer = ByteBuffer.wrap(Files.readAllBytes(file.toPath()))
+                    .order(ByteOrder.LITTLE_ENDIAN);
+                for (int i = 31; i > 0; i--) {
+                    Optional<InputStream> screen = getRomScreenResource(buffer, i);
+                    if (screen.isPresent()) {
+                        LOGGER.debug("Found Multiload in slot " + i);
+                        return screen;
+                    }
+                }
+            } catch (IOException ioe) {
+                LOGGER.error("Reading ROM file " + file, ioe);
+            }
+        }
+        //Fallback to MD5 method
+        return getKnownRomScreenResource(file);
+    }
+
+    private static Optional<InputStream> getKnownRomScreenResource(File file) {
+        String md5 = Util.getMD5(file);
+        try {
+            for (String[] candidate : Constants.KNOWN_ROMS) {
+                if (candidate[0].equals(md5)) {
+                    return Optional.of(Constants.getScreenFromResource(candidate[1]));
+                }
+            }
+        } catch (IOException ioe) {
+            LOGGER.error("Loading know rom screen", ioe);
+        }
+        return Optional.empty();
+    }
+
 }

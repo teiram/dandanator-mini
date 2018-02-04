@@ -1,5 +1,6 @@
 package com.grelobites.romgenerator.util;
 
+import com.grelobites.romgenerator.util.compress.zx7.Zx7InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -190,5 +191,14 @@ public class Util {
         }
     }
 
+    public static InputStream streamFromFile(File file, int size, int offset) throws IOException {
+        FileInputStream fio = new FileInputStream(file);
+        fio.skip(offset);
+        return new ByteArrayInputStream(fromInputStream(fio, size));
+    }
+
+    public static InputStream compressedStreamFromFile(File file, int size, int offset) throws IOException {
+        return new Zx7InputStream(streamFromFile(file, size, offset), false);
+    }
 
 }

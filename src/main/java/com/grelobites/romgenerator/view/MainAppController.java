@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
+import com.grelobites.romgenerator.handlers.dandanatormini.RomSetUtil;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.RamGame;
@@ -36,6 +37,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 
@@ -99,32 +103,23 @@ public class MainAppController {
         return getApplicationContext().getRomSetHandler();
     }
 
-    private static String getKnownRomScreenResource(File file) {
-        String md5 = Util.getMD5(file);
-        for (String[] candidate : Constants.KNOWN_ROMS) {
-            if (candidate[0].equals(md5)) {
-                return candidate[1];
-            }
-        }
-        return null;
-    }
-
     private boolean interceptSpecialRomSet(List<File> files) {
         LOGGER.debug("interceptSpecialRomSet " + files);
-        String screenResource = null;
+        Optional<InputStream> screenResource;
         if (files.size() == 1 &&
-                (screenResource = getKnownRomScreenResource(files.get(0))) != null) {
+                (screenResource = RomSetUtil.getRomScreenResource(files.get(0))).isPresent()) {
             PlayerConfiguration.getInstance()
                     .setCustomRomSetPath(files.get(0).getPath());
             applicationContext.getGameList().clear();
             menuPagination.setCurrentPageIndex(1);
             try {
-                gameRenderer.loadImage(Constants.getScreenFromResource(screenResource));
+                gameRenderer.loadImage(screenResource.get());
+                iannaMode = true;
+                return true;
             } catch (Exception e) {
                 LOGGER.error("Loading known rom screen", e);
+                return false;
             }
-            iannaMode = true;
-            return true;
         } else {
             if (iannaMode == true) {
                 gameRenderer.previewGame(null);

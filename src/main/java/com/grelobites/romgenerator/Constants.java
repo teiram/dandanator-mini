@@ -13,7 +13,7 @@ public class Constants {
     public static final String ROMSET_PROVIDED = "__ROMSET_PROVIDED__";
     public static final int SLOT_SIZE = 0x4000;
 
-    private static final String DEFAULT_VERSION = "6.9";
+    private static final String DEFAULT_VERSION = "6.10";
 
     public static final int CHARSET_SIZE = 768;
 
@@ -32,6 +32,7 @@ public class Constants {
 
     public static final String IANNA_MD5_V1 = "6ea7e538518c39a120349728aaaeae89";
     public static final String IANNA_MD5_V11 = "d8f112937f9a6b242f8654c1f9d6d2b2";
+    public static final String IANNA_MD5_V111 = "101289fc50b0877b55319efc17c4ea81";
 
     private static final String IANNA_SCREEN_RESOURCE = "ianna.scr";
 
@@ -42,6 +43,7 @@ public class Constants {
     public static final String[][] KNOWN_ROMS = {
             {IANNA_MD5_V1, IANNA_SCREEN_RESOURCE},
             {IANNA_MD5_V11, IANNA_SCREEN_RESOURCE},
+            {IANNA_MD5_V111, IANNA_SCREEN_RESOURCE},
             {CASTLEVANIA_MD5_V1, CASTLEVANIA_SCREEN_RESOURCE},
             {CASTLEVANIA_MD5_V2, CASTLEVANIA_SCREEN_RESOURCE}
     };
