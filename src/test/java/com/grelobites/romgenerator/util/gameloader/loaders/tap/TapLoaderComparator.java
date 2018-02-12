@@ -1,7 +1,7 @@
 package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 
 import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
@@ -17,14 +17,14 @@ import static org.junit.Assert.assertEquals;
 public class TapLoaderComparator {
 
     private static void saveGameAsZ80(Game game, String name) {
-        GameUtil.popPC((RamGame) game);
+        GameUtil.popPC((SnapshotGame) game);
         try (FileOutputStream fout = new FileOutputStream(name)) {
             new Z80GameImageLoader().save(
                     game, fout);
         } catch (Exception e) {
             e.printStackTrace(System.err);
         } finally {
-            GameUtil.pushPC((RamGame) game);
+            GameUtil.pushPC((SnapshotGame) game);
         }
 
     }

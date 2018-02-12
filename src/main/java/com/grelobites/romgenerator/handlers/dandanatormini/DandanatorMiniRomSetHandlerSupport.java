@@ -8,7 +8,7 @@ import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.Poke;
 import com.grelobites.romgenerator.model.PokeViewable;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
@@ -65,31 +65,31 @@ public class DandanatorMiniRomSetHandlerSupport {
     }
 
     protected static int getGamePokeCount(Game game) {
-        if (game instanceof RamGame) {
-            return ((RamGame) game).getTrainerList().getChildren().size();
+        if (game instanceof SnapshotGame) {
+            return ((SnapshotGame) game).getTrainerList().getChildren().size();
         } else {
             return 0;
         }
     }
 
     protected static int pokeRequiredSize(Game game) {
-        if (game instanceof RamGame) {
-            RamGame ramGame = (RamGame) game;
+        if (game instanceof SnapshotGame) {
+            SnapshotGame snapshotGame = (SnapshotGame) game;
             int headerSize = 25; //Fixed size required per poke
             //Sum of all the addressValues * 3 (address + value)
-            int size = ramGame.getTrainerList().getChildren().stream()
+            int size = snapshotGame.getTrainerList().getChildren().stream()
                     .map(p -> p.getChildren().size() * 3).reduce(0, (a, b) -> a + b);
-            return size + headerSize * ramGame.getTrainerList().getChildren().size();
+            return size + headerSize * snapshotGame.getTrainerList().getChildren().size();
         } else {
             return 0;
         }
     }
 
     protected static void dumpGamePokeData(OutputStream os, Game game) throws IOException {
-        if (game instanceof RamGame) {
-            RamGame ramGame = (RamGame) game;
+        if (game instanceof SnapshotGame) {
+            SnapshotGame snapshotGame = (SnapshotGame) game;
             int index = 1;
-            for (PokeViewable trainer : ramGame.getTrainerList().getChildren()) {
+            for (PokeViewable trainer : snapshotGame.getTrainerList().getChildren()) {
                 os.write((byte) trainer.getChildren().size());
                 os.write(asNullTerminatedByteArray(String.format("%d. %s",
                         index++, trainer.getViewRepresentation()), 24));
@@ -107,16 +107,16 @@ public class DandanatorMiniRomSetHandlerSupport {
     }
 
     protected static boolean isGameScreenHold(Game game) {
-        return game instanceof RamGame && ((RamGame) game).getHoldScreen();
+        return game instanceof SnapshotGame && ((SnapshotGame) game).getHoldScreen();
     }
 
     protected static boolean isGameRomActive(Game game) {
-        return game instanceof RamGame && !((RamGame) game).getRom().equals(
+        return game instanceof SnapshotGame && !((SnapshotGame) game).getRom().equals(
                 DandanatorMiniConstants.INTERNAL_ROM_GAME);
     }
 
     protected static boolean isGameCompressed(Game game) {
-        return game instanceof RamGame && ((RamGame) game).getCompressed();
+        return game instanceof SnapshotGame && ((SnapshotGame) game).getCompressed();
     }
 
     protected static void dumpGameName(OutputStream os, Game game, int index) throws IOException {
@@ -144,7 +144,7 @@ public class DandanatorMiniRomSetHandlerSupport {
 
     public void exportCurrentGamePokes() {
         Game game = getApplicationContext().selectedGameProperty().get();
-        if (game != null && game instanceof RamGame) {
+        if (game != null && game instanceof SnapshotGame) {
             if (GameUtil.gameHasPokes(game)) {
                 DirectoryAwareFileChooser chooser = getApplicationContext().getFileChooser();
                 chooser.setTitle(LocaleUtil.i18n("exportCurrentGamePokes"));
@@ -152,7 +152,7 @@ public class DandanatorMiniRomSetHandlerSupport {
                 final File saveFile = chooser.showSaveDialog(applicationContext.getApplicationStage());
                 if (saveFile != null) {
                     try {
-                        GameUtil.exportPokesToFile((RamGame) game, saveFile);
+                        GameUtil.exportPokesToFile((SnapshotGame) game, saveFile);
                     } catch (IOException e) {
                         LOGGER.error("Exporting Game Pokes", e);
                     }
@@ -171,14 +171,14 @@ public class DandanatorMiniRomSetHandlerSupport {
 
     public void importCurrentGamePokes() {
         Game game = getApplicationContext().selectedGameProperty().get();
-        if (game != null && game instanceof RamGame) {
+        if (game != null && game instanceof SnapshotGame) {
             DirectoryAwareFileChooser chooser = getApplicationContext().getFileChooser();
             chooser.setTitle(LocaleUtil.i18n("importCurrentGamePokes"));
             final File loadFile = chooser.showOpenDialog(applicationContext.getApplicationStage());
             if (loadFile != null) {
                 try {
                     ImportContext ctx = new ImportContext(loadFile);
-                    GameUtil.importPokesFromFile((RamGame) game, ctx);
+                    GameUtil.importPokesFromFile((SnapshotGame) game, ctx);
                     if (ctx.hasErrors()) {
                         LOGGER.debug("Detected errors in pokes import operation");
                         DialogUtil.buildWarningAlert(LocaleUtil.i18n("importPokesWarning"),

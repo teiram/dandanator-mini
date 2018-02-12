@@ -3,12 +3,8 @@ package com.grelobites.romgenerator.handlers.dandanatormini.v4;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.model.TrainerList;
+import com.grelobites.romgenerator.model.*;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.PositionAwareInputStream;
 import com.grelobites.romgenerator.util.Util;
 import org.slf4j.Logger;
@@ -75,7 +71,7 @@ public class GameMapperV4 implements GameMapper {
         }
     }
 
-    public void exportTrainers(RamGame game) {
+    public void exportTrainers(SnapshotGame game) {
         trainerList.setOwner(game);
         game.setTrainerList(trainerList);
     }
@@ -87,7 +83,7 @@ public class GameMapperV4 implements GameMapper {
 
     @Override
     public Game getGame() {
-        final RamGame game = new RamGame(GameType.RAM48, getGameSlots());
+        final SnapshotGame game = new SnapshotGame(GameType.RAM48, getGameSlots());
         game.setName(name);
         game.setHoldScreen(holdScreen);
         game.setRom(activeRom ? DandanatorMiniConstants.EXTRA_ROM_GAME :

@@ -2,11 +2,7 @@ package com.grelobites.romgenerator.util.gamerenderer.renderers;
 
 
 import com.grelobites.romgenerator.Configuration;
-import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.*;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.gamerenderer.GameRenderer;
 import com.grelobites.romgenerator.util.gamerenderer.PassiveGameRendererBase;

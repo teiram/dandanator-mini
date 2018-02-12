@@ -14,7 +14,7 @@ public interface PokeViewable {
 
     String getViewRepresentation();
 
-    RamGame getOwner();
+    SnapshotGame getOwner();
 
     void update(String value);
 }

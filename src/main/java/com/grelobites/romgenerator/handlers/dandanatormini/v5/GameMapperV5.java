@@ -5,13 +5,8 @@ import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstan
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameBlock;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameChunk;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.model.RomGame;
-import com.grelobites.romgenerator.model.TrainerList;
+import com.grelobites.romgenerator.model.*;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.PositionAwareInputStream;
 import com.grelobites.romgenerator.util.Util;
@@ -162,20 +157,20 @@ public class GameMapperV5 implements GameMapper {
                 case RAM16:
                 case RAM48:
                 case RAM128:
-                    RamGame ramGame = new RamGame(gameType, getGameSlots());
-                    ramGame.setCompressed(isGameCompressed);
-                    ramGame.setHoldScreen(screenHold);
-                    ramGame.setRom(activeRom ? DandanatorMiniConstants.EXTRA_ROM_GAME :
+                    SnapshotGame snapshotGame = new SnapshotGame(gameType, getGameSlots());
+                    snapshotGame.setCompressed(isGameCompressed);
+                    snapshotGame.setHoldScreen(screenHold);
+                    snapshotGame.setRom(activeRom ? DandanatorMiniConstants.EXTRA_ROM_GAME :
                             DandanatorMiniConstants.INTERNAL_ROM_GAME);
-                    ramGame.setGameHeader(gameHeader);
-                    ramGame.setForce48kMode(isGameForce48kMode);
-                    ramGame.setHardwareMode(hardwareMode);
-                    ramGame.setTrainerList(trainerList);
-                    ramGame.setCompressedData(getGameCompressedData());
+                    snapshotGame.setGameHeader(gameHeader);
+                    snapshotGame.setForce48kMode(isGameForce48kMode);
+                    snapshotGame.setHardwareMode(hardwareMode);
+                    snapshotGame.setTrainerList(trainerList);
+                    snapshotGame.setCompressedData(getGameCompressedData());
                     //Extract the PC from SP
-                    ramGame.getGameHeader().setPCRegister(GameUtil.popPC(ramGame));
-                    GameUtil.pushPC(ramGame);
-                    game = ramGame;
+                    snapshotGame.getGameHeader().setPCRegister(GameUtil.popPC(snapshotGame));
+                    GameUtil.pushPC(snapshotGame);
+                    game = snapshotGame;
                     break;
                 default:
                     LOGGER.error("Unsupported type of game " + gameType.screenName());

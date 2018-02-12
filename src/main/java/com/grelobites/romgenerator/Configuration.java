@@ -28,7 +28,7 @@ public class Configuration {
     private static final String DEFAULT_TAPLOADER_TARGET = HardwareMode.HW_48K.name();
     private static final RomSet DEFAULT_PLUS2AROMSET = RomSet.PLUS2A_40_EN;
     public static final String INTERNAL_CHARSET_PREFIX= "internal://";
-    private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V6.name();
+    private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V7.name();
 
     byte[] charSet;
     byte[] backgroundImage;

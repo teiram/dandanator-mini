@@ -1,11 +1,7 @@
 package com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader;
 
-import com.grelobites.romgenerator.model.ChangeData;
-import com.grelobites.romgenerator.model.ChangeValue;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.model.RomId;
-import com.grelobites.romgenerator.model.VersionedRamGame;
+import com.grelobites.romgenerator.model.*;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
@@ -67,14 +63,14 @@ public class CompositePlus2ATapeLoader implements TapeLoader {
     }
 
     private static void saveGameAsZ80(Game game, String name) {
-        GameUtil.popPC((RamGame) game);
+        GameUtil.popPC((SnapshotGame) game);
         try (FileOutputStream fout = new FileOutputStream(name)) {
             new Z80GameImageLoader().save(
                     game, fout);
         } catch (Exception e) {
             LOGGER.error("Saving game as Z80", e);
         } finally {
-            GameUtil.pushPC((RamGame) game);
+            GameUtil.pushPC((SnapshotGame) game);
         }
 
     }
@@ -87,7 +83,7 @@ public class CompositePlus2ATapeLoader implements TapeLoader {
             byte[] tapeByteArray = Util.fromInputStream(tapeFile);
 
             tapeLoader.setRomResources(ROM40_ROMS);
-            VersionedRamGame game40 = (VersionedRamGame) tapeLoader
+            VersionedSnapshotGame game40 = (VersionedSnapshotGame) tapeLoader
                     .loadTape(new ByteArrayInputStream(tapeByteArray));
             game40.setVersion(RomId.ROM_PLUS2A_40);
 

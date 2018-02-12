@@ -3,11 +3,8 @@ package com.grelobites.romgenerator.util.gameloader.loaders;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.*;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.compress.z80.Z80OutputStream;
@@ -18,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -97,14 +93,14 @@ public class Z80GameImageLoader implements GameImageLoader {
         return hardwareMode.intValue() == 0;
     }
 
-    private static RamGame createRamGameFromData(int version,
-                                          HardwareMode hardwareMode,
-                                          GameHeader header,
-                                          byte[][] gameData) {
-        RamGame game;
+    private static SnapshotGame createRamGameFromData(int version,
+                                                      HardwareMode hardwareMode,
+                                                      GameHeader header,
+                                                      byte[][] gameData) {
+        SnapshotGame game;
         if (version == 1) {
             LOGGER.debug("Assembling game as version 1 48K game");
-            game =  new RamGame(GameType.RAM48, Arrays.asList(gameData));
+            game =  new SnapshotGame(GameType.RAM48, Arrays.asList(gameData));
         } else {
             ArrayList<byte[]> arrangedBlocks = new ArrayList<>();
             GameType gameType;
@@ -123,7 +119,7 @@ public class Z80GameImageLoader implements GameImageLoader {
                 }
                 gameType = GameType.RAM128;
             }
-            game = new RamGame(gameType, arrangedBlocks);
+            game = new SnapshotGame(gameType, arrangedBlocks);
         }
         game.setGameHeader(header);
         game.setHardwareMode(hardwareMode);
@@ -192,7 +188,7 @@ public class Z80GameImageLoader implements GameImageLoader {
         byte[][] gameSlots = getGameImage(is, compressed, version1);
         HardwareMode hardwareMode = HardwareMode.fromZ80Mode(version, hwMode);
         if (Configuration.getInstance().isAllowExperimentalGames() || hardwareMode.supported()) {
-            RamGame game = createRamGameFromData(version, hardwareMode, header, gameSlots);
+            SnapshotGame game = createRamGameFromData(version, hardwareMode, header, gameSlots);
             GameUtil.pushPC(game);
             LOGGER.debug("Loaded Z80 game. Header: " + header);
             return game;
@@ -202,7 +198,7 @@ public class Z80GameImageLoader implements GameImageLoader {
         }
     }
 
-    private static byte[] getGameZ80Header(RamGame game) {
+    private static byte[] getGameZ80Header(SnapshotGame game) {
         GameHeader header = game.getGameHeader();
         ByteBuffer buffer = ByteBuffer.allocate(HEADER_V3_LENGTH)
                 .order(ByteOrder.BIG_ENDIAN)
@@ -256,7 +252,7 @@ public class Z80GameImageLoader implements GameImageLoader {
                 .array();
     }
 
-    private static void saveAsZ80(RamGame game, OutputStream os) throws IOException {
+    private static void saveAsZ80(SnapshotGame game, OutputStream os) throws IOException {
         os.write(getGameZ80Header(game));
         LOGGER.debug("Saving as Z80 game with " + game.getSlotCount() + " slots");
         if (game.getType() == GameType.RAM48) {
@@ -272,13 +268,13 @@ public class Z80GameImageLoader implements GameImageLoader {
 
     @Override
     public void save(Game game, OutputStream os) throws IOException {
-        if (game instanceof RamGame) {
-            RamGame ramGame = (RamGame) game;
-            GameUtil.popPC(ramGame);
+        if (game instanceof SnapshotGame) {
+            SnapshotGame snapshotGame = (SnapshotGame) game;
+            GameUtil.popPC(snapshotGame);
             try {
-                saveAsZ80((RamGame) game, os);
+                saveAsZ80((SnapshotGame) game, os);
             } finally {
-                GameUtil.pushPC(ramGame);
+                GameUtil.pushPC(snapshotGame);
             }
         } else {
             throw new IllegalArgumentException("Non RAM Games cannot be saved as Z80");

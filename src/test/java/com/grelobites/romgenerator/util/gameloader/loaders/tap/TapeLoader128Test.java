@@ -1,10 +1,7 @@
 package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.*;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
@@ -169,7 +166,7 @@ public class TapeLoader128Test implements Z80operations {
     private void loadTapeLoader() {
         try (InputStream loaderStream = TapeLoader128Test.class
                 .getResourceAsStream("/loader/loader.+2a-40.z80")) {
-            RamGame game = (RamGame) new Z80GameImageLoader().load(loaderStream);
+            SnapshotGame game = (SnapshotGame) new Z80GameImageLoader().load(loaderStream);
             GameUtil.popPC(game);
 
             Z80State z80state = new Z80State();
@@ -230,7 +227,7 @@ public class TapeLoader128Test implements Z80operations {
         return banks;
     }
 
-    private RamGame contextAsGame() {
+    private SnapshotGame contextAsGame() {
         GameHeader header = new GameHeader();
         Z80State z80state = z80.getZ80State();
         header.setAFRegister(z80state.getRegAF());
@@ -254,7 +251,7 @@ public class TapeLoader128Test implements Z80operations {
         header.setPort1ffdValue(last1ffd);
         header.setPort7ffdValue(last7ffd);
 
-        RamGame game =  new RamGame(GameType.RAM128, getRamBanks());
+        SnapshotGame game =  new SnapshotGame(GameType.RAM128, getRamBanks());
         game.setGameHeader(header);
         game.setHoldScreen(true);
         game.setHardwareMode(HardwareMode.HW_PLUS2A);
@@ -365,9 +362,9 @@ public class TapeLoader128Test implements Z80operations {
         monitor.stop();
         LOGGER.debug("Z80 State before save " + z80.getZ80State());
         tape.stop();
-        RamGame ramGame = contextAsGame();
-        GameUtil.pushPC(ramGame);
-        return ramGame;
+        SnapshotGame snapshotGame = contextAsGame();
+        GameUtil.pushPC(snapshotGame);
+        return snapshotGame;
     }
 
     @Override

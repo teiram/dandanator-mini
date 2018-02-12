@@ -3,7 +3,7 @@ package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
@@ -239,9 +239,9 @@ public class TapeLoaderTest implements Z80operations {
         LOGGER.debug("Z80 State before save " + z80.getZ80State());
         try (FileOutputStream fos = new FileOutputStream(new File(tapeFile.getPath() + ".z80"))) {
             GameImageLoader loader = new Z80GameImageLoader();
-            RamGame ramGame = contextAsGame(z80.getZ80State());
-            GameUtil.pushPC(ramGame);
-            loader.save(ramGame, fos);
+            SnapshotGame snapshotGame = contextAsGame(z80.getZ80State());
+            GameUtil.pushPC(snapshotGame);
+            loader.save(snapshotGame, fos);
         } catch (IOException ioe) {
             LOGGER.error("Saving game ", ioe);
         }
@@ -256,7 +256,7 @@ public class TapeLoaderTest implements Z80operations {
         return banks;
     }
 
-    public RamGame contextAsGame(Z80State z80state) {
+    public SnapshotGame contextAsGame(Z80State z80state) {
         GameHeader header = new GameHeader();
         header.setAFRegister(z80state.getRegAF());
         header.setBCRegister(z80state.getRegBC());
@@ -277,7 +277,7 @@ public class TapeLoaderTest implements Z80operations {
         header.setInterruptEnable(z80state.isIFF1() ? 0xff : 0x00);
         header.setInterruptMode(z80state.getIM().ordinal());
 
-        RamGame game =  new RamGame(GameType.RAM48, getRamBanks());
+        SnapshotGame game =  new SnapshotGame(GameType.RAM48, getRamBanks());
         game.setGameHeader(header);
         game.setHardwareMode(HardwareMode.HW_48K);
         return game;

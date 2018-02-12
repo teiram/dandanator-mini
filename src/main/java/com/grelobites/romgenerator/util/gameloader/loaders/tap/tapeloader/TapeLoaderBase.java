@@ -2,7 +2,7 @@ package com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader;
 
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Clock;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.LoaderDetector;
@@ -118,7 +118,7 @@ public abstract class TapeLoaderBase implements Z80operations, TapeLoader {
         return header;
     }
 
-    protected abstract RamGame contextAsGame();
+    protected abstract SnapshotGame contextAsGame();
 
     protected void loadTapeInternal(InputStream tapeFile) {
         initialize();
@@ -150,9 +150,9 @@ public abstract class TapeLoaderBase implements Z80operations, TapeLoader {
         LOGGER.debug("Z80 State before save " + z80.getZ80State());
 
         tape.stop();
-        RamGame ramGame = contextAsGame();
-        GameUtil.pushPC(ramGame);
-        return ramGame;
+        SnapshotGame snapshotGame = contextAsGame();
+        GameUtil.pushPC(snapshotGame);
+        return snapshotGame;
     }
 
     @Override

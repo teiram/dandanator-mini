@@ -3,7 +3,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini.v6;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 
@@ -14,7 +14,7 @@ import java.io.OutputStream;
 
 public class GameHeaderV6Serializer {
 
-    public static void serialize(RamGame game, OutputStream os) throws IOException {
+    public static void serialize(SnapshotGame game, OutputStream os) throws IOException {
         GameHeader header = game.getGameHeader();
         os.write(header.getIRegister());
         Util.writeAsLittleEndian(os, header.getAlternateHLRegister());

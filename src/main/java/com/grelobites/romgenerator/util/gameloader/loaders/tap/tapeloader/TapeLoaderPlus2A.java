@@ -148,12 +148,12 @@ public class TapeLoaderPlus2A extends TapeLoaderBase {
     }
 
     @Override
-    protected RamGame contextAsGame() {
+    protected SnapshotGame contextAsGame() {
         GameHeader header = fromZ80State(z80.getZ80State());
         header.setPort1ffdValue(last1ffd);
         header.setPort7ffdValue(last7ffd);
 
-        RamGame game =  new VersionedRamGame(GameType.RAM128, getRamBanks());
+        SnapshotGame game =  new VersionedSnapshotGame(GameType.RAM128, getRamBanks());
         game.setGameHeader(header);
         game.setHoldScreen(true);
         game.setHardwareMode(HardwareMode.HW_PLUS2A);

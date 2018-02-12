@@ -4,8 +4,7 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoaderFactory;
 import com.grelobites.romgenerator.util.gameloader.GameImageType;
@@ -71,9 +70,9 @@ public class GameUtil {
     }
 
     public static int getGamePokeSizeUsage(Game game) {
-        if (game.getType() != GameType.ROM) {
-            RamGame ramGame = (RamGame) game;
-            return ramGame.getTrainerList().getChildren().stream()
+        if (game instanceof SnapshotGame) {
+            SnapshotGame snapshotGame = (SnapshotGame) game;
+            return snapshotGame.getTrainerList().getChildren().stream()
                     .flatMapToInt(g -> IntStream.builder()
                             .add(DandanatorMiniConstants.POKE_NAME_SIZE)
                             .add(1) //Number of pokes byte
@@ -91,7 +90,7 @@ public class GameUtil {
         return ((double) usedSize) / totalSize;
     }
 
-    public static void importPokesFromFile(RamGame game, ImportContext ctx) throws IOException {
+    public static void importPokesFromFile(SnapshotGame game, ImportContext ctx) throws IOException {
         PokeImporter importer = Util.getFileExtension(ctx.getPokesFile().getName())
                 .map(PokeImporterFactory::getImporter)
                 .orElseGet(PokeImporterFactory::getDefaultImporter);
@@ -99,7 +98,7 @@ public class GameUtil {
         importer.importPokes(game.getTrainerList(), ctx);
     }
 
-    public static void exportPokesToFile(RamGame game, File pokeFile) throws IOException {
+    public static void exportPokesToFile(SnapshotGame game, File pokeFile) throws IOException {
         PokeImporter importer = Util.getFileExtension(pokeFile.getName())
                 .map(PokeImporterFactory::getImporter)
                 .orElseGet(PokeImporterFactory::getDefaultImporter);
@@ -129,7 +128,7 @@ public class GameUtil {
     }
 
     public static boolean gameHasPokes(Game game) {
-        return game instanceof RamGame && ((RamGame) game).hasPokes();
+        return game instanceof SnapshotGame && ((SnapshotGame) game).hasPokes();
     }
 
     public static int getGameAddressValue(Game game, int address) {
@@ -142,7 +141,7 @@ public class GameUtil {
         }
     }
 
-    public static int findInGameRam(RamGame game, byte searchValue) {
+    public static int findInGameRam(SnapshotGame game, byte searchValue) {
         int offset = Constants.SLOT_SIZE;
         for (int i = 0; i < 3; i++) {
             int slot = game.getSlotForMappedRam(offset);
@@ -161,7 +160,7 @@ public class GameUtil {
         return sp == 0 || sp > 0x4000 + 1;
     }
 
-    private static int pushByte(RamGame game, int value) {
+    private static int pushByte(SnapshotGame game, int value) {
         GameHeader header = game.getGameHeader();
         int sp = header.getSPRegister();
         sp = sp == 0 ? 0xffff : sp - 1;
@@ -176,7 +175,7 @@ public class GameUtil {
         return currentValue;
     }
 
-    private static int popByte(RamGame game, Integer savedValue) {
+    private static int popByte(SnapshotGame game, Integer savedValue) {
         GameHeader header = game.getGameHeader();
         int sp = header.getSPRegister();
         byte[] spSlot = game.getSlot(game.getSlotForMappedRam(sp));
@@ -191,7 +190,7 @@ public class GameUtil {
         return value;
     }
 
-    public static void pushPC(RamGame game) {
+    public static void pushPC(SnapshotGame game) {
         LOGGER.debug("Before pushing PC. Header: " + game.getGameHeader());
         GameHeader header = game.getGameHeader();
         int pcValue = header.getPCRegister();
@@ -203,7 +202,7 @@ public class GameUtil {
                 + Integer.toHexString(header.getSPRegister()));
     }
 
-    public static int popPC(RamGame game) {
+    public static int popPC(SnapshotGame game) {
         LOGGER.debug("Before popping PC. Header: " + game.getGameHeader());
         Integer savedStackData = game.getGameHeader().getSavedStackData();
         int value = popByte(game, savedStackData != null ? savedStackData & 0xff : null);

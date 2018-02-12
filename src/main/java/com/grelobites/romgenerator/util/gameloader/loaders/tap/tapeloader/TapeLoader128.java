@@ -3,7 +3,7 @@ package com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Key;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.Keyboard;
@@ -145,11 +145,11 @@ public class TapeLoader128 extends TapeLoaderBase {
     }
 
     @Override
-    protected RamGame contextAsGame() {
+    protected SnapshotGame contextAsGame() {
         GameHeader header = fromZ80State(z80.getZ80State());
         header.setPort7ffdValue(last7ffd);
 
-        RamGame game =  new RamGame(GameType.RAM128, getRamBanks());
+        SnapshotGame game =  new SnapshotGame(GameType.RAM128, getRamBanks());
         game.setGameHeader(header);
         game.setHoldScreen(true);
         game.setHardwareMode(HardwareMode.HW_128K);

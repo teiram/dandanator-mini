@@ -9,7 +9,7 @@ import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.model.RomGame;
 import com.grelobites.romgenerator.model.TrainerList;
 import com.grelobites.romgenerator.util.GameUtil;
@@ -191,21 +191,21 @@ public class GameMapperV6 implements GameMapper {
                 case RAM16:
                 case RAM48:
                 case RAM128:
-                    RamGame ramGame = new RamGame(gameType, getGameSlots());
-                    ramGame.setCompressed(isGameCompressed);
-                    ramGame.setHoldScreen(screenHold);
-                    ramGame.setRom(getRomFromSlot(activeRom));
-                    ramGame.setGameHeader(gameHeader);
-                    ramGame.setForce48kMode(isGameForce48kMode);
-                    ramGame.setHardwareMode(hardwareMode);
-                    ramGame.setTrainerList(trainerList);
+                    SnapshotGame snapshotGame = new SnapshotGame(gameType, getGameSlots());
+                    snapshotGame.setCompressed(isGameCompressed);
+                    snapshotGame.setHoldScreen(screenHold);
+                    snapshotGame.setRom(getRomFromSlot(activeRom));
+                    snapshotGame.setGameHeader(gameHeader);
+                    snapshotGame.setForce48kMode(isGameForce48kMode);
+                    snapshotGame.setHardwareMode(hardwareMode);
+                    snapshotGame.setTrainerList(trainerList);
                     if (isGameCompressed) {
-                        ramGame.setCompressedData(getGameCompressedData());
+                        snapshotGame.setCompressedData(getGameCompressedData());
                     }
                     //Extract the PC from SP
-                    ramGame.getGameHeader().setPCRegister(GameUtil.popPC(ramGame));
-                    GameUtil.pushPC(ramGame);
-                    game = ramGame;
+                    snapshotGame.getGameHeader().setPCRegister(GameUtil.popPC(snapshotGame));
+                    GameUtil.pushPC(snapshotGame);
+                    game = snapshotGame;
                     break;
                 default:
                     LOGGER.error("Unsupported type of game " + gameType.screenName());

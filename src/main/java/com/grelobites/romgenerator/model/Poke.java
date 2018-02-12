@@ -73,7 +73,7 @@ public class Poke implements PokeViewable {
     }
 
     @Override
-    public RamGame getOwner() {
+    public SnapshotGame getOwner() {
         return parent.getOwner();
     }
 

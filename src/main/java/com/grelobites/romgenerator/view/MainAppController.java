@@ -7,7 +7,7 @@ import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.RomSetUtil;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
@@ -37,9 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 
@@ -182,8 +179,8 @@ public class MainAppController {
     private void updateGameScreen(File screenFile) throws IOException {
         if (ImageUtil.isValidScreenFile(screenFile)) {
             Game selectedGame = applicationContext.selectedGameProperty().get();
-            if (selectedGame instanceof RamGame) {
-                ((RamGame) selectedGame).updateScreen(Util.fromInputStream(new FileInputStream(screenFile)));
+            if (selectedGame instanceof SnapshotGame) {
+                ((SnapshotGame) selectedGame).updateScreen(Util.fromInputStream(new FileInputStream(screenFile)));
                 gameRenderer.previewGame(selectedGame);
             }
         } else {

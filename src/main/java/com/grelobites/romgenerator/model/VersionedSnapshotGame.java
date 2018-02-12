@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class VersionedRamGame extends RamGame implements Game {
+public class VersionedSnapshotGame extends SnapshotGame implements Game {
 
     private Map<RomId, ChangeData> changeDataMap;
     private RomId version;
 
-    public VersionedRamGame(GameType gameType, List<byte[]> data) {
+    public VersionedSnapshotGame(GameType gameType, List<byte[]> data) {
         super(gameType, data);
     }
 

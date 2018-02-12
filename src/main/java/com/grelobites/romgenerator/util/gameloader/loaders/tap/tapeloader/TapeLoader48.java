@@ -1,10 +1,7 @@
 package com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader;
 
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.*;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.loaders.Z80GameImageLoader;
@@ -130,7 +127,7 @@ public class TapeLoader48 extends TapeLoaderBase {
     void prepareForLoading() {
         try (InputStream loaderStream = TapeLoader48.class
                 .getResourceAsStream("/loader/loader.48.z80")) {
-            RamGame game = (RamGame) new Z80GameImageLoader().load(loaderStream);
+            SnapshotGame game = (SnapshotGame) new Z80GameImageLoader().load(loaderStream);
             GameUtil.popPC(game); //Since games are loaded with the PC pushed
 
             Z80State z80state = getStateFromHeader(game.getGameHeader());
@@ -147,9 +144,9 @@ public class TapeLoader48 extends TapeLoaderBase {
     }
 
     @Override
-    protected RamGame contextAsGame() {
+    protected SnapshotGame contextAsGame() {
         GameHeader header = fromZ80State(z80.getZ80State());
-        RamGame game =  new RamGame(GameType.RAM48, getRamBanks());
+        SnapshotGame game =  new SnapshotGame(GameType.RAM48, getRamBanks());
         game.setGameHeader(header);
         game.setHoldScreen(true);
         game.setHardwareMode(HardwareMode.HW_48K);
@@ -204,9 +201,9 @@ public class TapeLoader48 extends TapeLoaderBase {
         LOGGER.debug("Z80 State before save " + z80.getZ80State());
 
         tape.stop();
-        RamGame ramGame = contextAsGame();
-        GameUtil.pushPC(ramGame);
-        return ramGame;
+        SnapshotGame snapshotGame = contextAsGame();
+        GameUtil.pushPC(snapshotGame);
+        return snapshotGame;
     }
 
     @Override

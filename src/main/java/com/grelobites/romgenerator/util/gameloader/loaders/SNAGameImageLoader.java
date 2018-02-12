@@ -1,11 +1,8 @@
 package com.grelobites.romgenerator.util.gameloader.loaders;
 
 import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.RamGame;
+import com.grelobites.romgenerator.model.*;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
@@ -45,7 +42,7 @@ public class SNAGameImageLoader implements GameImageLoader {
         } else {
             throw new IllegalArgumentException("Unsupported SNA size: " + gameImage.length);
         }
-        RamGame game = new RamGame(gameType, gameSlots);
+        SnapshotGame game = new SnapshotGame(gameType, gameSlots);
         game.setGameHeader(header);
         if (gameType == GameType.RAM128) {
             GameUtil.pushPC(game);
@@ -58,15 +55,15 @@ public class SNAGameImageLoader implements GameImageLoader {
 
     @Override
     public void save(Game game, OutputStream os) throws IOException {
-        if (game instanceof RamGame) {
-            RamGame ramGame = (RamGame) game;
+        if (game instanceof SnapshotGame) {
+            SnapshotGame snapshotGame = (SnapshotGame) game;
 
-            switch (ramGame.getType()) {
+            switch (snapshotGame.getType()) {
                 case RAM48:
-                    save48kSna(ramGame, os);
+                    save48kSna(snapshotGame, os);
                     break;
                 case RAM128:
-                    save128kSna(ramGame, os);
+                    save128kSna(snapshotGame, os);
                     break;
             }
         } else {
@@ -93,14 +90,14 @@ public class SNAGameImageLoader implements GameImageLoader {
         os.write(header.getBorderColor());
     }
 
-    private static void save48kSna(RamGame game, OutputStream os) throws IOException {
+    private static void save48kSna(SnapshotGame game, OutputStream os) throws IOException {
         writeSnaHeader(game.getGameHeader(), os);
         for (int i = 0; i < 3; i++) {
             os.write(game.getSlot(i));
         }
     }
 
-    private static void save128kSna(RamGame game, OutputStream os) throws IOException {
+    private static void save128kSna(SnapshotGame game, OutputStream os) throws IOException {
         try {
             GameUtil.popPC(game);
             writeSnaHeader(game.getGameHeader(), os);

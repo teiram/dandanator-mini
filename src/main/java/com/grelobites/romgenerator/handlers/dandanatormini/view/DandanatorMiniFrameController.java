@@ -1,11 +1,8 @@
 package com.grelobites.romgenerator.handlers.dandanatormini.view;
 
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.PokeViewable;
-import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.model.RomGame;
+import com.grelobites.romgenerator.model.*;
+import com.grelobites.romgenerator.model.SnapshotGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.pokeimporter.ImportContext;
@@ -16,7 +13,6 @@ import com.grelobites.romgenerator.view.util.RecursiveTreeItem;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -211,7 +207,7 @@ public class DandanatorMiniFrameController {
                         .showAndWait();
 
                 if (result.orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                    ((RamGame) game).getTrainerList().getChildren().clear();
+                    ((SnapshotGame) game).getTrainerList().getChildren().clear();
                 }
             }
         });
@@ -237,7 +233,7 @@ public class DandanatorMiniFrameController {
                 try {
                     Game game = applicationContext.selectedGameProperty().get();
                     ImportContext ctx = new ImportContext(db.getFiles().get(0));
-                    GameUtil.importPokesFromFile((RamGame) game, ctx);
+                    GameUtil.importPokesFromFile((SnapshotGame) game, ctx);
                     if (ctx.hasErrors()) {
                         LOGGER.debug("Detected errors in pokes import operation");
                         DialogUtil.buildWarningAlert(LocaleUtil.i18n("importPokesWarning"),
@@ -344,12 +340,13 @@ public class DandanatorMiniFrameController {
             LOGGER.debug("Unbinding bidirectionally name property from game " + game);
             gameName.textProperty().unbindBidirectional(game.nameProperty());
             compressedSize.textProperty().unbind();
-            if (game instanceof RamGame) {
-                RamGame ramGame = (RamGame) game;
-                gameHoldScreenAttribute.selectedProperty().unbindBidirectional(ramGame.holdScreenProperty());
-                gameRomAttribute.valueProperty().unbindBidirectional(ramGame.romProperty());
-                gameCompressedAttribute.selectedProperty().unbindBidirectional(ramGame.compressedProperty());
-                gameForced48kModeAttribute.selectedProperty().unbindBidirectional(ramGame.force48kModeProperty());
+
+            if (game instanceof SnapshotGame) {
+                SnapshotGame snapshotGame = (SnapshotGame) game;
+                gameHoldScreenAttribute.selectedProperty().unbindBidirectional(snapshotGame.holdScreenProperty());
+                gameRomAttribute.valueProperty().unbindBidirectional(snapshotGame.romProperty());
+                gameCompressedAttribute.selectedProperty().unbindBidirectional(snapshotGame.compressedProperty());
+                gameForced48kModeAttribute.selectedProperty().unbindBidirectional(snapshotGame.force48kModeProperty());
                 pokeView.setRoot(null);
                 gameCompressedAttribute.selectedProperty().removeListener(getCurrentGameCompressedChangeListener());
             }
@@ -363,21 +360,25 @@ public class DandanatorMiniFrameController {
             compressedSize.textProperty().bind(getGameSizeProperty(game).asString());
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
-                gameHoldScreenAttribute.selectedProperty().bindBidirectional(ramGame.holdScreenProperty());
-                gameRomAttribute.valueProperty().bindBidirectional(ramGame.romProperty());
+                LOGGER.debug("Binding hardware mode to " + ramGame.getHardwareMode().displayName());
+                hardwareMode.textProperty().set(ramGame.getHardwareMode().displayName());
+            }
+            if (game instanceof SnapshotGame) {
+                SnapshotGame snapshotGame = (SnapshotGame) game;
+                gameHoldScreenAttribute.selectedProperty().bindBidirectional(snapshotGame.holdScreenProperty());
+                gameRomAttribute.valueProperty().bindBidirectional(snapshotGame.romProperty());
                 LOGGER.debug("gameRomAttribute list is " + gameRomAttribute.getItems());
                 //updateActiveRomComboItems();
 
-                pokeView.setRoot(new RecursiveTreeItem<>(ramGame.getTrainerList(), PokeViewable::getChildren,
+                pokeView.setRoot(new RecursiveTreeItem<>(snapshotGame.getTrainerList(), PokeViewable::getChildren,
                         this::computePokeChange));
-                gameCompressedAttribute.selectedProperty().bindBidirectional(ramGame.compressedProperty());
-                gameForced48kModeAttribute.selectedProperty().bindBidirectional((ramGame.force48kModeProperty()));
+                gameCompressedAttribute.selectedProperty().bindBidirectional(snapshotGame.compressedProperty());
+                gameForced48kModeAttribute.selectedProperty().bindBidirectional((snapshotGame.force48kModeProperty()));
                 setCurrentGameCompressedChangeListener((c) -> {
                     compressedSize.textProperty().unbind();
                     compressedSize.textProperty().bind(getGameSizeProperty(game).asString());
                 });
-                ramGame.compressedProperty().addListener(getCurrentGameCompressedChangeListener());
-                hardwareMode.textProperty().set(ramGame.getHardwareMode().displayName());
+                snapshotGame.compressedProperty().addListener(getCurrentGameCompressedChangeListener());
             }
         }
     }
@@ -403,7 +404,7 @@ public class DandanatorMiniFrameController {
     }
 
     private void onGameSelection(Game oldGame, Game newGame) {
-        LOGGER.debug("onGameSelection oldGame=" + oldGame+ ", newGame=" + newGame);
+        LOGGER.debug("onGameSelection oldGame=" + oldGame + ", newGame=" + newGame);
         unbindInfoPropertiesFromGame(oldGame);
         bindInfoPropertiesToGame(newGame);
         if (newGame == null) {
@@ -414,20 +415,31 @@ public class DandanatorMiniFrameController {
         } else {
             if (newGame instanceof RamGame) {
                 RamGame ramGame = (RamGame) newGame;
-                addPokeButton.setDisable(false);
-                pokesTab.setDisable(false);
-                gameRomAttribute.setVisible(true);
-                gameHoldScreenAttribute.setVisible(true);
-                gameCompressedAttribute.setVisible(true);
-                romActiveAttributeLabel.setVisible(true);
-                if (ramGame.getTrainerList().getChildren().size() > 0) {
-                    removeAllGamePokesButton.setDisable(false);
-                } else {
-                    removeAllGamePokesButton.setDisable(true);
-                }
-                gameForced48kModeAttribute.setVisible(ramGame.getType() != GameType.RAM128);
                 hardwareMode.setVisible(true);
                 styleHardwareMode(ramGame);
+
+                if (newGame instanceof SnapshotGame) {
+                    SnapshotGame snapshotGame = (SnapshotGame) newGame;
+                    addPokeButton.setDisable(false);
+                    pokesTab.setDisable(false);
+                    gameRomAttribute.setVisible(true);
+                    gameHoldScreenAttribute.setVisible(true);
+                    gameCompressedAttribute.setVisible(true);
+                    romActiveAttributeLabel.setVisible(true);
+                    if (snapshotGame.getTrainerList().getChildren().size() > 0) {
+                        removeAllGamePokesButton.setDisable(false);
+                    } else {
+                        removeAllGamePokesButton.setDisable(true);
+                    }
+                    gameForced48kModeAttribute.setVisible(snapshotGame.getType() != GameType.RAM128);
+                } else {
+                    pokesTab.setDisable(true);
+                    gameRomAttribute.setVisible(false);
+                    gameHoldScreenAttribute.setVisible(false);
+                    gameCompressedAttribute.setVisible(false);
+                    gameForced48kModeAttribute.setVisible(false);
+                    romActiveAttributeLabel.setVisible(false);
+                }
             } else {
                 pokesTab.setDisable(true);
                 gameRomAttribute.setVisible(false);
@@ -441,12 +453,13 @@ public class DandanatorMiniFrameController {
         }
     }
 
+
     private IntegerProperty getGameSizeProperty(Game game) {
         try {
-            if (game instanceof RamGame) {
-                RamGame ramGame = (RamGame) game;
-                if (ramGame.getCompressed()) {
-                    return ramGame.compressedSizeProperty();
+            if (game instanceof SnapshotGame) {
+                SnapshotGame snapshotGame = (SnapshotGame) game;
+                if (snapshotGame.getCompressed()) {
+                    return snapshotGame.compressedSizeProperty();
                 }
             }
             return new SimpleIntegerProperty(game.getSize());
