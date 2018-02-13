@@ -438,7 +438,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
                     Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE,
                     Constants.SLOT_SIZE));
             gameChunk.setAddress(cBlockOffset);
-        } else if (game instanceof RomGame) {
+        } else {
             gameChunk.setData(new byte[0]);
             gameChunk.setAddress(cBlockOffset);
         }

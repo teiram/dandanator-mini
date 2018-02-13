@@ -12,10 +12,13 @@ public class MLDInfo {
     private static final Logger LOGGER = LoggerFactory.getLogger(MLDInfo.class);
 
     private static final String MLD_SIGNATURE = "MLD";
-    private static final int MLD_HEADER_OFFSET = 16363;
+    public static final int MLD_HEADER_OFFSET = 16362;
+    public static final int MLD_ALLOCATED_SECTORS_OFFSET = MLD_HEADER_OFFSET + 3;
     private static final int MLD_SIGNATURE_OFFSET = 16380;
-    private static final int MLD_HEADER_SIZE = 21;
+    private static final int MLD_HEADER_SIZE = 22;
 
+    private int headerSlot;
+    private int baseSlot;
     private int mldType;
     private int requiredSectors;
     private int tableOffset;
@@ -32,6 +35,14 @@ public class MLDInfo {
 
     public void setMldType(int mldType) {
         this.mldType = mldType;
+    }
+
+    public int getHeaderSlot() {
+        return headerSlot;
+    }
+
+    public void setHeaderSlot(int headerSlot) {
+        this.headerSlot = headerSlot;
     }
 
     public int getCompressedScreenOffset() {
@@ -99,18 +110,26 @@ public class MLDInfo {
     }
 
     public GameType getGameType() {
-        return GameType.byTypeId(mldType & 0x0F);
+        return GameType.byTypeId((mldType & 0x0F) | GameType.MLD_MASK);
     }
 
     public HardwareMode getHardwareMode() {
         switch (getGameType()) {
-            case RAM48:
+            case RAM48_MLD:
                 return HardwareMode.HW_48K;
-            case RAM128:
+            case RAM128_MLD:
                 return (mldType & 0x40) == 0 ? HardwareMode.HW_128K : HardwareMode.HW_PLUS2A;
             default:
                 return HardwareMode.HW_UNKNOWN;
         }
+    }
+
+    public int getBaseSlot() {
+        return baseSlot;
+    }
+
+    public void setBaseSlot(int baseSlot) {
+        this.baseSlot = baseSlot;
     }
 
     private static Optional<MLDInfo> fromGameSlotByteArray(byte[] data) {
@@ -119,6 +138,7 @@ public class MLDInfo {
             ByteBuffer buffer = ByteBuffer.wrap(data, MLD_HEADER_OFFSET, MLD_HEADER_SIZE);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             MLDInfo mldInfo = new MLDInfo();
+            mldInfo.setBaseSlot(Byte.valueOf(buffer.get()).intValue());
             mldInfo.setMldType(Byte.valueOf(buffer.get()).intValue());
             mldInfo.setRequiredSectors(Byte.valueOf(buffer.get()).intValue());
             buffer.getInt(); //Skip four bytes
@@ -136,9 +156,10 @@ public class MLDInfo {
 
     public static Optional<MLDInfo> fromGameByteArray(List<byte[]> data) {
         LOGGER.debug("Analizing game with " + data.size() + " slots");
-        for (byte[] slot: data) {
-            Optional<MLDInfo> mldInfoOpt = fromGameSlotByteArray(slot);
+        for (int i = 0; i < data.size(); i++) {
+            Optional<MLDInfo> mldInfoOpt = fromGameSlotByteArray(data.get(i));
             if (mldInfoOpt.isPresent()) {
+                mldInfoOpt.get().setHeaderSlot(i);
                 return mldInfoOpt;
             }
         }
@@ -148,7 +169,7 @@ public class MLDInfo {
     @Override
     public String toString() {
         return "MLDInfo{" +
-                "mldType=" + mldType +
+                "mldType=" + Integer.toHexString(mldType & 0xFF) +
                 ", requiredSectors=" + requiredSectors +
                 ", tableOffset=" + tableOffset +
                 ", tableRowSize=" + tableRowSize +

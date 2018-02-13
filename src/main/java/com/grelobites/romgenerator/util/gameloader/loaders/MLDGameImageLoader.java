@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class MLDGameImageLoader implements GameImageLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(MLDGameImageLoader.class);
@@ -28,8 +29,12 @@ public class MLDGameImageLoader implements GameImageLoader {
                 gameSlots.add(Arrays.copyOfRange(gameImage, i * Constants.SLOT_SIZE,
                         (i + 1) * Constants.SLOT_SIZE));
             }
-            MLDGame game = new MLDGame(GameType.RAM128, gameSlots);
-            return game;
+            Optional<MLDInfo> mldInfoOpt = MLDInfo.fromGameByteArray(gameSlots);
+            if (!mldInfoOpt.isPresent()) {
+                throw new IllegalArgumentException("Unable to extract MLD data from file");
+            } else {
+                return new MLDGame(mldInfoOpt.get(), gameSlots);
+            }
         } else {
             throw new IllegalArgumentException("MLD size must be multiple of 16384");
         }

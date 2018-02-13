@@ -54,6 +54,8 @@ public class Constants {
 
     public static final byte B_01 = 1;
 	public static final byte B_00 = 0;
+    public static final byte B_FF = -1;
+
 
     private static byte[] DEFAULT_DANDANATOR_SCREEN;
     private static byte[] SINCLAIR_SCREEN;

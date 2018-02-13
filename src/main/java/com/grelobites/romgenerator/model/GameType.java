@@ -5,7 +5,11 @@ public enum GameType {
     ROM(0, "ROM"),
     RAM16(1, "16K"),
     RAM48(3, "48K"),
-    RAM128(8, "128K");
+    RAM128(8, "128K"),
+    RAM48_MLD(0x80, "48K MLD"),
+    RAM128_MLD(0x88, "128K MLD");
+
+    public static int MLD_MASK = 0x80;
 
     private int typeId;
     private String screenName;

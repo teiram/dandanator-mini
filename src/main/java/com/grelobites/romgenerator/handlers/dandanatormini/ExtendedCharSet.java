@@ -3,69 +3,70 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 import com.grelobites.romgenerator.Constants;
 
 public class ExtendedCharSet {
+
     public static final byte[] SYMBOL_PLUS2A_0 = new byte[]{
-            (byte) 1,
-            (byte) 0,
-            (byte) 8,
-            (byte) 157,
-            (byte) 137,
-            (byte) 1,
-            (byte) 1,
-            (byte) 0
+            (byte) 0x3F,
+            (byte) 0x3F,
+            (byte) 0x36,
+            (byte) 0x23,
+            (byte) 0x37,
+            (byte) 0x3E,
+            (byte) 0x1F,
+            (byte) 0x00
     };
 
     public static final byte[] SYMBOL_PLUS2A_1 = new byte[]{
-            (byte) 220,
-            (byte) 84,
-            (byte) 84,
-            (byte) 212,
-            (byte) 28,
-            (byte) 20,
-            (byte) 212,
-            (byte) 0
+            (byte) 0xFC,
+            (byte) 0x76,
+            (byte) 0xAA,
+            (byte) 0xA2,
+            (byte) 0x6A,
+            (byte) 0x2A,
+            (byte) 0xFE,
+            (byte) 0x00
     };
 
     public static final byte[] SYMBOL_128K_0 = new byte[]{
-            (byte) 0x09,
-            (byte) 0x18,
-            (byte) 0x08,
-            (byte) 0x89,
-            (byte) 0x89,
-            (byte) 0x09,
-            (byte) 0x1D,
+            (byte) 0x3F,
+            (byte) 0x37,
+            (byte) 0x26,
+            (byte) 0x37,
+            (byte) 0x37,
+            (byte) 0x22,
+            (byte) 0x1F,
             (byte) 0x00
     };
 
     public static final byte[] SYMBOL_128K_1 = new byte[]{
-            (byte) 0xDC,
-            (byte) 0x54,
-            (byte) 0x54,
-            (byte) 0xDC,
-            (byte) 0x14,
-            (byte) 0x14,
-            (byte) 0xDC,
+            (byte) 0xFC,
+            (byte) 0x76,
+            (byte) 0xAA,
+            (byte) 0xB6,
+            (byte) 0x6A,
+            (byte) 0x36,
+            (byte) 0xFE,
             (byte) 0x00
     };
 
     public static final byte[] SYMBOL_48K_0 = new byte[]{
-            (byte) 0x15,
-            (byte) 0x15,
-            (byte) 0x15,
-            (byte) 0x9D,
-            (byte) 0x85,
-            (byte) 0x05,
-            (byte) 0x05,
+            (byte) 0x3F,
+            (byte) 0x3B,
+            (byte) 0x32,
+            (byte) 0x2B,
+            (byte) 0x22,
+            (byte) 0x3B,
+            (byte) 0x1F,
             (byte) 0x00
     };
 
     public static final byte[] SYMBOL_48K_1 = new byte[]{
-            (byte) 0xD0,
-            (byte) 0x50,
-            (byte) 0x54,
-            (byte) 0xD8,
-            (byte) 0x58,
-            (byte) 0x54,
-            (byte) 0xD4,
+            (byte) 0xFC,
+            (byte) 0x6A,
+            (byte) 0xA6,
+            (byte) 0x6E,
+            (byte) 0xA6,
+            (byte) 0x6A,
+            (byte) 0xFE,
             (byte) 0x00
     };
 
@@ -92,24 +93,24 @@ public class ExtendedCharSet {
     };
 
     public static final byte[] SYMBOL_ROM_0 = new byte[]{
-            (byte) 0x1D,
-            (byte) 0x15,
-            (byte) 0x15,
-            (byte) 0x99,
-            (byte) 0x95,
-            (byte) 0x15,
-            (byte) 0x15,
+            (byte) 0x3F,
+            (byte) 0x23,
+            (byte) 0x2A,
+            (byte) 0x22,
+            (byte) 0x26,
+            (byte) 0x2B,
+            (byte) 0x1F,
             (byte) 0x00
     };
 
     public static final byte[] SYMBOL_ROM_1 = new byte[]{
-            (byte) 0xD4,
-            (byte) 0x5C,
-            (byte) 0x5C,
-            (byte) 0x54,
-            (byte) 0x54,
-            (byte) 0x54,
-            (byte) 0xD4,
+            (byte) 0xFC,
+            (byte) 0x6A,
+            (byte) 0xA2,
+            (byte) 0xA2,
+            (byte) 0xAA,
+            (byte) 0x6A,
+            (byte) 0xFE,
             (byte) 0x00
     };
 

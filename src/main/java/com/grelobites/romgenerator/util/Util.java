@@ -140,7 +140,7 @@ public class Util {
     public static byte[] paddedByteArray(byte[] source, int length, byte filler) {
         byte[] result = new byte[length];
         Arrays.fill(result, filler);
-        System.arraycopy(source, 0, result, 0, source.length);
+        System.arraycopy(source, 0, result, 0, Math.min(source.length, length));
         return result;
     }
 

@@ -277,7 +277,7 @@ public class Z80GameImageLoader implements GameImageLoader {
                 GameUtil.pushPC(snapshotGame);
             }
         } else {
-            throw new IllegalArgumentException("Non RAM Games cannot be saved as Z80");
+            throw new IllegalArgumentException("Non Snapshot Games cannot be saved as Z80");
         }
     }
 }

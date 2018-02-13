@@ -228,19 +228,36 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 + ", at offset " + offset);
         ByteArrayOutputStream gameCBlocks = new ByteArrayOutputStream();
 
-        for (int i = 0; i < game.getSlotCount(); i++) {
-            if (!game.isSlotZeroed(i)) {
-                byte[] block = game.getSlot(i);
-                offset -= Constants.SLOT_SIZE;
-                LOGGER.debug("Writing CBlock with offset " + offset + " and length " + block.length);
-                gameCBlocks.write(offset / Constants.SLOT_SIZE);
-                gameCBlocks.write(asLittleEndianWord(Constants.B_00)); //Blocks always at offset 0 (uncompressed)
-                //The chunk slot reports its size subtracting the chunk size (we are dumping the whole slot though)
-                gameCBlocks.write(asLittleEndianWord(i == DandanatorMiniConstants.GAME_CHUNK_SLOT ?
-                        Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE : Constants.SLOT_SIZE));
-            } else {
-                LOGGER.debug("Writing empty CBlock");
-                gameCBlocks.write(EMPTY_CBLOCK);
+        //For MLD games we use CBlocks of up to 0xffff bytes to encode the size of the game
+        if (game instanceof MLDGame) {
+            int remaining = game.getSlotCount() * Constants.SLOT_SIZE; //Since game.getSize() includes save space
+            int startOffset = offset - remaining;
+            while (remaining > 0) {
+                int slot = startOffset / Constants.SLOT_SIZE;
+                gameCBlocks.write(slot);
+                gameCBlocks.write(asLittleEndianWord(Constants.B_00));
+                int chunkSize = Math.min(remaining, 0xC000);
+                LOGGER.debug("Writing MLD CBlock with slot " + slot + " and size " + chunkSize);
+                gameCBlocks.write(asLittleEndianWord(Math.min(remaining, chunkSize)));
+                remaining -= chunkSize;
+                startOffset += chunkSize;
+                offset -= chunkSize;
+            }
+        } else {
+            for (int i = 0; i < game.getSlotCount(); i++) {
+                if (!game.isSlotZeroed(i)) {
+                    byte[] block = game.getSlot(i);
+                    offset -= Constants.SLOT_SIZE;
+                    LOGGER.debug("Writing CBlock with offset " + offset + " and length " + block.length);
+                    gameCBlocks.write(offset / Constants.SLOT_SIZE);
+                    gameCBlocks.write(asLittleEndianWord(Constants.B_00)); //Blocks always at offset 0 (uncompressed)
+                    //The chunk slot reports its size subtracting the chunk size (we are dumping the whole slot though)
+                    gameCBlocks.write(asLittleEndianWord(i == DandanatorMiniConstants.GAME_CHUNK_SLOT ?
+                            Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE : Constants.SLOT_SIZE));
+                } else {
+                    LOGGER.debug("Writing empty CBlock");
+                    gameCBlocks.write(EMPTY_CBLOCK);
+                }
             }
         }
         byte[] cBlocksArray = Util.paddedByteArray(gameCBlocks.toByteArray(), 5 * 8, (byte) DandanatorMiniConstants.FILLER_BYTE);
@@ -417,7 +434,7 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
                     Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE,
                     Constants.SLOT_SIZE));
             gameChunk.setAddress(cBlockOffset);
-        } else if (game instanceof RomGame) {
+        } else  {
             gameChunk.setData(new byte[0]);
             gameChunk.setAddress(cBlockOffset);
         }
@@ -469,6 +486,57 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 LOGGER.debug("Skipped zeroed slot");
             }
         }
+    }
+
+    private int dumpMLDGameData(OutputStream os, Game game, int lastMldSaveSector,
+                                 int currentSlot) throws IOException {
+        MLDInfo mldInfo = ((MLDGame) game).getMLDInfo();
+        LOGGER.debug("Relocating MLD game " + game.getName() + " with " + game.getSlotCount()
+                + " slots to slot " + currentSlot + ". Current base slot is "
+                + mldInfo.getBaseSlot());
+
+        int headerSlot = mldInfo.getHeaderSlot();
+        byte[] headerSlotData = game.getSlot(headerSlot);
+        headerSlotData[MLDInfo.MLD_HEADER_OFFSET] = (byte) currentSlot;
+
+        int base = MLDInfo.MLD_ALLOCATED_SECTORS_OFFSET;
+        for (int i = 0; i < mldInfo.getRequiredSectors(); i++) {
+            LOGGER.debug("Reserving MLD save sector to " + lastMldSaveSector);
+            headerSlotData[base++] = (byte) lastMldSaveSector--;
+        }
+
+        int tableSlot = mldInfo.getTableOffset() / Constants.SLOT_SIZE;
+        int tableOffset = mldInfo.getTableOffset() % Constants.SLOT_SIZE;
+        byte[] slotData = game.getSlot(tableSlot);
+        for (int i = 0; i < mldInfo.getTableRows(); i++) {
+            int offset = tableOffset + mldInfo.getRowSlotOffset();
+            int value = ((slotData[offset] & 0x7f) + currentSlot - mldInfo.getBaseSlot()) |
+                    (slotData[offset] & 0x80);
+            LOGGER.debug("Patching slot " + tableSlot + " in position 0x"
+                    + Integer.toHexString(offset & 0xffff) + " from value 0x"
+                    + Integer.toHexString(slotData[offset] & 0xff)
+                    + " to 0x" + Integer.toHexString(value & 0xff));
+            slotData[offset] = (byte) value;
+
+            tableOffset += mldInfo.getTableRowSize();
+        }
+        for (int i = 0; i < game.getSlotCount(); i++) {
+            os.write(game.getSlot(i));
+        }
+
+        mldInfo.setBaseSlot(currentSlot);
+        return lastMldSaveSector;
+    }
+
+    private static int getUncompressedSlotCount(List<Game> games) {
+        int value = 0;
+        for (Game game: games) {
+            if (!isGameCompressed(game)) {
+                value += game.getSlotCount();
+            }
+        }
+        LOGGER.debug("Number of slots from uncompressed games " + value);
+        return value;
     }
 
     @Override
@@ -575,11 +643,22 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 }
             }
 
+            int currentSlot = DandanatorMiniConstants.GAME_SLOTS + 1
+                    - getUncompressedSlotCount(games);
+
+            int lastMldSaveSector = (4 * currentSlot) - 1;
+
             ByteArrayOutputStream uncompressedStream = new ByteArrayOutputStream();
             for (int i = games.size() - 1; i >= 0; i--) {
                 Game game = games.get(i);
                 if (!isGameCompressed(game)) {
-                    dumpUncompressedGameData(uncompressedStream, game);
+                    if (game instanceof MLDGame) {
+                        lastMldSaveSector = dumpMLDGameData(uncompressedStream, game,
+                                lastMldSaveSector, currentSlot);
+                    } else {
+                        dumpUncompressedGameData(uncompressedStream, game);
+                    }
+                    currentSlot += game.getSlotCount();
                 }
             }
 
@@ -589,7 +668,7 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
                     - uncompressedStream.size();
             int gapSize = uncompressedOffset - os.size();
             LOGGER.debug("Gap to uncompressed zone: " + gapSize);
-            fillWithValue(os, Constants.B_00, gapSize);
+            fillWithValue(os, Constants.B_FF, gapSize);
 
             os.write(uncompressedStream.toByteArray());
             LOGGER.debug("Dumped uncompressed game data. Offset: " + os.size());
@@ -739,7 +818,8 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 isGameScreenHold(game) ? ZxColor.BRIGHTCYAN : ZxColor.BRIGHTGREEN);
         screen.deleteLine(line);
         screen.printLine(String.format("%1d", (index + 1) % DandanatorMiniConstants.SLOT_COUNT), line, 0);
-        screen.setPen(ZxColor.BRIGHTWHITE);
+        screen.setPen((game.getType().typeId() & GameType.MLD_MASK) == 0 ?
+                ZxColor.BRIGHTWHITE : ZxColor.BRIGHTYELLOW);
         int gameSymbolCode = getGameSymbolCode(game);
         screen.printLine(String.format("%c", gameSymbolCode), line, 1);
         if (isGameCompressed(game)) {

@@ -18,9 +18,9 @@ public class MLDGame extends BaseGame implements RamGame {
     private Image screenshot;
     private MLDInfo mldInfo;
 
-    public MLDGame(GameType gameType, List<byte[]> data) {
-        super(gameType, data);
-        initializeMldInfo();
+    public MLDGame(MLDInfo mldInfo, List<byte[]> data) {
+        super(mldInfo.getGameType(), data);
+        this.mldInfo = mldInfo;
         hardwareMode = mldInfo.getHardwareMode();
     }
 
@@ -103,4 +103,5 @@ public class MLDGame extends BaseGame implements RamGame {
                 ", mldInfo=" + mldInfo +
                 '}';
     }
+
 }
