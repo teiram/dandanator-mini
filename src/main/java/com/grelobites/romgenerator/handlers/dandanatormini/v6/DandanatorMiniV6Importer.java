@@ -35,12 +35,16 @@ public class DandanatorMiniV6Importer implements DandanatorMiniImporter {
         games.clear();
         applicationContext.addBackgroundTask(() -> {
             slotZero.getGameMappers().forEach(holder -> {
-                final Game game = holder.getGame();
-                Future<OperationResult> result = applicationContext.getRomSetHandler().addGame(game);
                 try {
-                    result.get();
+                    final Game game = holder.getGame();
+                    Future<OperationResult> result = applicationContext.getRomSetHandler().addGame(game);
+                    try {
+                        result.get();
+                    } catch (Exception e) {
+                        LOGGER.warn("While waiting for background operation result", e);
+                    }
                 } catch (Exception e) {
-                    LOGGER.warn("While waiting for background operation result", e);
+                    LOGGER.warn("Error getting game from mapper " + holder);
                 }
             });
             return OperationResult.successResult();

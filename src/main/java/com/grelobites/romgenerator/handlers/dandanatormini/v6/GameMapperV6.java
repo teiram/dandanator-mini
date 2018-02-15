@@ -5,13 +5,7 @@ import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstan
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameChunk;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameBlock;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.SnapshotGame;
-import com.grelobites.romgenerator.model.RomGame;
-import com.grelobites.romgenerator.model.TrainerList;
+import com.grelobites.romgenerator.model.*;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.PositionAwareInputStream;
 import com.grelobites.romgenerator.util.Util;
@@ -20,7 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class GameMapperV6 implements GameMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameMapperV6.class);
@@ -140,6 +136,19 @@ public class GameMapperV6 implements GameMapper {
         return gameSlots;
     }
 
+    private List<byte[]> getMLDGameSlots() {
+        List<byte[]> gameSlots = new ArrayList<>();
+        for (int index = 0; index < blocks.size(); index++) {
+            GameBlock block = blocks.get(index);
+            int slots = block.size / Constants.SLOT_SIZE;
+            for (int slot = 0; slot < slots; slot++) {
+                LOGGER.debug("Adding game slot for game " + name + ": " + block);
+                gameSlots.add(Arrays.copyOfRange(block.data, slot * Constants.SLOT_SIZE, (slot + 1) * Constants.SLOT_SIZE));
+            }
+        }
+        return gameSlots;
+    }
+
     private List<byte[]> getGameCompressedData() {
         List<byte[]> compressedData = new ArrayList<>();
         for (int index = 0; index < blocks.size(); index++) {
@@ -206,6 +215,17 @@ public class GameMapperV6 implements GameMapper {
                     snapshotGame.getGameHeader().setPCRegister(GameUtil.popPC(snapshotGame));
                     GameUtil.pushPC(snapshotGame);
                     game = snapshotGame;
+                    break;
+                case RAM128_MLD:
+                case RAM48_MLD:
+                    List<byte[]> gameSlots = getMLDGameSlots();
+                    Optional<MLDInfo> mldInfo = MLDInfo.fromGameByteArray(gameSlots);
+                    if (mldInfo.isPresent()) {
+                        MLDGame mldGame = new MLDGame(mldInfo.get(), gameSlots);
+                        game = mldGame;
+                    } else {
+                        LOGGER.error("Unable to restore MLDGame from ROMSet. No MLDInfo found");
+                    }
                     break;
                 default:
                     LOGGER.error("Unsupported type of game " + gameType.screenName());
