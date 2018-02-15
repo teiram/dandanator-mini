@@ -196,12 +196,16 @@ public class ApplicationContext {
         if (game != null) {
             DirectoryAwareFileChooser chooser = getFileChooser();
             chooser.setTitle(LocaleUtil.i18n("exportCurrentGame"));
-            chooser.setInitialFileName(game.getName() + "." +  (game.getType() == GameType.ROM ? "rom" : "z80"));
+            chooser.setInitialFileName(game.getName() + "." +
+                    (game.getType() == GameType.ROM ? "rom" :
+                            GameType.isMLD(game.getType()) ? "mld" : "z80"));
             final File saveFile = chooser.showSaveDialog(menuPreview.getScene().getWindow());
             if (saveFile != null) {
                 try {
                     if (game.getType() == GameType.ROM) {
                         GameUtil.exportGameAsRom(game, saveFile);
+                    } else if (GameType.isMLD(game.getType())) {
+                        GameUtil.exportGameAsMLD(game, saveFile);
                     } else {
                         GameUtil.exportGameAsZ80(game, saveFile);
                     }

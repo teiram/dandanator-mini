@@ -121,6 +121,13 @@ public class GameUtil {
         }
     }
 
+    public static void exportGameAsMLD(Game selectedGame, File saveFile) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(saveFile)) {
+            GameImageLoaderFactory.getLoader(GameImageType.MLD)
+                    .save(selectedGame, fos);
+        }
+    }
+
     public static void exportGameAsRom(Game selectedGame, File saveFile) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(saveFile)) {
             fos.write(selectedGame.getSlot(0));
@@ -220,6 +227,7 @@ public class GameUtil {
     public static Integer decodeAsAuthentic(int value) {
         return value & (DandanatorMiniConstants.AUTHENTIC_VALUE_FLAG - 1);
     }
+
 
 
 }

@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,6 +86,45 @@ public class MLDGame extends BaseGame implements RamGame {
 
     public void setMldInfo(MLDInfo mldInfo) {
         this.mldInfo = mldInfo;
+    }
+
+    public int allocateSaveSpace(int saveSectorBase) {
+        int headerSlot = mldInfo.getHeaderSlot();
+        byte[] headerSlotData = getSlot(headerSlot);
+
+        int base = MLDInfo.MLD_ALLOCATED_SECTORS_OFFSET;
+        for (int i = 0; i < mldInfo.getRequiredSectors(); i++) {
+            LOGGER.debug("Reserving MLD save sector to " + saveSectorBase);
+            headerSlotData[base++] = (byte) saveSectorBase--;
+        }
+        return saveSectorBase;
+    }
+
+    public void reallocate(int slot) {
+        LOGGER.debug("Relocating MLD game " + getName() + " with " + getSlotCount()
+                + " slots to slot " + slot + ". Current base slot is "
+                + mldInfo.getBaseSlot());
+
+        int headerSlot = mldInfo.getHeaderSlot();
+        byte[] headerSlotData = getSlot(headerSlot);
+        headerSlotData[MLDInfo.MLD_HEADER_OFFSET] = (byte) slot;
+
+        int tableSlot = mldInfo.getTableOffset() / Constants.SLOT_SIZE;
+        int tableOffset = mldInfo.getTableOffset() % Constants.SLOT_SIZE;
+        byte[] slotData = getSlot(tableSlot);
+        for (int i = 0; i < mldInfo.getTableRows(); i++) {
+            int offset = tableOffset + mldInfo.getRowSlotOffset();
+            int value = ((slotData[offset] & 0x7f) + slot - mldInfo.getBaseSlot()) |
+                    (slotData[offset] & 0x80);
+            LOGGER.debug("Patching slot " + tableSlot + " in position 0x"
+                    + Integer.toHexString(offset & 0xffff) + " from value 0x"
+                    + Integer.toHexString(slotData[offset] & 0xff)
+                    + " to 0x" + Integer.toHexString(value & 0xff));
+            slotData[offset] = (byte) value;
+
+            tableOffset += mldInfo.getTableRowSize();
+        }
+        mldInfo.setBaseSlot(slot);
     }
 
     @Override

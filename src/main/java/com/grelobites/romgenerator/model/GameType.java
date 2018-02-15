@@ -35,4 +35,8 @@ public enum GameType {
         }
         throw new IllegalArgumentException("Unknown typeid " + id);
     }
+
+    public static boolean isMLD(GameType gameType) {
+        return (gameType.typeId & MLD_MASK) != 0;
+    }
 }

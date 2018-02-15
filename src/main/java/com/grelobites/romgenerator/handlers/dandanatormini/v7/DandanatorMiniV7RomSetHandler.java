@@ -490,41 +490,13 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
     private int dumpMLDGameData(OutputStream os, Game game, int lastMldSaveSector,
                                  int currentSlot) throws IOException {
-        MLDInfo mldInfo = ((MLDGame) game).getMLDInfo();
-        LOGGER.debug("Relocating MLD game " + game.getName() + " with " + game.getSlotCount()
-                + " slots to slot " + currentSlot + ". Current base slot is "
-                + mldInfo.getBaseSlot());
+        MLDGame mldGame = (MLDGame) game;
+        mldGame.reallocate(currentSlot);
+        lastMldSaveSector = mldGame.allocateSaveSpace(lastMldSaveSector);
 
-        int headerSlot = mldInfo.getHeaderSlot();
-        byte[] headerSlotData = game.getSlot(headerSlot);
-        headerSlotData[MLDInfo.MLD_HEADER_OFFSET] = (byte) currentSlot;
-
-        int base = MLDInfo.MLD_ALLOCATED_SECTORS_OFFSET;
-        for (int i = 0; i < mldInfo.getRequiredSectors(); i++) {
-            LOGGER.debug("Reserving MLD save sector to " + lastMldSaveSector);
-            headerSlotData[base++] = (byte) lastMldSaveSector--;
-        }
-
-        int tableSlot = mldInfo.getTableOffset() / Constants.SLOT_SIZE;
-        int tableOffset = mldInfo.getTableOffset() % Constants.SLOT_SIZE;
-        byte[] slotData = game.getSlot(tableSlot);
-        for (int i = 0; i < mldInfo.getTableRows(); i++) {
-            int offset = tableOffset + mldInfo.getRowSlotOffset();
-            int value = ((slotData[offset] & 0x7f) + currentSlot - mldInfo.getBaseSlot()) |
-                    (slotData[offset] & 0x80);
-            LOGGER.debug("Patching slot " + tableSlot + " in position 0x"
-                    + Integer.toHexString(offset & 0xffff) + " from value 0x"
-                    + Integer.toHexString(slotData[offset] & 0xff)
-                    + " to 0x" + Integer.toHexString(value & 0xff));
-            slotData[offset] = (byte) value;
-
-            tableOffset += mldInfo.getTableRowSize();
-        }
         for (int i = 0; i < game.getSlotCount(); i++) {
             os.write(game.getSlot(i));
         }
-
-        mldInfo.setBaseSlot(currentSlot);
         return lastMldSaveSector;
     }
 

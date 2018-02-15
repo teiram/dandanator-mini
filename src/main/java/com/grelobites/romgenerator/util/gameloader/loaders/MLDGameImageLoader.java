@@ -42,7 +42,12 @@ public class MLDGameImageLoader implements GameImageLoader {
 
     @Override
     public void save(Game game, OutputStream os) throws IOException {
-        throw new IllegalArgumentException("Not implemented yet");
+        MLDGame mldGame = (MLDGame) game;
+        //Save the game always reallocated to sector 0
+        mldGame.reallocate(0);
+        for (int i = 0; i < mldGame.getSlotCount(); i++) {
+            os.write(mldGame.getSlot(i));
+        }
     }
 
 }
