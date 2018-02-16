@@ -77,7 +77,7 @@ public class GameMapperV6 implements GameMapper {
 
         mapper.screenHold = is.read() != 0;
 
-        if (slotZero.getMinorVersion() > 0) {
+        if (slotZero.getMajorVersion() > 6 || slotZero.getMinorVersion() > 0) {
             mapper.activeRom = is.read();
         } else {
             mapper.activeRom = is.read() == 0 ? V6Constants.INTERNAL_ROM_SLOT : V6Constants.EXTRA_ROM_SLOT;
