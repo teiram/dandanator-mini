@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator.util.player;
 
 import com.grelobites.romgenerator.util.Util;
+import com.grelobites.romgenerator.util.tap.TapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

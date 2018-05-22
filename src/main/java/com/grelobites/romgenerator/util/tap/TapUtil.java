@@ -1,8 +1,10 @@
-package com.grelobites.romgenerator.util.player;
+package com.grelobites.romgenerator.util.tap;
 
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.compress.zx7.Zx7OutputStream;
+import com.grelobites.romgenerator.util.player.StandardWavOutputFormat;
+import com.grelobites.romgenerator.util.player.StandardWavOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

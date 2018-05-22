@@ -5,8 +5,8 @@ import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.compress.zx7.Zx7InputStream;
 import com.grelobites.romgenerator.util.player.AudioDataPlayerSupport;
-import com.grelobites.romgenerator.util.player.TapOutputStream;
-import com.grelobites.romgenerator.util.player.TapUtil;
+import com.grelobites.romgenerator.util.tap.TapOutputStream;
+import com.grelobites.romgenerator.util.tap.TapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

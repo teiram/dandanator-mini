@@ -2,9 +2,8 @@ package com.grelobites.romgenerator.util;
 
 import com.grelobites.romgenerator.util.player.ChannelType;
 import com.grelobites.romgenerator.util.player.StandardWavOutputFormat;
-import com.grelobites.romgenerator.util.player.TapOutputStream;
-import com.grelobites.romgenerator.util.player.TapUtil;
-import com.grelobites.romgenerator.util.player.CompressedWavOutputFormat;
+import com.grelobites.romgenerator.util.tap.TapOutputStream;
+import com.grelobites.romgenerator.util.tap.TapUtil;
 import org.junit.Test;
 
 import java.io.*;
