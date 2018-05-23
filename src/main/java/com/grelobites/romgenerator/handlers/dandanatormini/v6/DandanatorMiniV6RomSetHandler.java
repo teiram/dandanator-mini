@@ -15,7 +15,6 @@ import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFr
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.SnapshotGame;
-import com.grelobites.romgenerator.model.RomGame;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.LocaleUtil;
@@ -365,7 +364,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
             LOGGER.debug("Dumped gamestruct for " + game.getName() + ". Offset: " + os.size());
             index++;
         }
-        fillWithValue(os, (byte) 0, V6Constants.GAME_STRUCT_SIZE * (DandanatorMiniConstants.MAX_GAMES - index));
+        Util.fillWithValue(os, (byte) 0, V6Constants.GAME_STRUCT_SIZE * (DandanatorMiniConstants.MAX_GAMES - index));
         LOGGER.debug("Filled to end of gamestruct. Offset: " + os.size());
     }
 
@@ -389,7 +388,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
             for (Game game : games) {
                 os.write(getGamePokeCount(game));
             }
-            fillWithValue(os, Constants.B_00, DandanatorMiniConstants.MAX_GAMES - games.size());
+            Util.fillWithValue(os, Constants.B_00, DandanatorMiniConstants.MAX_GAMES - games.size());
 
             int basePokeAddress = DandanatorMiniConstants.POKE_TARGET_ADDRESS +
                     DandanatorMiniConstants.MAX_GAMES * 3;
@@ -398,7 +397,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 os.write(asLittleEndianWord(basePokeAddress));
                 basePokeAddress += pokeRequiredSize(game);
             }
-            fillWithValue(os, Constants.B_00, (DandanatorMiniConstants.MAX_GAMES - games.size()) * 2);
+            Util.fillWithValue(os, Constants.B_00, (DandanatorMiniConstants.MAX_GAMES - games.size()) * 2);
 
             for (Game game : games) {
                 dumpGamePokeData(os, game);
@@ -566,7 +565,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 cBlocksTable.write(asLittleEndianWord(0));
                 cBlocksTable.write(asLittleEndianWord(0));
             }
-            fillWithValue(os, (byte) 0, V6Constants.VERSION_OFFSET - os.size());
+            Util.fillWithValue(os, (byte) 0, V6Constants.VERSION_OFFSET - os.size());
             LOGGER.debug("Dumped compressed data. Offset: " + os.size());
 
             os.write(asNullTerminatedByteArray(getVersionInfo(), V6Constants.VERSION_SIZE));
@@ -581,7 +580,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
             os.write(dmConfiguration.isAutoboot() ? 1 : 0);
             LOGGER.debug("Dumped autoboot configuration. Offset: " + os.size());
 
-            fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size());
+            Util.fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size());
 
             LOGGER.debug("Slot zero completed. Offset: " + os.size());
 
@@ -610,7 +609,7 @@ public class DandanatorMiniV6RomSetHandler extends DandanatorMiniRomSetHandlerSu
                     - uncompressedStream.size();
             int gapSize = uncompressedOffset - os.size();
             LOGGER.debug("Gap to uncompressed zone: " + gapSize);
-            fillWithValue(os, Constants.B_00, gapSize);
+            Util.fillWithValue(os, Constants.B_00, gapSize);
 
             os.write(uncompressedStream.toByteArray());
             LOGGER.debug("Dumped uncompressed game data. Offset: " + os.size());

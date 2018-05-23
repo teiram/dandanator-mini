@@ -15,7 +15,7 @@ public class Constants {
     public static final int SECTOR_SIZE = 0x1000;
     public static final int SLOT_SIZE = 0x4000;
 
-    private static final String DEFAULT_VERSION = "7.0";
+    private static final String DEFAULT_VERSION = "8.0";
 
     public static final int CHARSET_SIZE = 768;
 

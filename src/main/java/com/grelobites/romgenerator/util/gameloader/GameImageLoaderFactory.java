@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 public class GameImageLoaderFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameImageLoaderFactory.class);
 
-    public static GameImageLoader getLoader(String type) {
+    public static GameImageLoader getLoader(String extension) {
         try {
-            return getLoader(GameImageType.fromString(type));
+            return getLoader(GameImageType.fromExtension(extension));
         } catch (Exception e) {
             LOGGER.debug("Defaulting to default loaders on error", e);
             return getDefaultLoader();

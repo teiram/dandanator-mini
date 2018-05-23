@@ -42,12 +42,6 @@ public class DandanatorMiniRomSetHandlerSupport {
         }
     }
 
-    protected static void fillWithValue(OutputStream os, byte value, int size) throws IOException {
-        for (int i = 0; i < size; i++) {
-            os.write(value);
-        }
-    }
-
     protected static void updateBackgroundImage(WritableImage image) throws IOException {
         ImageUtil.scrLoader(image,
                 new ByteArrayInputStream(Configuration.getInstance()

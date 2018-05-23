@@ -1,5 +1,7 @@
 package com.grelobites.romgenerator.util;
 
+import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
+import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.compress.zx7.Zx7InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +98,10 @@ public class Util {
         } else {
             return Optional.empty();
         }
+    }
+
+    public static String stripFileExtension(String value) {
+        return stripSuffix(value, ".");
     }
 
     public static byte[] fromInputStream(InputStream is, int size) throws IOException {
@@ -201,4 +207,25 @@ public class Util {
         return new Zx7InputStream(streamFromFile(file, size, offset), false);
     }
 
+    public static Compressor getCompressor() {
+        return DandanatorMiniConfiguration.getInstance()
+                .getCompressor();
+    }
+
+    public static byte[] compress(byte[]... sources) throws IOException {
+        ByteArrayOutputStream target = new ByteArrayOutputStream();
+        OutputStream os = getCompressor().getCompressingOutputStream(target);
+        for (byte[] source : sources) {
+            os.write(source);
+        }
+        os.close();
+        return target.toByteArray();
+    }
+
+
+    public static void fillWithValue(OutputStream os, byte value, int size) throws IOException {
+        for (int i = 0; i < size; i++) {
+            os.write(value);
+        }
+    }
 }
