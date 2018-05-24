@@ -1,8 +1,9 @@
 package com.grelobites.romgenerator.util.daad;
 
-public interface RelocatableItem {
+import com.grelobites.romgenerator.util.pack.PackedItem;
+
+public interface RelocatableItem extends PackedItem {
     byte[] getData();
-    int getSize();
     int getSlot();
     void setSlot(int slot);
     int getSlotOffset();

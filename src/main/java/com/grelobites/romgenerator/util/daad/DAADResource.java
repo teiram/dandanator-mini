@@ -5,7 +5,6 @@ public class DAADResource implements RelocatableItem {
     private int index;
     private int slot;
     private int slotOffset;
-    private SlotCoordinates coordinates;
 
     public DAADResource(int index, byte[] data) {
         this.index = index;
@@ -23,12 +22,12 @@ public class DAADResource implements RelocatableItem {
         this.data = data;
     }
 
-    public SlotCoordinates getCoordinates() {
-        return coordinates;
+    public int getIndex() {
+        return index;
     }
 
-    public void setCoordinates(SlotCoordinates coordinates) {
-        this.coordinates = coordinates;
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     @Override

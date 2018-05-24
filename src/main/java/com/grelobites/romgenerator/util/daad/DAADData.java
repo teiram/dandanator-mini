@@ -131,6 +131,10 @@ public class DAADData {
         return binaryParts[index];
     }
 
+    public DAADBinary[] getBinaryParts() {
+        return binaryParts;
+    }
+
     private void setScreenData(byte[] data) {
         LOGGER.debug("Setting screen data with size {}", data.length);
         screen = new DAADScreen(data);

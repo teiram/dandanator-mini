@@ -9,6 +9,7 @@ public class DAADConstants {
     public static final int METADATA_OFFSET = 15554;
     public static final int METADATA_SIZE = 830;
     public static final int BINARY_PARTS = 3;
+    public static final String MLD_SIGNATURE = "MLD";
 
     private static final String DAAD_LOADER_RESOURCE = "/daad/loader.bin";
     private static byte[] DAAD_LOADER;
