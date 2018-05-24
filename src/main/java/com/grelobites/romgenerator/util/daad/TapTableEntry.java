@@ -59,9 +59,9 @@ public class TapTableEntry {
         this.loadAddress = loadAddress;
     }
 
-    public void toBuffer(ByteBuffer buffer, int offset) {
-        buffer.put(offset, Integer.valueOf(slot).byteValue())
-                .putShort(offset + 1, Integer.valueOf(offset).shortValue())
-                .putShort(offset + 2, Integer.valueOf(loadAddress).shortValue());
+    public void toBuffer(ByteBuffer buffer, int bufferOffset) {
+        buffer.put(bufferOffset, Integer.valueOf(slot).byteValue())
+                .putShort(bufferOffset + 1, Integer.valueOf(offset).shortValue())
+                .putShort(bufferOffset + 3, Integer.valueOf(loadAddress).shortValue());
     }
 }

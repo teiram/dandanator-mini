@@ -14,6 +14,9 @@ public class DAADConstants {
     private static final String DAAD_LOADER_RESOURCE = "daad/loader.bin";
     private static byte[] DAAD_LOADER;
 
+    private static final String DAAD_SCREEN_RESOURCE = "daad/screen.scr";
+    private static byte[] DAAD_SCREEN;
+
     public static byte[] getDAADLoader() throws IOException {
         if (DAAD_LOADER == null) {
             DAAD_LOADER = Util.fromInputStream(
@@ -21,6 +24,15 @@ public class DAADConstants {
                             .getResourceAsStream(DAAD_LOADER_RESOURCE));
         }
         return DAAD_LOADER;
+    }
+
+    public static byte[] getDefaultScreen() throws IOException {
+        if (DAAD_SCREEN == null) {
+            DAAD_SCREEN = Util.fromInputStream(
+                    DAADConstants.class.getClassLoader()
+                            .getResourceAsStream(DAAD_SCREEN_RESOURCE));
+        }
+        return DAAD_SCREEN;
     }
 
 }

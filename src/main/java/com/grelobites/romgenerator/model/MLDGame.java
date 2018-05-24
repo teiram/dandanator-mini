@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.model;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.compress.zx7.Zx7InputStream;
+import com.grelobites.romgenerator.util.daad.DAADConstants;
 import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,14 +51,23 @@ public class MLDGame extends BaseGame implements RamGame {
     public Image getScreenshot() {
         if (screenshot == null) {
             try {
-                screenshot = ImageUtil
-                        .scrLoader(ImageUtil.newScreenshot(),
-                                new Zx7InputStream(
-                                        new ByteArrayInputStream(
-                                                data.get(0),
-                                                mldInfo.getCompressedScreenOffset(),
-                                                mldInfo.getCompressedScreenSize()
-                                        )));
+                if (mldInfo.getCompressedScreenOffset() != 0) {
+                    screenshot = ImageUtil
+                            .scrLoader(ImageUtil.newScreenshot(),
+                                    new Zx7InputStream(
+                                            new ByteArrayInputStream(
+                                                    data.get(0),
+                                                    mldInfo.getCompressedScreenOffset(),
+                                                    mldInfo.getCompressedScreenSize()
+                                            )));
+
+
+                } else {
+                    //Use default image for DAAD games
+                    screenshot = ImageUtil
+                            .scrLoader(ImageUtil.newScreenshot(),
+                                    new ByteArrayInputStream(DAADConstants.getDefaultScreen()));
+                }
             } catch (Exception e) {
                 LOGGER.error("Loading screenshot", e);
             }

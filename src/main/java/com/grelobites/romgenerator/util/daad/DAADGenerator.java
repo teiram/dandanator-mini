@@ -76,27 +76,36 @@ public class DAADGenerator {
         return slots;
     }
 
-    private void writeMldMetadata(byte[] slotData, DAADData data) {
+    private void writeSlot0Parts(byte[] slotData, DAADData data) throws IOException {
         byte[] metadata = MLDMetadata.newBuilder()
                 .withDAADBinaries(data.getBinaryParts())
                 .withDAADResources(data.getDAADResources())
                 .withDAADScreen(data.getScreen())
                 .build().toByteArray();
-        LOGGER.debug("Writing metadata with size {} at offset {}",
+        LOGGER.debug("Writing metadata to slot of size {} with size {} at offset {}",
+                slotData.length,
                 metadata.length, DAADConstants.METADATA_OFFSET);
         System.arraycopy(metadata, 0, slotData,
                 DAADConstants.METADATA_OFFSET, metadata.length);
+
+        byte[] loader = DAADConstants.getDAADLoader();
+
+        System.arraycopy(loader, 0, slotData, 0, loader.length);
+        if (data.getScreen() != null) {
+            System.arraycopy(data.getScreen().getData(), 0,
+                    slotData,
+                    data.getScreen().getSlotOffset(),
+                    data.getScreen().getData().length);
+        }
     }
 
-    private byte[] getSlotData(SlotContainer slot) throws IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
+    private void fillSlotData(SlotContainer slot, byte[] slotData) {
         for (RelocatableItem item : slot.items) {
-            LOGGER.debug("Writing Item of size {}", item.getSize());
-            os.write(item.getData());
+            LOGGER.debug("Writing Item of size {} at {}",
+                    item.getSize(), item.getSlotOffset());
+            System.arraycopy(item.getData(), 0, slotData,
+                    item.getSlotOffset(), item.getSize());
         }
-        LOGGER.debug("Writing gap at end of size {}", slot.remaining);
-        Util.fillWithValue(os, (byte) 0, slot.remaining);
-        return os.toByteArray();
     }
 
     public InputStream generate() throws IOException {
@@ -120,16 +129,16 @@ public class DAADGenerator {
             items.add(part);
         }
         items.addAll(data.getDAADResources());
-        //Add a number of slots to accommodate all the data
 
         List<SlotContainer> slots = performBinPack(slot0, items, slot0Offset);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         int slotId = 0;
         for (SlotContainer slot : slots) {
-            byte[] slotData = getSlotData(slot);
+            byte[] slotData = new byte[Constants.SLOT_SIZE];
+            fillSlotData(slot, slotData);
             if (slotId++ == 0) {
-                writeMldMetadata(slotData, data);
+                writeSlot0Parts(slotData, data);
             }
             output.write(slotData);
         }
