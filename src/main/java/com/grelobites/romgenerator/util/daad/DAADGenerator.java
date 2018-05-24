@@ -81,8 +81,9 @@ public class DAADGenerator {
                 .withDAADBinaries(data.getBinaryParts())
                 .withDAADResources(data.getDAADResources())
                 .withDAADScreen(data.getScreen())
-                .build()
-                .toByteArray();
+                .build().toByteArray();
+        LOGGER.debug("Writing metadata with size {} at offset {}",
+                metadata.length, DAADConstants.METADATA_OFFSET);
         System.arraycopy(metadata, 0, slotData,
                 DAADConstants.METADATA_OFFSET, metadata.length);
     }

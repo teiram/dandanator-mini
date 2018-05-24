@@ -9,9 +9,8 @@ public class MLDMetadata {
     public static final int MLD_VERSION = 0;
     public static final int MLD_DATAROW_LENGTH = 4;
     public static final int MLD_SLOTROW_OFFSET = 0;
-    public static final int MLD_TABLE_OFFSET = 15554;
-    public static final int TAP_TABLE_OFFSET = 16322;
-    public static final int BASE_SLOT_OFFSET = 16362;
+    public static final int TAP_TABLE_OFFSET = 1024;
+    public static final int BASE_SLOT_OFFSET = TAP_TABLE_OFFSET + 40;
 
     public static class Builder {
         private MLDMetadata metadata = new MLDMetadata();
@@ -78,8 +77,8 @@ public class MLDMetadata {
 
     private int baseSlot;
     private MLDType mldType = MLDType.MLD_48K;
-    private int allocatedSectors;
-    private int tableOffset = MLD_TABLE_OFFSET;
+    private int allocatedSectors = 0;
+    private int tableOffset = DAADConstants.METADATA_OFFSET;
     private int dataRowLength = MLD_DATAROW_LENGTH;
     private int dataRows = MLD_DATA_ROWS;
     private int slotRowOffset = MLD_SLOTROW_OFFSET;
