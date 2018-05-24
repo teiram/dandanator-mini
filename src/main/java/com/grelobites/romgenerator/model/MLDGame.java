@@ -34,12 +34,9 @@ public class MLDGame extends BaseGame implements RamGame {
 
     public MLDInfo initializeMldInfo() {
         if (mldInfo == null) {
-            Optional<MLDInfo> mldInfoOpt = MLDInfo.fromGameByteArray(data);
-            if (!mldInfoOpt.isPresent()) {
-                throw new IllegalArgumentException("Unable to extract MLD data from file");
-            } else {
-                mldInfo = mldInfoOpt.get();
-            }
+            mldInfo = MLDInfo.fromGameByteArray(data)
+                    .orElseThrow(
+                            ()-> new IllegalArgumentException("Unable to extract MLD data from file"));
         }
         return mldInfo;
     }

@@ -29,12 +29,9 @@ public class MLDGameImageLoader implements GameImageLoader {
                 gameSlots.add(Arrays.copyOfRange(gameImage, i * Constants.SLOT_SIZE,
                         (i + 1) * Constants.SLOT_SIZE));
             }
-            Optional<MLDInfo> mldInfoOpt = MLDInfo.fromGameByteArray(gameSlots);
-            if (!mldInfoOpt.isPresent()) {
-                throw new IllegalArgumentException("Unable to extract MLD data from file");
-            } else {
-                return new MLDGame(mldInfoOpt.get(), gameSlots);
-            }
+            return MLDInfo.fromGameByteArray(gameSlots)
+                    .map(f -> new MLDGame(f, gameSlots))
+                    .orElseThrow(() -> new IllegalArgumentException("Unable to extract MLD data from file"));
         } else {
             throw new IllegalArgumentException("MLD size must be multiple of 16384");
         }
