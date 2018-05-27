@@ -43,10 +43,8 @@ public class DAADGenerator {
     }
 
     private static List<SlotContainer> performBinPack(SlotContainer slot0,
-                                                      List<RelocatableItem> items,
-                                                      int slot0Offset) {
+                                                      List<RelocatableItem> items) {
         List<SlotContainer> slots = new ArrayList<>();
-        slots.add(slot0);
         for (int i = 0; i < 29; i++) {
             slots.add(new SlotContainer());
         }
@@ -59,9 +57,9 @@ public class DAADGenerator {
         }
         LOGGER.debug("Slot count after pruning {}", slots.size());
 
-        int slotId = 0;
+        int slotId = 1;
         for (SlotContainer slot: slots) {
-            int currentOffset = slotId == 0 ? slot0Offset : 0;
+            int currentOffset = 0;
             LOGGER.debug("Allocated {} resources in slot {}", slot.items.size(), slotId);
             for (RelocatableItem item : slot.items) {
                 LOGGER.debug("Adding item of size {} at offset {} to slot {}",
@@ -72,7 +70,7 @@ public class DAADGenerator {
             }
             slotId++;
         }
-
+        slots.add(0, slot0);
         return slots;
     }
 
@@ -81,6 +79,7 @@ public class DAADGenerator {
                 .withDAADBinaries(data.getBinaryParts())
                 .withDAADResources(data.getDAADResources())
                 .withDAADScreen(data.getScreen())
+                .withAllocatedSectors(DAADConstants.MLD_ALLOCATED_SECTORS)
                 .build().toByteArray();
         LOGGER.debug("Writing metadata to slot of size {} with size {} at offset {}",
                 slotData.length,
@@ -119,9 +118,6 @@ public class DAADGenerator {
             screen.setData(compressedScreen);
             slot0.remaining -= compressedScreen.length;
         }
-        int slot0Offset = Constants.SLOT_SIZE - slot0.remaining - DAADConstants.METADATA_SIZE;
-        LOGGER.debug("Remaining space in slot0: {}, available offset: {}",
-                slot0.remaining, slot0Offset);
         List<RelocatableItem> items = new ArrayList<>();
         for (int i = 0; i < DAADConstants.BINARY_PARTS; i++) {
             DAADBinary part = data.getBinaryPart(i);
@@ -130,15 +126,16 @@ public class DAADGenerator {
         }
         items.addAll(data.getDAADResources());
 
-        List<SlotContainer> slots = performBinPack(slot0, items, slot0Offset);
+        List<SlotContainer> slots = performBinPack(slot0, items);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         int slotId = 0;
         for (SlotContainer slot : slots) {
             byte[] slotData = new byte[Constants.SLOT_SIZE];
-            fillSlotData(slot, slotData);
             if (slotId++ == 0) {
                 writeSlot0Parts(slotData, data);
+            } else {
+                fillSlotData(slot, slotData);
             }
             output.write(slotData);
         }

@@ -6,14 +6,19 @@ import com.grelobites.romgenerator.util.compress.zx7.Zx7InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
-import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
 public class Util {
@@ -150,7 +155,7 @@ public class Util {
         return result;
     }
 
-    public static <S, T> Collection<T> collectionUpcast(Collection<S> list) {
+    public static <S extends T, T> Collection<T> collectionUpcast(Collection<S> list) {
         return list.stream().map(item -> (T) item)
             .collect(Collectors.toList());
     }
