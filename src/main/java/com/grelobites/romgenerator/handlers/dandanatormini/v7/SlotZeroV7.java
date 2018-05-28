@@ -14,7 +14,7 @@ public class SlotZeroV7 extends SlotZeroV6 {
     @Override
     public boolean validate() {
         try {
-            return getMajorVersion() == 7;
+            return getMajorVersion() == 7 || getMajorVersion() == 8;
         } catch (Exception e) {
             LOGGER.debug("Validation failed", e);
             return false;
