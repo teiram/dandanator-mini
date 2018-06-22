@@ -1,10 +1,16 @@
 package com.grelobites.romgenerator.util.daad;
 
+import com.grelobites.romgenerator.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
 
 public class MLDMetadata {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MLDMetadata.class);
+
     public static final int MLD_DATA_ROWS = 256;
     public static final int MLD_VERSION = 0;
     public static final int MLD_DATAROW_LENGTH = 4;
@@ -183,6 +189,7 @@ public class MLDMetadata {
         ByteBuffer buffer = ByteBuffer.allocate(DAADConstants.METADATA_SIZE)
                 .order(ByteOrder.LITTLE_ENDIAN);
         for (DAADResource resource : daadResources) {
+            LOGGER.debug("Dumping resource at index {}", resource.getIndex());
             int offset = resource.getIndex() * MLD_DATAROW_LENGTH;
             DAADTableEntry.newBuilder()
                     .withSlot(resource.getSlot())
@@ -222,6 +229,7 @@ public class MLDMetadata {
                 .put(DAADConstants.MLD_SIGNATURE.getBytes())
                 .put(Integer.valueOf(version).byteValue());
 
+        LOGGER.debug("MLDMetadata calculated as {}", Util.dumpAsHexString(buffer.array()));
         return buffer.array();
     }
 }

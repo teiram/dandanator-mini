@@ -1,8 +1,12 @@
 package com.grelobites.romgenerator.util.daad;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 
 public class DAADTableEntry {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DAADTableEntry.class);
     private int slot;
     private int offset;
     private int compression;
@@ -58,9 +62,19 @@ public class DAADTableEntry {
         this.compression = compression;
     }
 
-    public void toBuffer(ByteBuffer buffer, int offset) {
-        buffer.put(offset, Integer.valueOf(slot).byteValue())
-              .putShort(offset + 1, Integer.valueOf(offset).shortValue())
-              .put(offset + 3, Integer.valueOf(compression).byteValue());
+    @Override
+    public String toString() {
+        return "DAADTableEntry{" +
+                "slot=" + slot +
+                ", offset=" + String.format("0x%04x", offset) +
+                ", compression=" + compression +
+                '}';
+    }
+
+    public void toBuffer(ByteBuffer buffer, int bufferOffset) {
+        LOGGER.debug("Dumping {}", this);
+        buffer.put(bufferOffset, Integer.valueOf(slot).byteValue())
+                .put(bufferOffset + 1, Integer.valueOf(compression).byteValue())
+                .putShort(bufferOffset + 2, Integer.valueOf(offset).shortValue());
     }
 }
