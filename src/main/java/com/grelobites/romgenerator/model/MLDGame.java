@@ -118,14 +118,15 @@ public class MLDGame extends BaseGame implements RamGame {
         byte[] slotData = getSlot(tableSlot);
         for (int i = 0; i < mldInfo.getTableRows(); i++) {
             int offset = tableOffset + mldInfo.getRowSlotOffset();
-            int value = ((slotData[offset] & 0x7f) + slot - mldInfo.getBaseSlot()) |
-                    (slotData[offset] & 0x80);
-            LOGGER.debug("Patching slot " + tableSlot + " in position 0x"
-                    + Integer.toHexString(offset & 0xffff) + " from value 0x"
-                    + Integer.toHexString(slotData[offset] & 0xff)
-                    + " to 0x" + Integer.toHexString(value & 0xff));
-            slotData[offset] = (byte) value;
-
+            int correctedValue = slotData[offset] & 0x7F - mldInfo.getBaseSlot();
+            if (correctedValue != 0) {
+                int newValue = (correctedValue + slot) | (slotData[offset] & 0x80);
+                LOGGER.debug("Patching slot " + tableSlot + " in position 0x"
+                        + Integer.toHexString(offset & 0xffff) + " from value 0x"
+                        + Integer.toHexString(slotData[offset] & 0xff)
+                        + " to 0x" + Integer.toHexString(newValue & 0xff));
+                slotData[offset] = (byte) newValue;
+            }
             tableOffset += mldInfo.getTableRowSize();
         }
         mldInfo.setBaseSlot(slot);
