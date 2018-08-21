@@ -73,7 +73,7 @@ public class DAADTableEntry {
 
     public void toBuffer(ByteBuffer buffer, int bufferOffset) {
         LOGGER.debug("Dumping {}", this);
-        buffer.put(bufferOffset, Integer.valueOf(slot).byteValue())
+        buffer.put(bufferOffset, Integer.valueOf(slot + 1).byteValue())
                 .put(bufferOffset + 1, Integer.valueOf(compression).byteValue())
                 .putShort(bufferOffset + 2, Integer.valueOf(offset).shortValue());
     }

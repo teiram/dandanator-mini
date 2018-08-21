@@ -30,7 +30,7 @@ public class DAADData {
         } else {
             LOGGER.warn("Entry name {} doesn't match expected ZXS name", name);
         }
-        return value < 256 ? value - 1 : -1;
+        return value < 256 ? value : -1;
     }
 
     public static DAADData fromZipStream(ZipInputStream zipInputStream) throws IOException {
