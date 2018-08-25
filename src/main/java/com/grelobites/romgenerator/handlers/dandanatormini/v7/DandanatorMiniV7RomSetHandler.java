@@ -527,7 +527,8 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
             Game game = games.get(i);
             if (!isGameCompressed(game)) {
                 if (game instanceof DanSnapGame) {
-                    value = currentSlot;
+                    value = currentSlot + 1; //Counting in base 1
+                    break;
                 }
                 currentSlot += game.getSlotCount();
             }
