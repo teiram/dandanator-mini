@@ -30,7 +30,9 @@ public class MLDGameImageLoader implements GameImageLoader {
                         (i + 1) * Constants.SLOT_SIZE));
             }
             return MLDInfo.fromGameByteArray(gameSlots)
-                    .map(f -> new MLDGame(f, gameSlots))
+                    .map(f -> GameType.isDanSnap(f.getGameType()) ?
+                            new DanSnapGame(f, gameSlots) :
+                            new MLDGame(f, gameSlots))
                     .orElseThrow(() -> new IllegalArgumentException("Unable to extract MLD data from file"));
         } else {
             throw new IllegalArgumentException("MLD size must be multiple of 16384");

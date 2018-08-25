@@ -110,7 +110,7 @@ public class MLDInfo {
     }
 
     public GameType getGameType() {
-        return GameType.byTypeId((mldType & 0x0F) | GameType.MLD_MASK);
+        return GameType.byTypeId((mldType));
     }
 
     public HardwareMode getHardwareMode() {
@@ -119,6 +119,8 @@ public class MLDInfo {
                 return HardwareMode.HW_48K;
             case RAM128_MLD:
                 return (mldType & 0x40) == 0 ? HardwareMode.HW_128K : HardwareMode.HW_PLUS2A;
+            case DAN_SNAP:
+                return HardwareMode.HW_48K;
             default:
                 return HardwareMode.HW_UNKNOWN;
         }
@@ -148,6 +150,7 @@ public class MLDInfo {
             mldInfo.setRowSlotOffset(Byte.valueOf(buffer.get()).intValue());
             mldInfo.setCompressedScreenOffset(Short.valueOf(buffer.getShort()).intValue());
             mldInfo.setCompressedScreenSize(Short.valueOf(buffer.getShort()).intValue());
+            LOGGER.debug("MLDInfo is {}", mldInfo);
             return Optional.of(mldInfo);
         } else {
             return Optional.empty();
@@ -178,6 +181,8 @@ public class MLDInfo {
                 ", compressedScreenOffset=" + compressedScreenOffset +
                 ", compressedScreenSize=" + compressedScreenSize +
                 ", mldVersion=" + mldVersion +
+                ", headerSlot=" + headerSlot +
+                ", baseSlot=" + baseSlot +
                 '}';
     }
 }

@@ -26,6 +26,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
@@ -37,6 +38,7 @@ import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
@@ -114,6 +116,15 @@ public class DandanatorMiniFrameController {
 
     @FXML
     private Label hardwareMode;
+
+    @FXML
+    private HBox danSnapSizeSelector;
+
+    @FXML
+    private RadioButton danSnap48KSize;
+
+    @FXML
+    private RadioButton danSnap128KSize;
 
     private ApplicationContext applicationContext;
 
@@ -350,6 +361,10 @@ public class DandanatorMiniFrameController {
                 pokeView.setRoot(null);
                 gameCompressedAttribute.selectedProperty().removeListener(getCurrentGameCompressedChangeListener());
             }
+            if (game instanceof DanSnapGame) {
+                DanSnapGame danGame = (DanSnapGame) game;
+                danSnap48KSize.selectedProperty().unbindBidirectional(danGame.reservationSize48KProperty());
+            }
         }
     }
 
@@ -379,6 +394,11 @@ public class DandanatorMiniFrameController {
                     compressedSize.textProperty().bind(getGameSizeProperty(game).asString());
                 });
                 snapshotGame.compressedProperty().addListener(getCurrentGameCompressedChangeListener());
+            }
+            if (game instanceof DanSnapGame) {
+                LOGGER.debug("Binding as DanSnapGame");
+                DanSnapGame danGame = (DanSnapGame) game;
+                danSnap48KSize.selectedProperty().bindBidirectional(danGame.reservationSize48KProperty());
             }
         }
     }
@@ -440,6 +460,7 @@ public class DandanatorMiniFrameController {
                     gameForced48kModeAttribute.setVisible(false);
                     romActiveAttributeLabel.setVisible(false);
                 }
+                danSnapSizeSelector.setVisible(newGame instanceof DanSnapGame);
             } else {
                 pokesTab.setDisable(true);
                 gameRomAttribute.setVisible(false);
@@ -461,6 +482,9 @@ public class DandanatorMiniFrameController {
                 if (snapshotGame.getCompressed()) {
                     return snapshotGame.compressedSizeProperty();
                 }
+            } else if (game instanceof DanSnapGame) {
+                DanSnapGame danGame = (DanSnapGame) game;
+                return danGame.sizeProperty();
             }
             return new SimpleIntegerProperty(game.getSize());
         } catch (Exception e) {

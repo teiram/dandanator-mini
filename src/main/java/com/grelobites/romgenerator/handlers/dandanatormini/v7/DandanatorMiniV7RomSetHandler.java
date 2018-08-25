@@ -214,6 +214,9 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
         //For MLD games we use CBlocks of up to 0xffff bytes to encode the size of the game
         if (game instanceof MLDGame) {
             int remaining = game.getSlotCount() * Constants.SLOT_SIZE; //Since game.getSize() includes save space
+            if (game instanceof DanSnapGame) {
+                remaining += ((DanSnapGame) game).getReservedSlots() * Constants.SLOT_SIZE;
+            }
             int startOffset = offset - remaining;
             while (remaining > 0) {
                 int slot = startOffset / Constants.SLOT_SIZE;
@@ -483,14 +486,53 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
         return lastMldSaveSector;
     }
 
+    private void dumpDanSnapGameData(OutputStream os, DanSnapGame game, int currentSlot) throws IOException {
+        game.reallocate(currentSlot);
+        for (int i = 0; i < game.getSlotCount(); i++) {
+            os.write(game.getSlot(i));
+        }
+        byte[] filler = new byte[Constants.SLOT_SIZE];
+        Arrays.fill(filler, (byte)0xff);
+        int reservedSectors = game.getReservedSlots();
+        for (int i = 0; i < reservedSectors; i++) {
+            os.write(filler);
+        }
+
+    }
+
+    private static int gameRealSlotCount(Game game) {
+        int count = game.getSlotCount();
+        if (game instanceof DanSnapGame) {
+            count += ((DanSnapGame) game).getReservedSlots();
+        }
+        return count;
+    }
+
     private static int getUncompressedSlotCount(List<Game> games) {
         int value = 0;
         for (Game game: games) {
             if (!isGameCompressed(game)) {
-                value += game.getSlotCount();
+                value += gameRealSlotCount(game);
             }
         }
         LOGGER.debug("Number of slots from uncompressed games " + value);
+        return value;
+    }
+
+    private static int pauseMarkValue(List<Game> games)  {
+        int value = 2;
+        int currentSlot = DandanatorMiniConstants.GAME_SLOTS + 1
+                - getUncompressedSlotCount(games);
+        for (int i = games.size() - 1; i >= 0; i--) {
+            Game game = games.get(i);
+            if (!isGameCompressed(game)) {
+                if (game instanceof DanSnapGame) {
+                    value = currentSlot;
+                }
+                currentSlot += game.getSlotCount();
+            }
+        }
+        LOGGER.debug("Pause Mark value is {}", value);
         return value;
     }
 
@@ -583,6 +625,9 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
             os.write(dmConfiguration.isAutoboot() ? 1 : 0);
             LOGGER.debug("Dumped autoboot configuration. Offset: " + os.size());
 
+            os.write(Constants.B_FF);
+            os.write(pauseMarkValue(games));
+
             Util.fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size());
 
             LOGGER.debug("Slot zero completed. Offset: " + os.size());
@@ -607,7 +652,12 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
             for (int i = games.size() - 1; i >= 0; i--) {
                 Game game = games.get(i);
                 if (!isGameCompressed(game)) {
-                    if (game instanceof MLDGame) {
+                    if (game instanceof DanSnapGame) {
+                        DanSnapGame danGame = (DanSnapGame) game;
+                        dumpDanSnapGameData(uncompressedStream, danGame, currentSlot);
+                        //Adjust offset with reserved slots
+                        currentSlot += danGame.getReservedSlots();
+                    } else if (game instanceof MLDGame) {
                         lastMldSaveSector = dumpMLDGameData(uncompressedStream, game,
                                 lastMldSaveSector, currentSlot);
                     } else {
@@ -615,6 +665,7 @@ public class DandanatorMiniV7RomSetHandler extends DandanatorMiniRomSetHandlerSu
                     }
                     currentSlot += game.getSlotCount();
                 }
+
             }
 
             //Uncompressed data goes at the end minus the extra ROM size

@@ -227,11 +227,23 @@ public class GameMapperV6 implements GameMapper {
                         LOGGER.error("Unable to restore MLDGame from ROMSet. No MLDInfo found");
                     }
                     break;
+                case DAN_SNAP:
+                case DAN_SNAP128:
+                    gameSlots = getMLDGameSlots();
+                    game = MLDInfo.fromGameByteArray(gameSlots)
+                            .map(m -> new DanSnapGame(m, gameSlots))
+                            .orElseGet(() -> {
+                                LOGGER.error("Unable to restore DanSnap Game from ROMSet. No MLDInfo found");
+                                return null;
+                            });
+                    break;
                 default:
                     LOGGER.error("Unsupported type of game " + gameType.screenName());
                     throw new IllegalArgumentException("Unsupported game type");
             }
-            game.setName(name);
+            if (game != null) {
+                game.setName(name);
+            }
         }
         LOGGER.debug("Game generated as " + game);
         return game;

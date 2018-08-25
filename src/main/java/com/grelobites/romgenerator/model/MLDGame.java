@@ -4,6 +4,8 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.compress.zx7.Zx7InputStream;
 import com.grelobites.romgenerator.util.daad.DAADConstants;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +19,12 @@ public class MLDGame extends BaseGame implements RamGame {
     private HardwareMode hardwareMode;
     private Image screenshot;
     private MLDInfo mldInfo;
+    private IntegerProperty size;
 
     public MLDGame(MLDInfo mldInfo, List<byte[]> data) {
         super(mldInfo.getGameType(), data);
         this.mldInfo = mldInfo;
+        this.size = new SimpleIntegerProperty(super.getSize());
         hardwareMode = mldInfo.getHardwareMode();
     }
 
@@ -105,7 +109,7 @@ public class MLDGame extends BaseGame implements RamGame {
     }
 
     public void reallocate(int slot) {
-        LOGGER.debug("Relocating MLD game " + getName() + " with " + getSlotCount()
+        LOGGER.debug("Relocating MLD game " + this + " with " + getSlotCount()
                 + " slots to slot " + slot + ". Current base slot is "
                 + mldInfo.getBaseSlot());
 
@@ -119,14 +123,13 @@ public class MLDGame extends BaseGame implements RamGame {
         for (int i = 0; i < mldInfo.getTableRows(); i++) {
             int offset = tableOffset + mldInfo.getRowSlotOffset();
             int correctedValue = slotData[offset] & 0x7F - mldInfo.getBaseSlot();
-            if (correctedValue != 0) {
-                int newValue = (correctedValue + slot) | (slotData[offset] & 0x80);
-                LOGGER.debug("Patching slot " + tableSlot + " in position 0x"
-                        + Integer.toHexString(offset & 0xffff) + " from value 0x"
-                        + Integer.toHexString(slotData[offset] & 0xff)
-                        + " to 0x" + Integer.toHexString(newValue & 0xff));
-                slotData[offset] = (byte) newValue;
-            }
+            int newValue = (correctedValue + slot) | (slotData[offset] & 0x80);
+            LOGGER.debug("Patching slot " + tableSlot + " in position 0x"
+                    + Integer.toHexString(offset & 0xffff) + " from value 0x"
+                    + Integer.toHexString(slotData[offset] & 0xff)
+                    + " to 0x" + Integer.toHexString(newValue & 0xff));
+            slotData[offset] = (byte) newValue;
+
             tableOffset += mldInfo.getTableRowSize();
         }
         mldInfo.setBaseSlot(slot);
@@ -134,11 +137,15 @@ public class MLDGame extends BaseGame implements RamGame {
 
     @Override
     public int getSize() {
-        if (size == null) {
-            size = super.getSize();
-            size += mldInfo.getRequiredSectors() * Constants.SECTOR_SIZE;
-        }
+        return size.get();
+    }
+
+    public IntegerProperty sizeProperty() {
         return size;
+    }
+
+    public void setSize(int size) {
+        this.size.set(size);
     }
 
     @Override
