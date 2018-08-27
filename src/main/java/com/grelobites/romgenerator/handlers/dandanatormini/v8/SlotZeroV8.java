@@ -1,4 +1,4 @@
-package com.grelobites.romgenerator.handlers.dandanatormini.v7;
+package com.grelobites.romgenerator.handlers.dandanatormini.v8;
 
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
@@ -9,8 +9,6 @@ import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZero;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.SlotZeroBase;
 import com.grelobites.romgenerator.handlers.dandanatormini.v6.DandanatorMiniV6Importer;
-import com.grelobites.romgenerator.handlers.dandanatormini.v6.GameMapperV6;
-import com.grelobites.romgenerator.handlers.dandanatormini.v6.V6Constants;
 import com.grelobites.romgenerator.model.Trainer;
 import com.grelobites.romgenerator.util.PositionAwareInputStream;
 import com.grelobites.romgenerator.util.Util;
@@ -25,12 +23,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-public class SlotZeroV7 extends SlotZeroBase implements SlotZero {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SlotZeroV7.class);
+public class SlotZeroV8 extends SlotZeroBase implements SlotZero {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SlotZeroV8.class);
     private byte[] charSet;
     private byte[] screen;
     private byte[] screenAttributes;
-    private List<GameMapperV7> gameMappers;
+    private List<GameMapperV8> gameMappers;
     private String extraRomMessage;
     private String togglePokesMessage;
     private String launchGameMessage;
@@ -39,14 +37,14 @@ public class SlotZeroV7 extends SlotZeroBase implements SlotZero {
     private boolean autoboot;
     List<GameBlock> gameBlocks;
 
-    public SlotZeroV7(byte[] data) {
+    public SlotZeroV8(byte[] data) {
         super(data);
     }
 
     @Override
     public boolean validate() {
         try {
-            return getMajorVersion() == 7;
+            return getMajorVersion() == 8;
         } catch (Exception e) {
             LOGGER.debug("Validation failed", e);
             return false;
@@ -56,34 +54,34 @@ public class SlotZeroV7 extends SlotZeroBase implements SlotZero {
     @Override
     public void parse() throws IOException {
         PositionAwareInputStream zis = new PositionAwareInputStream(data());
-        zis.safeSkip(V7Constants.BASEROM_SIZE);
+        zis.safeSkip(V8Constants.BASEROM_SIZE);
         int gameCount = zis.read();
         LOGGER.debug("Read number of games: " + gameCount);
         gameMappers = new ArrayList<>();
         gameBlocks = new ArrayList<>();
         for (int i = 0; i < gameCount; i++) {
-            GameMapperV7 mapper = GameMapperV7.fromRomSet(zis, this);
+            GameMapperV8 mapper = GameMapperV8.fromRomSet(zis, this);
             gameBlocks.addAll(mapper.getBlocks());
             gameMappers.add(mapper);
         }
 
-        zis.safeSkip(V7Constants.GAME_STRUCT_SIZE * (DandanatorMiniConstants.MAX_GAMES - gameCount));
+        zis.safeSkip(V8Constants.GAME_STRUCT_SIZE * (DandanatorMiniConstants.MAX_GAMES - gameCount));
 
 
-        int compressedScreenOffset = Util.readAsLittleEndian(data, V7Constants.CBLOCKS_OFFSET);
-        int compressedScreenBlocks = Util.readAsLittleEndian(data, V7Constants.CBLOCKS_OFFSET + 2);
+        int compressedScreenOffset = Util.readAsLittleEndian(data, V8Constants.CBLOCKS_OFFSET);
+        int compressedScreenBlocks = Util.readAsLittleEndian(data, V8Constants.CBLOCKS_OFFSET + 2);
         LOGGER.debug("Compressed screen located at " + compressedScreenOffset + ", blocks "
                 + compressedScreenBlocks);
-        int compressedTextDataOffset = Util.readAsLittleEndian(data, V7Constants.CBLOCKS_OFFSET + 4);
-        int compressedTextDataBlocks = Util.readAsLittleEndian(data, V7Constants.CBLOCKS_OFFSET + 6);
+        int compressedTextDataOffset = Util.readAsLittleEndian(data, V8Constants.CBLOCKS_OFFSET + 4);
+        int compressedTextDataBlocks = Util.readAsLittleEndian(data, V8Constants.CBLOCKS_OFFSET + 6);
         LOGGER.debug("Compressed text data located at " + compressedTextDataOffset + ", blocks "
                 + compressedTextDataBlocks);
-        int compressedPokeStructOffset = Util.readAsLittleEndian(data, V7Constants.CBLOCKS_OFFSET + 8);
-        int compressedPokeStructBlocks = Util.readAsLittleEndian(data, V7Constants.CBLOCKS_OFFSET + 10);
+        int compressedPokeStructOffset = Util.readAsLittleEndian(data, V8Constants.CBLOCKS_OFFSET + 8);
+        int compressedPokeStructBlocks = Util.readAsLittleEndian(data, V8Constants.CBLOCKS_OFFSET + 10);
         LOGGER.debug("Compressed poke data located at " + compressedPokeStructOffset + ", blocks "
                 + compressedPokeStructBlocks);
-        int compressedPicFwAndCharsetOffset = Util.readAsLittleEndian(data, V7Constants.CBLOCKS_OFFSET + 12);
-        int compressedPicFwAndCharsetBlocks = Util.readAsLittleEndian(data, V7Constants.CBLOCKS_OFFSET + 14);
+        int compressedPicFwAndCharsetOffset = Util.readAsLittleEndian(data, V8Constants.CBLOCKS_OFFSET + 12);
+        int compressedPicFwAndCharsetBlocks = Util.readAsLittleEndian(data, V8Constants.CBLOCKS_OFFSET + 14);
         LOGGER.debug("Compressed PIC FW and Charset located at " + compressedPicFwAndCharsetOffset
                 + ", blocks " + compressedPicFwAndCharsetBlocks);
 
@@ -107,14 +105,14 @@ public class SlotZeroV7 extends SlotZeroBase implements SlotZero {
         ByteArrayInputStream pokeDataStream = new ByteArrayInputStream(pokeData);
         for (int i = 0; i < gameCount; i++) {
             LOGGER.debug("Reading poke data for game " + i);
-            GameMapperV7 mapper = gameMappers.get(i);
+            GameMapperV8 mapper = gameMappers.get(i);
             mapper.setTrainerCount(pokeDataStream.read());
         }
         pokeDataStream.skip(DandanatorMiniConstants.MAX_GAMES - gameCount);
         pokeDataStream.skip(DandanatorMiniConstants.MAX_GAMES * 2);
 
         for (int i = 0; i < gameCount; i++) {
-            GameMapperV7 mapper = gameMappers.get(i);
+            GameMapperV8 mapper = gameMappers.get(i);
             int trainerCount = mapper.getTrainerCount();
             if (trainerCount > 0) {
                 LOGGER.debug("Importing " + trainerCount + " trainers");
@@ -138,7 +136,7 @@ public class SlotZeroV7 extends SlotZeroBase implements SlotZero {
         }
 
         for (int i = 0; i < gameCount; i++) {
-            GameMapperV7 mapper = gameMappers.get(i);
+            GameMapperV8 mapper = gameMappers.get(i);
             GameChunk gameChunk = mapper.getGameChunk();
             if (gameChunk.getLength() == DandanatorMiniConstants.GAME_CHUNK_SIZE) {
                 gameChunk.setData(copy(zis, gameChunk.getAddress(), gameChunk.getLength()));
@@ -147,10 +145,10 @@ public class SlotZeroV7 extends SlotZeroBase implements SlotZero {
             }
         }
 
-        zis.safeSkip(V7Constants.BORDER_EFFECT_OFFSET - zis.position());
+        zis.safeSkip(V8Constants.BORDER_EFFECT_OFFSET - zis.position());
         LOGGER.debug("Before version. Position " + zis.position());
-        disableBorderEffect = zis.read() == 1 ? true : false;
-        autoboot = zis.read() == 1 ? true : false;
+        disableBorderEffect = zis.read() == 1;
+        autoboot = zis.read() == 1;
         zis.safeSkip(Constants.SLOT_SIZE - zis.position());
         LOGGER.debug("After version. Position " + zis.position());
     }
