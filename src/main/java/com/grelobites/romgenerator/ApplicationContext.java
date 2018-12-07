@@ -55,6 +55,7 @@ public class ApplicationContext {
     private StringProperty applicationTitle;
     private DirectoryAwareFileChooser fileChooser;
     private StringProperty exportGameMenuEntryMessage;
+    private BooleanProperty eepromLoaderIncluded;
 
     private void updateApplicationTitle() {
         StringBuilder title = new StringBuilder(APPLICATION_TITLE);
@@ -80,6 +81,7 @@ public class ApplicationContext {
         this.backgroundTaskCount = new SimpleIntegerProperty();
         this.applicationTitle = new SimpleStringProperty();
         this.exportGameMenuEntryMessage = new SimpleStringProperty(LocaleUtil.i18n("exportGameMenuEntry"));
+        this.eepromLoaderIncluded = new SimpleBooleanProperty(true);
         updateApplicationTitle();
     }
 
@@ -181,6 +183,18 @@ public class ApplicationContext {
         romSetHandler.bind(this);
         this.romSetHandler = romSetHandler;
         updateApplicationTitle();
+    }
+
+    public boolean isEepromLoaderIncluded() {
+        return eepromLoaderIncluded.get();
+    }
+
+    public BooleanProperty eepromLoaderIncludedProperty() {
+        return eepromLoaderIncluded;
+    }
+
+    public void setEepromLoaderIncluded(boolean eepromLoaderIncluded) {
+        this.eepromLoaderIncluded.set(eepromLoaderIncluded);
     }
 
     public Stage getApplicationStage() {

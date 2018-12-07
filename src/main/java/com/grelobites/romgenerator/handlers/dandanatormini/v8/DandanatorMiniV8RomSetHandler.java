@@ -618,7 +618,8 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
             byte[] eepromLoaderScreen = getEepromLoaderScreen();
             int requiredEepromLoaderSpace = eepromLoaderCode.length + eepromLoaderScreen.length;
             int eepromLocation = 0;
-            if (requiredEepromLoaderSpace <= freeSpace) {
+            applicationContext.setEepromLoaderIncluded(requiredEepromLoaderSpace <= freeSpace);
+            if (applicationContext.isEepromLoaderIncluded()) {
                 eepromLocation = os.size();
                 LOGGER.debug("Dumping EEPROM Loader with size " + requiredEepromLoaderSpace
                         + " at offset " + eepromLocation + ". Free space was " + freeSpace);
@@ -793,11 +794,16 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
         getApplicationContext().getGameList().remove(game);
     }
 
-    private static void printVersionAndPageInfo(ZxScreen screen, int line, int page, int numPages) {
+    private static void printVersionAndPageInfo(ZxScreen screen, int line, int page, int numPages,
+                                                boolean eeWriterIncluded) {
         String versionInfo = getVersionInfo();
         screen.setInk(ZxColor.BLACK);
         screen.setPen(ZxColor.BRIGHTMAGENTA);
         screen.printLine(versionInfo, line, 0);
+        if (eeWriterIncluded) {
+            screen.setPen(ZxColor.BRIGHTYELLOW);
+            screen.printLine("L. Loader", line, 10);
+        }
         if (numPages > 1) {
             screen.setPen(ZxColor.WHITE);
             String pageInfo = numPages > 1 ?
@@ -871,7 +877,8 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
             page.deleteLine(line);
         }
 
-        printVersionAndPageInfo(page, 8, pageIndex + 1, numPages);
+        printVersionAndPageInfo(page, 8, pageIndex + 1, numPages,
+                applicationContext.isEepromLoaderIncluded());
         int line = 10;
         int gameIndex = pageIndex * DandanatorMiniConstants.SLOT_COUNT;
         int gameCount = 0;
@@ -1124,6 +1131,7 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
         applicationContext.getGameList().addListener(updateImageListener);
         applicationContext.getGameList().addListener(updateRomUsageListener);
+        applicationContext.eepromLoaderIncludedProperty().addListener(updateImageListener);
 
         applicationContext.getExtraMenu().getItems().addAll(
                 getExportPokesMenuItem(), getImportPokesMenuItem(),

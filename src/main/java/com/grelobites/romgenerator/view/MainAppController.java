@@ -394,6 +394,7 @@ public class MainAppController {
 
             if (result.orElse(ButtonType.CANCEL) == ButtonType.OK){
                 applicationContext.getGameList().clear();
+                applicationContext.setEepromLoaderIncluded(true);
             }
         });
 
