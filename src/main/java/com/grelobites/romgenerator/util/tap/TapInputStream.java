@@ -72,6 +72,18 @@ public class TapInputStream {
                 .build();
     }
 
+    public Optional<byte[]> nextRaw() throws IOException {
+        if (source.available() > 0) {
+            ByteBuffer buffer = ByteBuffer.wrap(Util.fromInputStream(source, 2))
+                    .order(ByteOrder.LITTLE_ENDIAN);
+            int size = Short.toUnsignedInt(buffer.getShort());
+            LOGGER.debug("Size is {}", size);
+            return Optional.of(Util.fromInputStream(source, size));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     public Optional<TapBlock> next() throws IOException {
         //Get length indicator
         if (source.available() > 0) {
