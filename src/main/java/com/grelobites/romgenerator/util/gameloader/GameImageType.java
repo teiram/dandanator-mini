@@ -1,9 +1,6 @@
 package com.grelobites.romgenerator.util.gameloader;
 
 import com.grelobites.romgenerator.util.gameloader.loaders.*;
-import com.grelobites.romgenerator.util.gameloader.loaders.tap.TapGameImageLoader;
-
-import java.util.Arrays;
 
 public enum GameImageType {
     SNA(SNAGameImageLoader.class, "sna"),

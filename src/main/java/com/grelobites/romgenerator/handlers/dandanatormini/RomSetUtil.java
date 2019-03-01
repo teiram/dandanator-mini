@@ -143,16 +143,11 @@ public class RomSetUtil {
 
     private static Optional<InputStream> getKnownRomScreenResource(File file) {
         String md5 = Util.getMD5(file);
-        try {
-            for (String[] candidate : Constants.KNOWN_ROMS) {
-                if (candidate[0].equals(md5)) {
-                    return Optional.of(Constants.getScreenFromResource(candidate[1]));
-                }
+        for (String[] candidate : Constants.KNOWN_ROMS) {
+            if (candidate[0].equals(md5)) {
+                return Optional.of(Constants.getScreenFromResource(candidate[1]));
             }
-        } catch (IOException ioe) {
-            LOGGER.error("Loading know rom screen", ioe);
         }
         return Optional.empty();
     }
-
 }

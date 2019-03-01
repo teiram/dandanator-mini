@@ -4,32 +4,12 @@ import com.grelobites.romgenerator.ApplicationContext;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniRamGameCompressor;
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniRomSetHandlerSupport;
-import com.grelobites.romgenerator.handlers.dandanatormini.ExtendedCharSet;
-import com.grelobites.romgenerator.handlers.dandanatormini.RomSetUtil;
+import com.grelobites.romgenerator.handlers.dandanatormini.*;
 import com.grelobites.romgenerator.handlers.dandanatormini.model.GameChunk;
 import com.grelobites.romgenerator.handlers.dandanatormini.v6.GameHeaderV6Serializer;
-import com.grelobites.romgenerator.handlers.dandanatormini.v7.V7Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
-import com.grelobites.romgenerator.model.DanSnapGame;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.MLDGame;
-import com.grelobites.romgenerator.model.RamGame;
-import com.grelobites.romgenerator.model.SnapshotGame;
-import com.grelobites.romgenerator.util.GameUtil;
-import com.grelobites.romgenerator.util.ImageUtil;
-import com.grelobites.romgenerator.util.LocaleUtil;
-import com.grelobites.romgenerator.util.OperationResult;
-import com.grelobites.romgenerator.util.RamGameCompressor;
-import com.grelobites.romgenerator.util.SNAHeader;
-import com.grelobites.romgenerator.util.Util;
-import com.grelobites.romgenerator.util.Z80Opcode;
-import com.grelobites.romgenerator.util.ZxColor;
-import com.grelobites.romgenerator.util.ZxScreen;
+import com.grelobites.romgenerator.model.*;
+import com.grelobites.romgenerator.util.*;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import com.grelobites.romgenerator.view.util.DialogUtil;
@@ -50,13 +30,7 @@ import javafx.scene.layout.Pane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -507,7 +481,7 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
         return lastMldSaveSector;
     }
 
-    private void dumpDanSnapGameData(OutputStream os, DanSnapGame game, int currentSlot) throws IOException {
+    private static void dumpDanSnapGameData(OutputStream os, DanSnapGame game, int currentSlot) throws IOException {
         game.reallocate(currentSlot);
         for (int i = 0; i < game.getSlotCount(); i++) {
             os.write(game.getSlot(i));
@@ -518,7 +492,13 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
         for (int i = 0; i < reservedSectors; i++) {
             os.write(filler);
         }
+    }
 
+    private void dumpDanTapGameData(OutputStream os, DanTapGame game, int currentSlot,
+                                    int rom48kDanTapSlot) throws IOException {
+        for (int i = 0; i < game.getSlotCount(); i++) {
+            os.write(game.reallocatedSlot(i, currentSlot, rom48kDanTapSlot));
+        }
     }
 
     private static int gameRealSlotCount(Game game) {
@@ -531,10 +511,18 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
     private static int getUncompressedSlotCount(List<Game> games) {
         int value = 0;
+        boolean custom48kDanTapRomNeeded = false;
         for (Game game: games) {
+            if (game instanceof DanTapGame) {
+                custom48kDanTapRomNeeded = true;
+            }
             if (!isGameCompressed(game)) {
                 value += gameRealSlotCount(game);
             }
+        }
+        if (custom48kDanTapRomNeeded) {
+            LOGGER.debug("Reserving a slot for the 48K DanTap custom ROM");
+            value++;
         }
         LOGGER.debug("Number of slots from uncompressed games " + value);
         return value;
@@ -659,7 +647,11 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
             os.write(slot1Rom);
             LOGGER.debug("Slot one header completed. Offset: " + os.size());
 
+            boolean hasDanTapGames = false;
             for (Game game : games) {
+                if (game instanceof DanTapGame) {
+                    hasDanTapGames = true;
+                }
                 if (isGameCompressed(game)) {
                     dumpCompressedGameData(os, game);
                     LOGGER.debug("Dumped compressed game. Offset: " + os.size());
@@ -670,8 +662,13 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
                     - getUncompressedSlotCount(games);
 
             int lastMldSaveSector = (4 * currentSlot) - 1;
-
+            int rom48kDanTapSlot = 0;
             ByteArrayOutputStream uncompressedStream = new ByteArrayOutputStream();
+            if (hasDanTapGames) {
+                LOGGER.debug("Dumping DanTap 48K Custom ROM to slot {}", currentSlot);
+                uncompressedStream.write(DanTapConstants.getRom48KDanTap());
+                rom48kDanTapSlot = currentSlot++;
+            }
             for (int i = games.size() - 1; i >= 0; i--) {
                 Game game = games.get(i);
                 if (!isGameCompressed(game)) {
@@ -683,6 +680,9 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
                     } else if (game instanceof MLDGame) {
                         lastMldSaveSector = dumpMLDGameData(uncompressedStream, game,
                                 lastMldSaveSector, currentSlot);
+                    } else if (game instanceof DanTapGame) {
+                        DanTapGame danGame = (DanTapGame) game;
+                        dumpDanTapGameData(uncompressedStream, danGame, currentSlot, rom48kDanTapSlot);
                     } else {
                         dumpUncompressedGameData(uncompressedStream, game);
                     }
@@ -736,12 +736,19 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
     protected double calculateRomUsage() {
         int size = DandanatorMiniConstants.SLOT1_RESERVED_SIZE;
+        boolean needsDanTapRom = false;
         for (Game game : getApplicationContext().getGameList()) {
             try {
                 size += getGameSize(game);
+                if (game.getType() == GameType.DAN_TAP) {
+                    needsDanTapRom = true;
+                }
             } catch (Exception e) {
                 LOGGER.warn("Calculating game size usage", e);
             }
+        }
+        if (needsDanTapRom) {
+            size += Constants.SLOT_SIZE;
         }
         LOGGER.debug("Used size: " + size + ", total size: "
                 + DandanatorMiniConstants.GAME_SLOTS * Constants.SLOT_SIZE);
@@ -817,22 +824,26 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
     private static int getGameSymbolCode(Game game) {
         if (game instanceof RamGame) {
-            switch (((RamGame) game).getHardwareMode()) {
-                case HW_48K:
-                case HW_48K_IF1:
-                case HW_48K_MGT:
-                    return ExtendedCharSet.SYMBOL_48K_0_CODE;
-                case HW_128K:
-                case HW_128K_IF1:
-                case HW_128K_MGT:
-                case HW_PLUS2:
-                    return ExtendedCharSet.SYMBOL_128K_0_CODE;
-                case HW_PLUS2A:
-                case HW_PLUS3:
-                    return ExtendedCharSet.SYMBOL_PLUS2A_0_CODE;
-                default:
-                    LOGGER.error("Unable to get symbol for hardware mode in game " + game);
-                    return ExtendedCharSet.SYMBOL_SPACE;
+            if (game instanceof DanTapGame) {
+                return ExtendedCharSet.SYMBOL_DANTAP_0_CODE;
+            } else {
+                switch (((RamGame) game).getHardwareMode()) {
+                    case HW_48K:
+                    case HW_48K_IF1:
+                    case HW_48K_MGT:
+                        return ExtendedCharSet.SYMBOL_48K_0_CODE;
+                    case HW_128K:
+                    case HW_128K_IF1:
+                    case HW_128K_MGT:
+                    case HW_PLUS2:
+                        return ExtendedCharSet.SYMBOL_128K_0_CODE;
+                    case HW_PLUS2A:
+                    case HW_PLUS3:
+                        return ExtendedCharSet.SYMBOL_PLUS2A_0_CODE;
+                    default:
+                        LOGGER.error("Unable to get symbol for hardware mode in game " + game);
+                        return ExtendedCharSet.SYMBOL_SPACE;
+                }
             }
         } else {
             switch (game.getType()) {

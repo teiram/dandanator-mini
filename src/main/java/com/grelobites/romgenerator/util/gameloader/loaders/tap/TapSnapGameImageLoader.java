@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class TapGameImageLoader implements GameImageLoader {
+public class TapSnapGameImageLoader implements GameImageLoader {
     @Override
     public Game load(InputStream is) throws IOException {
         TapeLoader tapeLoader = TapeLoaderFactory.getTapeLoader(

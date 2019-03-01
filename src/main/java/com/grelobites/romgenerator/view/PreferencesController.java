@@ -9,11 +9,7 @@ import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Pagination;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
@@ -67,6 +63,9 @@ public class PreferencesController {
 
     @FXML
     private ToggleGroup tapLoaderToggleGroup;
+
+    @FXML
+    private CheckBox danTapSupport;
 
     private void initializeImages() throws IOException {
         backgroundImage = ImageUtil.scrLoader(
@@ -275,5 +274,6 @@ public class PreferencesController {
 
         tapTargetModeSetup();
 
+        Configuration.getInstance().danTapSupportProperty().bind(danTapSupport.selectedProperty());
     }
 }

@@ -77,7 +77,7 @@ public class TapInputStream {
             ByteBuffer buffer = ByteBuffer.wrap(Util.fromInputStream(source, 2))
                     .order(ByteOrder.LITTLE_ENDIAN);
             int size = Short.toUnsignedInt(buffer.getShort());
-            LOGGER.debug("Size is {}", size);
+            LOGGER.debug("Size of next tap block is {}", size);
             return Optional.of(Util.fromInputStream(source, size));
         } else {
             return Optional.empty();

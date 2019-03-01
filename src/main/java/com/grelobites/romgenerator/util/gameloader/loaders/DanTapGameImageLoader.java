@@ -1,10 +1,8 @@
 package com.grelobites.romgenerator.util.gameloader.loaders;
 
-import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.model.*;
-import com.grelobites.romgenerator.util.Util;
+import com.grelobites.romgenerator.model.DanTapGame;
+import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
-import com.grelobites.romgenerator.util.tap.TapBlock;
 import com.grelobites.romgenerator.util.tap.TapInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,13 +11,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 public class DanTapGameImageLoader implements GameImageLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(DanTapGameImageLoader.class);
-
 
     @Override
     public Game load(InputStream is) throws IOException {
@@ -32,7 +28,6 @@ public class DanTapGameImageLoader implements GameImageLoader {
         }
         DanTapGame game = new DanTapGame(tapBlocks);
         return game;
-
     }
 
     @Override

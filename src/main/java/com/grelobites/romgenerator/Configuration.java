@@ -42,6 +42,7 @@ public class Configuration {
     private BooleanProperty allowExperimentalGames;
     private StringProperty tapLoaderTarget;
     private RomSet plus2ARomSet = DEFAULT_PLUS2AROMSET;
+    private BooleanProperty danTapSupport;
 
     private static Configuration INSTANCE;
 
@@ -65,6 +66,7 @@ public class Configuration {
         });
         this.charSetFactory = new CharSetFactory();
         this.tapLoaderTarget = new SimpleStringProperty(DEFAULT_TAPLOADER_TARGET);
+        this.danTapSupport = new SimpleBooleanProperty(false);
     }
 
     public static Configuration getInstance() {
@@ -218,6 +220,18 @@ public class Configuration {
 
     public StringProperty tapLoaderTargetProperty() {
         return tapLoaderTarget;
+    }
+
+    public boolean isDanTapSupport() {
+        return danTapSupport.get();
+    }
+
+    public BooleanProperty danTapSupportProperty() {
+        return danTapSupport;
+    }
+
+    public void setDanTapSupport(boolean danTapSupport) {
+        this.danTapSupport.set(danTapSupport);
     }
 
     public RomSet getPlus2ARomSet() {

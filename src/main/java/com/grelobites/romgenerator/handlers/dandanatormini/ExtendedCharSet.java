@@ -114,6 +114,27 @@ public class ExtendedCharSet {
             (byte) 0x00
     };
 
+    public static final byte[] SYMBOL_DANTAP_0 = new byte[]{
+            (byte) 0x3F,
+            (byte) 0x23,
+            (byte) 0x36,
+            (byte) 0x36,
+            (byte) 0x36,
+            (byte) 0x36,
+            (byte) 0x1F,
+            (byte) 0x00
+    };
+
+    public static final byte[] SYMBOL_DANTAP_1 = new byte[] {
+            (byte) 0xFC,
+            (byte) 0x66,
+            (byte) 0xAA,
+            (byte) 0x26,
+            (byte) 0xAE,
+            (byte) 0xAE,
+            (byte) 0xFE,
+            (byte) 0x00
+    };
     public static final int SYMBOL_SPACE = 32;
     public static final int CHARSET_OFFSET = SYMBOL_SPACE;
 
@@ -132,6 +153,10 @@ public class ExtendedCharSet {
     public static final int SYMBOL_PLUS2A_0_CODE = 136;
     public static final int SYMBOL_PLUS2A_1_CODE = 137;
 
+    public static final int SYMBOL_DANTAP_0_CODE = 138;
+    public static final int SYMBOL_DANTAP_1_CODE = 139;
+
+
     private byte[] charset;
 
     private static void appendSymbolChars(byte[] charset) {
@@ -145,6 +170,9 @@ public class ExtendedCharSet {
         System.arraycopy(SYMBOL_ROM_1, 0, charset, (SYMBOL_ROM_1_CODE - CHARSET_OFFSET) * 8, SYMBOL_ROM_1.length);
         System.arraycopy(SYMBOL_PLUS2A_0, 0, charset, (SYMBOL_PLUS2A_0_CODE - CHARSET_OFFSET) * 8, SYMBOL_PLUS2A_0.length);
         System.arraycopy(SYMBOL_PLUS2A_1, 0, charset, (SYMBOL_PLUS2A_1_CODE - CHARSET_OFFSET) * 8, SYMBOL_PLUS2A_1.length);
+        System.arraycopy(SYMBOL_DANTAP_0, 0, charset, (SYMBOL_DANTAP_0_CODE - CHARSET_OFFSET) * 8, SYMBOL_DANTAP_0.length);
+        System.arraycopy(SYMBOL_DANTAP_1, 0, charset, (SYMBOL_DANTAP_1_CODE - CHARSET_OFFSET) * 8, SYMBOL_DANTAP_1.length);
+
     }
 
     public ExtendedCharSet(byte[] charset) {
