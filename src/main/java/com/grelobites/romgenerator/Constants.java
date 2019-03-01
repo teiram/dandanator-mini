@@ -1,6 +1,5 @@
 package com.grelobites.romgenerator;
 
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.PreferencesProvider;
 import com.grelobites.romgenerator.util.Util;
@@ -85,7 +84,7 @@ public class Constants {
     public static byte[] getDefaultMenuScreen() throws IOException {
         if (DEFAULT_DANDANATOR_SCREEN == null) {
             DEFAULT_DANDANATOR_SCREEN = Util.fromInputStream(
-                    DandanatorMiniConstants.class.getClassLoader()
+                    Constants.class.getClassLoader()
                             .getResourceAsStream(DEFAULT_MENU_SCREEN_RESOURCE),
                     Constants.SPECTRUM_FULLSCREEN_SIZE);
         }
@@ -95,22 +94,22 @@ public class Constants {
     public static byte[] getSinclairScreen() throws IOException {
         if (SINCLAIR_SCREEN == null) {
             SINCLAIR_SCREEN = Util.fromInputStream(
-                    DandanatorMiniConstants.class.getClassLoader()
+                    Constants.class.getClassLoader()
                             .getResourceAsStream(SINCLAIR_SCREEN_RESOURCE),
                     Constants.SPECTRUM_FULLSCREEN_SIZE);
         }
         return SINCLAIR_SCREEN;
     }
 
-    public static InputStream getScreenFromResource(String resource) throws IOException {
-        return DandanatorMiniConstants.class.getClassLoader()
+    public static InputStream getScreenFromResource(String resource) {
+        return Constants.class.getClassLoader()
                 .getResourceAsStream(resource);
     }
 
     public static byte[] getDefaultCharset() throws IOException {
         if (DEFAULT_CHARSET == null) {
             DEFAULT_CHARSET = Util.fromInputStream(
-                    DandanatorMiniConstants.class.getClassLoader()
+                    Constants.class.getClassLoader()
                             .getResourceAsStream(DEFAULT_CHARSET_RESOURCE),
                     CHARSET_SIZE);
         }
