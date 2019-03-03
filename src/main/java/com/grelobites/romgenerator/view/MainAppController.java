@@ -408,7 +408,9 @@ public class MainAppController {
                 selectedGame == null ? LocaleUtil.i18n("exportGameMenuEntry") :
                 selectedGame.getType() == GameType.ROM ?
                     LocaleUtil.i18n("exportGameAsRomMenuEntry") :
-                        GameType.isMLD(selectedGame.getType()) ?
+                        selectedGame.getType() == GameType.DAN_TAP ?
+                                LocaleUtil.i18n("exportGameAsTapMenuEntry") :
+                            GameType.isMLD(selectedGame.getType()) ?
                                 LocaleUtil.i18n("exportGameAsMLDMenuEntry") :
                                 LocaleUtil.i18n("exportGameAsZ80MenuEntry"));
     }

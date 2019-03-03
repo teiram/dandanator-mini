@@ -28,6 +28,7 @@ public class Configuration {
     private static final String DEFAULT_TAPLOADER_TARGET = HardwareMode.HW_48K.name();
     private static final RomSet DEFAULT_PLUS2AROMSET = RomSet.PLUS2A_40_EN;
     public static final String INTERNAL_CHARSET_PREFIX= "internal://";
+    private static final String DANTAP_SUPPORT_PROPERTY = "danTapSupport";
     private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V8.name();
 
     byte[] charSet;
@@ -232,6 +233,7 @@ public class Configuration {
 
     public void setDanTapSupport(boolean danTapSupport) {
         this.danTapSupport.set(danTapSupport);
+        persistConfigurationValue(DANTAP_SUPPORT_PROPERTY, Boolean.toString(danTapSupport));
     }
 
     public RomSet getPlus2ARomSet() {
@@ -268,6 +270,8 @@ public class Configuration {
         Preferences p = getApplicationPreferences();
         configuration.tapLoaderTarget.set(p.get(TAPLOADERTARGET_PROPERTY,
                 DEFAULT_TAPLOADER_TARGET));
+        configuration.danTapSupport.set(Boolean.parseBoolean(p.get(DANTAP_SUPPORT_PROPERTY,
+            "false")));
         configuration.plus2ARomSet = RomSet.valueOf(
                 p.get(PLUS2AROMSET_PROPERTY, DEFAULT_PLUS2AROMSET.name()));
         return configuration;

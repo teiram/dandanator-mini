@@ -212,12 +212,15 @@ public class ApplicationContext {
             chooser.setTitle(LocaleUtil.i18n("exportCurrentGame"));
             chooser.setInitialFileName(game.getName() + "." +
                     (game.getType() == GameType.ROM ? "rom" :
-                            GameType.isMLD(game.getType()) ? "mld" : "z80"));
+                            game.getType() == GameType.DAN_TAP ? "tap" :
+                                GameType.isMLD(game.getType()) ? "mld" : "z80"));
             final File saveFile = chooser.showSaveDialog(menuPreview.getScene().getWindow());
             if (saveFile != null) {
                 try {
                     if (game.getType() == GameType.ROM) {
                         GameUtil.exportGameAsRom(game, saveFile);
+                    } else if (game.getType() == GameType.DAN_TAP) {
+                        GameUtil.exportGameAsTap(game, saveFile);
                     } else if (GameType.isMLD(game.getType())) {
                         GameUtil.exportGameAsMLD(game, saveFile);
                     } else {

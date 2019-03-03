@@ -8,7 +8,7 @@ import java.io.OutputStream;
 
 public class Zx7Compressor implements Compressor {
 
-    public static final int MAX_SIZE = 16384;
+    public static final int MAX_SIZE = 65535;
     public static final boolean BACKWARDS_DEFAULT = false;
 
     @Override

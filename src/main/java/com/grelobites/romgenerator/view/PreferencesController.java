@@ -274,6 +274,7 @@ public class PreferencesController {
 
         tapTargetModeSetup();
 
-        Configuration.getInstance().danTapSupportProperty().bind(danTapSupport.selectedProperty());
+        Configuration.getInstance().danTapSupportProperty().bindBidirectional(danTapSupport.selectedProperty());
+
     }
 }

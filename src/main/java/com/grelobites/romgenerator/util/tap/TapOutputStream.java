@@ -10,7 +10,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class TapOutputStream {
+public class TapOutputStream implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(TapOutputStream.class);
 
     private static String paddedName(String name, int length) {
@@ -55,16 +55,32 @@ public class TapOutputStream {
                 codeStartAddress, TapConstants.NO_PARAMETER_VALUE);
     }
 
-    private static byte[] getTapDataBlock(byte[] data) {
+    //data has no flag nor checksum
+    private static byte[] getTapBlock(int flag, byte[] data) {
         byte[] block = ByteBuffer.allocate(data.length + 4) //Plus length(2), flag and checksum
                 .order(ByteOrder.LITTLE_ENDIAN)
                 .putShort(Integer.valueOf(data.length + 2).shortValue())
-                .put(Integer.valueOf(TapConstants.DATA_FLAG).byteValue())
+                .put(Integer.valueOf(flag).byteValue())
                 .put(data)
                 .array();
         setChecksum(block);
         return block;
     }
+
+    //data with flag and checksum
+    private static byte[] getTapBlock(byte[] data) {
+        byte[] block = ByteBuffer.allocate(data.length + 2) //Plus length(2)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putShort(Integer.valueOf(data.length).shortValue())
+                .put(data)
+                .array();
+        return block;
+    }
+
+    private static byte[] getTapDataBlock(byte[] data) {
+        return getTapBlock(TapConstants.DATA_FLAG, data);
+    }
+
 
     private OutputStream out;
 
@@ -106,6 +122,19 @@ public class TapOutputStream {
             out.write(header);
         }
         out.write(dataBlock);
+    }
+
+    public void addRawBlock(int flag, byte[] in) throws IOException {
+        byte[] block = getTapBlock(flag, in);
+        out.write(block);
+    }
+
+    public void addPreparedBlock(byte[] in) throws IOException {
+        out.write(getTapBlock(in));
+    }
+
+    public void close() throws IOException {
+        out.close();
     }
 
 }

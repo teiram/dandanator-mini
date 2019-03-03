@@ -13,7 +13,7 @@ public enum GameType {
     RAM128_MLD(0x88, "128K MLD"),
     DAN_SNAP(0xC3, "DAN-SNAP"),
     DAN_SNAP128(0xC8, "DAN-SNAP-128"),
-    DAN_TAP(0x8B, "DAN-TAP");
+    DAN_TAP(0x8B, "TAP");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GameType.class);
     public static int MLD_MASK = 0x80;

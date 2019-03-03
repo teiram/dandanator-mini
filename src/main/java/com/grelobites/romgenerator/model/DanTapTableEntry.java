@@ -66,6 +66,44 @@ public class DanTapTableEntry {
         return buffer.array();
     }
 
+    public static DanTapTableEntry fromByteArray(byte[] data) {
+        DanTapTableEntry entry = new DanTapTableEntry();
+        ByteBuffer buffer = ByteBuffer.wrap(data, 0, DanTapConstants.TAP_TABLE_ENTRY_SIZE)
+                .order(ByteOrder.LITTLE_ENDIAN);
+        entry.flag = Byte.toUnsignedInt(buffer.get());
+        entry.size = Short.toUnsignedInt(buffer.getShort());
+        int slotOffset = Byte.toUnsignedInt(buffer.get());
+        entry.slotOffset = slotOffset & 0x7f;
+        entry.compressedPayload = (slotOffset & 0x80) != 0;
+        entry.compressedSize = Short.toUnsignedInt(buffer.getShort());
+        entry.offset = Short.toUnsignedInt(buffer.getShort());
+        return entry;
+    }
+
+    public int getSlotOffset() {
+        return slotOffset;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public int getCompressedSize() {
+        return compressedSize;
+    }
+
+    public boolean isCompressedPayload() {
+        return compressedPayload;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public int getFlag() {
+        return flag;
+    }
+
     @Override
     public String toString() {
         return "DanTapTableEntry{" +
@@ -74,7 +112,7 @@ public class DanTapTableEntry {
                 ", compressedSize=" + compressedSize +
                 ", compressedPayload=" + compressedPayload +
                 ", offset=" + offset +
-                ", flag=" + flag +
+                ", flag=" + String.format("0x%02x", flag & 0xff) +
                 '}';
     }
 }

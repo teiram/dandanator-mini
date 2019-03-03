@@ -8,7 +8,8 @@ public enum GameImageType {
     ROM(RomGameImageLoader.class, "rom"),
     TAP(TapGameImageLoader.class, "tap"),
     MLD(MLDGameImageLoader.class, "mld"),
-    DAAD(DAADGameImageLoader.class, "daad", "zip");
+    DAAD(DAADGameImageLoader.class, "daad", "zip"),
+    DANTAP(DanTapGameImageLoader.class, "dantap");
 
     private Class<? extends GameImageLoader> generator;
     private String[] supportedExtensions;

@@ -30,7 +30,6 @@ public class DanTapGame implements RamGame {
     protected GameType gameType;
     private HardwareMode hardwareMode;
     private Image screenshot;
-    private int tapTableOffset;
     private IntegerProperty size;
     private List<byte[]> tapBlocks;
     private List<byte[]> slots;
@@ -64,7 +63,7 @@ public class DanTapGame implements RamGame {
         ByteArrayOutputStream slot = new ByteArrayOutputStream();
 
         setupSlot(slot, true);
-        tapTableOffset = slot.size();
+        int tapTableOffset = slot.size();
         slot.write(new byte[tapTableSize]);
         int slotOffset = 0;
 
@@ -210,6 +209,14 @@ public class DanTapGame implements RamGame {
 
     public void setSize(int size) {
         this.size.set(size);
+    }
+
+    public List<byte[]> getTapBlocks() {
+        return tapBlocks;
+    }
+
+    public DanTapTable getTapTable() {
+        return tapTable;
     }
 
     @Override

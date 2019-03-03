@@ -1,9 +1,12 @@
 package com.grelobites.romgenerator.util.gameloader.loaders;
 
 import com.grelobites.romgenerator.model.DanTapGame;
+import com.grelobites.romgenerator.model.DanTapTable;
+import com.grelobites.romgenerator.model.DanTapTableEntry;
 import com.grelobites.romgenerator.model.Game;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
 import com.grelobites.romgenerator.util.tap.TapInputStream;
+import com.grelobites.romgenerator.util.tap.TapOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +35,14 @@ public class DanTapGameImageLoader implements GameImageLoader {
 
     @Override
     public void save(Game game, OutputStream os) throws IOException {
-        //TODO: Save as Tap in any case
-        throw new IllegalArgumentException("DanTap Game save not implemented yet");
+        DanTapGame danTapGame = (DanTapGame) game;
+        try (TapOutputStream tos = new TapOutputStream(os)) {
+            List<byte[]> tapBlocks = danTapGame.getTapBlocks();
+            for (int i = 0; i < tapBlocks.size(); i++) {
+                tos.addPreparedBlock(tapBlocks.get(i));
+            }
+        }
+
     }
 
 }

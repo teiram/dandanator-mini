@@ -8,22 +8,14 @@ import com.grelobites.romgenerator.handlers.dandanatormini.model.GameMapper;
 import com.grelobites.romgenerator.handlers.dandanatormini.v6.GameHeaderV6Serializer;
 import com.grelobites.romgenerator.handlers.dandanatormini.v7.SlotZeroV7;
 import com.grelobites.romgenerator.handlers.dandanatormini.v7.V7Constants;
-import com.grelobites.romgenerator.model.DanSnapGame;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.GameType;
-import com.grelobites.romgenerator.model.HardwareMode;
-import com.grelobites.romgenerator.model.MLDGame;
-import com.grelobites.romgenerator.model.MLDInfo;
-import com.grelobites.romgenerator.model.RomGame;
-import com.grelobites.romgenerator.model.SnapshotGame;
-import com.grelobites.romgenerator.model.TrainerList;
+import com.grelobites.romgenerator.model.*;
 import com.grelobites.romgenerator.util.GameUtil;
 import com.grelobites.romgenerator.util.PositionAwareInputStream;
 import com.grelobites.romgenerator.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -87,7 +79,6 @@ public class GameMapperV8 implements GameMapper {
 
         mapper.isGameCompressed = is.read() != 0;
         mapper.gameType = GameType.byTypeId(is.read());
-
         mapper.screenHold = is.read() != 0;
         mapper.activeRom = is.read();
 
@@ -96,7 +87,9 @@ public class GameMapperV8 implements GameMapper {
         mapper.gameChunk.setAddress(is.getAsLittleEndian());
         mapper.gameChunk.setLength(is.getAsLittleEndian());
 
-        if (GameType.isMLD(mapper.gameType)) {
+        if (mapper.gameType == GameType.DAN_TAP) {
+            addDanTapGameSlots(is, mapper);
+        } else if (GameType.isMLD(mapper.gameType)) {
             addMldGameSlots(is, mapper);
         } else {
             addGameSlots(is, mapper);
@@ -128,6 +121,26 @@ public class GameMapperV8 implements GameMapper {
         int start = is.getAsLittleEndian();
         int numBlocks = is.getAsLittleEndian();
         is.skip(5 * 7); //Skip the remaining 7 blocks
+        for (int i = 0; i < numBlocks; i++) {
+            GameBlock block = new GameBlock();
+            block.setInitSlot(initSlot++);
+            block.setSize(Constants.SLOT_SIZE);
+            block.setGameCompressed(false);
+            block.setCompressed(false);
+            if (block.getInitSlot() < INVALID_SLOT_ID) {
+                LOGGER.debug("Read block for game " + mapper.name + ": " + block);
+                mapper.getBlocks().add(block);
+            }
+        }
+    }
+
+    private static void addDanTapGameSlots(PositionAwareInputStream is, GameMapperV8 mapper)
+            throws IOException {
+        is.skip(5); //Skip first slot info (ROM location)
+        int initSlot = is.read() - 1; //Slot in base 1
+        int start = is.getAsLittleEndian();
+        int numBlocks = is.getAsLittleEndian();
+        is.skip(5 * 6); //Skip the remaining 6 blocks
         for (int i = 0; i < numBlocks; i++) {
             GameBlock block = new GameBlock();
             block.setInitSlot(initSlot++);
@@ -186,6 +199,56 @@ public class GameMapperV8 implements GameMapper {
             }
         }
         return gameSlots;
+    }
+
+    private static byte[] composeTapBlock(int flag, byte[] payload) {
+        int checksum = 0;
+        checksum ^= flag;
+        for (int i = 0; i < payload.length; i++) {
+            checksum ^= payload[i];
+        }
+        byte[] block = new byte[payload.length + 2];
+        block[0] = Integer.valueOf(flag).byteValue();
+        System.arraycopy(payload, 0, block, 1, payload.length);
+        block[block.length - 1] = Integer.valueOf(checksum).byteValue();
+        return block;
+    }
+
+    private List<byte[]> getDanTapGameBlocks() throws IOException {
+        List<byte[]> gameSlots = new ArrayList<>();
+        for (int index = 0; index < blocks.size(); index++) {
+            GameBlock block = blocks.get(index);
+            gameSlots.add(block.getData());
+        }
+
+        DanTapTable table = DanTapTable.fromByteArray(gameSlots.get(0),
+                V8Constants.DANTAP_TAPTABLE_OFFSET);
+        LOGGER.debug("Got tap table: {}", table);
+
+        int slot = 0;
+        int offset = V8Constants.DANTAP_TAPTABLE_OFFSET + table.sizeInBytes();
+        List<byte[]> tapBlocks = new ArrayList<>();
+        for (DanTapTableEntry entry : table.entries()) {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            while (bos.size() < entry.getCompressedSize()) {
+                byte[] fragment = Arrays.copyOfRange(gameSlots.get(slot), offset,
+                        Math.min(Constants.SLOT_SIZE, offset + entry.getCompressedSize() - bos.size()));
+                LOGGER.debug("Got TAP block fragment of size {} from slot {}, offset {}",
+                        fragment.length, slot, offset);
+                bos.write(fragment);
+                offset += fragment.length;
+                if (offset == Constants.SLOT_SIZE) {
+                    slot++;
+                    offset = 2 + V8Constants.DANTAP_COMMON_CODE_LENGTH;
+                }
+            }
+            byte[] payload = entry.isCompressedPayload() ?
+                    Util.uncompress(bos.toByteArray()) :
+                    bos.toByteArray();
+            tapBlocks.add(composeTapBlock(entry.getFlag(), payload));
+
+        }
+        return tapBlocks;
     }
 
     private List<byte[]> getGameCompressedData() {
@@ -271,6 +334,13 @@ public class GameMapperV8 implements GameMapper {
                                 LOGGER.error("Unable to restore DanSnap Game from ROMSet. No MLDInfo found");
                                 return null;
                             });
+                    break;
+                case DAN_TAP:
+                    try {
+                        game = new DanTapGame(getDanTapGameBlocks());
+                    } catch (Exception e) {
+                        LOGGER.error("Generating DanTap game from ROMset", e);
+                    }
                     break;
                 default:
                     LOGGER.error("Unsupported type of game " + gameType.screenName());

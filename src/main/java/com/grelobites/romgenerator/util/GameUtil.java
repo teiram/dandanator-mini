@@ -107,25 +107,27 @@ public class GameUtil {
         }
     }
 
-    public static void exportGameAsSNA(Game selectedGame, File saveFile) throws IOException {
+    private static void exportGameWithFactory(Game game, GameImageType type, File saveFile) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(saveFile)) {
-            GameImageLoaderFactory.getLoader(GameImageType.SNA)
-                    .save(selectedGame, fos);
+            GameImageLoaderFactory.getLoader(type)
+                    .save(game, fos);
         }
+    }
+
+    public static void exportGameAsSNA(Game selectedGame, File saveFile) throws IOException {
+        exportGameWithFactory(selectedGame, GameImageType.SNA, saveFile);
     }
 
     public static void exportGameAsZ80(Game selectedGame, File saveFile) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(saveFile)) {
-            GameImageLoaderFactory.getLoader(GameImageType.Z80)
-                    .save(selectedGame, fos);
-        }
+        exportGameWithFactory(selectedGame, GameImageType.Z80, saveFile);
     }
 
     public static void exportGameAsMLD(Game selectedGame, File saveFile) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(saveFile)) {
-            GameImageLoaderFactory.getLoader(GameImageType.MLD)
-                    .save(selectedGame, fos);
-        }
+        exportGameWithFactory(selectedGame, GameImageType.MLD, saveFile);
+    }
+
+    public static void exportGameAsTap(Game selectedGame, File saveFile) throws IOException {
+        exportGameWithFactory(selectedGame, GameImageType.DANTAP, saveFile);
     }
 
     public static void exportGameAsRom(Game selectedGame, File saveFile) throws IOException {

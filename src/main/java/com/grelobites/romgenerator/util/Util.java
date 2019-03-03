@@ -227,6 +227,12 @@ public class Util {
         return target.toByteArray();
     }
 
+    public static byte[] uncompress(byte[] source) throws IOException {
+        ByteArrayInputStream compressedStream = new ByteArrayInputStream(source);
+        InputStream is = getCompressor().getUncompressingInputStream(compressedStream);
+
+        return Util.fromInputStream(is);
+    }
 
     public static void fillWithValue(OutputStream os, byte value, int size) throws IOException {
         for (int i = 0; i < size; i++) {
