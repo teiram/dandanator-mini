@@ -5,8 +5,6 @@ import com.grelobites.romgenerator.util.Util;
 import java.io.IOException;
 
 public class DanTapConstants {
-    public static final int COMMON_CODE_SIZE = 140;
-    public static final int TABLE_CODE_SIZE = 111;
     public static final int TAP_TABLE_ENTRY_SIZE = 8;
 
     private static final String COMMON_CODE_RESOURCE = "dan-tap/common-code.bin";

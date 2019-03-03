@@ -15,4 +15,6 @@ public class V8Constants {
 
     protected static int EXTRA_ROM_SLOT = 32;
     protected static int INTERNAL_ROM_SLOT = 33;
+
+    protected static int DANTAP_ROM_SLOT = 30;
 }

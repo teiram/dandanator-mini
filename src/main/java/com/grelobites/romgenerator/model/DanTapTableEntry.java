@@ -66,4 +66,15 @@ public class DanTapTableEntry {
         return buffer.array();
     }
 
+    @Override
+    public String toString() {
+        return "DanTapTableEntry{" +
+                "slotOffset=" + slotOffset +
+                ", size=" + size +
+                ", compressedSize=" + compressedSize +
+                ", compressedPayload=" + compressedPayload +
+                ", offset=" + offset +
+                ", flag=" + flag +
+                '}';
+    }
 }

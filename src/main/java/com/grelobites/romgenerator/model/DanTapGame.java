@@ -6,7 +6,6 @@ import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.Pair;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.compress.Compressor;
-import com.grelobites.romgenerator.util.daad.DAADConstants;
 import javafx.beans.Observable;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -37,7 +36,7 @@ public class DanTapGame implements RamGame {
     private List<byte[]> slots;
     private DanTapTable tapTable;
 
-    private Pair<byte[], Boolean> getCompressedBlock(byte[] block) {
+    private Pair<byte[], Boolean> prepareTapBlock(byte[] block) {
         try {
             byte[] compressedBlock = Util.compress(block);
             if (compressedBlock.length < block.length) {
@@ -51,6 +50,7 @@ public class DanTapGame implements RamGame {
     }
 
     private static void setupSlot(ByteArrayOutputStream slot, boolean first) throws IOException {
+        slot.reset();
         slot.write(0); //To be replaced by the custom ROM slot
         slot.write(0); //To be replaced by the slot holding the tap table
         slot.write(DanTapConstants.getCommonCode());
@@ -69,15 +69,17 @@ public class DanTapGame implements RamGame {
         int slotOffset = 0;
 
         for (byte[] block : tapBlocks) {
-            Pair<byte[], Boolean> compressResult = getCompressedBlock(block);
-            byte[] data = compressResult.left();
+            //Strip flag and checksum
+            byte[] strippedBlock = Arrays.copyOfRange(block, 1, block.length - 1);
+            Pair<byte[], Boolean> preparedTapBlock = prepareTapBlock(strippedBlock);
+            byte[] data = preparedTapBlock.left();
             tapTable.addEntry(DanTapTableEntry.builder()
                     .withSlotOffset(slotOffset)
-                    .withCompressedSize(block.length)
-                    .withSize(data.length)
+                    .withCompressedSize(data.length)
+                    .withSize(strippedBlock.length)
                     .withOffset(slot.size())
                     .withFlag(block[0] & 0xff)
-                    .withCompressedPayload(compressResult.right())
+                    .withCompressedPayload(preparedTapBlock.right())
                     .build());
             try (ByteArrayInputStream bis = new ByteArrayInputStream(data)) {
                 while (slot.size() < Constants.SLOT_SIZE && bis.available() > 0) {
@@ -89,8 +91,7 @@ public class DanTapGame implements RamGame {
                         slots.add(slot.toByteArray());
                         LOGGER.debug("Appending new slot");
                         slotOffset++;
-                        slot.reset();
-                        slot.write(DanTapConstants.getCommonCode());
+                        setupSlot(slot, false);
                     }
                 }
             }

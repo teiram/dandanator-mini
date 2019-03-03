@@ -224,6 +224,23 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
             gameCBlocks.write(asLittleEndianWord(Constants.B_00));
             gameCBlocks.write(asLittleEndianWord(reportedSlots));
             offset = startOffset;
+        } else if (game instanceof DanTapGame) {
+            //Write in the first CBlock the custom ROM location
+            //and in the second the first game slot (base1) and
+            //the requiredSlots encoded as size
+            int requiredSlots = game.getSlotCount();
+            int startOffset = offset - (requiredSlots * Constants.SLOT_SIZE);
+
+            LOGGER.debug("Writing CBlock for the custom DanTap ROM");
+            gameCBlocks.write(V8Constants.DANTAP_ROM_SLOT);
+            gameCBlocks.write(asLittleEndianWord(Constants.B_00));
+            gameCBlocks.write(asLittleEndianWord(Constants.SLOT_SIZE));
+
+            LOGGER.debug("Writing DanTap CBlock with offset {}", startOffset);
+            gameCBlocks.write(1 + startOffset / Constants.SLOT_SIZE);
+            gameCBlocks.write(asLittleEndianWord(Constants.B_00));
+            gameCBlocks.write(asLittleEndianWord(requiredSlots));
+            offset = startOffset;
         } else {
             for (int i = 0; i < game.getSlotCount(); i++) {
                 if (!game.isSlotZeroed(i)) {
@@ -327,12 +344,14 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 dumpUncompressedGameCBlocks(os, game, offset);
     }
 
-    private void dumpGameHeaders(ByteArrayOutputStream os, GameChunk[] gameChunkTable) throws IOException {
+    private void dumpGameHeaders(ByteArrayOutputStream os, GameChunk[] gameChunkTable,
+                                 boolean hasDanTapGames) throws IOException {
         int index = 0;
         //forwardOffset after the slot zero
         int forwardOffset = Constants.SLOT_SIZE + DandanatorMiniConstants.SLOT1_RESERVED_SIZE;
         //backwardsOffset starts before the test ROM
-        int backwardsOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1);
+        int backwardsOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1 -
+                (hasDanTapGames ? 1 : 0));
         for (Game game : getApplicationContext().getGameList()) {
             if (isGameCompressed(game)) {
                 forwardOffset = dumpGameHeader(os, index, game, gameChunkTable[index], forwardOffset);
@@ -546,6 +565,15 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
         return value;
     }
 
+    private static boolean hasDanTapGames(List<Game> games) {
+        for (Game game : games) {
+            if (game instanceof DanTapGame) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void exportRomSet(OutputStream stream) {
         try {
@@ -586,7 +614,8 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
             cblocksOffset += compressedCharSetAndFirmware.length;
 
             GameChunk[] gameChunkTable = calculateGameChunkTable(games, cblocksOffset);
-            dumpGameHeaders(os, gameChunkTable);
+            boolean hasDanTapGames = hasDanTapGames(games);
+            dumpGameHeaders(os, gameChunkTable, hasDanTapGames);
             LOGGER.debug("Dumped game struct. Offset: " + os.size());
 
             os.write(compressedScreen);
@@ -647,11 +676,7 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
             os.write(slot1Rom);
             LOGGER.debug("Slot one header completed. Offset: " + os.size());
 
-            boolean hasDanTapGames = false;
             for (Game game : games) {
-                if (game instanceof DanTapGame) {
-                    hasDanTapGames = true;
-                }
                 if (isGameCompressed(game)) {
                     dumpCompressedGameData(os, game);
                     LOGGER.debug("Dumped compressed game. Offset: " + os.size());
@@ -662,13 +687,8 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
                     - getUncompressedSlotCount(games);
 
             int lastMldSaveSector = (4 * currentSlot) - 1;
-            int rom48kDanTapSlot = 0;
             ByteArrayOutputStream uncompressedStream = new ByteArrayOutputStream();
-            if (hasDanTapGames) {
-                LOGGER.debug("Dumping DanTap 48K Custom ROM to slot {}", currentSlot);
-                uncompressedStream.write(DanTapConstants.getRom48KDanTap());
-                rom48kDanTapSlot = currentSlot++;
-            }
+
             for (int i = games.size() - 1; i >= 0; i--) {
                 Game game = games.get(i);
                 if (!isGameCompressed(game)) {
@@ -682,7 +702,7 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
                                 lastMldSaveSector, currentSlot);
                     } else if (game instanceof DanTapGame) {
                         DanTapGame danGame = (DanTapGame) game;
-                        dumpDanTapGameData(uncompressedStream, danGame, currentSlot, rom48kDanTapSlot);
+                        dumpDanTapGameData(uncompressedStream, danGame, currentSlot, V8Constants.DANTAP_ROM_SLOT);
                     } else {
                         dumpUncompressedGameData(uncompressedStream, game);
                     }
@@ -691,16 +711,21 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
             }
 
-            //Uncompressed data goes at the end minus the extra ROM size
+            //Uncompressed data goes at the end minus the extra ROM size (and the DanTap 48K custom ROM)
             //and grows backwards
-            int uncompressedOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1)
-                    - uncompressedStream.size();
+            int uncompressedOffset = Constants.SLOT_SIZE * (DandanatorMiniConstants.GAME_SLOTS + 1
+                - (hasDanTapGames ? 1 : 0)) - uncompressedStream.size();
             int gapSize = uncompressedOffset - os.size();
             LOGGER.debug("Gap to uncompressed zone: " + gapSize);
             Util.fillWithValue(os, Constants.B_FF, gapSize);
 
             os.write(uncompressedStream.toByteArray());
             LOGGER.debug("Dumped uncompressed game data. Offset: " + os.size());
+
+            if (hasDanTapGames) {
+                os.write(DanTapConstants.getRom48KDanTap());
+                LOGGER.debug("Dumped DanTap 48K Custom ROM. Offset: {}", os.size());
+            }
 
             os.write(dmConfiguration.getExtraRom());
             LOGGER.debug("Dumped custom rom. Offset: " + os.size());
