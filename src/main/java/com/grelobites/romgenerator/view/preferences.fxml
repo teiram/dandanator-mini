@@ -12,53 +12,31 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PreferencesController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="325.0" prefWidth="590.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PreferencesController">
    <children>
       <ImageView fx:id="backgroundImageView" fitHeight="192.0" fitWidth="256.0" layoutX="7.0" layoutY="12.0" pickOnBounds="true" preserveRatio="true" />
-      <HBox alignment="CENTER_LEFT" layoutY="220.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" layoutY="220.0" prefHeight="31.0" prefWidth="264.0" spacing="10.0">
          <children>
-            <Label alignment="CENTER" text="%backgroundImageMessage">
-               <font>
-                  <Font size="12.0" />
-               </font></Label>
-            <Button fx:id="changeBackgroundImageButton" mnemonicParsing="false" text="%changeButton">
-               <font>
-                  <Font size="12.0" />
-               </font></Button>
-            <Button fx:id="resetBackgroundImageButton" mnemonicParsing="false" text="%resetButton">
-               <font>
-                  <Font size="12.0" />
-               </font></Button>
+            <Label text="%backgroundImageMessage" />
+            <Button fx:id="changeBackgroundImageButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%changeButton" HBox.hgrow="ALWAYS" />
+            <Button fx:id="resetBackgroundImageButton" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%resetButton" HBox.hgrow="ALWAYS" />
          </children>
          <padding>
             <Insets left="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" layoutX="261.0" layoutY="125.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="23.0" prefWidth="286.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" layoutX="267.0" layoutY="130.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="23.0" prefWidth="319.0" spacing="10.0">
          <children>
-            <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="%charSetMessage" HBox.hgrow="ALWAYS">
-               <font>
-                  <Font size="12.0" />
-               </font>
-            </Label>
-            <Button fx:id="changeCharSetButton" alignment="CENTER" mnemonicParsing="false" text="%changeButton">
-               <font>
-                  <Font size="12.0" />
-               </font>
-            </Button>
-            <Button fx:id="resetCharSetButton" mnemonicParsing="false" text="%resetButton">
-               <font>
-                  <Font size="12.0" />
-               </font>
-            </Button>
+            <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="%charSetMessage" HBox.hgrow="ALWAYS" />
+            <Button fx:id="changeCharSetButton" alignment="CENTER" mnemonicParsing="false" text="%changeButton" />
+            <Button fx:id="resetCharSetButton" mnemonicParsing="false" text="%resetButton" />
          </children>
          <padding>
             <Insets left="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER" layoutX="273.0" layoutY="153.0" prefHeight="100.0" prefWidth="272.0" spacing="20.0">
+      <HBox alignment="CENTER" layoutX="303.0" layoutY="186.0" prefHeight="100.0" prefWidth="287.0" spacing="20.0">
          <children>
             <Label maxWidth="1.7976931348623157E308" text="%tapLoaderTarget" HBox.hgrow="ALWAYS" />
             <VBox alignment="CENTER_LEFT" prefHeight="200.0" prefWidth="100.0" spacing="5.0">
@@ -74,20 +52,16 @@
             </VBox>
          </children>
       </HBox>
-      <HBox alignment="CENTER_RIGHT" layoutX="142.0" layoutY="248.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="26.0" prefWidth="392.0" spacing="10.0">
+      <HBox alignment="CENTER_RIGHT" layoutX="234.0" layoutY="280.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="31.0" prefWidth="352.0" spacing="10.0">
          <children>
-            <Label maxWidth="1.7976931348623157E308" text="%plus2ARomset">
-               <font>
-                  <Font size="12.0" />
-               </font>
-            </Label>
+            <Label text="%plus2ARomset" />
             <ComboBox fx:id="plus2ARomSetCombo" maxHeight="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
          </children>
          <padding>
             <Insets right="5.0" />
          </padding>
       </HBox>
-      <Pagination fx:id="charSetPagination" layoutX="270.0" layoutY="7.0" pageCount="10" prefHeight="112.0" prefWidth="264.0" />
-      <CheckBox fx:id="danTapSupport" layoutX="324.0" layoutY="285.0" mnemonicParsing="false" text="%danTapSupportEnabled" />
+      <Pagination fx:id="charSetPagination" layoutX="255.0" layoutY="7.0" pageCount="10" prefHeight="112.0" prefWidth="326.0" />
+      <CheckBox fx:id="danTapSupport" layoutX="284.0" layoutY="176.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="326.0" text="%danTapSupportEnabled" />
    </children>
 </AnchorPane>
