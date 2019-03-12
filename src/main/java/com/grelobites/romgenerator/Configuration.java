@@ -30,7 +30,9 @@ public class Configuration {
     public static final String INTERNAL_CHARSET_PREFIX= "internal://";
     private static final String DANTAP_SUPPORT_PROPERTY = "danTapSupport";
     private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V8.name();
+    private static final String LAST_USED_DIRECTORY_PROPERTY = "lastUsedDirectory";
 
+    private String lastUsedDirectory;
     byte[] charSet;
     byte[] backgroundImage;
 
@@ -250,6 +252,15 @@ public class Configuration {
         persistConfigurationValue(TAPLOADERTARGET_PROPERTY, tapLoaderTarget);
     }
 
+    public String getLastUsedDirectory() {
+        return lastUsedDirectory;
+    }
+
+    public void setLastUsedDirectory(String lastUsedDirectory) {
+        this.lastUsedDirectory = lastUsedDirectory;
+        persistConfigurationValue(LAST_USED_DIRECTORY_PROPERTY, lastUsedDirectory);
+    }
+
     public static Preferences getApplicationPreferences() {
         return Preferences.userNodeForPackage(Configuration.class);
     }
@@ -274,6 +285,7 @@ public class Configuration {
             "false")));
         configuration.plus2ARomSet = RomSet.valueOf(
                 p.get(PLUS2AROMSET_PROPERTY, DEFAULT_PLUS2AROMSET.name()));
+        configuration.lastUsedDirectory =  p.get(LAST_USED_DIRECTORY_PROPERTY, "");
         return configuration;
     }
 
