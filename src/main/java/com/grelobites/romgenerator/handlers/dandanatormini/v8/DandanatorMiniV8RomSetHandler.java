@@ -692,6 +692,8 @@ public class DandanatorMiniV8RomSetHandler extends DandanatorMiniRomSetHandlerSu
             for (int i = games.size() - 1; i >= 0; i--) {
                 Game game = games.get(i);
                 if (!isGameCompressed(game)) {
+                    LOGGER.debug("Dumping uncompressed game {} of type {} to slot {}",
+                            game.getName(), game.getType(), currentSlot);
                     if (game instanceof DanSnapGame) {
                         DanSnapGame danGame = (DanSnapGame) game;
                         dumpDanSnapGameData(uncompressedStream, danGame, currentSlot);
