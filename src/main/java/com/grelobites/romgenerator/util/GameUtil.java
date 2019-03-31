@@ -30,15 +30,16 @@ public class GameUtil {
         LOGGER.debug("createGameFromFile " + file);
         try {
             if (file.canRead() && file.isFile()) {
-                InputStream is = new FileInputStream(file);
+                try (InputStream is = new FileInputStream(file)) {
 
-                GameImageLoader loader = Util.getFileExtension(file.getName())
-                        .map(GameImageLoaderFactory::getLoader)
-                        .orElseGet(GameImageLoaderFactory::getDefaultLoader);
+                    GameImageLoader loader = Util.getFileExtension(file.getName())
+                            .map(GameImageLoaderFactory::getLoader)
+                            .orElseGet(GameImageLoaderFactory::getDefaultLoader);
 
-                Game game = loader.load(is);
-                game.setName(getGameName(file));
-                return Optional.of(game);
+                    Game game = loader.load(is);
+                    game.setName(getGameName(file));
+                    return Optional.of(game);
+                }
             }
         } catch (Exception e) {
             LOGGER.error("Creating game from file " + file, e);
