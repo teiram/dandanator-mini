@@ -1,9 +1,9 @@
 package com.grelobites.romgenerator.util.romsethandler;
 
-import com.grelobites.romgenerator.handlers.dandanatormini.v8.DandanatorMiniV8RomSetHandler;
+import com.grelobites.romgenerator.handlers.dandanatormini.v9.DandanatorMiniV9RomSetHandler;
 
 public enum RomSetHandlerType {
-    DDNTR_V8(DandanatorMiniV8RomSetHandler.class, "Dandanator Mini V8", true);
+    DDNTR_V9(DandanatorMiniV9RomSetHandler.class, "Dandanator Mini V9", true);
 
     private Class<? extends RomSetHandler> handler;
     private String displayName;

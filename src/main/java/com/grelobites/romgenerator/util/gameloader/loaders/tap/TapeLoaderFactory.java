@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.util.gameloader.loaders.tap;
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader.TapeLoader128;
+import com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader.TapeLoader16;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader.TapeLoader48;
 import com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader.TapeLoaderPlus2A;
 
@@ -10,6 +11,8 @@ public class TapeLoaderFactory {
 
     public static TapeLoader getTapeLoader(HardwareMode hwMode) {
         switch (hwMode) {
+            case HW_16K:
+                return new TapeLoader16();
             case HW_48K:
                 return new TapeLoader48();
             case HW_128K:

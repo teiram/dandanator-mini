@@ -5,6 +5,7 @@ import com.grelobites.romgenerator.handlers.dandanatormini.v5.SlotZeroV5;
 import com.grelobites.romgenerator.handlers.dandanatormini.v6.SlotZeroV6;
 import com.grelobites.romgenerator.handlers.dandanatormini.v7.SlotZeroV7;
 import com.grelobites.romgenerator.handlers.dandanatormini.v8.SlotZeroV8;
+import com.grelobites.romgenerator.handlers.dandanatormini.v9.SlotZeroV9;
 import com.grelobites.romgenerator.util.PositionAwareInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,8 @@ public interface SlotZero {
                     SlotZeroV5.class,
                     SlotZeroV6.class,
                     SlotZeroV7.class,
-                    SlotZeroV8.class
+                    SlotZeroV8.class,
+                    SlotZeroV9.class
     };
 
     static Optional<SlotZero> getImplementation(byte[] data) {

@@ -3,6 +3,7 @@ package com.grelobites.romgenerator.handlers.dandanatormini;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
+import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.util.RamGameCompressor;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import com.grelobites.romgenerator.util.compress.zx7.Zx7OutputStream;
@@ -41,12 +42,12 @@ public class DandanatorMiniRamGameCompressor implements RamGameCompressor {
         }
     }
 
-    private byte[] filterCompression(byte[] data, byte[] compressedData, int slot) {
+    private byte[] filterCompression(GameType gameType, byte[] data, byte[] compressedData, int slot) {
         if (slot == DELTA_LIMITED_SLOT) {
             return compressionDelta > DELTA_LIMITED_SLOT_MAXDELTA ?
                     data : compressedData;
         }
-        if (slot == DandanatorMiniConstants.GAME_CHUNK_SLOT) {
+        if (slot == gameType.chunkSlot()) {
             return compressedData.length > COMPRESSED_CHUNKSLOT_THRESHOLD ?
                     data : compressedData;
         } else {
@@ -56,11 +57,11 @@ public class DandanatorMiniRamGameCompressor implements RamGameCompressor {
     }
 
     @Override
-    public byte[] compressSlot(int slot, byte[] data) {
-        byte[] targetData = (slot == DandanatorMiniConstants.GAME_CHUNK_SLOT) ?
+    public byte[] compressSlot(GameType gameType, int slot, byte[] data) {
+        byte[] targetData = (slot == gameType.chunkSlot()) ?
                 Arrays.copyOfRange(data, 0, Constants.SLOT_SIZE - DandanatorMiniConstants.GAME_CHUNK_SIZE) :
                 data;
-        return filterCompression(targetData, compressSlotInternal(targetData), slot);
+        return filterCompression(gameType, targetData, compressSlotInternal(targetData), slot);
     }
 
 }

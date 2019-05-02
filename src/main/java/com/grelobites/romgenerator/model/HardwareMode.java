@@ -1,6 +1,7 @@
 package com.grelobites.romgenerator.model;
 
 public enum HardwareMode {
+    HW_16K("16k", 0, true),
     HW_48K("48k", 0, true),
     HW_48K_IF1("48k+IF1", 0, false),
     HW_48K_MGT("48k+MGT", 0, false),

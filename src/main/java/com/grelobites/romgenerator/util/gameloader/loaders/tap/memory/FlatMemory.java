@@ -21,14 +21,18 @@ public class FlatMemory implements Memory {
     @Override
     public int peek8(int address) {
         clock.addTstates(3);
-        return memoryMap[address] & 0xff;
+        return address < memoryMap.length ? memoryMap[address] & 0xff : 0xff;
     }
 
     @Override
     public void poke8(int address, int value) {
         if (address >= ROM_TOP) {
             clock.addTstates(3);
-            memoryMap[address] = (byte) value;
+            if (address < memoryMap.length) {
+                memoryMap[address] = (byte) value;
+            } else {
+                LOGGER.debug("Trying to write past the memory size");
+            }
         }
     }
 
@@ -47,6 +51,8 @@ public class FlatMemory implements Memory {
 
     @Override
     public void load(byte[] data, int srcPos, int address, int size) {
+        LOGGER.debug("Loading {} data length from position {} to position {} with size {}",
+                data.length, srcPos, address, size);
         try {
             System.arraycopy(data, srcPos, memoryMap, address, size);
         } catch (Exception e) {

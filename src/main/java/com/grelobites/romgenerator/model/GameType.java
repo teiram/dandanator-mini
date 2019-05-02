@@ -5,15 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public enum GameType {
-    ROM(0, "ROM"),
-    RAM16(1, "16K"),
-    RAM48(3, "48K"),
-    RAM128(8, "128K"),
-    RAM48_MLD(0x83, "48K MLD"),
-    RAM128_MLD(0x88, "128K MLD"),
-    DAN_SNAP(0xC3, "DAN-SNAP"),
-    DAN_SNAP128(0xC8, "DAN-SNAP-128"),
-    DAN_TAP(0x8B, "TAP");
+    ROM(0, -1, "ROM"),
+    RAM16(1, 0, "16K"),
+    RAM48(3, 2, "48K"),
+    RAM128(8, 2, "128K"),
+    RAM48_MLD(0x83, -1, "48K MLD"),
+    RAM128_MLD(0x88, -1, "128K MLD"),
+    DAN_SNAP(0xC3, -1, "DAN-SNAP"),
+    DAN_SNAP128(0xC8, -1, "DAN-SNAP-128"),
+    DAN_TAP(0x8B, -1, "TAP");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GameType.class);
     public static int MLD_MASK = 0x80;
@@ -21,14 +21,20 @@ public enum GameType {
 
     private int typeId;
     private String screenName;
+    private int chunkSlot;
 
-    GameType(int typeId, String screenName) {
+    GameType(int typeId, int chunkSlot, String screenName) {
         this.typeId = typeId;
+        this.chunkSlot = chunkSlot;
         this.screenName = screenName;
     }
 
     public int typeId() {
         return typeId;
+    }
+
+    public int chunkSlot() {
+        return chunkSlot;
     }
 
     public String screenName() {

@@ -16,36 +16,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TapeLoader48 extends NonBankedMemoryTapeLoader {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TapeLoader48.class);
+public class TapeLoader16 extends NonBankedMemoryTapeLoader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TapeLoader16.class);
 
-    public TapeLoader48() {
-        super(0x10000);
+    public TapeLoader16() {
+        super(0x8000);
     }
 
     @Override
     protected List<byte[]> getRamBanks() {
         List<byte[]> banks = new ArrayList<>();
-        for (int i = 1; i < 4; i++) {
-            byte[] bank = Arrays.copyOfRange(z80Ram.asByteArray(), i * BANK_SIZE, (i + 1) * BANK_SIZE);
-            banks.add(bank);
-        }
+        banks.add(Arrays.copyOfRange(z80Ram.asByteArray(), 0x4000, 0x4000 + BANK_SIZE));
         return banks;
     }
 
     @Override
     void prepareForLoading() {
         try (InputStream loaderStream = NonBankedMemoryTapeLoader.class
-                .getResourceAsStream("/loader/loader.48.z80")) {
+                .getResourceAsStream("/loader/loader.16.z80")) {
             SnapshotGame game = (SnapshotGame) new Z80GameImageLoader().load(loaderStream);
             GameUtil.popPC(game); //Since games are loaded with the PC pushed
 
             Z80State z80state = getStateFromHeader(game.getGameHeader());
 
-            int slot = 0;
-            for (int i : new int[] {0x4000, 0x8000, 0xc000}) {
-                z80Ram.load(game.getSlot(slot++), 0, i, BANK_SIZE);
-            }
+            z80Ram.load(game.getSlot(0), 0, 0x4000, BANK_SIZE);
+
             LOGGER.debug("Calculated Z80State as " + z80state);
             z80.setZ80State(z80state);
         } catch (IOException ioe) {
@@ -56,11 +51,17 @@ public class TapeLoader48 extends NonBankedMemoryTapeLoader {
     @Override
     protected SnapshotGame contextAsGame() {
         GameHeader header = fromZ80State(z80.getZ80State());
-        SnapshotGame game =  new SnapshotGame(GameType.RAM48, getRamBanks());
+        SnapshotGame game =  new SnapshotGame(GameType.RAM16, getRamBanks());
         game.setGameHeader(header);
         game.setHoldScreen(true);
-        game.setHardwareMode(HardwareMode.HW_48K);
+        game.setHardwareMode(HardwareMode.HW_16K);
         return game;
+    }
+
+    @Override
+    public void poke8(int address, int value) {
+        clock.addTstates(3);
+        z80Ram.poke8(address, value);
     }
 
 }

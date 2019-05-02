@@ -195,7 +195,7 @@ public class SnapshotGame extends BaseGame implements RamGame {
                 compressingTasks.add(context);
                 compressingService.submit(() -> {
                     if (!isSlotZeroed(context.slot)) {
-                        context.compressedData = compressor.compressSlot(context.slot, context.data);
+                        context.compressedData = compressor.compressSlot(getType(), context.slot, context.data);
                     }
                     context.counter.countDown();
                 });
@@ -284,7 +284,7 @@ public class SnapshotGame extends BaseGame implements RamGame {
                 .array();
         data.set(slot, slotData);
         compressedData.set(slot, Configuration.getInstance().getRamGameCompressor()
-            .compressSlot(slot, slotData));
+            .compressSlot(getType(), slot, slotData));
         getCompressedSize(Configuration.getInstance().getRamGameCompressor(), true);
         screenshot = null;
     }

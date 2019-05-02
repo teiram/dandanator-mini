@@ -41,11 +41,12 @@
             <Label maxWidth="1.7976931348623157E308" text="%tapLoaderTarget" HBox.hgrow="ALWAYS" />
             <VBox alignment="CENTER_LEFT" prefHeight="200.0" prefWidth="100.0" spacing="5.0">
                <children>
-                  <RadioButton fx:id="tapMode48K" mnemonicParsing="false" selected="true" text="48K">
+                  <RadioButton fx:id="tapMode16K" mnemonicParsing="false" text="16K">
                      <toggleGroup>
                         <ToggleGroup fx:id="tapLoaderToggleGroup" />
                      </toggleGroup>
                   </RadioButton>
+                  <RadioButton fx:id="tapMode48K" mnemonicParsing="false" selected="true" text="48K" toggleGroup="$tapLoaderToggleGroup" />
                   <RadioButton fx:id="tapMode128K" mnemonicParsing="false" text="128K" toggleGroup="$tapLoaderToggleGroup" />
                   <RadioButton fx:id="tapModePlus2A" mnemonicParsing="false" text="+2A" toggleGroup="$tapLoaderToggleGroup" />
                </children>

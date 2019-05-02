@@ -53,6 +53,9 @@ public class PreferencesController {
     private ComboBox<RomSet> plus2ARomSetCombo;
 
     @FXML
+    private RadioButton tapMode16K;
+
+    @FXML
     private RadioButton tapMode48K;
 
     @FXML
@@ -229,6 +232,9 @@ public class PreferencesController {
 
     private void setTapTargetMode(String hwMode) {
         switch (HardwareMode.valueOf(hwMode)) {
+            case HW_16K:
+                tapLoaderToggleGroup.selectToggle(tapMode16K);
+                break;
             case HW_48K:
                 tapLoaderToggleGroup.selectToggle(tapMode48K);
                 break;
@@ -244,7 +250,7 @@ public class PreferencesController {
     }
     private void tapTargetModeSetup() {
         Configuration configuration = Configuration.getInstance();
-
+        tapMode16K.setUserData(HardwareMode.HW_16K);
         tapMode48K.setUserData(HardwareMode.HW_48K);
         tapMode128K.setUserData(HardwareMode.HW_128K);
         tapModePlus2A.setUserData(HardwareMode.HW_PLUS2A);

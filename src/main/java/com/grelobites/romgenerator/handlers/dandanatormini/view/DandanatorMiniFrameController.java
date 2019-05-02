@@ -451,7 +451,7 @@ public class DandanatorMiniFrameController {
                     } else {
                         removeAllGamePokesButton.setDisable(true);
                     }
-                    gameForced48kModeAttribute.setVisible(snapshotGame.getType() != GameType.RAM128);
+                    gameForced48kModeAttribute.setVisible(snapshotGame.getType() == GameType.RAM48);
                 } else {
                     pokesTab.setDisable(true);
                     gameRomAttribute.setVisible(false);
