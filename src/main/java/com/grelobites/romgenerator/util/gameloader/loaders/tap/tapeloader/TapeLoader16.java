@@ -50,10 +50,8 @@ public class TapeLoader16 extends NonBankedMemoryTapeLoader {
 
     @Override
     protected SnapshotGame contextAsGame() {
-        GameHeader header = fromZ80State(z80.getZ80State());
         SnapshotGame game =  new SnapshotGame(GameType.RAM16, getRamBanks());
-        game.setGameHeader(header);
-        game.setHoldScreen(true);
+        prepareSnapshot(game);
         game.setHardwareMode(HardwareMode.HW_16K);
         return game;
     }

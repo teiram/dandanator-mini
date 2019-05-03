@@ -1,6 +1,5 @@
 package com.grelobites.romgenerator.util.gameloader.loaders.tap.tapeloader;
 
-import com.grelobites.romgenerator.model.GameHeader;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.SnapshotGame;
@@ -55,10 +54,8 @@ public class TapeLoader48 extends NonBankedMemoryTapeLoader {
 
     @Override
     protected SnapshotGame contextAsGame() {
-        GameHeader header = fromZ80State(z80.getZ80State());
         SnapshotGame game =  new SnapshotGame(GameType.RAM48, getRamBanks());
-        game.setGameHeader(header);
-        game.setHoldScreen(true);
+        prepareSnapshot(game);
         game.setHardwareMode(HardwareMode.HW_48K);
         return game;
     }

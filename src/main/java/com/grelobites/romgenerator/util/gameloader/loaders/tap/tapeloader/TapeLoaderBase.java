@@ -118,6 +118,12 @@ public abstract class TapeLoaderBase implements Z80operations, TapeLoader {
         return header;
     }
 
+    protected void prepareSnapshot(SnapshotGame game) {
+        game.setGameHeader(fromZ80State(z80.getZ80State()));
+        game.setHoldScreen(true);
+        game.setAmbientBorderColor();
+    }
+
     protected abstract SnapshotGame contextAsGame();
 
     protected void loadTapeInternal(InputStream tapeFile) {

@@ -47,7 +47,7 @@ public class SnapshotGame extends BaseGame implements RamGame {
     private List<byte[]> compressedData;
     private IntegerProperty compressedSize;
     private HardwareMode hardwareMode;
-    private ZxColor mainScreenColor;
+    private ZxColor ambientBorderColor;
 
     private static final int[] SLOT_MAP = new int[] {2, 3, 1, 4, 5, 0, 6, 7};
 
@@ -116,8 +116,8 @@ public class SnapshotGame extends BaseGame implements RamGame {
 		return holdScreen;
 	}
 
-	public ZxColor getMainScreenColor() {
-        return mainScreenColor;
+	public ZxColor getAmbientBorderColor() {
+        return ambientBorderColor;
     }
 
 	public int getScreenSlot() {
@@ -132,6 +132,14 @@ public class SnapshotGame extends BaseGame implements RamGame {
         this.compressedData = compressedData;
     }
 
+    public void setAmbientBorderColor() {
+        Map<ZxColor, Integer> histogram = ImageUtil
+                .imageHistogram(getSlot(getScreenSlot()));
+        LOGGER.debug("Image histogram is {}", histogram);
+        ambientBorderColor = histogram.keySet().iterator().next();
+        LOGGER.debug("Ambient border color would be {}", ambientBorderColor);
+    }
+
     public Image getScreenshot() {
 		if (screenshot == null) {
 			try {
@@ -140,12 +148,6 @@ public class SnapshotGame extends BaseGame implements RamGame {
 								new ByteArrayInputStream(getSlot(getScreenSlot()),
 										0,
 										Constants.SPECTRUM_FULLSCREEN_SIZE));
-				Map<ZxColor, Integer> histogram = ImageUtil
-                        .imageHistogram(getSlot(getScreenSlot()));
-				LOGGER.debug("Image histogram is {}", histogram);
-
-				mainScreenColor = histogram.keySet().iterator().next();
-				LOGGER.debug("Main color is {}", mainScreenColor);
 			} catch (Exception e) {
 				LOGGER.error("Loading screenshot", e);
 			}

@@ -146,12 +146,9 @@ public class TapeLoader128 extends TapeLoaderBase {
 
     @Override
     protected SnapshotGame contextAsGame() {
-        GameHeader header = fromZ80State(z80.getZ80State());
-        header.setPort7ffdValue(last7ffd);
-
         SnapshotGame game =  new SnapshotGame(GameType.RAM128, getRamBanks());
-        game.setGameHeader(header);
-        game.setHoldScreen(true);
+        prepareSnapshot(game);
+        game.getGameHeader().setPort7ffdValue(last7ffd);
         game.setHardwareMode(HardwareMode.HW_128K);
         return game;
     }

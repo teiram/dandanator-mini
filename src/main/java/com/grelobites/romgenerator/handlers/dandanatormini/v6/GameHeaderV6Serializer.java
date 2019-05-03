@@ -31,8 +31,8 @@ public class GameHeaderV6Serializer {
         Util.writeAsLittleEndian(os, header.getAFRegister());
         Util.writeAsLittleEndian(os, header.getSPRegister());
         os.write(header.getInterruptMode());
-        if (game.getHoldScreen() && game.getMainScreenColor() != null) {
-            os.write(game.getMainScreenColor().index());
+        if (game.getAmbientBorderColor() != null) {
+            os.write(game.getAmbientBorderColor().index());
         } else {
             os.write(header.getBorderColor());
         }
