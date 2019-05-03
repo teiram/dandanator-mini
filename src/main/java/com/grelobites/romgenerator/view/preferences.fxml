@@ -53,7 +53,7 @@
             </VBox>
          </children>
       </HBox>
-      <HBox alignment="CENTER_RIGHT" layoutX="234.0" layoutY="280.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="31.0" prefWidth="352.0" spacing="10.0">
+      <HBox alignment="CENTER_RIGHT" layoutX="234.0" layoutY="291.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="31.0" prefWidth="352.0" spacing="10.0">
          <children>
             <Label text="%plus2ARomset" />
             <ComboBox fx:id="plus2ARomSetCombo" maxHeight="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
@@ -63,6 +63,6 @@
          </padding>
       </HBox>
       <Pagination fx:id="charSetPagination" layoutX="255.0" layoutY="7.0" pageCount="10" prefHeight="112.0" prefWidth="326.0" />
-      <CheckBox fx:id="danTapSupport" layoutX="284.0" layoutY="176.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="326.0" text="%danTapSupportEnabled" />
+      <CheckBox fx:id="danTapSupport" layoutX="284.0" layoutY="164.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="326.0" text="%danTapSupportEnabled" />
    </children>
 </AnchorPane>
