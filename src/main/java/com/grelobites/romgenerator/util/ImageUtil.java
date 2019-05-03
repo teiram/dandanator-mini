@@ -5,7 +5,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.grelobites.romgenerator.Constants;
 
@@ -71,6 +75,40 @@ public class ImageUtil {
 		return new WritableImage(Constants.SPECTRUM_SCREEN_WIDTH,
 				Constants.SPECTRUM_SCREEN_HEIGHT);
 	}
+
+	public static Map<ZxColor, Integer> imageHistogram(byte[] screenSlot) {
+	    int[] ocurrences = new int[16];
+        int attributesOffset = Constants.SPECTRUM_SCREEN_SIZE;
+        for (int y = 0; y < Constants.SPECTRUM_SCREEN_HEIGHT; y++) {
+            int ypos = (y & Constants.SPECTRUM_SCREEN_HEIGHT)
+                    + ((y & 7) << 3) + ((y & 56) >> 3);
+            for (int xchar = 0; xchar < 32; xchar++) {
+                int attrpos = ((ypos >> 3) << 5) + xchar;
+                byte attrbyte = screenSlot[attrpos + attributesOffset];
+                int ink = (attrbyte & 7) + ((attrbyte & 64) >> 3);
+                int paper = ((attrbyte & 56) >> 3) + ((attrbyte & 64) >> 3);
+                int mask = 0x80;
+                int imageByte = screenSlot[(y << 5) + xchar];
+                for (int i = 0; i < 8; i++) {
+                    ocurrences[((imageByte & mask) == 0) ? paper : ink]++;
+                    mask >>= 1;
+                }
+            }
+        }
+        Map<ZxColor, Integer> histogram = new HashMap<>();
+        for (int i = 0; i < 16; i++) {
+            histogram.put(ZxColor.indexed(i), ocurrences[i]);
+        }
+        return histogram.entrySet().stream()
+                .sorted(Collections
+                        .reverseOrder(Map.Entry.comparingByValue()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+    }
 
 	public static byte[] fillZxImage(byte[] screen, byte[] attributes) {
 		byte[] image = new byte[Constants.SPECTRUM_SCREEN_SIZE + Constants.SPECTRUM_COLORINFO_SIZE];

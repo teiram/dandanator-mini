@@ -4,6 +4,7 @@ import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.util.ImageUtil;
 import com.grelobites.romgenerator.util.RamGameCompressor;
+import com.grelobites.romgenerator.util.ZxColor;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,6 +47,7 @@ public class SnapshotGame extends BaseGame implements RamGame {
     private List<byte[]> compressedData;
     private IntegerProperty compressedSize;
     private HardwareMode hardwareMode;
+    private ZxColor mainScreenColor;
 
     private static final int[] SLOT_MAP = new int[] {2, 3, 1, 4, 5, 0, 6, 7};
 
@@ -113,6 +116,10 @@ public class SnapshotGame extends BaseGame implements RamGame {
 		return holdScreen;
 	}
 
+	public ZxColor getMainScreenColor() {
+        return mainScreenColor;
+    }
+
 	public int getScreenSlot() {
 	    if (gameType == GameType.RAM128) {
             return (gameHeader.getPort7ffdValue(0) & 0x08) != 0 ? 7 : 0;
@@ -133,6 +140,12 @@ public class SnapshotGame extends BaseGame implements RamGame {
 								new ByteArrayInputStream(getSlot(getScreenSlot()),
 										0,
 										Constants.SPECTRUM_FULLSCREEN_SIZE));
+				Map<ZxColor, Integer> histogram = ImageUtil
+                        .imageHistogram(getSlot(getScreenSlot()));
+				LOGGER.debug("Image histogram is {}", histogram);
+
+				mainScreenColor = histogram.keySet().iterator().next();
+				LOGGER.debug("Main color is {}", mainScreenColor);
 			} catch (Exception e) {
 				LOGGER.error("Loading screenshot", e);
 			}

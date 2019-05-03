@@ -31,7 +31,11 @@ public class GameHeaderV6Serializer {
         Util.writeAsLittleEndian(os, header.getAFRegister());
         Util.writeAsLittleEndian(os, header.getSPRegister());
         os.write(header.getInterruptMode());
-        os.write(header.getBorderColor());
+        if (game.getHoldScreen() && game.getMainScreenColor() != null) {
+            os.write(game.getMainScreenColor().index());
+        } else {
+            os.write(header.getBorderColor());
+        }
         Util.writeAsLittleEndian(os, header.getSavedStackData(0));
         if (game.getType() == GameType.RAM48) {
             os.write(DandanatorMiniConstants.PORT7FFD_DEFAULT_VALUE |
