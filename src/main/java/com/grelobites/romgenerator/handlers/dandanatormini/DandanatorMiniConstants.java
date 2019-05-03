@@ -44,7 +44,7 @@ public class DandanatorMiniConstants {
     private static final String DIVIDE_LOADER_RESOURCE = "dandanator-mini/divide-loader.bin";
     private static final String SLOT1_ROM_RESOURCE = "dandanator-mini/slot1.rom";
 
-    public static final int POKE_TARGET_ADDRESS = 49284;
+    public static final int POKE_TARGET_ADDRESS = 25259;
     public static final int GAME_CHUNK_SIZE = 256;
     public static final int GAME_CHUNK_SLOT = 2;
     public static final int VERSION_SIZE = 32;
