@@ -311,7 +311,7 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         }
     }
 
-    private int getActiveRomSlot(SnapshotGame game) {
+    private int getActiveRomSlot(SnapshotGame game, boolean hasDanTapGames) {
         int romSlot;
 
         if (game.getRom() == DandanatorMiniConstants.INTERNAL_ROM_GAME) {
@@ -319,23 +319,32 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         } else if (game.getRom() == DandanatorMiniConstants.EXTRA_ROM_GAME) {
             romSlot =  32;
         } else {
-            int activeRomIndex = getApplicationContext().getGameList().filtered(g -> g.getType().equals(GameType.ROM))
-                    .indexOf(game.getRom());
-            romSlot = 31 - activeRomIndex;
+            romSlot = 31 - (hasDanTapGames ? 1 : 0);
+            for (Game uncompresssedGame : getApplicationContext().getGameList()
+                    .filtered(g -> !isGameCompressed(g))) {
+                if (uncompresssedGame.equals(game.getRom())) {
+                    break;
+                } else {
+                    LOGGER.debug("Skipping candidate ROM {}", uncompresssedGame);
+                    romSlot -= uncompresssedGame.getSlotCount();
+                }
+
+            }
         }
         LOGGER.debug("Calculated ROM slot as " + romSlot + " for ROM " + game.getRom());
         return romSlot;
     }
 
     private int dumpGameHeader(OutputStream os, int index, Game game,
-                               GameChunk gameChunk, int offset) throws IOException {
+                               GameChunk gameChunk, int offset,
+                               boolean hasDanTapGames) throws IOException {
         os.write(getGamePaddedSnaHeader(game));
         dumpGameName(os, game, index);
         os.write(getGameHardwareMode(game));
         os.write(isGameCompressed(game) ? Constants.B_01 : Constants.B_00);
         os.write(game.getType().typeId());
         os.write(isGameScreenHold(game) ? Constants.B_01 : Constants.B_00);
-        os.write(game instanceof SnapshotGame ? getActiveRomSlot((SnapshotGame) game) : Constants.B_00);
+        os.write(game instanceof SnapshotGame ? getActiveRomSlot((SnapshotGame) game, hasDanTapGames) : Constants.B_00);
         dumpGameLaunchCode(os, game, index);
         os.write(asLittleEndianWord(gameChunk.getAddress()));
         os.write(asLittleEndianWord(gameChunk.getData().length));
@@ -354,9 +363,9 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 (hasDanTapGames ? 1 : 0));
         for (Game game : getApplicationContext().getGameList()) {
             if (isGameCompressed(game)) {
-                forwardOffset = dumpGameHeader(os, index, game, gameChunkTable[index], forwardOffset);
+                forwardOffset = dumpGameHeader(os, index, game, gameChunkTable[index], forwardOffset, hasDanTapGames);
             } else {
-                backwardsOffset = dumpGameHeader(os, index, game, gameChunkTable[index], backwardsOffset);
+                backwardsOffset = dumpGameHeader(os, index, game, gameChunkTable[index], backwardsOffset, hasDanTapGames);
             }
             LOGGER.debug("Dumped gamestruct for " + game.getName() + ". Offset: " + os.size());
             index++;
