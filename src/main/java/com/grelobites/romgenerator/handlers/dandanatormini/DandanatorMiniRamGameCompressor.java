@@ -1,8 +1,6 @@
 package com.grelobites.romgenerator.handlers.dandanatormini;
 
 import com.grelobites.romgenerator.Constants;
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
-import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
 import com.grelobites.romgenerator.model.GameType;
 import com.grelobites.romgenerator.util.RamGameCompressor;
 import com.grelobites.romgenerator.util.compress.Compressor;
@@ -25,13 +23,14 @@ public class DandanatorMiniRamGameCompressor implements RamGameCompressor {
 
     private byte[] compress(byte[] data) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        OutputStream compressingStream = compressor.getCompressingOutputStream(os);
-        compressingStream.write(data);
-        compressingStream.flush();
-        if (compressingStream instanceof Zx7OutputStream) {
-            compressionDelta = ((Zx7OutputStream) compressingStream).getCompressionDelta();
+        try (OutputStream compressingStream = compressor.getCompressingOutputStream(os)) {
+            compressingStream.write(data);
+            compressingStream.flush();
+            if (compressingStream instanceof Zx7OutputStream) {
+                compressionDelta = ((Zx7OutputStream) compressingStream).getCompressionDelta();
+            }
+            return os.toByteArray();
         }
-        return os.toByteArray();
     }
 
     private byte[] compressSlotInternal(byte[] data) {

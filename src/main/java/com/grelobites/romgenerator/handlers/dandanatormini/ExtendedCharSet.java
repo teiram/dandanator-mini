@@ -71,24 +71,24 @@ public class ExtendedCharSet {
     };
 
     public static final byte[] SYMBOL_16K_0 = new byte[]{
-            (byte) 0x09,
-            (byte) 0x19,
-            (byte) 0x09,
-            (byte) 0x89,
-            (byte) 0x89,
-            (byte) 0x09,
-            (byte) 0x1D,
+            (byte) 0x3F,
+            (byte) 0x37,
+            (byte) 0x26,
+            (byte) 0x37,
+            (byte) 0x36,
+            (byte) 0x23,
+            (byte) 0x1F,
             (byte) 0x00
     };
 
     public static final byte[] SYMBOL_16K_1 = new byte[]{
-            (byte) 0xD0,
-            (byte) 0x50,
-            (byte) 0x14,
-            (byte) 0xD8,
-            (byte) 0x58,
-            (byte) 0x54,
-            (byte) 0x04,
+            (byte) 0xFC,
+            (byte) 0x6A,
+            (byte) 0xE6,
+            (byte) 0x6E,
+            (byte) 0xA6,
+            (byte) 0x6A,
+            (byte) 0xFE,
             (byte) 0x00
     };
 

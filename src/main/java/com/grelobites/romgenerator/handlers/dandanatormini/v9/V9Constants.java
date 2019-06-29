@@ -17,7 +17,7 @@ public class V9Constants {
     protected static int INTERNAL_ROM_SLOT = 33;
 
     protected static int DANTAP_ROM_SLOT = 30;
-    protected static final int DANTAP_COMMON_CODE_LENGTH = 323;
+    protected static final int DANTAP_COMMON_CODE_LENGTH = 162;
     protected static final int DANTAP_TABLE_CODE_LENGTH = 136;
     protected static int DANTAP_TAPTABLE_OFFSET = 2 + DANTAP_COMMON_CODE_LENGTH + DANTAP_TABLE_CODE_LENGTH;
 }
