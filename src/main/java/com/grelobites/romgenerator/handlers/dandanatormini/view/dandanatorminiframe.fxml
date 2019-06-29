@@ -18,7 +18,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="265.0" xmlns="http://javafx.com/javafx/8.0.181" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="265.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
    <children>
         <TabPane fx:id="gameInfoTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="210.0" prefWidth="260.0" styleClass="infoTabPane">
             <tabs>
@@ -48,11 +48,12 @@
                               <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="%danSnapSize" HBox.hgrow="ALWAYS" />
                               <VBox fillWidth="false">
                                  <children>
-                                    <RadioButton fx:id="danSnap48KSize" mnemonicParsing="false" selected="true" text="48K">
+                                    <RadioButton fx:id="danSnap16KSize" mnemonicParsing="false" text="16K">
                                        <toggleGroup>
                                           <ToggleGroup fx:id="snapshotSize" />
                                        </toggleGroup>
                                     </RadioButton>
+                                    <RadioButton fx:id="danSnap48KSize" mnemonicParsing="false" selected="true" text="48K" toggleGroup="$snapshotSize" />
                                     <RadioButton fx:id="danSnap128KSize" mnemonicParsing="false" text="128K" toggleGroup="$snapshotSize" />
                                  </children>
                               </VBox>

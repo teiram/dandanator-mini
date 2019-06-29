@@ -323,6 +323,7 @@ public class GameMapperV9 implements GameMapper {
                     }
                     break;
                 case DAN_SNAP:
+                case DAN_SNAP16:
                 case DAN_SNAP128:
                     gameSlots = getMLDGameSlots();
                     game = MLDInfo.fromGameByteArray(gameSlots)

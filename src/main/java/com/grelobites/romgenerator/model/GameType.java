@@ -13,6 +13,7 @@ public enum GameType {
     RAM128_MLD(0x88, -1, "128K MLD"),
     DAN_SNAP(0xC3, -1, "DAN-SNAP"),
     DAN_SNAP128(0xC8, -1, "DAN-SNAP-128"),
+    DAN_SNAP16(0xC1, -1, "DAN-SNAP-16"),
     DAN_TAP(0x8B, -1, "TAP");
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GameType.class);

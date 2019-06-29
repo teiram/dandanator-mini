@@ -12,6 +12,7 @@ import com.grelobites.romgenerator.view.util.RecursiveTreeItem;
 import javafx.beans.InvalidationListener;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -104,6 +105,12 @@ public class DandanatorMiniFrameController {
     private HBox danSnapSizeSelector;
 
     @FXML
+    private ToggleGroup snapshotSize;
+
+    @FXML
+    private RadioButton danSnap16KSize;
+
+    @FXML
     private RadioButton danSnap48KSize;
 
     @FXML
@@ -112,6 +119,21 @@ public class DandanatorMiniFrameController {
     private ApplicationContext applicationContext;
 
     private InvalidationListener currentGameCompressedChangeListener;
+
+    private ChangeListener<Toggle> currentSnapshotSizeListener;
+
+    private ChangeListener<Toggle> getCurrentSnapshotSizeListener(DanSnapGame game) {
+        currentSnapshotSizeListener = (object, oldValue, newValue) -> {
+            if (newValue.equals(danSnap16KSize)) {
+                game.setReservedSlots(1);
+            } else if (newValue.equals(danSnap48KSize)) {
+                game.setReservedSlots(3);
+            } else if (newValue.equals(danSnap128KSize)) {
+                game.setReservedSlots(8);
+            }
+        };
+        return currentSnapshotSizeListener;
+    }
 
     private InvalidationListener getCurrentGameCompressedChangeListener() {
         return currentGameCompressedChangeListener;
@@ -304,21 +326,6 @@ public class DandanatorMiniFrameController {
         applicationContext.getGameList().addListener((InvalidationListener) e ->
                 updateActiveRomComboItems());
 
-        /*
-        applicationContext.getGameList().addListener((ListChangeListener<Game>) c -> {
-            while (c.next()) {
-                gameRomAttribute.getItems().removeAll(c.getRemoved());
-                c.getAddedSubList().forEach(g -> {
-                    if (g instanceof RomGame) {
-                        gameRomAttribute.getItems().add(g);
-                    }
-                });
-            }
-            LOGGER.debug("After computing changes. ComboBox list is " +
-                gameRomAttribute.getItems());
-        });
-        */
-
     }
 
     private void updateActiveRomComboItems() {
@@ -349,7 +356,7 @@ public class DandanatorMiniFrameController {
             }
             if (game instanceof DanSnapGame) {
                 DanSnapGame danGame = (DanSnapGame) game;
-                danSnap48KSize.selectedProperty().unbindBidirectional(danGame.reservationSize48KProperty());
+                snapshotSize.selectedToggleProperty().removeListener(currentSnapshotSizeListener);
             }
         }
     }
@@ -369,7 +376,6 @@ public class DandanatorMiniFrameController {
                 gameHoldScreenAttribute.selectedProperty().bindBidirectional(snapshotGame.holdScreenProperty());
                 gameRomAttribute.valueProperty().bindBidirectional(snapshotGame.romProperty());
                 LOGGER.debug("gameRomAttribute list is " + gameRomAttribute.getItems());
-                //updateActiveRomComboItems();
 
                 pokeView.setRoot(new RecursiveTreeItem<>(snapshotGame.getTrainerList(), PokeViewable::getChildren,
                         this::computePokeChange));
@@ -382,9 +388,21 @@ public class DandanatorMiniFrameController {
                 snapshotGame.compressedProperty().addListener(getCurrentGameCompressedChangeListener());
             }
             if (game instanceof DanSnapGame) {
-                LOGGER.debug("Binding as DanSnapGame");
                 DanSnapGame danGame = (DanSnapGame) game;
-                danSnap48KSize.selectedProperty().bindBidirectional(danGame.reservationSize48KProperty());
+                LOGGER.debug("Binding as DanSnapGame with {} reserved slots",
+                        danGame.getReservedSlots());
+                switch (danGame.getReservedSlots()) {
+                    case 1:
+                        snapshotSize.selectToggle(danSnap16KSize);
+                        break;
+                    case 3:
+                        snapshotSize.selectToggle(danSnap48KSize);
+                        break;
+                    case 8:
+                        snapshotSize.selectToggle(danSnap128KSize);
+                        break;
+                }
+                snapshotSize.selectedToggleProperty().addListener(getCurrentSnapshotSizeListener(danGame));
             }
         }
     }

@@ -121,6 +121,10 @@ public class MLDInfo {
                 return (mldType & 0x40) == 0 ? HardwareMode.HW_128K : HardwareMode.HW_PLUS2A;
             case DAN_SNAP:
                 return HardwareMode.HW_48K;
+            case DAN_SNAP16:
+                return HardwareMode.HW_16K;
+            case DAN_SNAP128:
+                return HardwareMode.HW_128K;
             default:
                 return HardwareMode.HW_UNKNOWN;
         }
