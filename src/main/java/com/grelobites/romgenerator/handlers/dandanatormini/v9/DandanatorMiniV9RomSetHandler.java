@@ -33,10 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Future;
 
 public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSupport implements RomSetHandler {
@@ -583,6 +580,15 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         return false;
     }
 
+    private static Optional<Integer> danSnapMldType(List<Game> games) {
+        for (Game game : games) {
+            if (game instanceof DanSnapGame) {
+                return Optional.of(((DanSnapGame) game).getMldInfo().getMldType());
+            }
+        }
+        return Optional.empty();
+    }
+
     @Override
     public void exportRomSet(OutputStream stream) {
         try {
@@ -673,8 +679,10 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
             os.write(dmConfiguration.isAutoboot() ? 1 : 0);
             LOGGER.debug("Dumped autoboot configuration. Offset: " + os.size());
-
-            os.write(Constants.B_FF);
+            int danSnapMldType = danSnapMldType(games).orElse(0xff);
+            os.write(danSnapMldType);
+            LOGGER.debug("Dumped dansnap MLDType as {}, offset {}",
+                    String.format("0x%02x", danSnapMldType), os.size());
             os.write(pauseMarkValue(games));
 
             Util.fillWithValue(os, (byte) 0, Constants.SLOT_SIZE - os.size());
@@ -763,10 +771,23 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         }
     }
 
+    private static int danSnapGameCount(List<Game> games) {
+        int danSnapGamesCount = 0;
+        for (Game game: games) {
+            if (game instanceof DanSnapGame) {
+                danSnapGamesCount++;
+            }
+        }
+        LOGGER.debug("DanSnapGame count calculated as {}", danSnapGamesCount);
+        return danSnapGamesCount;
+    }
+
     protected BooleanBinding getGenerationAllowedBinding(ApplicationContext ctx) {
         return Bindings.size(ctx.getGameList())
                 .greaterThan(0)
                 .and(Bindings.size(ctx.getGameList()).lessThanOrEqualTo(DandanatorMiniConstants.MAX_GAMES))
+                .and(Bindings.createBooleanBinding(
+                        () -> danSnapGameCount(ctx.getGameList()) <= 1, ctx.getGameList()))
                 .and(currentRomUsage.lessThan(1.0));
     }
 
