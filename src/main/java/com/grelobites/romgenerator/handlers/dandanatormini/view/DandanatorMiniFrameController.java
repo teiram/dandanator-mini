@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -455,8 +456,7 @@ public class DandanatorMiniFrameController {
                     } else {
                         removeAllGamePokesButton.setDisable(true);
                     }
-                    gameForced48kModeAttribute.setVisible((snapshotGame.getType() == GameType.RAM48) ||
-                            (snapshotGame.getType() == GameType.RAM16));
+                    gameForced48kModeAttribute.setVisible(EnumSet.of(GameType.RAM48, GameType.RAM16).contains(snapshotGame.getType()));
                 } else {
                     pokesTab.setDisable(true);
                     gameRomAttribute.setVisible(false);

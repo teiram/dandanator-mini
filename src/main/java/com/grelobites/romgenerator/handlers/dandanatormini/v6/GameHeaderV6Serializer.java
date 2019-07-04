@@ -10,6 +10,7 @@ import com.grelobites.romgenerator.util.Util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.EnumSet;
 
 
 public class GameHeaderV6Serializer {
@@ -37,7 +38,7 @@ public class GameHeaderV6Serializer {
             os.write(header.getBorderColor());
         }
         Util.writeAsLittleEndian(os, header.getSavedStackData(0));
-        if (game.getType() == GameType.RAM48) {
+        if (EnumSet.of(GameType.RAM48, GameType.RAM16).contains(game.getType())) {
             os.write(DandanatorMiniConstants.PORT7FFD_DEFAULT_VALUE |
                     (game.getForce48kMode() ? DandanatorMiniConstants.PORT7FFD_FORCED_48KMODE_BITS : 0));
             os.write(GameUtil.encodeAsAuthentic(header.getPort1ffdValue(),
