@@ -474,6 +474,7 @@ public class DandanatorMiniFrameController {
                 gameForced48kModeAttribute.setVisible(false);
                 hardwareMode.setVisible(false);
                 romActiveAttributeLabel.setVisible(false);
+                danSnapSizeSelector.setVisible(false);
             }
             gameInfoTabPane.setVisible(true);
         }
