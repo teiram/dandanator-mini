@@ -10,6 +10,8 @@ import com.grelobites.romgenerator.handlers.dandanatormini.v6.GameHeaderV6Serial
 import com.grelobites.romgenerator.handlers.dandanatormini.view.DandanatorMiniFrameController;
 import com.grelobites.romgenerator.model.*;
 import com.grelobites.romgenerator.util.*;
+import com.grelobites.romgenerator.util.gameloader.GameImageLoaderFactory;
+import com.grelobites.romgenerator.util.gameloader.GameImageType;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandler;
 import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerType;
 import com.grelobites.romgenerator.view.util.DialogUtil;
@@ -55,6 +57,7 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
     protected MenuItem exportToWavsMenuItem;
     protected MenuItem exportExtraRomMenuItem;
     protected MenuItem upgradeDivIdeTapMenuItem;
+    protected MenuItem addSnapshotterMenuItem;
     private BooleanProperty generationAllowedProperty = new SimpleBooleanProperty(false);
 
 
@@ -1023,6 +1026,30 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         return exportExtraRomMenuItem;
     }
 
+    private MenuItem getAddSnapshotterMenuItem() {
+        if (addSnapshotterMenuItem == null) {
+            addSnapshotterMenuItem = new MenuItem(LocaleUtil.i18n("addSnapshotterMenuEntry"));
+            addSnapshotterMenuItem.disableProperty().bind(
+                    Bindings.createBooleanBinding(
+                            () -> danSnapGameCount(applicationContext.getGameList()) >= 1, applicationContext.getGameList()));
+            addSnapshotterMenuItem.setOnAction(f -> {
+                try {
+                    addSnapshotter();
+                } catch (Exception e) {
+                    LOGGER.error("Adding Snapshotter entry", e);
+                }
+            });
+        }
+        return addSnapshotterMenuItem;
+    }
+
+    private void addSnapshotter() throws IOException {
+        Game game = GameImageLoaderFactory.getLoader(GameImageType.MLD)
+                .load(DandanatorMiniConstants.getSnapshotterStream());
+        game.setName(LocaleUtil.i18n("snapshotterName"));
+        addGame(game);
+    }
+
     public void exportDivIdeTapToFile() {
         DirectoryAwareFileChooser chooser = applicationContext.getFileChooser();
         final PlayerConfiguration configuration = PlayerConfiguration.getInstance();
@@ -1207,7 +1234,8 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 getExportPokesMenuItem(), getImportPokesMenuItem(),
                 getExportDivIdeTapMenuItem(), getUpgradeDivIdeTapMenuItem(),
                 getExportExtraRomMenuItem(),
-                getExportToWavsMenuItem());
+                getExportToWavsMenuItem(),
+                getAddSnapshotterMenuItem());
 
         updateRomUsage();
         previewUpdateTimer.start();
@@ -1231,7 +1259,8 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 getImportPokesMenuItem(),
                 getExportDivIdeTapMenuItem(),
                 getExportExtraRomMenuItem(),
-                getExportToWavsMenuItem());
+                getExportToWavsMenuItem(),
+                getAddSnapshotterMenuItem());
         applicationContext.getGameList().removeListener(updateImageListener);
         applicationContext.getGameList().removeListener(updateRomUsageListener);
         applicationContext = null;
