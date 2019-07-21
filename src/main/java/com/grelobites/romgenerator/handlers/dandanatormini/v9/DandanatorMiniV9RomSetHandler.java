@@ -325,10 +325,13 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 if (uncompresssedGame.equals(game.getRom())) {
                     break;
                 } else {
-                    LOGGER.debug("Skipping candidate ROM {}", uncompresssedGame);
+                    LOGGER.debug("Skipping candidate ROM {} with slot count {}",
+                            uncompresssedGame, uncompresssedGame.getSlotCount());
                     romSlot -= uncompresssedGame.getSlotCount();
+                    if (uncompresssedGame instanceof DanSnapGame) {
+                        romSlot -= ((DanSnapGame) uncompresssedGame).getReservedSlots();
+                    }
                 }
-
             }
         }
         LOGGER.debug("Calculated ROM slot as " + romSlot + " for ROM " + game.getRom());
