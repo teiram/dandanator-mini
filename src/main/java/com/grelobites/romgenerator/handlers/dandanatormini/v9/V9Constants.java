@@ -20,4 +20,7 @@ public class V9Constants {
     protected static final int DANTAP_COMMON_CODE_LENGTH = 162;
     protected static final int DANTAP_TABLE_CODE_LENGTH = 136;
     protected static int DANTAP_TAPTABLE_OFFSET = 2 + DANTAP_COMMON_CODE_LENGTH + DANTAP_TABLE_CODE_LENGTH;
+
+    protected static final int HEADER_7FFD_OFFSET = 29;
+    protected static final int HEADER_1FFD_OFFSET = 30;
 }

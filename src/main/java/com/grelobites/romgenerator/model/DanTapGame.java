@@ -7,10 +7,7 @@ import com.grelobites.romgenerator.util.Pair;
 import com.grelobites.romgenerator.util.Util;
 import com.grelobites.romgenerator.util.compress.Compressor;
 import javafx.beans.Observable;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +21,10 @@ import java.util.List;
 
 public class DanTapGame implements RamGame {
     private static final Logger LOGGER = LoggerFactory.getLogger(DanTapGame.class);
+
+    public static final int VALUE_7FFD_FORCE48 = (byte) 0x30;
+    public static final int VALUE_1FFD_FORCE48 = (byte) 0x10;
+
     private Compressor compressor = DandanatorMiniConfiguration.getInstance().getCompressor();
 
     protected StringProperty name;
@@ -34,6 +35,8 @@ public class DanTapGame implements RamGame {
     private List<byte[]> tapBlocks;
     private List<byte[]> slots;
     private DanTapTable tapTable;
+    private BooleanProperty force48kMode;
+
 
     private Pair<byte[], Boolean> prepareTapBlock(byte[] block) {
         try {
@@ -108,7 +111,7 @@ public class DanTapGame implements RamGame {
         this.tapBlocks = tapBlocks;
         this.hardwareMode = HardwareMode.HW_48K;
         this.name = new SimpleStringProperty();
-
+        this.force48kMode = new SimpleBooleanProperty(false);
         this.slots = new ArrayList<>();
         this.tapTable = new DanTapTable();
         prepareSlots();
@@ -219,6 +222,18 @@ public class DanTapGame implements RamGame {
         return tapTable;
     }
 
+    public boolean isForce48kMode() {
+        return force48kMode.get();
+    }
+
+    public BooleanProperty force48kModeProperty() {
+        return force48kMode;
+    }
+
+    public void setForce48kMode(boolean force48kMode) {
+        this.force48kMode.set(force48kMode);
+    }
+
     @Override
     public String toString() {
         return "DanTapGame{" +
@@ -226,6 +241,7 @@ public class DanTapGame implements RamGame {
                 ", gameType=" + gameType +
                 ", hardwareMode=" + hardwareMode +
                 ", size=" + size +
+                ", force48kMode=" + force48kMode +
                 '}';
     }
 }

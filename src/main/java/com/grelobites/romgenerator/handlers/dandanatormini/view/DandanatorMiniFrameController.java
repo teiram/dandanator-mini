@@ -345,6 +345,7 @@ public class DandanatorMiniFrameController {
             LOGGER.debug("Unbinding bidirectionally name property from game " + game);
             gameName.textProperty().unbindBidirectional(game.nameProperty());
             compressedSize.textProperty().unbind();
+            hardwareMode.textProperty().set("-");
 
             if (game instanceof SnapshotGame) {
                 SnapshotGame snapshotGame = (SnapshotGame) game;
@@ -359,6 +360,10 @@ public class DandanatorMiniFrameController {
                 DanSnapGame danGame = (DanSnapGame) game;
                 snapshotSize.selectedToggleProperty().removeListener(currentSnapshotSizeListener);
             }
+            if (game instanceof DanTapGame) {
+                DanTapGame tapGame = (DanTapGame) game;
+                gameForced48kModeAttribute.selectedProperty().unbindBidirectional(tapGame.force48kModeProperty());
+            }
         }
     }
 
@@ -369,8 +374,9 @@ public class DandanatorMiniFrameController {
             compressedSize.textProperty().bind(getGameSizeProperty(game).asString());
             if (game instanceof RamGame) {
                 RamGame ramGame = (RamGame) game;
-                LOGGER.debug("Binding hardware mode to " + ramGame.getHardwareMode().displayName());
-                hardwareMode.textProperty().set(ramGame.getHardwareMode().displayName());
+                if (!(game instanceof DanTapGame)) {
+                    hardwareMode.textProperty().set(ramGame.getHardwareMode().displayName());
+                }
             }
             if (game instanceof SnapshotGame) {
                 SnapshotGame snapshotGame = (SnapshotGame) game;
@@ -404,6 +410,10 @@ public class DandanatorMiniFrameController {
                         break;
                 }
                 snapshotSize.selectedToggleProperty().addListener(getCurrentSnapshotSizeListener(danGame));
+            }
+            if (game instanceof DanTapGame) {
+                DanTapGame tapGame = (DanTapGame) game;
+                gameForced48kModeAttribute.selectedProperty().bindBidirectional((tapGame.force48kModeProperty()));
             }
         }
     }
@@ -462,7 +472,7 @@ public class DandanatorMiniFrameController {
                     gameRomAttribute.setVisible(false);
                     gameHoldScreenAttribute.setVisible(false);
                     gameCompressedAttribute.setVisible(false);
-                    gameForced48kModeAttribute.setVisible(false);
+                    gameForced48kModeAttribute.setVisible(newGame instanceof DanTapGame);
                     romActiveAttributeLabel.setVisible(false);
                 }
                 danSnapSizeSelector.setVisible(newGame instanceof DanSnapGame);

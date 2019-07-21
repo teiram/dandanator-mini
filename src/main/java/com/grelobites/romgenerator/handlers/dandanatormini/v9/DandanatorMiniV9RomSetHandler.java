@@ -162,6 +162,12 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
             GameHeaderV6Serializer.serialize(snapshotGame, os);
             byte[] snaHeader = os.toByteArray();
             System.arraycopy(snaHeader, 0, paddedHeader, 0, snaHeader.length);
+        } else if (game instanceof DanTapGame) {
+            DanTapGame tapGame = (DanTapGame) game;
+            if (tapGame.isForce48kMode()) {
+                paddedHeader[V9Constants.HEADER_7FFD_OFFSET] = (byte) DanTapGame.VALUE_7FFD_FORCE48;
+                paddedHeader[V9Constants.HEADER_1FFD_OFFSET] = (byte) DanTapGame.VALUE_1FFD_FORCE48;
+            }
         }
         return paddedHeader;
     }

@@ -336,6 +336,7 @@ public class GameMapperV9 implements GameMapper {
                 case DAN_TAP:
                     try {
                         game = new DanTapGame(getDanTapGameBlocks());
+                        ((DanTapGame) game).setForce48kMode(isGameForce48kMode);
                     } catch (Exception e) {
                         LOGGER.error("Generating DanTap game from ROMset", e);
                     }
