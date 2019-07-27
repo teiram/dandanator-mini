@@ -144,16 +144,16 @@ public class MLDInfo {
             ByteBuffer buffer = ByteBuffer.wrap(data, MLD_HEADER_OFFSET, MLD_HEADER_SIZE);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             MLDInfo mldInfo = new MLDInfo();
-            mldInfo.setBaseSlot(Byte.valueOf(buffer.get()).intValue());
-            mldInfo.setMldType(Byte.valueOf(buffer.get()).intValue());
-            mldInfo.setRequiredSectors(Byte.valueOf(buffer.get()).intValue());
+            mldInfo.setBaseSlot(Byte.toUnsignedInt(buffer.get()));
+            mldInfo.setMldType(Byte.toUnsignedInt(buffer.get()));
+            mldInfo.setRequiredSectors(Byte.toUnsignedInt(buffer.get()));
             buffer.getInt(); //Skip four bytes
-            mldInfo.setTableOffset(Short.valueOf(buffer.getShort()).intValue());
-            mldInfo.setTableRowSize(Short.valueOf(buffer.getShort()).intValue());
-            mldInfo.setTableRows(Short.valueOf(buffer.getShort()).intValue());
-            mldInfo.setRowSlotOffset(Byte.valueOf(buffer.get()).intValue());
-            mldInfo.setCompressedScreenOffset(Short.valueOf(buffer.getShort()).intValue());
-            mldInfo.setCompressedScreenSize(Short.valueOf(buffer.getShort()).intValue());
+            mldInfo.setTableOffset(Short.toUnsignedInt(buffer.getShort()));
+            mldInfo.setTableRowSize(Short.toUnsignedInt(buffer.getShort()));
+            mldInfo.setTableRows(Short.toUnsignedInt(buffer.getShort()));
+            mldInfo.setRowSlotOffset(Byte.toUnsignedInt(buffer.get()));
+            mldInfo.setCompressedScreenOffset(Short.toUnsignedInt(buffer.getShort()));
+            mldInfo.setCompressedScreenSize(Short.toUnsignedInt(buffer.getShort()));
             LOGGER.debug("MLDInfo is {}", mldInfo);
             return Optional.of(mldInfo);
         } else {
