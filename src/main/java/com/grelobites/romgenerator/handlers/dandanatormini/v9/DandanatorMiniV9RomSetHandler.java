@@ -198,8 +198,8 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
             os.write(Z80Opcode.LD_NN_A(0));
             boolean interruptDisable = (snapshotGame.getGameHeader().getInterruptEnable() & 0x04) == 0;
 
-            os.write(Z80Opcode.NOP);
-            os.write(Z80Opcode.NOP);
+            os.write(Z80Opcode.INC_HL);
+            os.write(Z80Opcode.DEC_HL);
             os.write(Z80Opcode.NOP);
             os.write(interruptDisable ? Z80Opcode.DI : Z80Opcode.EI);
             os.write(Z80Opcode.JP_NN(retLocation));
