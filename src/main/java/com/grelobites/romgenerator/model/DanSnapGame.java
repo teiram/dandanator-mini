@@ -16,9 +16,9 @@ public class DanSnapGame extends MLDGame {
     private static final int SIGNATURE_16K = 0xc1;
     private static final int SIGNATURE_48K = 0xc3;
     private static final int SIGNATURE_128K = 0xc8;
-    private static final int SLOTS_16K = 1;
-    private static final int SLOTS_48K = 3;
-    private static final int SLOTS_128K = 8;
+    public static final int SLOTS_16K = 1;
+    public static final int SLOTS_48K = 3;
+    public static final int SLOTS_128K = 8;
 
     private IntegerProperty reservedSlots;
 

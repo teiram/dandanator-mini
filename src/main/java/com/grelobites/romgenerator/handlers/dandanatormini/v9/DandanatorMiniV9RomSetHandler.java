@@ -1053,9 +1053,22 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
     }
 
     private void addSnapshotter() throws IOException {
-        Game game = GameImageLoaderFactory.getLoader(GameImageType.MLD)
+        DanSnapGame game = (DanSnapGame) GameImageLoaderFactory
+                .getLoader(GameImageType.MLD)
                 .load(DandanatorMiniConstants.getSnapshotterStream());
         game.setName(LocaleUtil.i18n("snapshotterName"));
+        Configuration configuration = Configuration.getInstance();
+        LOGGER.debug("TAP Loader target is {}", configuration.getTapLoaderTarget());
+        switch (configuration.getTapLoaderTarget()) {
+            case "HW_16K":
+                game.setReservedSlots(DanSnapGame.SLOTS_16K);
+                break;
+            case "HW_48K":
+                game.setReservedSlots(DanSnapGame.SLOTS_48K);
+                break;
+            default:
+                game.setReservedSlots(DanSnapGame.SLOTS_128K);
+        }
         addGame(game);
     }
 
