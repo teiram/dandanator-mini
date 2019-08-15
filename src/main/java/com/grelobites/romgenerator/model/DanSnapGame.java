@@ -13,9 +13,9 @@ public class DanSnapGame extends MLDGame {
     private static final Logger LOGGER = LoggerFactory.getLogger(DanSnapGame.class);
     private static final int MLDINFO_SLOT = 0;
     private static final int GAMETYPE_OFFSET = 16363;
-    private static final byte SIGNATURE_16K = (byte) 0xc1;
-    private static final byte SIGNATURE_48K = (byte) 0xc3;
-    private static final byte SIGNATURE_128K = (byte) 0xc8;
+    private static final int SIGNATURE_16K = 0xc1;
+    private static final int SIGNATURE_48K = 0xc3;
+    private static final int SIGNATURE_128K = 0xc8;
     private static final int SLOTS_16K = 1;
     private static final int SLOTS_48K = 3;
     private static final int SLOTS_128K = 8;
@@ -24,36 +24,37 @@ public class DanSnapGame extends MLDGame {
 
     public DanSnapGame(MLDInfo mldInfo, List<byte[]> data) {
         super(mldInfo, data);
-        LOGGER.debug("New DanSnapGame");
+        LOGGER.debug("New DanSnapGame with slots {}, mldType {}", this.data.size(), mldInfo.getMldType());
         reservedSlots = new SimpleIntegerProperty();
         switch (mldInfo.getMldType()) {
             case SIGNATURE_16K:
-                reservedSlots.set(1);
+                reservedSlots.set(SLOTS_16K);
                 break;
             case SIGNATURE_48K:
-                reservedSlots.set(3);
+                reservedSlots.set(SLOTS_48K);
                 break;
             case SIGNATURE_128K:
-                reservedSlots.set(8);
+                reservedSlots.set(SLOTS_128K);
                 break;
         }
         setSize(calculateSize());
+        LOGGER.debug("DanSnapGame size calculated as {}", getSize());
         reservedSlots.addListener((observable, oldValue, newValue) -> {
             switch (newValue.intValue()) {
                 case SLOTS_16K:
-                    getSlot(MLDINFO_SLOT)[GAMETYPE_OFFSET] = SIGNATURE_16K;
+                    getSlot(MLDINFO_SLOT)[GAMETYPE_OFFSET] = Integer.valueOf(SIGNATURE_16K).byteValue();
                     getMldInfo().setMldType(SIGNATURE_16K);
                     setHardwareMode(HardwareMode.HW_16K);
                     gameType = GameType.DAN_SNAP16;
                     break;
                 case SLOTS_48K:
-                    getSlot(MLDINFO_SLOT)[GAMETYPE_OFFSET] = SIGNATURE_48K;
+                    getSlot(MLDINFO_SLOT)[GAMETYPE_OFFSET] = Integer.valueOf(SIGNATURE_48K).byteValue();
                     getMldInfo().setMldType(SIGNATURE_48K);
                     setHardwareMode(HardwareMode.HW_48K);
                     gameType = GameType.DAN_SNAP;
                     break;
                 case SLOTS_128K:
-                    getSlot(MLDINFO_SLOT)[GAMETYPE_OFFSET] = SIGNATURE_128K;
+                    getSlot(MLDINFO_SLOT)[GAMETYPE_OFFSET] = Integer.valueOf(SIGNATURE_128K).byteValue();
                     getMldInfo().setMldType(SIGNATURE_128K);
                     setHardwareMode(HardwareMode.HW_128K);
                     gameType = GameType.DAN_SNAP128;
@@ -79,6 +80,7 @@ public class DanSnapGame extends MLDGame {
     }
 
     public int calculateSize() {
+        LOGGER.debug("Calculating DanSnap size with slot Count {} and reserved slots {}", getSlotCount(), reservedSlots.get());
         return (getSlotCount() + reservedSlots.getValue()) * Constants.SLOT_SIZE;
     }
 
