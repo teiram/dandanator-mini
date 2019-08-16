@@ -176,7 +176,7 @@ public class GameMapperV9 implements GameMapper {
         for (int index = 0; index < blocks.size(); index++) {
             GameBlock block = blocks.get(index);
             LOGGER.debug("Adding game slot for game " + name + ": " + block);
-            if (index == DandanatorMiniConstants.GAME_CHUNK_SLOT) {
+            if (index == gameType.chunkSlot()) {
                 gameSlots.add(Util.concatArrays(block.getData(), gameChunk.getData()));
             } else {
                 gameSlots.add(block.getData());

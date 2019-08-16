@@ -424,6 +424,7 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
     }
 
     private static GameChunk getCompressedGameChunk(SnapshotGame game, int cBlockOffset) throws IOException {
+        LOGGER.debug("Calculating compressed chunk for game {}", game);
         try (ByteArrayOutputStream compressedChunk = new ByteArrayOutputStream()) {
             OutputStream compressingOs = Util.getCompressor().getCompressingOutputStream(compressedChunk);
             compressingOs.write(game.getSlot(game.getType().chunkSlot()),
