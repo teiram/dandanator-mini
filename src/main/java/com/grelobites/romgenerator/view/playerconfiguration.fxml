@@ -6,12 +6,13 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="15.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PlayerConfigurationController">
+<VBox spacing="15.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PlayerConfigurationController">
    <children>
       <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
          <children>
@@ -94,6 +95,13 @@
          <padding>
             <Insets left="5.0" right="5.0" />
          </padding>
+      </HBox>
+      <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
+         <children>
+            <CheckBox fx:id="useSocket" mnemonicParsing="false" text="%bySocket" />
+            <TextField fx:id="socketHostname" />
+            <TextField fx:id="socketPort" prefColumnCount="4" />
+         </children>
       </HBox>
    </children>
    <padding>

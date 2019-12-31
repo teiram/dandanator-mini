@@ -36,6 +36,10 @@ public class PlayerConfiguration {
     private static final String REVERSEPHASE_PROPERTY = "reversePhase";
     private static final String AUDIOMIXERNAME_PROPERTY = "audioMixerName";
 
+    private static final String USESOCKET_PROPERTY = "useSocket";
+    private static final String SOCKETHOSTNAME_PROPERTY = "socketHostname";
+    private static final String SOCKETPORT_PROPERTY = "socketPort";
+
     private static final int DEFAULT_AUDIO_SAMPLE_RATE = 48000;
     private static final int DEFAULT_BLOCKSIZE = 0x8000;
     private static final String DEFAULT_AUDIOMODE = "STEREOINV";
@@ -63,6 +67,10 @@ public class PlayerConfiguration {
     private BooleanProperty boostLevel;
     private StringProperty audioMixerName;
 
+    private BooleanProperty useSocket;
+    private StringProperty socketHostname;
+    private IntegerProperty socketPort;
+
     private static Image cassetteImage;
     private static Image kempstonImage;
 
@@ -84,6 +92,10 @@ public class PlayerConfiguration {
         boostLevel = new SimpleBooleanProperty(false);
         audioMixerName = new SimpleStringProperty(null);
 
+        useSocket = new SimpleBooleanProperty(true);
+        socketHostname = new SimpleStringProperty(null);
+        socketPort = new SimpleIntegerProperty(0);
+
         audioMode.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 AUDIOMODE_PROPERTY, newValue));
         encodingSpeed.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
@@ -103,6 +115,12 @@ public class PlayerConfiguration {
         audioMixerName.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 AUDIOMIXERNAME_PROPERTY, newValue));
 
+        useSocket.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                USESOCKET_PROPERTY, newValue.toString()));
+        socketHostname.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                SOCKETHOSTNAME_PROPERTY, newValue));
+        socketPort.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                SOCKETPORT_PROPERTY, newValue.toString()));
     }
 
     public static PlayerConfiguration getInstance() {
@@ -302,6 +320,42 @@ public class PlayerConfiguration {
         return AudioSystem.getMixer(mixerInfos[0]);
     }
 
+    public boolean isUseSocket() {
+        return useSocket.get();
+    }
+
+    public BooleanProperty useSocketProperty() {
+        return useSocket;
+    }
+
+    public void setUseSocket(boolean useSocket) {
+        this.useSocket.set(useSocket);
+    }
+
+    public String getSocketHostname() {
+        return socketHostname.get();
+    }
+
+    public StringProperty socketHostnameProperty() {
+        return socketHostname;
+    }
+
+    public void setSocketHostname(String socketHostname) {
+        this.socketHostname.set(socketHostname);
+    }
+
+    public int getSocketPort() {
+        return socketPort.get();
+    }
+
+    public IntegerProperty socketPortProperty() {
+        return socketPort;
+    }
+
+    public void setSocketPort(int socketPort) {
+        this.socketPort.set(socketPort);
+    }
+
     public int getPreferredAudioSampleRate() {
         int sampleRate = DEFAULT_AUDIO_SAMPLE_RATE;
         Mixer mixer =  getAudioMixer(getAudioMixerName());
@@ -365,6 +419,12 @@ public class PlayerConfiguration {
         configuration.reversePhase.set(p.getBoolean(REVERSEPHASE_PROPERTY, false));
         configuration.boostLevel.set(p.getBoolean(BOOSTLEVEL_PROPERTY, false));
         configuration.audioMixerName.set(p.get(AUDIOMIXERNAME_PROPERTY, null));
+        LOGGER.debug("values in configuration are {}, {},{}",
+            p.getBoolean(USESOCKET_PROPERTY, true), p.get(SOCKETHOSTNAME_PROPERTY, null),
+                p.get(SOCKETPORT_PROPERTY, null));
+        configuration.useSocket.set(p.getBoolean(USESOCKET_PROPERTY, true));
+        configuration.socketHostname.set(p.get(SOCKETHOSTNAME_PROPERTY, null));
+        configuration.socketPort.set(p.getInt(SOCKETPORT_PROPERTY, 8086));
         return configuration;
     }
 

@@ -10,10 +10,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import jssc.SerialPortList;
@@ -80,6 +77,16 @@ public class PlayerConfigurationController {
 
     @FXML
     private ComboBox<String> audioMixer;
+
+    @FXML
+    private CheckBox useSocket;
+
+    @FXML
+    private TextField socketHostname;
+
+    @FXML
+    private TextField socketPort;
+
 
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
@@ -207,7 +214,7 @@ public class PlayerConfigurationController {
             if (newValue) {
                 useTargetFeedback.setSelected(false);
             } else {
-                sendLoader.setSelected(true);
+                sendLoader.setSelected(!useSocket.isSelected());
             }
             useTargetFeedback.setDisable(newValue);
             encodingSpeed.setDisable(newValue);
@@ -266,5 +273,26 @@ public class PlayerConfigurationController {
                 (observable, oldValue, newValue) -> configuration.setAudioMixerName(newValue));
         audioMixer.disableProperty().bind(sendLoader.selectedProperty().not()
                 .and(useSerialPort.disabledProperty().not()));
+
+        useSocket.selectedProperty().set(configuration.isUseSocket());
+        useSocket.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            configuration.setUseSocket(newValue);
+            sendLoader.selectedProperty().setValue(!newValue);
+        });
+
+        socketHostname.textProperty().bindBidirectional(configuration.socketHostnameProperty());
+        socketPort.textProperty().setValue(Integer.toString(configuration.getSocketPort()));
+
+        socketPort.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                try {
+                    configuration.setSocketPort(Integer.parseInt(newValue));
+                } catch (Exception e) {
+                    LOGGER.error("Trying to parse {} as integer", newValue, e);
+                }
+            }
+        });
+
+
     }
 }

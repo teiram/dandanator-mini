@@ -6,11 +6,7 @@ import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConfiguration;
 import com.grelobites.romgenerator.util.Util;
-import com.grelobites.romgenerator.util.player.AudioDataPlayer;
-import com.grelobites.romgenerator.util.player.DataPlayer;
-import com.grelobites.romgenerator.util.player.FrequencyDetector;
-import com.grelobites.romgenerator.util.player.SampledAudioDataPlayer;
-import com.grelobites.romgenerator.util.player.SerialDataPlayer;
+import com.grelobites.romgenerator.util.player.*;
 import javafx.animation.FadeTransition;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -157,7 +153,6 @@ public class PlayerController {
     }
 
     private DataPlayer getBootstrapMediaPlayer() throws IOException {
-        //return new AudioDataPlayer(mediaView);
         return new SampledAudioDataPlayer();
     }
 
@@ -166,7 +161,10 @@ public class PlayerController {
         byte[] buffer = new byte[blockSize];
         System.arraycopy(getRomsetByteArray(), block * blockSize, buffer, 0, blockSize);
 
-        return configuration.isUseSerialPort() ?
+        //TODO: Fix this with a single configuration supporting all cases
+        return configuration.isUseSocket() ?
+                new SocketDataPlayer(block, buffer)
+                : configuration.isUseSerialPort() ?
                 new SerialDataPlayer(block, buffer) :
                 //new AudioDataPlayer(mediaView, block,  buffer);
                 new SampledAudioDataPlayer(block, buffer);
