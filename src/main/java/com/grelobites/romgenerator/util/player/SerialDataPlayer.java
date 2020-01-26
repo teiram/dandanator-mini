@@ -56,7 +56,7 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
     private void serialSendData() {
         try {
             serialPort.openPort();
-            serialPort.setParams(SerialPort.BAUDRATE_57600, SerialPort.DATABITS_8, SerialPort.STOPBITS_2,
+            serialPort.setParams(configuration.getSerialSpeed(), SerialPort.DATABITS_8, SerialPort.STOPBITS_2,
                     SerialPort.PARITY_NONE);
 
             //Give time to some crappy serial ports to stabilize

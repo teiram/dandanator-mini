@@ -87,6 +87,8 @@ public class PlayerConfigurationController {
     @FXML
     private TextField socketPort;
 
+    @FXML
+    private TextField serialSpeed;
 
     private boolean isReadableFile(File file) {
         return file.canRead() && file.isFile();
@@ -292,6 +294,19 @@ public class PlayerConfigurationController {
                 }
             }
         });
+
+        serialSpeed.textProperty().setValue(Integer.toString(configuration.getSerialSpeed()));
+
+        serialSpeed.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                try {
+                    configuration.setSerialSpeed(Integer.parseInt(newValue));
+                } catch (Exception e) {
+                    LOGGER.error("Trying to parse {} as integer", newValue, e);
+                }
+            }
+        });
+
 
 
     }

@@ -96,7 +96,19 @@
             <Insets left="5.0" right="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
+      <HBox alignment="CENTER_LEFT" prefHeight="39.0" prefWidth="550.0">
+         <children>
+            <Label maxWidth="1.7976931348623157E308" text="%serialSpeed" textAlignment="CENTER" HBox.hgrow="SOMETIMES" />
+            <TextField fx:id="serialSpeed" />
+         </children>
+         <padding>
+            <Insets left="10.0" right="10.0" />
+         </padding>
+         <VBox.margin>
+            <Insets right="10.0" />
+         </VBox.margin>
+      </HBox>
+      <HBox alignment="CENTER_LEFT" prefHeight="51.0" prefWidth="560.0" spacing="20.0">
          <children>
             <CheckBox fx:id="useSocket" mnemonicParsing="false" text="%bySocket" />
             <TextField fx:id="socketHostname" />

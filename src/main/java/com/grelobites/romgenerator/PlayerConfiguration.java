@@ -36,6 +36,7 @@ public class PlayerConfiguration {
     private static final String REVERSEPHASE_PROPERTY = "reversePhase";
     private static final String AUDIOMIXERNAME_PROPERTY = "audioMixerName";
 
+    private static final String SERIALSPEED_PROPERTY = "serialSpeed";
     private static final String USESOCKET_PROPERTY = "useSocket";
     private static final String SOCKETHOSTNAME_PROPERTY = "socketHostname";
     private static final String SOCKETPORT_PROPERTY = "socketPort";
@@ -47,6 +48,7 @@ public class PlayerConfiguration {
     private static final int DEFAULT_PILOTLENGTH = 500;
     private static final int DEFAULT_TRAILLENGTH = 250;
     private static final int DEFAULT_RECORDINGPAUSE = 3000;
+    private static final int DEFAULT_SERIAL_SPEED = 57600;
     private static final String CASSETE_IMAGE_RESOURCE = "/player/cassette.jpg";
     private static final String KEMPSTON_IMAGE_RESOURCE = "/player/kempston.png";
 
@@ -62,6 +64,7 @@ public class PlayerConfiguration {
     private BooleanProperty useSerialPort;
     private StringProperty serialPort;
     private StringProperty customRomSetPath;
+    private IntegerProperty serialSpeed;
     private BooleanProperty sendLoader;
     private BooleanProperty reversePhase;
     private BooleanProperty boostLevel;
@@ -91,7 +94,7 @@ public class PlayerConfiguration {
         reversePhase = new SimpleBooleanProperty(false);
         boostLevel = new SimpleBooleanProperty(false);
         audioMixerName = new SimpleStringProperty(null);
-
+        serialSpeed = new SimpleIntegerProperty(DEFAULT_SERIAL_SPEED);
         useSocket = new SimpleBooleanProperty(true);
         socketHostname = new SimpleStringProperty(null);
         socketPort = new SimpleIntegerProperty(0);
@@ -121,6 +124,9 @@ public class PlayerConfiguration {
                 SOCKETHOSTNAME_PROPERTY, newValue));
         socketPort.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
                 SOCKETPORT_PROPERTY, newValue.toString()));
+
+        serialSpeed.addListener((observable, oldValue, newValue) -> persistConfigurationValue(
+                SERIALSPEED_PROPERTY, newValue.toString()));
     }
 
     public static PlayerConfiguration getInstance() {
@@ -354,6 +360,18 @@ public class PlayerConfiguration {
 
     public void setSocketPort(int socketPort) {
         this.socketPort.set(socketPort);
+    }
+
+    public int getSerialSpeed() {
+        return serialSpeed.get();
+    }
+
+    public IntegerProperty serialSpeedProperty() {
+        return serialSpeed;
+    }
+
+    public void setSerialSpeed(int serialSpeed) {
+        this.serialSpeed.set(serialSpeed);
     }
 
     public int getPreferredAudioSampleRate() {
