@@ -6,7 +6,6 @@ import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import jssc.SerialPort;
-import jssc.SerialPortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,10 +17,10 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
     private static final Logger LOGGER = LoggerFactory.getLogger(SerialDataPlayer.class);
     private static final String SERVICE_THREAD_NAME = "SerialPortServiceThread";
     private static PlayerConfiguration configuration = PlayerConfiguration.getInstance();
+    private static SerialPort sharedSerialPort = new SerialPort(configuration.getSerialPort());
     private static final int SEND_BUFFER_SIZE = 1024;
 
     private Thread serviceThread;
-    private SerialPort serialPort;
     private Runnable onFinalization;
     private DoubleProperty progressProperty;
     private byte[] data;
@@ -34,7 +33,6 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
 
     private void init() {
         progressProperty = new SimpleDoubleProperty(0.0);
-        serialPort =  new SerialPort(configuration.getSerialPort());
         serviceThread = new Thread(null, this::serialSendData, SERVICE_THREAD_NAME);
     }
 
@@ -55,12 +53,13 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
 
     private void serialSendData() {
         try {
-            serialPort.openPort();
-            serialPort.setParams(configuration.getSerialSpeed(), SerialPort.DATABITS_8, SerialPort.STOPBITS_2,
-                    SerialPort.PARITY_NONE);
-
-            //Give time to some crappy serial ports to stabilize
-            Thread.sleep(50);
+            if (!sharedSerialPort.isOpened()) {
+                sharedSerialPort.openPort();
+                sharedSerialPort.setParams(configuration.getSerialSpeed(), SerialPort.DATABITS_8, SerialPort.STOPBITS_2,
+                        SerialPort.PARITY_NONE);
+                //Give time to some crappy serial ports to stabilize
+                Thread.sleep(1000);
+            }
 
             int sent = 0;
             ByteArrayInputStream bis = new ByteArrayInputStream(data);
@@ -69,9 +68,9 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
                 int count = bis.read(sendBuffer);
                 LOGGER.debug("Sending block of " + count + " bytes");
                 if (count < SEND_BUFFER_SIZE) {
-                    serialPort.writeBytes(Arrays.copyOfRange(sendBuffer, 0, count));
+                    sharedSerialPort.writeBytes(Arrays.copyOfRange(sendBuffer, 0, count));
                 } else {
-                    serialPort.writeBytes(sendBuffer);
+                    sharedSerialPort.writeBytes(sendBuffer);
                 }
                 sent += count;
                 final double progress = 1.0 * sent / data.length;
@@ -90,14 +89,6 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
         } catch (Exception e) {
             LOGGER.error("Exception during send process", e);
             state = State.STOPPED;
-        } finally {
-            try {
-                if (serialPort.isOpened()) {
-                    serialPort.closePort();
-                }
-            } catch (SerialPortException e) {
-                LOGGER.error("Closing port", e);
-            }
         }
     }
 
@@ -119,6 +110,13 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
                 } catch (InterruptedException e) {
                     LOGGER.debug("Serial thread was interrupted", e);
                 }
+            }
+            try {
+                if (sharedSerialPort.isOpened()) {
+                    sharedSerialPort.closePort();
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Closing serial port", e);
             }
         }
     }

@@ -166,7 +166,6 @@ public class PlayerController {
                 new SocketDataPlayer(block, buffer)
                 : configuration.isUseSerialPort() ?
                 new SerialDataPlayer(block, buffer) :
-                //new AudioDataPlayer(mediaView, block,  buffer);
                 new SampledAudioDataPlayer(block, buffer);
     }
 
