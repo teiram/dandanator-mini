@@ -58,7 +58,7 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
                 sharedSerialPort.setParams(configuration.getSerialSpeed(), SerialPort.DATABITS_8, SerialPort.STOPBITS_2,
                         SerialPort.PARITY_NONE);
                 //Give time to some crappy serial ports to stabilize
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             }
 
             int sent = 0;
@@ -111,13 +111,15 @@ public class SerialDataPlayer extends DataPlayerSupport implements DataPlayer {
                     LOGGER.debug("Serial thread was interrupted", e);
                 }
             }
-            try {
-                if (sharedSerialPort.isOpened()) {
-                    sharedSerialPort.closePort();
-                }
-            } catch (Exception e) {
-                LOGGER.warn("Closing serial port", e);
+        }
+        //Try to close the port anyway
+        try {
+            if (sharedSerialPort.isOpened()) {
+                LOGGER.debug("Closing serial port");
+                sharedSerialPort.closePort();
             }
+        } catch (Exception e) {
+            LOGGER.warn("Closing serial port", e);
         }
     }
 
