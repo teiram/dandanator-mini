@@ -883,8 +883,7 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         }
         if (numPages > 1) {
             screen.setPen(ZxColor.WHITE);
-            String pageInfo = numPages > 1 ?
-                    String.format("%d/%d", page, numPages) : "";
+            String pageInfo = String.format("%d/%d", page, numPages);
             String keyInfo = "SPC - ";
             screen.printLine(keyInfo, line, screen.getColumns() - pageInfo.length() - keyInfo.length());
             screen.setPen(ZxColor.YELLOW);
