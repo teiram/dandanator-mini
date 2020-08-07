@@ -201,6 +201,10 @@ public class SnapshotGame extends BaseGame implements RamGame {
         }
     }
 
+    public void recompressSlot(int slot, RamGameCompressor compressor) {
+        compressedData.set(slot, compressor.compressSlot(getType(), slot, getSlot(slot)));
+    }
+
 	public List<byte[]> getCompressedData(RamGameCompressor compressor) throws IOException {
 	    if (compressedData == null) {
             CountDownLatch counter =  new CountDownLatch(getSlotCount());
