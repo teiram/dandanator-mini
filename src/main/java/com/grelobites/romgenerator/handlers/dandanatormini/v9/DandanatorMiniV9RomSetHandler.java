@@ -176,11 +176,17 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         int location = GameUtil.findInGameRam(game, Z80Opcode.RET);
         LOGGER.debug("Found RET opcode at offset 0x" + Integer.toHexString(location));
         if (location < 0) {
+            if (game.isSlotZeroed(0)) {
+                LOGGER.warn("Switching to a non-zeroed screen slot for RET injection");
+                game.setSlot(0, new byte[Constants.SLOT_SIZE]);
+            }
             byte[] screenSlot = game.getSlot(0);
             location = ImageUtil.getHiddenDisplayOffset(screenSlot, 1)
                     .orElse(Constants.SPECTRUM_SCREEN_SIZE - 1);
             LOGGER.debug("Injecting RET opcode at screen offset 0x" + Integer.toHexString(location));
             screenSlot[location] = Z80Opcode.RET;
+            LOGGER.debug("Recompressing slot after RET injection");
+            game.recompressSlot(0, ramGameCompressor);
             location += Constants.SLOT_SIZE;
         }
         LOGGER.debug("RET location calculated as 0x" + Integer.toHexString(location));
