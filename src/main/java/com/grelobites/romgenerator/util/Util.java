@@ -178,6 +178,11 @@ public class Util {
         }
     }
 
+
+    public static String asByteHexString(int value) {
+        return String.format("0x%02x", value & 0xff);
+    }
+
     public static int getBlockCrc16(byte data[], int blockSize) {
         int sum = 0;
         for (int i = 0; i < blockSize; i++) {
