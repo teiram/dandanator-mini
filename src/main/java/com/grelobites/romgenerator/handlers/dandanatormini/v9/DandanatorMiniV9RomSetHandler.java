@@ -871,6 +871,19 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         });
     }
 
+    public Future<OperationResult> addFirstGame(Game game) {
+        return getApplicationContext().addBackgroundTask(() -> {
+            try {
+                //Force compression calculation
+                prepareAddedGame(game);
+                Platform.runLater(() -> getApplicationContext().getGameList().add(0, game));
+            } catch (Exception e) {
+                LOGGER.error("Calculating game size", e);
+            }
+            return OperationResult.successResult();
+        });
+    }
+
     @Override
     public void removeGame(Game game) {
         if (game.getType() == GameType.ROM) {
@@ -1060,7 +1073,7 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         return addSnapshotterMenuItem;
     }
 
-    private MenuItem getAddMultiplyeMldMenuItem() {
+    private MenuItem getAddMultiplyMldMenuItem() {
         if (addMultiplyMldMenuItem == null) {
             addMultiplyMldMenuItem = new MenuItem(LocaleUtil.i18n("addMultiplyMldMenuEntry"));
             addMultiplyMldMenuItem.setOnAction(f -> {
@@ -1078,7 +1091,8 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         Game game = GameImageLoaderFactory.getLoader(GameImageType.MLD)
                 .load(DandanatorMiniConstants.getMultiplyMldStream());
         game.setName(LocaleUtil.i18n("multiplyMldName"));
-        addGame(game);
+        DandanatorMiniConfiguration.getInstance().setAutoboot(true);
+        addFirstGame(game);
     }
 
     private void addSnapshotter() throws IOException {
@@ -1287,7 +1301,7 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 getExportExtraRomMenuItem(),
                 getExportToWavsMenuItem(),
                 getAddSnapshotterMenuItem(),
-                getAddMultiplyeMldMenuItem());
+                getAddMultiplyMldMenuItem());
 
         updateRomUsage();
         previewUpdateTimer.start();
@@ -1312,7 +1326,8 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 getExportDivIdeTapMenuItem(),
                 getExportExtraRomMenuItem(),
                 getExportToWavsMenuItem(),
-                getAddSnapshotterMenuItem());
+                getAddSnapshotterMenuItem(),
+                getAddMultiplyMldMenuItem());
         applicationContext.getGameList().removeListener(updateImageListener);
         applicationContext.getGameList().removeListener(updateRomUsageListener);
         applicationContext = null;
