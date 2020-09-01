@@ -7,6 +7,7 @@ import java.util.Locale;
 import com.grelobites.romgenerator.util.LocaleUtil;
 import com.grelobites.romgenerator.util.PreferencesProvider;
 import com.grelobites.romgenerator.view.MainAppController;
+import com.grelobites.romgenerator.view.MultiplyUpgradeController;
 import com.grelobites.romgenerator.view.util.DirectoryAwareFileChooser;
 import de.codecentric.centerdevice.MenuToolkit;
 import javafx.application.Application;
@@ -24,6 +25,7 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -41,6 +43,10 @@ public class MainApp extends Application {
     private MenuToolkit menuToolkit;
     private ApplicationContext applicationContext;
 
+    private Stage multiplyUpdaterStage;
+    private VBox multiplyUpdaterPane;
+    private MultiplyUpgradeController multiplyUpdaterController;
+
     private void populateMenuBar(MenuBar menuBar, Scene scene, ApplicationContext applicationContext) {
         Menu fileMenu = new Menu(LocaleUtil.i18n("fileMenuTitle"));
 
@@ -57,6 +63,7 @@ public class MainApp extends Application {
         }
 
         Menu extraMenu = new Menu(LocaleUtil.i18n("extraMenuTitle"));
+        extraMenu.getItems().add(multiplyUpdaterMenuItem(applicationContext));
         extraMenu.visibleProperty().bind(Bindings.size(extraMenu.getItems()).greaterThan(0));
         applicationContext.setExtraMenu(extraMenu);
 
@@ -135,7 +142,22 @@ public class MainApp extends Application {
         return importRomSet;
     }
 
-	public static void main(String[] args) {
+    private MenuItem multiplyUpdaterMenuItem(ApplicationContext applicationContext) {
+        MenuItem cpldProgrammer = new MenuItem(LocaleUtil.i18n("multiplyUpdaterMenuEntry"));
+
+        cpldProgrammer.disableProperty().bind(applicationContext
+                .backgroundTaskCountProperty().greaterThan(0));
+        cpldProgrammer.setOnAction(f -> {
+            try {
+                getMultiplyUpdaterStage().show();
+            } catch (Exception e) {
+                LOGGER.error("Trying to show Multiply Updater Stage", e);
+            }
+        });
+        return cpldProgrammer;
+    }
+
+    public static void main(String[] args) {
 		launch(args);
 	}
 
@@ -270,7 +292,34 @@ public class MainApp extends Application {
         return loader.load();
     }
 
-	private void initRootLayout() {
+    private VBox getMultiplyUpdaterPane() throws IOException {
+        if (multiplyUpdaterPane == null) {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(MainApp.class.getResource("view/multiplyUpdater.fxml"));
+            loader.setResources(LocaleUtil.getBundle());
+            multiplyUpdaterController = new MultiplyUpgradeController(applicationContext);
+            loader.setController(multiplyUpdaterController);
+            multiplyUpdaterPane = loader.load();
+        }
+        return multiplyUpdaterPane;
+    }
+
+    private Stage getMultiplyUpdaterStage() throws IOException {
+        if (multiplyUpdaterStage == null) {
+            multiplyUpdaterStage = new Stage();
+            Scene scene = new Scene(getMultiplyUpdaterPane());
+            scene.getStylesheets().add(Constants.getThemeResourceUrl());
+            multiplyUpdaterStage.setScene(scene);
+            multiplyUpdaterStage.setTitle(LocaleUtil.i18n("multiplyUpdaterStageTitle"));
+            multiplyUpdaterStage.initModality(Modality.APPLICATION_MODAL);
+            multiplyUpdaterStage.initOwner(primaryStage.getOwner());
+            multiplyUpdaterStage.setResizable(false);
+            multiplyUpdaterStage.setOnHiding((e) -> multiplyUpdaterController.resetView());
+        }
+        return multiplyUpdaterStage;
+    }
+
+    private void initRootLayout() {
 		try {
 		    applicationContext = new ApplicationContext();
             primaryStage.titleProperty().bind(applicationContext.applicationTitleProperty());

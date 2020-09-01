@@ -58,6 +58,8 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
     protected MenuItem exportExtraRomMenuItem;
     protected MenuItem upgradeDivIdeTapMenuItem;
     protected MenuItem addSnapshotterMenuItem;
+    protected MenuItem addMultiplyMldMenuItem;
+
     private BooleanProperty generationAllowedProperty = new SimpleBooleanProperty(false);
 
 
@@ -1058,6 +1060,27 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
         return addSnapshotterMenuItem;
     }
 
+    private MenuItem getAddMultiplyeMldMenuItem() {
+        if (addMultiplyMldMenuItem == null) {
+            addMultiplyMldMenuItem = new MenuItem(LocaleUtil.i18n("addMultiplyMldMenuEntry"));
+            addMultiplyMldMenuItem.setOnAction(f -> {
+                try {
+                    addMultiplyMld();
+                } catch (Exception e) {
+                    LOGGER.error("Adding Multiply MLD entry", e);
+                }
+            });
+        }
+        return addMultiplyMldMenuItem;
+    }
+
+    private void addMultiplyMld() throws IOException {
+        Game game = GameImageLoaderFactory.getLoader(GameImageType.MLD)
+                .load(DandanatorMiniConstants.getMultiplyMldStream());
+        game.setName(LocaleUtil.i18n("multiplyMldName"));
+        addGame(game);
+    }
+
     private void addSnapshotter() throws IOException {
         DanSnapGame game = (DanSnapGame) GameImageLoaderFactory
                 .getLoader(GameImageType.MLD)
@@ -1263,7 +1286,8 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
                 getExportDivIdeTapMenuItem(), getUpgradeDivIdeTapMenuItem(),
                 getExportExtraRomMenuItem(),
                 getExportToWavsMenuItem(),
-                getAddSnapshotterMenuItem());
+                getAddSnapshotterMenuItem(),
+                getAddMultiplyeMldMenuItem());
 
         updateRomUsage();
         previewUpdateTimer.start();

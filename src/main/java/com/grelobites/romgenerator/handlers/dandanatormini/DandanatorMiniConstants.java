@@ -45,6 +45,8 @@ public class DandanatorMiniConstants {
     private static final String DIVIDE_LOADER_RESOURCE = "dandanator-mini/divide-loader.bin";
     private static final String SLOT1_ROM_RESOURCE = "dandanator-mini/slot1.rom";
     private static final String DANSNAP_MLD_RESOURCE = "dan-snap/snapshotter.mld";
+    private static final String MULTIPLY_MLD_RESOURCE = "multiply/multiply.mld";
+
 
     public static final int POKE_TARGET_ADDRESS = 25259;
     public static final int GAME_CHUNK_SIZE = 256;
@@ -126,5 +128,10 @@ public class DandanatorMiniConstants {
     public static InputStream getSnapshotterStream() throws IOException {
         return DandanatorMiniConstants.class.getClassLoader()
             .getResourceAsStream(DANSNAP_MLD_RESOURCE);
+    }
+
+    public static InputStream getMultiplyMldStream() throws IOException {
+        return DandanatorMiniConstants.class.getClassLoader()
+                .getResourceAsStream(MULTIPLY_MLD_RESOURCE);
     }
 }
