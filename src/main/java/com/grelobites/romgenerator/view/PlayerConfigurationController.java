@@ -276,6 +276,7 @@ public class PlayerConfigurationController {
         audioMixer.disableProperty().bind(sendLoader.selectedProperty().not()
                 .and(useSerialPort.disabledProperty().not()));
 
+        /*
         useSocket.selectedProperty().set(configuration.isUseSocket());
         useSocket.selectedProperty().addListener((observable, oldValue, newValue) -> {
             configuration.setUseSocket(newValue);
@@ -294,7 +295,7 @@ public class PlayerConfigurationController {
                 }
             }
         });
-
+        */
         serialSpeed.textProperty().setValue(Integer.toString(configuration.getSerialSpeed()));
 
         serialSpeed.textProperty().addListener((observable, oldValue, newValue) -> {
