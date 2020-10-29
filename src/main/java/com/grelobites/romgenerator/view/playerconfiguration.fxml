@@ -96,7 +96,7 @@
             <Insets left="5.0" right="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="39.0" prefWidth="550.0">
+      <HBox alignment="CENTER_LEFT" prefHeight="39.0" prefWidth="550.0" visible="false">
          <children>
             <Label maxWidth="1.7976931348623157E308" text="%serialSpeed" textAlignment="CENTER" HBox.hgrow="SOMETIMES" />
             <TextField fx:id="serialSpeed" />
