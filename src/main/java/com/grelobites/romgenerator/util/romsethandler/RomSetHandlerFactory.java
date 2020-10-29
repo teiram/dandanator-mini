@@ -26,6 +26,6 @@ public class RomSetHandlerFactory {
     }
 
     public static RomSetHandler getDefaultHandler() {
-        return getHandler(RomSetHandlerType.DDNTR_V9);
+        return getHandler(RomSetHandlerType.DDNTR_V10);
     }
 }

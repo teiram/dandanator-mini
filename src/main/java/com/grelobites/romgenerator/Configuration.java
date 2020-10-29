@@ -29,7 +29,7 @@ public class Configuration {
     private static final RomSet DEFAULT_PLUS2AROMSET = RomSet.PLUS2A_40_EN;
     public static final String INTERNAL_CHARSET_PREFIX= "internal://";
     private static final String DANTAP_SUPPORT_PROPERTY = "danTapSupport";
-    private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V9.name();
+    private static final String DEFAULT_MODE = RomSetHandlerType.DDNTR_V10.name();
     private static final String LAST_USED_DIRECTORY_PROPERTY = "lastUsedDirectory";
 
     private String lastUsedDirectory;

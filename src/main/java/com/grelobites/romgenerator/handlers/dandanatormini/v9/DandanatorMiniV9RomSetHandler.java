@@ -837,7 +837,7 @@ public class DandanatorMiniV9RomSetHandler extends DandanatorMiniRomSetHandlerSu
 
     @Override
     public RomSetHandlerType type() {
-        return RomSetHandlerType.DDNTR_V9;
+        return RomSetHandlerType.DDNTR_V10;
     }
 
     protected String generateRomUsageDetail() {
