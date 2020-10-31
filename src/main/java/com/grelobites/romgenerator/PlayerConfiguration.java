@@ -437,10 +437,7 @@ public class PlayerConfiguration {
         configuration.reversePhase.set(p.getBoolean(REVERSEPHASE_PROPERTY, false));
         configuration.boostLevel.set(p.getBoolean(BOOSTLEVEL_PROPERTY, false));
         configuration.audioMixerName.set(p.get(AUDIOMIXERNAME_PROPERTY, null));
-        LOGGER.debug("values in configuration are {}, {},{}",
-            p.getBoolean(USESOCKET_PROPERTY, true), p.get(SOCKETHOSTNAME_PROPERTY, null),
-                p.get(SOCKETPORT_PROPERTY, null));
-        configuration.useSocket.set(p.getBoolean(USESOCKET_PROPERTY, true));
+        configuration.useSocket.set(p.getBoolean(USESOCKET_PROPERTY, false));
         configuration.socketHostname.set(p.get(SOCKETHOSTNAME_PROPERTY, null));
         configuration.socketPort.set(p.getInt(SOCKETPORT_PROPERTY, 8086));
         return configuration;
@@ -449,5 +446,19 @@ public class PlayerConfiguration {
     synchronized private static PlayerConfiguration newInstance() {
         final PlayerConfiguration configuration = new PlayerConfiguration();
         return setFromPreferences(configuration);
+    }
+
+    public static void resetConfiguration() {
+        if (INSTANCE != null) {
+            Preferences preferences = Preferences.userNodeForPackage(PlayerConfiguration.class);
+            if (preferences != null) {
+                try {
+                    preferences.clear();
+                } catch (Exception e) {
+                    LOGGER.warn("Error clearing player configuration node", e);
+                }
+            }
+            setFromPreferences(INSTANCE);
+        }
     }
 }

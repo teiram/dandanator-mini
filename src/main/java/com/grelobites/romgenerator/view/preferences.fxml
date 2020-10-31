@@ -64,5 +64,6 @@
       </HBox>
       <Pagination fx:id="charSetPagination" layoutX="255.0" layoutY="7.0" pageCount="10" prefHeight="112.0" prefWidth="326.0" />
       <CheckBox fx:id="danTapSupport" layoutX="284.0" layoutY="164.0" mnemonicParsing="false" prefHeight="21.0" prefWidth="326.0" text="%danTapSupportEnabled" />
+      <Button fx:id="cleanupConfigurationButton" layoutX="7.0" layoutY="296.0" mnemonicParsing="false" text="%cleanupConfiguration" />
    </children>
 </AnchorPane>

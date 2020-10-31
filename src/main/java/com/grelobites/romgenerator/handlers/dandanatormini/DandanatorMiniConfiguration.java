@@ -65,7 +65,6 @@ public class DandanatorMiniConfiguration {
         return INSTANCE;
     }
 
-
     private DandanatorMiniConfiguration() {
         dandanatorRomPath = new SimpleStringProperty();
         extraRomPath = new SimpleStringProperty();
@@ -76,7 +75,6 @@ public class DandanatorMiniConfiguration {
         selectPokesMessage = new SimpleStringProperty();
         disableBorderEffect = new SimpleBooleanProperty(false);
         autoboot = new SimpleBooleanProperty(false);
-
 
         /*
         setPersistenceListenerOnPropertyChange(dandanatorRomPath, DANDANATORROMPATH_PROPERTY,
