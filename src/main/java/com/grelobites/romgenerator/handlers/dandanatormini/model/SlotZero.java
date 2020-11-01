@@ -1,5 +1,6 @@
 package com.grelobites.romgenerator.handlers.dandanatormini.model;
 
+import com.grelobites.romgenerator.handlers.dandanatormini.v10.SlotZeroV10;
 import com.grelobites.romgenerator.handlers.dandanatormini.v4.SlotZeroV4;
 import com.grelobites.romgenerator.handlers.dandanatormini.v5.SlotZeroV5;
 import com.grelobites.romgenerator.handlers.dandanatormini.v6.SlotZeroV6;
@@ -21,12 +22,13 @@ public interface SlotZero {
     Logger LOGGER = LoggerFactory.getLogger(SlotZero.class);
     Class<?>[] implementations =
             new Class<?>[] {
-                    SlotZeroV4.class,
-                    SlotZeroV5.class,
-                    SlotZeroV6.class,
-                    SlotZeroV7.class,
+                    SlotZeroV10.class,
+                    SlotZeroV9.class,
                     SlotZeroV8.class,
-                    SlotZeroV9.class
+                    SlotZeroV7.class,
+                    SlotZeroV6.class,
+                    SlotZeroV5.class,
+                    SlotZeroV4.class
     };
 
     static Optional<SlotZero> getImplementation(byte[] data) {

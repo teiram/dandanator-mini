@@ -108,8 +108,10 @@ public class ApplicationContext {
     public DirectoryAwareFileChooser getFileChooser() {
         if (this.fileChooser == null) {
             this.fileChooser = new DirectoryAwareFileChooser();
-            this.fileChooser.setInitialDirectory(Configuration.getInstance()
-                    .getLastUsedDirectory());
+            String initialDirectory = Configuration.getInstance()
+                    .getLastUsedDirectory();
+            LOGGER.debug("Setting initial directory to: {}", initialDirectory);
+            this.fileChooser.setInitialDirectory(initialDirectory);
         }
         fileChooser.setInitialFileName(null);
         return fileChooser;
