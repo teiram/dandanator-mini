@@ -197,8 +197,10 @@ public class MainAppController {
     @FXML
     private void initialize() throws IOException {
         menuPreview = new ImageView();
+        
         menuPreview.fitWidthProperty().bind(menuPreviewPane.widthProperty());
         menuPreview.fitHeightProperty().bind(menuPreviewPane.heightProperty());
+
         gamePreview.fitWidthProperty().bind(gamePreviewPane.widthProperty());
         gamePreview.fitHeightProperty().bind(gamePreviewPane.heightProperty());
         menuPagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);

@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Pagination?>
 <?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.image.ImageView?>
@@ -13,34 +14,50 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
 <StackPane fx:id="applicationPane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="470.0" prefWidth="550.0">
+      <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity">
          <children>
-            <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" prefHeight="201.0" spacing="5.0" VBox.vgrow="ALWAYS">
+            <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" spacing="5.0" VBox.vgrow="ALWAYS">
                <children>
-                  <Pane fx:id="menuPreviewPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="201.0" prefWidth="265.0" styleClass="pane-with-border" HBox.hgrow="ALWAYS">
-                     <children>
-                        <Pagination fx:id="menuPagination" layoutX="5.0" layoutY="5.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pageCount="2" prefHeight="192.0" prefWidth="256.0" styleClass="pagination-simple" />
-                     </children>
+                  <StackPane fx:id="menuPreviewPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" styleClass="pane-with-border" HBox.hgrow="ALWAYS">
                      <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </HBox.margin>
-                  </Pane>
-                  <Pane fx:id="gamePreviewPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="201.0" prefWidth="265.0" styleClass="pane-with-border" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="192.0" prefWidth="256.0" StackPane.alignment="CENTER">
+                           <children>
+                              <Pagination fx:id="menuPagination" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pageCount="2" styleClass="pagination-simple" />
+                           </children>
+                           <StackPane.margin>
+                              <Insets />
+                           </StackPane.margin>
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                        </Pane>
+                     </children>
+                  </StackPane>
+                  <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" styleClass="pane-with-border" HBox.hgrow="ALWAYS">
                      <HBox.margin>
                         <Insets bottom="5.0" right="5.0" top="5.0" />
                      </HBox.margin>
                      <children>
-                        <ImageView fx:id="gamePreview" fitHeight="192.0" fitWidth="256.0" layoutX="5.0" layoutY="5.0" pickOnBounds="true" preserveRatio="true" />
+                        <Pane fx:id="gamePreviewPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="192.0" prefWidth="256.0" StackPane.alignment="CENTER">
+                           <children>
+                              <ImageView fx:id="gamePreview" fitHeight="192.0" fitWidth="256.0" pickOnBounds="true" preserveRatio="true" />
+                           </children>
+                           <StackPane.margin>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </StackPane.margin>
+                        </Pane>
                      </children>
-                  </Pane>
+                  </StackPane>
                </children>
             </HBox>
-            <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" spacing="10.0" VBox.vgrow="ALWAYS">
+            <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0" VBox.vgrow="ALWAYS">
                <children>
-                  <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="265.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                  <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0" HBox.hgrow="ALWAYS">
                      <children>
                         <TableView fx:id="gameTable" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="220.0" prefWidth="265.0" VBox.vgrow="ALWAYS">
                           <columns>
@@ -67,9 +84,13 @@
                                     <Font size="12.0" />
                                  </font>
                               </Button>
-                            <Button fx:id="createRomButton" disable="true" maxHeight="-Infinity" minHeight="-Infinity" mnemonicParsing="false" prefHeight="28.0" prefWidth="122.0" text="%createRomSetButton" />
+                              <Separator maxWidth="1.7976931348623157E308" prefWidth="10.0" visible="false" HBox.hgrow="ALWAYS" />
+                            <Button fx:id="createRomButton" disable="true" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="28.0" text="%createRomSetButton" />
                               <ProgressIndicator fx:id="operationInProgressIndicator" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="25.0" visible="false" />
                            </children>
+                           <VBox.margin>
+                              <Insets bottom="5.0" top="5.0" />
+                           </VBox.margin>
                         </HBox>
                      </children>
                   </VBox>
