@@ -168,7 +168,6 @@ public class DandanatorMiniPreferencesController {
                 new StringConverter<String>() {
                     @Override
                     public String toString(String object) {
-                        LOGGER.debug("Executing toString on " + object);
                         if (object == null) {
                             return LocaleUtil.i18n("builtInMessage");
                         } else if (object.equals(Constants.ROMSET_PROVIDED)) {
@@ -180,7 +179,6 @@ public class DandanatorMiniPreferencesController {
 
                     @Override
                     public String fromString(String string) {
-                        LOGGER.debug("Executing fromString on " + string);
                         if (string == null) {
                             return null;
                         } else if (string.isEmpty()) {

@@ -25,6 +25,7 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -284,7 +285,7 @@ public class MainApp extends Application {
         return menuBar;
     }
 
-    private AnchorPane getApplicationPane() throws IOException {
+    private Pane getApplicationPane() throws IOException {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(MainApp.class.getResource("view/mainapp.fxml"));
         loader.setResources(LocaleUtil.getBundle());
@@ -325,6 +326,8 @@ public class MainApp extends Application {
             primaryStage.titleProperty().bind(applicationContext.applicationTitleProperty());
             primaryStage.setOnCloseRequest(e -> Platform.exit());
             BorderPane mainPane = new BorderPane();
+
+            mainPane.autosize();
             Scene scene = new Scene(mainPane);
             scene.getStylesheets().add(Constants.getThemeResourceUrl());
             menuToolkit = MenuToolkit.toolkit(Locale.getDefault());
@@ -336,7 +339,8 @@ public class MainApp extends Application {
                 menuToolkit.setGlobalMenuBar(menuBar);
             }
             populateMenuBar(menuBar, scene, applicationContext);
-            mainPane.setCenter(getApplicationPane());
+            Pane applicationPane = getApplicationPane();
+            mainPane.setCenter(applicationPane);
 
             primaryStage.setScene(scene);
             applicationContext.setApplicationStage(primaryStage);
@@ -347,8 +351,11 @@ public class MainApp extends Application {
             if (menuToolkit != null) {
                 menuToolkit.setMenuBar(primaryStage, menuBar);
             }
-            primaryStage.setResizable(false);
+            primaryStage.setResizable(true);
             primaryStage.show();
+            primaryStage.setMinHeight(primaryStage.getHeight());
+            primaryStage.setMinWidth(primaryStage.getWidth());
+
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
