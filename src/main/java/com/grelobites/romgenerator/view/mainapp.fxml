@@ -25,17 +25,14 @@
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </HBox.margin>
                      <children>
-                        <Pane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="192.0" prefWidth="256.0" StackPane.alignment="CENTER">
-                           <children>
-                              <Pagination fx:id="menuPagination" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pageCount="2" styleClass="pagination-simple" />
-                           </children>
+                        <StackPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="192.0" prefWidth="256.0" StackPane.alignment="CENTER">
                            <StackPane.margin>
                               <Insets />
                            </StackPane.margin>
-                           <padding>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </padding>
-                        </Pane>
+                           <children>
+                              <Pagination fx:id="menuPagination" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" pageCount="2" StackPane.alignment="CENTER" />
+                           </children>
+                        </StackPane>
                      </children>
                   </StackPane>
                   <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" styleClass="pane-with-border" HBox.hgrow="ALWAYS">
@@ -43,14 +40,14 @@
                         <Insets bottom="5.0" right="5.0" top="5.0" />
                      </HBox.margin>
                      <children>
-                        <Pane fx:id="gamePreviewPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="192.0" prefWidth="256.0" StackPane.alignment="CENTER">
-                           <children>
-                              <ImageView fx:id="gamePreview" fitHeight="192.0" fitWidth="256.0" pickOnBounds="true" preserveRatio="true" />
-                           </children>
+                        <StackPane fx:id="gamePreviewPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="192.0" prefWidth="256.0" StackPane.alignment="CENTER">
                            <StackPane.margin>
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </StackPane.margin>
-                        </Pane>
+                           <children>
+                              <ImageView fx:id="gamePreview" fitHeight="192.0" fitWidth="256.0" pickOnBounds="true" preserveRatio="true" />
+                           </children>
+                        </StackPane>
                      </children>
                   </StackPane>
                </children>
