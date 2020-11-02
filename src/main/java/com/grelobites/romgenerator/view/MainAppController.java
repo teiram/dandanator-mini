@@ -20,7 +20,9 @@ import com.grelobites.romgenerator.util.romsethandler.RomSetHandlerFactory;
 import com.grelobites.romgenerator.view.util.DialogUtil;
 import com.grelobites.romgenerator.view.util.DirectoryAwareFileChooser;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -197,9 +199,24 @@ public class MainAppController {
     @FXML
     private void initialize() throws IOException {
         menuPreview = new ImageView();
-        
-        menuPreview.fitWidthProperty().bind(menuPreviewPane.widthProperty());
-        menuPreview.fitHeightProperty().bind(menuPreviewPane.heightProperty());
+
+        InvalidationListener dimsListener = (c) -> {
+            double width = menuPreviewPane.getWidth();
+            double height = menuPreviewPane.getHeight();
+
+            double factorW = width / 256;
+            double factorH = height / 192;
+            double factor = Math.min(factorW, factorH);
+            menuPreview.setFitWidth(256 * factorW);
+            menuPreview.setFitHeight(192 * factorH);
+            LOGGER.debug("Setting new dimensions from Pane {} x {} -> {} x {}",
+                    width, height,
+                    256 * factorW, 192 * factorH);
+        };
+        menuPreviewPane.widthProperty().addListener(dimsListener);
+
+        //menuPreview.fitWidthProperty().bind(menuPreviewPane.widthProperty());
+        //menuPreview.fitHeightProperty().bind(menuPreviewPane.heightProperty());
 
         gamePreview.fitWidthProperty().bind(gamePreviewPane.widthProperty());
         gamePreview.fitHeightProperty().bind(gamePreviewPane.heightProperty());

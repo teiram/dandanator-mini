@@ -138,6 +138,7 @@
     -fx-text-fill : red;
 }
 
+/*
 .pagination-simple {
     -fx-arrows-visible: false;
     -fx-tooltip-visible: false;
@@ -151,7 +152,7 @@
 .pagination-simple > .pagination-control {
     -fx-translate-y: -24px;
 }
-
+*/
 .button-play {
     -fx-background-image: url("/player/playback-start.png");
     -fx-background-size: 18px;
