@@ -138,21 +138,7 @@
     -fx-text-fill : red;
 }
 
-/*
-.pagination-simple {
-    -fx-arrows-visible: false;
-    -fx-tooltip-visible: false;
-    -fx-page-information-visible: false;
-}
 
-.pagination-simple > .page {
-    -fx-background-color: #2a2a2a;
-}
-
-.pagination-simple > .pagination-control {
-    -fx-translate-y: -24px;
-}
-*/
 .button-play {
     -fx-background-image: url("/player/playback-start.png");
     -fx-background-size: 18px;

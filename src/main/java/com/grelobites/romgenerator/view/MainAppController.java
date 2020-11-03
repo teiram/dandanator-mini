@@ -34,10 +34,13 @@ import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Circle;
 import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.event.HyperlinkEvent;
 import java.io.*;
 import java.util.List;
 import java.util.Optional;
@@ -53,18 +56,21 @@ public class MainAppController {
     private Pane applicationPane;
 
     @FXML
-    private Pane gamePreviewPane;
+    private StackPane gamePreviewPane;
 
     @FXML
-    private Pane menuPreviewPane;
-
-    @FXML
-    private Pagination menuPagination;
+    private StackPane menuPreviewPane;
 
     private ImageView menuPreview;
 
     @FXML
     private ImageView gamePreview;
+
+    @FXML
+    private Circle menuPreviewSelector;
+
+    @FXML
+    private Circle playerSelector;
 
     @FXML
     private TableView<Game> gameTable;
@@ -116,7 +122,9 @@ public class MainAppController {
             PlayerConfiguration.getInstance()
                     .setCustomRomSetPath(files.get(0).getPath());
             applicationContext.getGameList().clear();
-            menuPagination.setCurrentPageIndex(1);
+            playerPane.setVisible(true);
+            menuPreview.setVisible(false);
+            //menuPagination.setCurrentPageIndex(1);
             try {
                 gameRenderer.loadImage(screenResource.get());
                 iannaMode = true;
@@ -128,7 +136,9 @@ public class MainAppController {
         } else {
             if (iannaMode == true) {
                 gameRenderer.previewGame(null);
-                menuPagination.setCurrentPageIndex(0);
+                playerPane.setVisible(false);
+                menuPreview.setVisible(true);
+                //menuPagination.setCurrentPageIndex(0);
                 PlayerConfiguration.getInstance()
                         .setCustomRomSetPath(null);
                 iannaMode = false;
@@ -207,19 +217,20 @@ public class MainAppController {
             double factorW = width / 256;
             double factorH = height / 192;
             double factor = Math.min(factorW, factorH);
-            menuPreview.setFitWidth(256 * factorW);
-            menuPreview.setFitHeight(192 * factorH);
+            menuPreview.setFitWidth(256 * factor);
+            menuPreview.setFitHeight(192 * factor);
             LOGGER.debug("Setting new dimensions from Pane {} x {} -> {} x {}",
                     width, height,
-                    256 * factorW, 192 * factorH);
+                    256 * factor, 192 * factor);
         };
         menuPreviewPane.widthProperty().addListener(dimsListener);
+        menuPreviewPane.heightProperty().addListener(dimsListener);
 
-        //menuPreview.fitWidthProperty().bind(menuPreviewPane.widthProperty());
-        //menuPreview.fitHeightProperty().bind(menuPreviewPane.heightProperty());
+
 
         gamePreview.fitWidthProperty().bind(gamePreviewPane.widthProperty());
         gamePreview.fitHeightProperty().bind(gamePreviewPane.heightProperty());
+        /*
         menuPagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         menuPagination.setPageFactory((index) -> {
             switch (index) {
@@ -231,6 +242,8 @@ public class MainAppController {
                     return null;
             }
         });
+        */
+
 
         applicationContext.setRomSetHandlerInfoPane(romSetHandlerInfoPane);
         applicationContext.setMenuPreview(menuPreview);
@@ -239,6 +252,31 @@ public class MainAppController {
         gameRenderer = GameRendererFactory.getDefaultRenderer();
         gameRenderer.setTarget(gamePreview);
         updateRomSetHandler();
+
+        menuPreviewPane.getChildren().add(menuPreview);
+        menuPreviewPane.getChildren().add(getPlayerPane());
+        playerPane.setVisible(false);
+
+        menuPreviewSelector.setDisable(true);
+        playerSelector.setDisable(false);
+
+        menuPreviewSelector.setOnMouseClicked(c -> {
+            LOGGER.debug("Clicked!!");
+            menuPreviewSelector.setDisable(true);
+            playerSelector.setDisable(false);
+            playerPane.setVisible(false);
+            menuPreview.setVisible(true);
+        });
+
+        playerSelector.setOnMouseClicked(c -> {
+            LOGGER.debug("Clicked!!");
+
+            playerSelector.setDisable(true);
+            menuPreviewSelector.setDisable(false);
+            menuPreview.setVisible(false);
+            playerPane.setVisible(true);
+        });
+
 
         clearRomsetButton.disableProperty()
                 .bind(Bindings.size(applicationContext.getGameList())
