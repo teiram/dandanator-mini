@@ -219,9 +219,6 @@ public class MainAppController {
             double factor = Math.min(factorW, factorH);
             menuPreview.setFitWidth(256 * factor);
             menuPreview.setFitHeight(192 * factor);
-            LOGGER.debug("Setting new dimensions from Pane {} x {} -> {} x {}",
-                    width, height,
-                    256 * factor, 192 * factor);
         };
         menuPreviewPane.widthProperty().addListener(dimsListener);
         menuPreviewPane.heightProperty().addListener(dimsListener);
@@ -261,7 +258,6 @@ public class MainAppController {
         playerSelector.setDisable(false);
 
         menuPreviewSelector.setOnMouseClicked(c -> {
-            LOGGER.debug("Clicked!!");
             menuPreviewSelector.setDisable(true);
             playerSelector.setDisable(false);
             playerPane.setVisible(false);
@@ -269,8 +265,6 @@ public class MainAppController {
         });
 
         playerSelector.setOnMouseClicked(c -> {
-            LOGGER.debug("Clicked!!");
-
             playerSelector.setDisable(true);
             menuPreviewSelector.setDisable(false);
             menuPreview.setVisible(false);
