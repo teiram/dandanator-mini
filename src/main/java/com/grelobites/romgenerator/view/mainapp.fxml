@@ -8,10 +8,8 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
 <StackPane fx:id="applicationPane" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
@@ -37,10 +35,18 @@
                               <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </VBox.margin>
                         </StackPane>
-                        <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0" VBox.vgrow="NEVER">
+                        <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="5.0" VBox.vgrow="NEVER">
                            <children>
-                              <Circle fx:id="menuPreviewSelector" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
-                              <Circle fx:id="playerSelector" fill="DODGERBLUE" radius="7.0" stroke="BLACK" strokeType="INSIDE" />
+                              <Button fx:id="menuPreviewSelector" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false">
+                                 <font>
+                                    <Font size="12.0" />
+                                 </font>
+                              </Button>
+                              <Button fx:id="playerSelector" mnemonicParsing="false">
+                                 <font>
+                                    <Font size="12.0" />
+                                 </font>
+                              </Button>
                            </children>
                         </HBox>
                      </children>
@@ -101,7 +107,7 @@
                         </HBox>
                      </children>
                   </VBox>
-                  <Pane fx:id="romSetHandlerInfoPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="265.0" styleClass="gameInfoPane" HBox.hgrow="ALWAYS" />
+                  <StackPane fx:id="romSetHandlerInfoPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="265.0" styleClass="gameInfoPane" HBox.hgrow="ALWAYS" />
                </children>
                <padding>
                   <Insets left="5.0" right="5.0" />

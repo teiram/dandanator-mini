@@ -1,70 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="192.0" prefWidth="256.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+
+<StackPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <Circle fill="#650c0c" layoutX="27.0" layoutY="82.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
-      <Circle fill="#1b4009" layoutX="27.0" layoutY="61.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
-      <Button fx:id="playButton" layoutX="50.0" layoutY="104.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="33.0" styleClass="button-play" />
-      <ProgressBar fx:id="blockProgress" layoutX="55.0" layoutY="145.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="154.0" progress="0.0" />
-      <ProgressBar fx:id="overallProgress" layoutX="55.0" layoutY="163.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="154.0" progress="0.0" />
-      <MediaView fx:id="mediaView" fitHeight="10.0" fitWidth="10.0" layoutX="457.0" layoutY="20.0" />
-      <Circle fx:id="recordingLed" fill="#ff281f" layoutX="27.0" layoutY="82.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
-      <Label fx:id="currentBlockLabel" layoutX="134.0" layoutY="110.0" text="Loader" />
-      <Button fx:id="rewindButton" layoutX="11.0" layoutY="104.0" mnemonicParsing="false">
-         <graphic>
-            <ImageView fitHeight="18.0" fitWidth="18.0" preserveRatio="true">
-               <image>
-                  <Image url="@/player/skip-backwards.png" />
-               </image>
-            </ImageView>
-         </graphic></Button>
-      <Button fx:id="forwardButton" layoutX="85.0" layoutY="104.0" mnemonicParsing="false">
-         <graphic>
-            <ImageView fitHeight="18.0" fitWidth="18.0" preserveRatio="true">
-               <image>
-                  <Image url="@/player/skip-forward.png" />
-               </image>
-            </ImageView>
-         </graphic></Button>
-      <Text fill="#87eb99" layoutX="9.0" layoutY="153.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Block">
-         <font>
-            <Font size="10.0" />
-         </font>
-      </Text>
-      <Text fill="#87eb99" layoutX="9.0" layoutY="170.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Progress">
-         <font>
-            <Font size="10.0" />
-         </font>
-      </Text>
-      <Text fill="#5ad742" layoutX="51.0" layoutY="65.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Send" />
-      <Text fill="#e44444" layoutX="51.0" layoutY="87.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Listen" />
-      <Circle fx:id="playingLed" fill="#5fff1f" layoutX="27.0" layoutY="61.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
-      <ImageView fx:id="playerImage" fitHeight="58.0" fitWidth="100.0" layoutX="134.0" layoutY="39.0" preserveRatio="true">
-         <image>
-            <Image url="@/player/cassette.jpg" />
-         </image>
-      </ImageView>
-      <ImageView fitHeight="34.0" fitWidth="200.0" layoutX="30.0" layoutY="4.0" preserveRatio="true">
-         <image>
-            <Image url="@/player/title.png" />
-         </image>
-      </ImageView>
-      <ImageView fx:id="beeImage" fitHeight="16.0" fitWidth="16.0" layoutX="210.0" layoutY="110.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@/player/bee.png" />
-         </image>
-      </ImageView>
-      <Label fx:id="failuresCount" layoutX="231.0" layoutY="110.0" text="0" />
+      <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0">
+         <children>
+            <StackPane VBox.vgrow="SOMETIMES">
+               <children>
+                  <ImageView fitHeight="34.0" fitWidth="200.0" preserveRatio="true" StackPane.alignment="CENTER">
+                     <image>
+                        <Image url="@/player/title.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </StackPane>
+            <HBox VBox.vgrow="SOMETIMES">
+               <children>
+                  <VBox spacing="5.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Circle fx:id="playingLed" fill="#5fff1f" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
+                              <Text fill="#5ad742" strokeType="OUTSIDE" strokeWidth="0.0" text="Send" />
+                              <MediaView fx:id="mediaView" fitHeight="10.0" fitWidth="10.0" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Circle fx:id="recordingLed" fill="#ff281f" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
+                              <Text fill="#e44444" strokeType="OUTSIDE" strokeWidth="0.0" text="Listen" />
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                  </VBox>
+                  <ImageView fx:id="playerImage" fitHeight="58.0" fitWidth="100.0" preserveRatio="true" HBox.hgrow="ALWAYS">
+                     <image>
+                        <Image url="@/player/cassette.jpg" />
+                     </image>
+                  </ImageView>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" spacing="5.0" VBox.vgrow="SOMETIMES">
+               <children>
+                  <Button fx:id="rewindButton" mnemonicParsing="false">
+                     <graphic>
+                        <ImageView fitHeight="18.0" fitWidth="18.0" preserveRatio="true">
+                           <image>
+                              <Image url="@/player/skip-backwards.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="playButton" mnemonicParsing="false" prefHeight="28.0" prefWidth="33.0" styleClass="button-play" />
+                  <Button fx:id="forwardButton" mnemonicParsing="false">
+                     <graphic>
+                        <ImageView fitHeight="18.0" fitWidth="18.0" preserveRatio="true">
+                           <image>
+                              <Image url="@/player/skip-forward.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Label fx:id="currentBlockLabel" text="Loader" />
+                  <ImageView fx:id="beeImage" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@/player/bee.png" />
+                     </image>
+                  </ImageView>
+                  <Label fx:id="failuresCount" text="0" />
+               </children>
+               <VBox.margin>
+                  <Insets left="5.0" right="5.0" />
+               </VBox.margin>
+            </HBox>
+            <HBox spacing="5.0" VBox.vgrow="NEVER">
+               <children>
+                  <Text fill="#87eb99" strokeType="OUTSIDE" strokeWidth="0.0" text="Block">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                  </Text>
+                  <ProgressBar fx:id="blockProgress" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="154.0" progress="0.0" HBox.hgrow="ALWAYS" />
+               </children>
+               <VBox.margin>
+                  <Insets left="5.0" right="5.0" />
+               </VBox.margin>
+            </HBox>
+            <HBox spacing="5.0" VBox.vgrow="NEVER">
+               <children>
+                  <Text fill="#87eb99" strokeType="OUTSIDE" strokeWidth="0.0" text="Progress">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                  </Text>
+                  <ProgressBar fx:id="overallProgress" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="10.0" prefWidth="154.0" progress="0.0" HBox.hgrow="ALWAYS" />
+               </children>
+               <VBox.margin>
+                  <Insets left="5.0" right="5.0" />
+               </VBox.margin>
+            </HBox>
+         </children>
+      </VBox>
    </children>
-</AnchorPane>
+</StackPane>

@@ -24,6 +24,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,7 @@ public class ApplicationContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationContext.class);
     private static final String APPLICATION_TITLE = "ROM Generator";
     Stage applicationStage;
-    private Pane romSetHandlerInfoPane;
+    private StackPane romSetHandlerInfoPane;
     private final ObservableList<Game> gameList;
     private ReadOnlyObjectProperty<Game> selectedGame;
     private BooleanProperty gameSelected;
@@ -156,7 +157,7 @@ public class ApplicationContext {
         return romSetHandlerInfoPane;
     }
 
-    public void setRomSetHandlerInfoPane(Pane romSetHandlerInfoPane) {
+    public void setRomSetHandlerInfoPane(StackPane romSetHandlerInfoPane) {
         LOGGER.debug("setRomSetHandlerInfoPane " + romSetHandlerInfoPane);
         this.romSetHandlerInfoPane = romSetHandlerInfoPane;
     }

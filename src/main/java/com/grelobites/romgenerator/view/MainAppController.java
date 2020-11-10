@@ -67,10 +67,10 @@ public class MainAppController {
     private ImageView gamePreview;
 
     @FXML
-    private Circle menuPreviewSelector;
+    private Button menuPreviewSelector;
 
     @FXML
-    private Circle playerSelector;
+    private Button playerSelector;
 
     @FXML
     private TableView<Game> gameTable;
@@ -94,7 +94,7 @@ public class MainAppController {
     private ProgressIndicator operationInProgressIndicator;
 
     @FXML
-    private Pane romSetHandlerInfoPane;
+    private StackPane romSetHandlerInfoPane;
 
     private Pane playerPane;
     private PlayerController playerController;
@@ -254,17 +254,19 @@ public class MainAppController {
         menuPreviewPane.getChildren().add(getPlayerPane());
         playerPane.setVisible(false);
 
+
         menuPreviewSelector.setDisable(true);
         playerSelector.setDisable(false);
 
-        menuPreviewSelector.setOnMouseClicked(c -> {
+
+        menuPreviewSelector.setOnAction(c -> {
             menuPreviewSelector.setDisable(true);
             playerSelector.setDisable(false);
             playerPane.setVisible(false);
             menuPreview.setVisible(true);
         });
 
-        playerSelector.setOnMouseClicked(c -> {
+        playerSelector.setOnAction(c -> {
             playerSelector.setDisable(true);
             menuPreviewSelector.setDisable(false);
             menuPreview.setVisible(false);

@@ -13,39 +13,80 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.TreeView?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="265.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
+
+<VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-        <TabPane fx:id="gameInfoTabPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="210.0" prefWidth="260.0" styleClass="infoTabPane">
+        <TabPane fx:id="gameInfoTabPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" styleClass="infoTabPane" VBox.vgrow="SOMETIMES">
             <tabs>
-                <Tab fx:id="gameInfoTab" closable="false" text="General">
-                    <content>
-                        <AnchorPane fx:id="gameInfoPane" prefHeight="200.0" prefWidth="200.0">
-                            <children>
-                                <Label layoutX="5.0" layoutY="14.0" text="%gameNameProperty" textFill="WHITE" />
-                                <Label layoutX="6.0" layoutY="45.0" text="%gameTypeProperty" textFill="WHITE" />
-                                <Label layoutX="154.0" layoutY="143.0" text="%gameSizeProperty" textFill="WHITE" />
-                                <Label fx:id="compressedSize" layoutX="210.0" layoutY="143.0" prefHeight="17.0" prefWidth="54.0" text="0" textAlignment="RIGHT" textFill="WHITE" />
-                                <CheckBox fx:id="gameHoldScreenAttribute" layoutX="6.0" layoutY="92.0" mnemonicParsing="false" text="%holdScreenProperty" textFill="WHITE" />
-                                <TextField fx:id="gameName" layoutX="72.0" layoutY="9.0" prefHeight="27.0" prefWidth="180.0">
-                                    <font>
-                                        <Font size="12.0" />
-                                    </font>
-                        </TextField>
-                                <Label fx:id="gameType" layoutX="48.0" layoutY="45.0" text="RAM" textFill="WHITE" />
-                        <CheckBox fx:id="gameCompressedAttribute" layoutX="6.0" layoutY="117.0" mnemonicParsing="false" text="%gameCompressedProperty" />
-                        <CheckBox fx:id="gameForced48kModeAttribute" layoutX="6.0" layoutY="143.0" mnemonicParsing="false" text="%game48kModeProperty" />
-                        <Label layoutX="174.0" layoutY="45.0" text="HW:" textFill="WHITE" />
-                        <Label fx:id="hardwareMode" layoutX="210.0" layoutY="45.0" text="-" />
-                        <ComboBox fx:id="gameRomAttribute" layoutX="91.0" layoutY="62.0" prefWidth="150.0" />
-                        <Label fx:id="romActiveAttributeLabel" layoutX="6.0" layoutY="67.0" text="%activeRomProperty" />
-                        <HBox fx:id="danSnapSizeSelector" alignment="CENTER_LEFT" layoutX="10.0" layoutY="72.0" prefWidth="200.0" visible="false">
+            <Tab fx:id="gameInfoTab" closable="false" text="General">
+               <content>
+                  <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0">
+                     <children>
+                        <HBox alignment="CENTER" spacing="10.0">
                            <children>
-                              <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="%danSnapSize" HBox.hgrow="ALWAYS" />
+                                      <Label text="%gameNameProperty" textFill="WHITE" />
+                                      <TextField fx:id="gameName" alignment="CENTER" HBox.hgrow="ALWAYS">
+                                          <font>
+                                              <Font size="12.0" />
+                                          </font>
+                              </TextField>
+                           </children>
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </HBox>
+                        <HBox alignment="CENTER" spacing="10.0">
+                           <children>
+                                      <Label text="%gameTypeProperty" textFill="WHITE" />
+                                      <Label fx:id="gameType" text="RAM" textFill="WHITE" />
+                              <Separator HBox.hgrow="ALWAYS" />
+                              <Label text="HW:" textFill="WHITE" />
+                              <Label fx:id="hardwareMode" text="-" />
+                           </children>
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </HBox>
+                        <HBox alignment="CENTER" spacing="10.0">
+                           <children>
+                              <Label fx:id="romActiveAttributeLabel" text="%activeRomProperty" />
+                              <ComboBox fx:id="gameRomAttribute" prefWidth="150.0" />
+                           </children>
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </HBox>
+                        <HBox>
+                           <children>
+                                      <CheckBox fx:id="gameHoldScreenAttribute" mnemonicParsing="false" text="%holdScreenProperty" textFill="WHITE" />
+                           </children>
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </HBox>
+                        <HBox>
+                           <children>
+                              <CheckBox fx:id="gameCompressedAttribute" mnemonicParsing="false" text="%gameCompressedProperty" />
+                           </children>
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </HBox>
+                        <HBox>
+                           <children>
+                              <CheckBox fx:id="gameForced48kModeAttribute" mnemonicParsing="false" text="%game48kModeProperty" />
+                           </children>
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </HBox>
+                        <HBox fx:id="danSnapSizeSelector" alignment="CENTER_LEFT" visible="false">
+                           <children>
+                              <Label contentDisplay="CENTER" text="%danSnapSize" HBox.hgrow="ALWAYS" />
                               <VBox fillWidth="false">
                                  <children>
                                     <RadioButton fx:id="danSnap16KSize" mnemonicParsing="false" text="16K">
@@ -58,33 +99,56 @@
                                  </children>
                               </VBox>
                            </children>
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
                         </HBox>
-                            </children>
-                        </AnchorPane>
-                    </content>
-                </Tab>
+                        <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                           <children>
+                                      <Label text="%gameSizeProperty" textFill="WHITE" />
+                                      <Label fx:id="compressedSize" text="0" textAlignment="RIGHT" textFill="WHITE" />
+                           </children>
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
                 <Tab fx:id="pokesTab" closable="false" text="Pokes">
                     <content>
-                        <AnchorPane>
-                            <children>
-                                <TreeView fx:id="pokeView" editable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="150.0" prefWidth="260.0" showRoot="false" styleClass="pokesBox" />
-                                <Button fx:id="addPokeButton" disable="true" layoutX="2.0" layoutY="151.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="+">
-                                    <font>
-                                        <Font size="10.0" />
-                                    </font>
-                                </Button>
-                                <Button fx:id="removeAllGamePokesButton" disable="true" layoutX="70.0" layoutY="151.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="x">
-                                    <font>
-                                        <Font size="10.0" />
-                                    </font>
-                                </Button>
-                                <Button fx:id="removeSelectedPokeButton" disable="true" layoutX="36.0" layoutY="151.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="-">
-                                    <font>
-                                        <Font size="10.0" />
-                                    </font>
-                                </Button>
-                            </children>
-                        </AnchorPane>
+                  <VBox minHeight="-Infinity" minWidth="-Infinity">
+                     <children>
+                        <HBox minHeight="-Infinity" minWidth="-Infinity">
+                           <children>
+                                      <TreeView fx:id="pokeView" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" showRoot="false" HBox.hgrow="ALWAYS" />
+                           </children>
+                        </HBox>
+                        <HBox spacing="5.0">
+                           <children>
+                                      <Button fx:id="addPokeButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="+">
+                                          <font>
+                                              <Font size="10.0" />
+                                          </font>
+                                      </Button>
+                                      <Button fx:id="removeAllGamePokesButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="x">
+                                          <font>
+                                              <Font size="10.0" />
+                                          </font>
+                                      </Button>
+                                      <Button fx:id="removeSelectedPokeButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="24.0" prefWidth="24.0" text="-">
+                                          <font>
+                                              <Font size="10.0" />
+                                          </font>
+                                      </Button>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
                     </content>
                 </Tab>
             </tabs>
@@ -92,10 +156,30 @@
                 <Insets bottom="1.0" left="1.0" right="1.0" top="1.0" />
             </padding>
         </TabPane>
-      <Separator layoutX="3.0" layoutY="209.0" prefHeight="4.0" prefWidth="260.0" />
-        <ProgressBar fx:id="romUsage" layoutX="42.0" layoutY="215.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="15.0" prefWidth="200.0" progress="0.0" />
-        <ProgressBar fx:id="pokesCurrentSizeBar" layoutX="42.0" layoutY="232.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="15.0" prefWidth="200.0" progress="0.0" styleClass="green-bar" />
-        <Label layoutX="14.0" layoutY="214.0" text="R" />
-        <Label layoutX="14.0" layoutY="231.0" text="P" />
+      <Separator prefHeight="4.0" prefWidth="260.0" />
+      <HBox alignment="CENTER" spacing="10.0" VBox.vgrow="NEVER">
+         <children>
+              <Label text="R" />
+              <ProgressBar fx:id="romUsage" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="15.0" progress="0.0" HBox.hgrow="ALWAYS" />
+         </children>
+         <VBox.margin>
+            <Insets left="5.0" right="5.0" />
+         </VBox.margin>
+         <padding>
+            <Insets left="10.0" right="10.0" />
+         </padding>
+      </HBox>
+      <HBox alignment="CENTER" spacing="10.0" VBox.vgrow="NEVER">
+         <children>
+              <Label text="P" />
+              <ProgressBar fx:id="pokesCurrentSizeBar" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="15.0" progress="0.0" styleClass="green-bar" HBox.hgrow="ALWAYS" />
+         </children>
+         <VBox.margin>
+            <Insets left="5.0" right="5.0" />
+         </VBox.margin>
+         <padding>
+            <Insets left="10.0" right="10.0" />
+         </padding>
+      </HBox>
    </children>
-</AnchorPane>
+</VBox>
