@@ -293,4 +293,18 @@ public class Configuration {
         final Configuration configuration = new Configuration();
         return setFromPreferences(configuration);
     }
+
+    public static void resetConfiguration() {
+        if (INSTANCE != null) {
+            Preferences preferences = Preferences.userNodeForPackage(Configuration.class);
+            if (preferences != null) {
+                try {
+                    preferences.clear();
+                } catch (Exception e) {
+                    LOGGER.warn("Error clearing configuration node", e);
+                }
+            }
+            setFromPreferences(INSTANCE);
+        }
+    }
 }

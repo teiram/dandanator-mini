@@ -45,21 +45,21 @@ public class DirectoryAwareFileChooser {
     public File showOpenDialog(Window ownerWindow) {
         File result = delegate.showOpenDialog(ownerWindow);
 
-        getFileDirectory(result).ifPresent(f -> delegate.setInitialDirectory(f));
+        getFileDirectory(result).ifPresent(this::setInitialDirectory);
         return result;
     }
 
     public List<File> showOpenMultipleDialog(Window ownerWindow) {
         List<File> result =  delegate.showOpenMultipleDialog(ownerWindow);
 
-        getFileDirectory(result).ifPresent(f -> delegate.setInitialDirectory(f));
+        getFileDirectory(result).ifPresent(this::setInitialDirectory);
         return result;
     }
 
     public File showSaveDialog(Window ownerWindow) {
         File result = delegate.showSaveDialog(ownerWindow);
 
-        getFileDirectory(result).ifPresent(f -> delegate.setInitialDirectory(f));
+        getFileDirectory(result).ifPresent(this::setInitialDirectory);
         return result;
     }
 

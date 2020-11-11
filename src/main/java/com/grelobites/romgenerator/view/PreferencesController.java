@@ -2,6 +2,7 @@ package com.grelobites.romgenerator.view;
 
 import com.grelobites.romgenerator.Configuration;
 import com.grelobites.romgenerator.Constants;
+import com.grelobites.romgenerator.PlayerConfiguration;
 import com.grelobites.romgenerator.model.HardwareMode;
 import com.grelobites.romgenerator.model.RomSet;
 import com.grelobites.romgenerator.util.*;
@@ -48,6 +49,9 @@ public class PreferencesController {
 
     @FXML
     private Button resetCharSetButton;
+
+    @FXML
+    private Button cleanupConfigurationButton;
 
     @FXML
     private ComboBox<RomSet> plus2ARomSetCombo;
@@ -283,6 +287,11 @@ public class PreferencesController {
         danTapSupport.selectedProperty().bindBidirectional(Configuration.getInstance().danTapSupportProperty());
         danTapSupport.selectedProperty().addListener((observable, oldValue, newValue) ->
                 Configuration.getInstance().setDanTapSupport(newValue));
+
+        cleanupConfigurationButton.setOnAction(e -> {
+            Configuration.resetConfiguration();
+            PlayerConfiguration.resetConfiguration();
+        });
 
     }
 }
