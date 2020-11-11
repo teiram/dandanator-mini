@@ -18,7 +18,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
@@ -66,7 +69,18 @@ public class MultiplyUpgradeController {
         }
     }
 
+    private static class TargetInfo {
+        public final Image image;
+        public final ArduinoConstants.ArduinoTarget target;
+        public TargetInfo(Image image, ArduinoConstants.ArduinoTarget target) {
+            this.image = image;
+            this.target = target;
+        }
+    }
     private ApplicationContext applicationContext;
+
+    @FXML
+    private VBox multiplyUpdaterPane;
 
     @FXML
     private Circle multiplyDetectedLed;
@@ -91,6 +105,13 @@ public class MultiplyUpgradeController {
 
     @FXML
     private ImageView scenarioImage;
+
+    private TargetInfo[] targets = new TargetInfo[2];
+
+    private final static int MULTIPLY_TARGET = 0;
+    private final static int DANDANATOR_V3_TARGET = 1;
+
+    private int targetIndex = MULTIPLY_TARGET;
 
     private BooleanProperty programming;
 
@@ -201,6 +222,25 @@ public class MultiplyUpgradeController {
 
     @FXML
     void initialize() throws IOException {
+        targets[MULTIPLY_TARGET] = new TargetInfo(
+                new Image(MultiplyUpgradeController.class
+                        .getResourceAsStream("/multiply/multiply-update.png")),
+                ArduinoConstants.ArduinoTarget.MULTIPLY);
+        targets[DANDANATOR_V3_TARGET] = new TargetInfo(
+                new Image(MultiplyUpgradeController.class
+                        .getResourceAsStream("/multiply/dandanator-v3-update.png")),
+                ArduinoConstants.ArduinoTarget.DANDANATOR_V3);
+
+        targetIndex = MULTIPLY_TARGET;
+
+        multiplyUpdaterPane.setOnKeyPressed(e -> {
+            if (e.isControlDown() && e.isAltDown() && e.getCode() == KeyCode.DIGIT3) {
+                targetIndex = (targetIndex + 1) % targets.length;
+                scenarioImage.setImage(targets[targetIndex].image);
+                LOGGER.debug("Target is {}", targets[targetIndex].target);
+            }
+        });
+
         programButton.disableProperty().bind(programming.or(
                 serialPortList.valueProperty().isNull()));
         progressBar.progressProperty().bind(progress);
@@ -254,7 +294,8 @@ public class MultiplyUpgradeController {
                     try {
                         LOGGER.debug("Starting multiply update");
                         onStartOperation(multiplyUpdatedLed);
-                        List<Binary> binaries = HexUtil.toBinaryList(ArduinoConstants.hexResource());
+                        List<Binary> binaries = HexUtil.toBinaryList(
+                                ArduinoConstants.hexResource(targets[targetIndex].target));
                         LOGGER.debug("Got a list of {} binaries to upload", binaries.size());
                         for (Binary binary : binaries) {
                             arduinoProgrammer.programBinary(binary, (d) -> progress.set(0.20 + 0.50 * d),
