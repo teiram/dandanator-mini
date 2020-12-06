@@ -317,7 +317,7 @@ public class GameMapperV9 implements GameMapper {
                     Optional<MLDInfo> mldInfo = MLDInfo.fromGameByteArray(gameSlots);
                     if (mldInfo.isPresent()) {
                         MLDGame mldGame = new MLDGame(mldInfo.get(), gameSlots);
-                        game = mldGame;
+                        game = GameUtil.updateMldGame(mldGame);
                     } else {
                         LOGGER.error("Unable to restore MLDGame from ROMSet. No MLDInfo found");
                     }
@@ -332,6 +332,7 @@ public class GameMapperV9 implements GameMapper {
                                 LOGGER.error("Unable to restore DanSnap Game from ROMSet. No MLDInfo found");
                                 return null;
                             });
+                    game = GameUtil.updateMldGame(game);
                     break;
                 case DAN_TAP:
                     try {

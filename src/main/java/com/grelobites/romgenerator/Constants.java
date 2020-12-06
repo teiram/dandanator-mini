@@ -49,6 +49,14 @@ public class Constants {
             {CASTLEVANIA_MD5_V2, CASTLEVANIA_SCREEN_RESOURCE}
     };
 
+    public static final String[] KNOWN_DAN_SNAPS = {
+            "2499df1dea6febedd9f8ed82c042685f"
+    };
+
+    public static final String[] KNOWN_MULTIPLYS = {
+            "7613fc8421d501a8de09dbabbf9c994e"
+    };
+
     public static final byte[] ZEROED_SLOT = new byte[SLOT_SIZE];
 
     public static final byte B_01 = 1;

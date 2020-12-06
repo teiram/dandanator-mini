@@ -2,9 +2,7 @@ package com.grelobites.romgenerator.util;
 
 import com.grelobites.romgenerator.Constants;
 import com.grelobites.romgenerator.handlers.dandanatormini.DandanatorMiniConstants;
-import com.grelobites.romgenerator.model.Game;
-import com.grelobites.romgenerator.model.GameHeader;
-import com.grelobites.romgenerator.model.SnapshotGame;
+import com.grelobites.romgenerator.model.*;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoader;
 import com.grelobites.romgenerator.util.gameloader.GameImageLoaderFactory;
 import com.grelobites.romgenerator.util.gameloader.GameImageType;
@@ -231,6 +229,42 @@ public class GameUtil {
         return value & (DandanatorMiniConstants.AUTHENTIC_VALUE_FLAG - 1);
     }
 
+    public static Game updateMldGame(Game game) {
+        if (game instanceof MLDGame) {
+            try {
+                byte[][] slots = new byte[game.getSlotCount()][];
+                for (int i = 0; i < slots.length; i++) {
+                    slots[i] = game.getSlot(i);
+                }
+                String md5 = Util.getMD5(slots);
+                LOGGER.debug("Looking for upgrade for MLD Game with md5: {}", md5);
+                for (String candidate : Constants.KNOWN_DAN_SNAPS) {
+                    if (md5.equals(candidate)) {
+                        LOGGER.debug("Replacing DanSnap Game with MD5 {}", md5);
+                        int reservedSlots = ((DanSnapGame) game).getReservedSlots();
+                        DanSnapGame newGame = (DanSnapGame) GameImageLoaderFactory
+                                .getLoader(GameImageType.MLD)
+                                .load(DandanatorMiniConstants.getSnapshotterStream());
+                        newGame.setReservedSlots(reservedSlots);
+                        return newGame;
+                    }
+                }
+
+                for (String candidate : Constants.KNOWN_MULTIPLYS) {
+                    if (md5.equals(candidate)) {
+                        LOGGER.debug("Replacing Multiply Game with MD5 {}", md5);
+                        return GameImageLoaderFactory.getLoader(GameImageType.MLD)
+                                .load(DandanatorMiniConstants.getMultiplyMldStream());
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.error("Trying to upgrade MLDGame", e);
+            }
+        }
+
+        return game;
+
+    }
 
 
 }

@@ -192,10 +192,13 @@ public class Util {
         return sum & 0xffff;
     }
 
-    public static String getMD5(File file) {
+    public static String getMD5(byte[]... blocks) {
         try {
-            byte[] fileBytes = Files.readAllBytes(file.toPath());
-            byte[] hash = MessageDigest.getInstance("MD5").digest(fileBytes);
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            for (byte[] block : blocks) {
+                digest.update(block);
+            }
+            byte[] hash = digest.digest();
             StringBuilder sb = new StringBuilder();
             for (byte b : hash) {
                 sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
@@ -204,6 +207,15 @@ public class Util {
             return sb.toString();
         } catch (Exception e) {
             LOGGER.warn("Generating MD5", e);
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public static String getMD5(File file) {
+        try {
+            return getMD5(Files.readAllBytes(file.toPath()));
+        } catch (Exception e) {
+            LOGGER.warn("Reading file {}", file, e);
             throw new IllegalArgumentException(e);
         }
     }
