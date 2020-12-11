@@ -192,6 +192,10 @@ public class Util {
         return sum & 0xffff;
     }
 
+    public static String getMD5(byte[] block, int start, int end) {
+        return getMD5(Arrays.copyOfRange(block, start, end));
+    }
+
     public static String getMD5(byte[]... blocks) {
         try {
             MessageDigest digest = MessageDigest.getInstance("MD5");

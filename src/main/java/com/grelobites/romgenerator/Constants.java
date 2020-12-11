@@ -14,7 +14,7 @@ public class Constants {
     public static final int SECTOR_SIZE = 0x1000;
     public static final int SLOT_SIZE = 0x4000;
 
-    private static final String DEFAULT_VERSION = "10.0";
+    private static final String DEFAULT_VERSION = "10.1";
 
     public static final int CHARSET_SIZE = 768;
 
@@ -50,11 +50,11 @@ public class Constants {
     };
 
     public static final String[] KNOWN_DAN_SNAPS = {
-            "2499df1dea6febedd9f8ed82c042685f"
+            "e34a0d9ced134c9a57efbc2425243180"
     };
 
     public static final String[] KNOWN_MULTIPLYS = {
-            "7613fc8421d501a8de09dbabbf9c994e"
+            "98526745b7429c20a86b3c93ba55c99e"
     };
 
     public static final byte[] ZEROED_SLOT = new byte[SLOT_SIZE];

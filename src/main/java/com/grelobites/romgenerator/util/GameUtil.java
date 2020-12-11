@@ -232,11 +232,8 @@ public class GameUtil {
     public static Game updateMldGame(Game game) {
         if (game instanceof MLDGame) {
             try {
-                byte[][] slots = new byte[game.getSlotCount()][];
-                for (int i = 0; i < slots.length; i++) {
-                    slots[i] = game.getSlot(i);
-                }
-                String md5 = Util.getMD5(slots);
+                //Just check the first slot skipping the last bytes (configuration)
+                String md5 = Util.getMD5(game.getSlot(0), 0, 16362);
                 LOGGER.debug("Looking for upgrade for MLD Game with md5: {}", md5);
                 for (String candidate : Constants.KNOWN_DAN_SNAPS) {
                     if (md5.equals(candidate)) {

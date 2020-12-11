@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.grelobites</groupId>
 	<artifactId>dandanator-mini</artifactId>
-	<version>10.0</version>
+	<version>10.1</version>
 	<name>Dandanator Mini ROM Generator</name>
 
 	<properties>
@@ -55,6 +55,8 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
+					<finalName>dandanator-mini-${project.version}</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 				<executions>
 					<execution>
