@@ -1,7 +1,9 @@
 name: Publish package to GitHub Packages
 on:
   push:
-    branches: [jdk17]
+    branches: [master]
+    tags:
+      - 'v*'
 jobs:
   publish:
     runs-on: ubuntu-latest 
