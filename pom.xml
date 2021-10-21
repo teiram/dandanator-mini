@@ -19,6 +19,14 @@
       <tag>HEAD</tag>
   </scm>
 
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub Packages</name>
+			<url>https://maven.pkg.github.com/${project.groupId}/${project.artifactId}</url>
+		</repository>
+	</distributionManagement>
+
 	<build>
 		<resources>
 		<!--  A bit ugly, but the SceneBuilder likes to have the fxml and 
