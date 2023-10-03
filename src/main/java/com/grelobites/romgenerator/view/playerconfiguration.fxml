@@ -12,9 +12,9 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="360.0" prefWidth="560.0" spacing="15.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PlayerConfigurationController">
+<VBox prefHeight="360.0" prefWidth="560.0" spacing="15.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.grelobites.romgenerator.view.PlayerConfigurationController">
    <children>
-      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
          <children>
             <Label text="%useCustomRomSet" />
             <Label fx:id="customRomSetPath" alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" prefHeight="17.0" prefWidth="174.0" text="%none" HBox.hgrow="ALWAYS" />
@@ -25,7 +25,7 @@
             <Insets left="5.0" right="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
          <children>
             <Label maxWidth="1.7976931348623157E308" text="%audioMixerName" HBox.hgrow="ALWAYS" />
             <ComboBox fx:id="audioMixer" prefWidth="150.0" />
@@ -34,7 +34,7 @@
             <Insets left="5.0" right="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
          <children>
             <Label maxWidth="1.7976931348623157E308" prefHeight="17.0" prefWidth="311.0" text="%encodingSpeed" HBox.hgrow="ALWAYS" />
             <ComboBox fx:id="encodingSpeed" prefWidth="150.0" />
@@ -43,7 +43,7 @@
             <Insets left="5.0" right="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
          <children>
             <Label maxWidth="1.7976931348623157E308" prefHeight="17.0" prefWidth="312.0" text="%audioType" HBox.hgrow="ALWAYS" />
             <ComboBox fx:id="audioMode" prefWidth="150.0" />
@@ -52,7 +52,7 @@
             <Insets left="5.0" right="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
          <children>
             <CheckBox fx:id="boostLevel" mnemonicParsing="false" text="%boostLevel" />
             <Separator maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" orientation="VERTICAL" prefHeight="0.0" prefWidth="188.0" HBox.hgrow="ALWAYS" />
@@ -62,7 +62,7 @@
             <Insets left="5.0" right="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
          <children>
             <CheckBox fx:id="useTargetFeedback" mnemonicParsing="false" text="%useTargetFeedback" />
          </children>
@@ -70,7 +70,7 @@
             <Insets left="5.0" right="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
          <children>
             <CheckBox fx:id="useSerialPort" mnemonicParsing="false" text="%bySerialPort" HBox.hgrow="ALWAYS" />
             <ComboBox fx:id="serialPort" maxWidth="1.7976931348623157E308" prefHeight="27.0" prefWidth="247.0" HBox.hgrow="ALWAYS" />
@@ -88,7 +88,7 @@
             <Insets left="5.0" right="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="28.0" prefWidth="560.0" spacing="10.0">
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
          <children>
             <CheckBox fx:id="sendLoader" mnemonicParsing="false" text="%sendWriterByAudio" />
          </children>
@@ -96,7 +96,7 @@
             <Insets left="5.0" right="5.0" />
          </padding>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="39.0" prefWidth="550.0" visible="false">
+      <HBox alignment="CENTER_LEFT" visible="false">
          <children>
             <Label maxWidth="1.7976931348623157E308" text="%serialSpeed" textAlignment="CENTER" HBox.hgrow="SOMETIMES" />
             <TextField fx:id="serialSpeed" />
@@ -108,7 +108,7 @@
             <Insets right="10.0" />
          </VBox.margin>
       </HBox>
-      <HBox alignment="CENTER_LEFT" prefHeight="51.0" prefWidth="560.0" spacing="20.0" visible="false">
+      <HBox alignment="CENTER_LEFT" spacing="20.0" visible="false">
          <children>
             <CheckBox fx:id="useSocket" mnemonicParsing="false" text="%bySocket" />
             <TextField fx:id="socketHostname" />
